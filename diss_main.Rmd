@@ -95,12 +95,12 @@ run correlation matrix for each
 ```{r Filter sample, cache = TRUE}
 
 #IMPORT file
- data.raw <- read_excel("~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.xlsx",
-                        range=cell_cols(1:1820), col_types = "text")
- 
- save("data.raw", file="~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
+ # data.raw <- read_excel("~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.xlsx",
+ #                        range=cell_cols(1:1820), col_types = "text")
+ # 
+ # save("data.raw", file="~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
  load("~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
-# source("dissertation_fx.R")
+ # source("dissertation_fx.R")
    
 data.v1 <- data.raw %>%
   mutate(age = as.numeric(age)) %>%
@@ -1349,7 +1349,7 @@ table(data.v11$meds_count)  # check output
 data.v11 = subset(data.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
 ```
 
-class(## Diathesis correlation matrix
+## Diathesis correlation matrix
 ```{r Diathesis correlation}
 
 # Define diathesis vars for correlation matrix
@@ -1381,17 +1381,24 @@ corr_simple()
 
 ```
 ## EFA diathesis
-```{r}
+```{r EFA diathesis}
 
 data_dia <- data.v11 %>% select(c(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
                                   audit_tot, dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, 
                                   dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
                                   meds_oth, meds_none, alc_tx, meds_count, ed_any))
 
-data_dia <- data_dia %>% mutate_if(is.numeric, as.factor, .vars = vars(-c(meds_count, audit_tot, age)))
-
+data_dia <- data_dia %>% 
+  mutate_if(is.numeric, as.factor) %>% 
+  mutate(
+    age = as.numeric(age),
+    meds_count = as.numeric(meds_count),
+    audit_tot = as.numeric(audit_tot),
+    ed_scoff = as.numeric(ed_scoff)
+  ) %>% 
+  dummy_cols(remove_first_dummy = TRUE) %>% 
+  as.matrix()
 results <- dummy_cols(data_dia, remove_first_dummy = TRUE)
-knitr::kable(results)
 
 # PCA -- determine # of underlying components
 dia.matrix <- cor(na.omit(data_dia), use = "pairwise.complete.obs")
