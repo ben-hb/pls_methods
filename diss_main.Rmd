@@ -1,13 +1,15 @@
 ---
 title: "Sisler Initial Analysis"
 output:
-  pdf_document: default
+  word_document: default
   html_document: default
+  pdf_document: default
 ---
 
 # LOAD PACKAGES
 ```{r Call packages}
 library(assertive)
+library(bestglm)
 library(broom)
 library(car)
 library(carat)
@@ -16,6 +18,7 @@ library(caTools)
 library(clipr)
 library(corrplot)
 library(cowplot)
+library(fastDummies)
 library(effsize)
 library(effectsize)
 library(emulator)
@@ -54,6 +57,7 @@ library(rococo)
 library(rpart)
 library(rpart.plot)
 library(rstatix)
+library(stats)
 library(stringr)
 library(sure)
 library(tidyverse)
@@ -91,11 +95,11 @@ run correlation matrix for each
 ```{r Filter sample, cache = TRUE}
 
 #IMPORT file
- data.raw <- read_excel("~/Desktop/Desktop - Sisler Home/UTAH/Stats I/R Studio/Dissertation/Sisler_dissertation_HMS1819_audit.xlsx",
+ data.raw <- read_excel("~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.xlsx",
                         range=cell_cols(1:1820), col_types = "text")
  
- save("data.raw", file="~/Desktop/Desktop\ -\ Sisler\ Home/UTAH/Stats\ I/R\ Studio/Dissertation/Sisler_dissertation_HMS1819_audit.RData")
- load("~/Desktop/Desktop\ -\ Sisler\ Home/UTAH/Stats\ I/R\ Studio/Dissertation/Sisler_dissertation_HMS1819_audit.RData")
+ save("data.raw", file="~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
+ load("~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
 # source("dissertation_fx.R")
    
 data.v1 <- data.raw %>%
@@ -747,29 +751,34 @@ data.v6$race[str_detect(data.v6$race_other_text, "[A|a]merica")] <- "Non-answers
 data.v6$race[str_detect(data.v6$race_other_text, "[H|h]uman")] <- "Non-answers"
 data.v6$race[str_detect(data.v6$race_other_text, "[N|n]one")] <- "Non-answers"
 data.v6$race[str_detect(data.v6$race_other_text, "[P|p]erson")] <- "Non-answers"
-data.v6$race[data.v6$race_other_text %in% c("prefer not to say", "Prefer not to answer.", "Prefer not to specify", "Prefer not to answer :)", 
-                                            "Prefer not to state", "Prefer no to say", "Race is a problematic social construct", "Transcendent", "Texan",
-                                            "Race is a socual construct", "Race/ethnicity should not matter", "why is this a thing", "Brown", "No thx",
+data.v6$race[data.v6$race_other_text %in% c("prefer not to say", "Prefer not to answer.", "Prefer not to specify", 
+                                            "Prefer not to answer :)", "FUCK YOU", "Caramel American", "Why", "irrelevant",
+                                            "Prefer not to state", "Prefer no to say", "Race is a problematic social construct",
+                                            "Transcendent", "Texan", "Race is a socual construct", "Race/ethnicity should not matter",
+                                            "why is this a thing", "Brown", "No thx", "White passing, ethnically other",
                                             "While I understand the socio-economic conditions that surround race, race also is a construct which serves no purpose.",
-                                            "Wakanda Forever", "unfortunately", "whatever I can use to be a victim in the given situation", 
-                                            "We need to get rid of these color things", "Why", "irrelevant", "Me", "I do Not identify racially", 
-                                            "Why is there always a race question? Can't we all just be one race? The Human Race.",  "Caramel American",
-                                            "Will not disclose",  "Race/ethnicity should not matter",  "There is only one human race: Homo sapien",
-                                            "White passing, ethnically other", "This doesn't matter and you're an idiot for thinking it does.", "FUCK YOU", 
+                                            "Wakanda Forever", "unfortunately", "Prefer not to answer", 
+                                            "whatever I can use to be a victim in the given situation", 
+                                            "We need to get rid of these color things",  "Me", "I do Not identify racially", 
+                                            "Why is there always a race question? Can't we all just be one race? The Human Race.",  
+                                            "Will not disclose",  "Race/ethnicity should not matter", "N/a", "N/A", 
+                                            "There is only one human race: Homo sapien", "don't know due to uncertainity of lineage",
+                                            "This doesn't matter and you're an idiot for thinking it does.",  
                                             "POC because now my opinion will matter in the US", "Color doesn't mean anything right? Why do so many surveys ask it",
-                                            "Citizen of the World", "I am not a racial identifying person. I am American. My DNA says something about Korean heritage.",
+                                            "Citizen of the World", "My skin is lighter than others, and darker than some", 
+                                            "I am not a racial identifying person. I am American. My DNA says something about Korean heritage.",
                                             "I choose not to answer", "I do not identify as a race in order to promote social equality for all races",
-                                            "don't know due to uncertainity of lineage", "I don't think race is all that important.", "Prefer not to answer",
+                                             "I don't think race is all that important.", 
                                             "I do not think that this information should or does make a difference ,so, I chose to not state", 
-                                            "A White, Cherokee, European, Irish man who would be preferred to be called else but white", "N/a", "N/A", 
-                                            "My skin is lighter than others, and darker than some", 
+                                            "A White, Cherokee, European, Irish man who would be preferred to be called else but white",
                                             "I won't allow my race to be used in this study for potential insidious usage")]  <- "Non-answers"
 
   # Jokesters
-data.v6$race[data.v6$race_other_text %in% c("Volvo", "Vulcan", "Snowman", "tree", "General Electric", "Cat", "Earthling", "I have rainbow skin.", "jedi", 
-                                            "Light skinned potato", "I'm stainless steel.", "7-foot tall Chinese woman", "A little tan.", "Apache helicopter",
-                                            "Aptenodytes", "Wood", "moon man", "Black hawk", "Aviation Heritage", "Ewok", "Desert Camoflauge", "Aptenodytes", 
-                                            "Attack helicopter", "Ethnic Kekistani")] <- "Non-answers"
+data.v6$race[data.v6$race_other_text %in% c("Volvo", "Vulcan", "Snowman", "tree", "General Electric", "Cat", "Earthling", 
+                                            "I have rainbow skin.", "jedi", "Light skinned potato", "I'm stainless steel.", 
+                                            "7-foot tall Chinese woman", "A little tan.", "Apache helicopter", "Aptenodytes", 
+                                            "Wood", "moon man", "Black hawk", "Aviation Heritage", "Ewok", "Desert Camoflauge",
+                                            "Aptenodytes", "Attack helicopter", "Ethnic Kekistani")] <- "Non-answers"
 
   # white
 data.v6$race[str_detect(data.v6$race_other_text, "[J|j]ew")] <- "White"  # if Israeli, could be White, Asian, or ME (e.g. Palestine)
@@ -783,7 +792,7 @@ data.v6$race[str_detect(data.v6$race_other_text, "[A|a]lbania")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[S|s]em[e|i]tic")] <- "White" # if Israeli, could be White, Asian, or ME (Palestine)
 data.v6$race[str_detect(data.v6$race_other_text, "[R|r]ussian")] <- "White" # could be Asian depending on region
 data.v6$race[str_detect(data.v6$race_other_text, "[R|r]oma")] <- "White"
-data.v6$race[str_detect(data.v6$race_other_text, "[T|t]urkish")] <- "White"  # what bucket should Turkish people fall into... Asian? They are not Arab.
+data.v6$race[str_detect(data.v6$race_other_text, "[T|t]urkish")] <- "White"  # Turkish people... Asian? They are not Arab.
 data.v6$race[str_detect(data.v6$race_other_text, "[S|s]lavic")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[M|m]etis")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[B|b]asque")] <- "White"  # could be caucasian or hispanic... need to figure out the majority
@@ -797,13 +806,15 @@ data.v6$race[str_detect(data.v6$race_other_text, "[C|c]anad")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[M|m]editerranean")] <- "White"
 data.v6$race[data.v6$race_other_text %in% c("please refer to me as Caucasian; it's extremely offensive to refer to every race-- excluding Caucasians-- in their politically correct form",
                                             "Not sure if I'm Hispanic, as I am Portuguese and Spanish (from my mother's side) . I identify as white as I am of European descent.",
-                                            "Portugese", "Cape Verdean", "Capeverdean", "Bulgarian-American", "Ginger", "Anglo Saxon", "anglo/white", "Balkan for ethnicity",
-                                            "Ulster-scots", "I'm white, but I do have some Native American in me but it's not the dominant visible ethnicity.", 
+                                            "Portugese", "Cape Verdean", "Capeverdean", "Bulgarian-American", "Ginger", "Anglo Saxon",
+                                            "anglo/white", "Balkan for ethnicity", "Ulster-scots", 
+                                            "I'm white, but I do have some Native American in me but it's not the dominant visible ethnicity.", 
                                             "White (Jewish/Jamaican-Chinese/Irish)", "ARMENIAN")] <- "White"
   # Identifies as American Indian or other indigenous descent
 data.v6$race[str_detect(data.v6$race_other_text, "[N|n]ative [A|a]merican")] <- "AI/AN"
 data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndigenous")] <- "AI/AN"
-data.v6$race[data.v6$race_other_text %in% c("I look white but im also status native", "Indigenous/Mestizo", "american indian that isn'y legally claimed")] <- "AI/AN"
+data.v6$race[data.v6$race_other_text %in% c("I look white but im also status native", "Indigenous/Mestizo", 
+                                            "american indian that isn'y legally claimed")] <- "AI/AN"
   # Identifies as Asian
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]sian")] <- "Asian"
 data.v6$race[str_detect(data.v6$race_other_text, "[C|c]hinese")] <- "Asian"
@@ -820,10 +831,12 @@ data.v6$race[str_detect(data.v6$race_other_text, "[P|p]unjabi")] <- "Asian"
 data.v6$race[str_detect(data.v6$race_other_text, "[S|s]iberia")] <- "Asian"
 data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndonesia")] <- "Asian"
 data.v6$race[str_detect(data.v6$race_other_text, "[W|w]est [I|i]ndian")] <- "Asian"
-data.v6$race[data.v6$race_other_text %in% c("Sri Lankan", "Sri-Lankan", "third culture kid, born and raised in asia until 18yo", "Central Asian", "Malays",
-                                            "Chinese Ethinicy-Nuosu", "Austronesian", "Indian, UAE native", "Indian/Subcontinental", "Indians arent on the list.....", 
-                                            "American Texan of Indian (South asia) Descent", "Okinawan", "Japanese American and Native Hawaiian Culture", 
-                                            "Asian. International.", "Asian/Chinese", "Australian/Indian","Indo-Caribbean",  "Atlantic Islander", 
+data.v6$race[data.v6$race_other_text %in% c("Sri Lankan", "Sri-Lankan", "third culture kid, born and raised in asia until 18yo",
+                                            "Central Asian", "Malays", "Chinese Ethinicy-Nuosu", "Austronesian", "Indian, UAE native", 
+                                            "Indian/Subcontinental", "Indians arent on the list.....", 
+                                            "American Texan of Indian (South asia) Descent", "Okinawan", 
+                                            "Japanese American and Native Hawaiian Culture", "Asian. International.", "Asian/Chinese",
+                                            "Australian/Indian","Indo-Caribbean",  "Atlantic Islander", 
                                             "Telugu-speaking Tamil-ethnicity Indian")] <- "Asian"
   # Identifies as Black
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]frican")] <- "Black"
@@ -856,8 +869,8 @@ data.v6$race[str_detect(data.v6$race_other_text, "[M|m]estiz[o|a]")] <- "Hispani
 data.v6$race[str_detect(data.v6$race_other_text, "[P|p]ortuguese")] <- "Hispanic"
 data.v6$race[str_detect(data.v6$race_other_text, "[B|b]razil")] <- "Hispanic"
 data.v6$race[str_detect(data.v6$race_other_text, "[C|c]uba")] <- "Hispanic"
-data.v6$race[data.v6$race_other_text %in% c("Central American Native", "If I identify as puerto rican does that mean i get more scholarship money?", "Costa Rican",
-                                            "Andean")] <- "Hispanic"
+data.v6$race[data.v6$race_other_text %in% c("If I identify as puerto rican does that mean i get more scholarship money?", "Costa Rican",
+                                            "Central American Native", "Andean")] <- "Hispanic"
 
   # Identifies as Middle Eastern or of Arab descent
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]rmenia")] <- "ME/Arab"
@@ -885,9 +898,9 @@ data.v6$race[str_detect(data.v6$race_other_text, "[O|o]ther")] <- "Other/Mixed"
 data.v6$race[str_detect(data.v6$race_other_text, "[U|u]nkown")] <- "Other/Mixed"
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]mbiguous")] <- "Other/Mixed"
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]mbiguous")] <- "Other/Mixed"
-data.v6$race[data.v6$race_other_text %in% c("Sub Asian/East African", "two or more races", "Moroccan Mexican", "Transracial", "Adopted", "Part Thetan",
-                                            "Taiwanese-Greek-Cypriot American", "East Indian, Caribbean", "50/50", "Korean Ecuadorian", 
-                                            "Brazilian, Luso, Native American", "Central American/ Caribbean", "Mut (more than 3)",  "mexican,filipino, italian",
+data.v6$race[data.v6$race_other_text %in% c("Sub Asian/East African", "two or more races", "Moroccan Mexican", "Transracial", "Adopted",
+                                            "Part Thetan", "Taiwanese-Greek-Cypriot American", "East Indian, Caribbean", "50/50",
+                                            "Korean Ecuadorian", "Brazilian, Luso, Native American", "Central American/ Caribbean", "Mut (more than 3)",  "mexican,filipino, italian",
                                             "Middle Eastern, Filipino and Spanish", "Indo-Portugesse (Fijian/Portugesse) Canadian Born",
                                             "White and American Indian (Choctaw)", "White, black, Native American", "White, Black, and Hispanic", "French Lebanese", 
                                             "Lebanese, German, French", "Asian/Indian", "An American Mutt- a bit of everything somewhere in there", "Black and native", 
@@ -1163,8 +1176,8 @@ data.v11 <- data.v11 %>%
       data.v11$meds_dep[str_detect(data.v11$meds_7_text, "[R|r][e|i]meron")] <- 1
       data.v11$meds_dep[str_detect(data.v11$meds_7_text, "[T|t]raz[a|o|i]done")] <- 1
       data.v11$meds_dep[str_detect(data.v11$meds_7_text, "[N|n]ortriptyline")] <- 1
-      data.v11$meds_dep[data.v11$meds_7_text %in% c("CYMBALTA", "Cymbolta", "Lexipro", "Lexxapro", "Sertaline", "remiron", "Mirtazepene",
-                                                    "bupropin", "Lexapro, Wellbutrin", "Lexapro and Paxil", "Fuoxetine", 
+      data.v11$meds_dep[data.v11$meds_7_text %in% c("CYMBALTA", "Cymbolta", "Lexipro", "Lexxapro", "Sertaline", "remiron",
+                                                    "Mirtazepene", "bupropin", "Lexapro, Wellbutrin", "Lexapro and Paxil", "Fuoxetine", 
                                                     "Forgot the name, anti depressant for anxiety, daily med", "Duluxotine", 
                                                     "Atomoxitine (nonstimulant ADHD)", "Fluvoximine (luvox)", "Anafranil", 
                                                     "amatryptaline for migraines", "amnitryptaline", 
@@ -1272,14 +1285,15 @@ data.v11 <- data.v11 %>%
       data.v11$meds_oth[str_detect(data.v11$meds_7_text, "[O|o]xycodone")] <- 1
       data.v11$meds_oth[str_detect(data.v11$meds_7_text, "[C|c]annabic")] <- 1
       data.v11$meds_oth[str_detect(data.v11$meds_7_text, "[B|b]eta")] <- 1
-      data.v11$meds_oth[data.v11$meds_7_text %in% c("Canabis", "Vistiril", "Vistral", "Thyroxine", "The Reefer", "Topimitrate", "topiramate",
-                                                    "Estradiol, Spironactone", "muscle relaxants to help me sleep", "Sumatriptan for migraines",
-                                                    "Ondansetron" ,"Psilocybin Mushrooms", "clonodine", "Muscle Relaxers", 
-                                                    "anti-siezure medication", "Anti-seizure to control racing thoughts", "Anti seizure",
-                                                    "Codeine", "Androgen Blockers", "Buprenorphine (Suboxone) for opiate dependence",
-                                                    "Hydroxine", "Hydroxcyzine", "Alyacen", "Mirapex", "hypothyroid medication", 
-                                                    "Epilepsy drugs", "Birth control", "Methadone", "Vimpat", "Contrave", "Benztropine", 
-                                                    "Intuniv", "Medicinal marijuana", "Pantaloc, for psychogenic vomiting", "medicinal Cannabis",
+      data.v11$meds_oth[data.v11$meds_7_text %in% c("Canabis", "Vistiril", "Vistral", "Thyroxine", "The Reefer", "Topimitrate",
+                                                    "topiramate", "Estradiol, Spironactone", "muscle relaxants to help me sleep",
+                                                    "Sumatriptan for migraines", "Ondansetron" ,"Psilocybin Mushrooms", "clonodine",
+                                                    "Muscle Relaxers", "anti-siezure medication", "Codeine", "Androgen Blockers",
+                                                    "Anti-seizure to control racing thoughts", "Anti seizure",
+                                                    "Buprenorphine (Suboxone) for opiate dependence", "Hydroxine", "Hydroxcyzine",
+                                                    "Alyacen", "Mirapex", "hypothyroid medication", "Epilepsy drugs", "Birth control",
+                                                    "Methadone", "Vimpat", "Contrave", "Benztropine", "Intuniv", "Medicinal marijuana",
+                                                    "Pantaloc, for psychogenic vomiting", "medicinal Cannabis",
                                                     "Testosterone Enanthate", "testosterone", "Cannabis", "Medical marijuana")] <- 1
       
 # Create a group for students who do not take any psychotropic meds
@@ -1335,22 +1349,24 @@ table(data.v11$meds_count)  # check output
 data.v11 = subset(data.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
 ```
 
-## Diathesis correlation matrix
+class(## Diathesis correlation matrix
 ```{r Diathesis correlation}
 
 # Define diathesis vars for correlation matrix
-data_dia <- data.v11 %>% select(c(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa,
-                                  dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle, meds_oth, meds_none, alc_tx, wcs_tot, meds_count, ed_any))
+data_dia <- data.v11 %>% select(c(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
+                                  audit_tot, dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, 
+                                  dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
+                                  meds_oth, meds_none, alc_tx, meds_count, ed_any))
 
 # Corr_simple function
 corr_simple <- function(data=data_dia, sig=0.6){
-  # convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA_
+  # convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA)
   data_dia <- data_dia %>% mutate_if(is.character, as.factor)
   data_dia <-  data_dia %>% mutate_if(is.factor, as.numeric)
   # run a correlation and drop the insignificant ones
   corr <- cor(data_dia, use = "pairwise.complete.obs")                               
   corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-  corr[corr %in% c(-1, 1)] <- NA                                   # drop perfect correlations
+  corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
   corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
   corr <- na.omit(corr)                                   #remove the NA values from above 
   corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
@@ -1364,16 +1380,56 @@ corr_simple <- function(data=data_dia, sig=0.6){
 corr_simple()
 
 ```
+## EFA diathesis
+```{r}
+
+data_dia <- data.v11 %>% select(c(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
+                                  audit_tot, dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, 
+                                  dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
+                                  meds_oth, meds_none, alc_tx, meds_count, ed_any))
+
+data_dia <- data_dia %>% mutate_if(is.numeric, as.factor, .vars = vars(-c(meds_count, audit_tot, age)))
+
+results <- dummy_cols(data_dia, remove_first_dummy = TRUE)
+knitr::kable(results)
+
+# PCA -- determine # of underlying components
+dia.matrix <- cor(na.omit(data_dia), use = "pairwise.complete.obs")
+dia.matrix
+
+dia.pca <- princomp(data.dia, cor = TRUE, scores= TRUE)
+summary(dia.pca)
+plot(dia.pca)  # scree plot
+
+# Based on the summary, XX components exist
+dia.fa1 <- factanal(data.pca, factors=XX, rotation="XX")
+dia.fa1
+
+# run with 2 factors
+dia.fa2 <- factanal(data.pca, factors=XX, rotation="XX")
+dia.fa2
+
+# 3 components
+dia.fa5 <- factanal(dia.pca, factors=XX, rotation="XX", scores="regression")
+dia.fa5
+head(dia.fa5$scores)
+
+# EFA
+
+
+
+```
+
+
 
 ## CLM diathesis
 ```{r lasso_dia}
 
-ordclm_dia <- data.v11 %>% select(c(si_type, age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_adhd,
-                                   dx_ea, dx_tr, dx_sa, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle, meds_oth, meds_none, alc_tx, wcs_tot, 
-                                   meds_count, ed_any))
+clm_dia <- data.v11 %>% select(si_type, age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_adhd, meds_count, ed_any,
+                                   dx_ea, dx_tr, dx_sa, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle, meds_oth, meds_none, alc_tx)
 
-clm_dia <- NA_preproc(ordclm_dia)
-clm_dia <- as.data.frame(ordclm_dia)
+clm_dia <- NA_preproc(clm_dia)
+clm_dia <- as.data.frame(clm_dia)
 
 str(clm_dia)
 set.seed(1000) 
@@ -1394,54 +1450,54 @@ summary(m_dia)
 
 ## Diathesis regression
 
-Regression variables: age, sexual, gender, finpast, sib_freq, race, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none, alc_tx, wcs_tot, meds_count, disab_1
+Regression variables: age, sexual, gender, finpast, sib_freq, race, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none, alc_tx, meds_count, disab_1
 
 ```{r Diathesis regression}
 
-#Build ordinal logistic regression model
-data.v11 <- data.v11 %>%
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                ifelse(si_type == "passive SI", 1,
-                                       ifelse(si_type  == "active SI", 2, 3))))
+# #Build logistic regression model
+# data.v11 <- data.v11 %>%
+#   mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
+#                                 ifelse(si_type == "passive SI", 1,
+#                                        ifelse(si_type  == "active SI", 2, 3))))
+# 
+# temp_reg <- select(data.v11, si_type_num, dx_pers, dx_dep, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, meds_anx, meds_psy, meds_mood, meds_sle, meds_dep, meds_sti, sib_freq, 
+#                    age, sexual, gender, finpast, race, meds_count, body_sr, ed_any)
+# cleaned_temp_reg <- NA_preproc(temp_reg)
+# 
+# #Dividing data into training and test set
+#   #Random sampling 
+# samplesize_dia = 0.60*nrow(cleaned_temp_reg)
+# set.seed(1000)
+# index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_dia)
+# # Creating training and test set
+# datatrain_dia = cleaned_temp_reg[index,]
+# datatest_dia = cleaned_temp_reg[-index,]
+# 
+# #Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
+# mod_dia <- glm(si_type_num ~ dx_pers + dx_dep + dx_bi + dx_psy + dx_ea + dx_tr + dx_sa + dx_adhd + meds_anx + meds_psy + meds_mood + meds_sle + meds_dep + meds_sti + sib_freq + 
+#                  age + sexual + gender + finpast + race + meds_count + body_sr + ed_any,
+#                data = datatrain_dia)
+# # dx_adhd
+# summary(mod_dia) # check output
 
-temp_reg <- select(data.v11, si_type_num, dx_pers, dx_dep, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, meds_anx, meds_psy, meds_mood, meds_sle, meds_dep, meds_sti, sib_freq, 
-                   age, sexual, gender, finpast, race, meds_count, body_sr, ed_any)
-cleaned_temp_reg <- NA_preproc(temp_reg)
-
-#Dividing data into training and test set
-  #Random sampling 
-samplesize_dia = 0.60*nrow(cleaned_temp_reg)
-set.seed(1000)
-index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_dia)
-# Creating training and test set
-datatrain_dia = cleaned_temp_reg[index,]
-datatest_dia = cleaned_temp_reg[-index,]
-
-#Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-mod_dia <- glm(si_type_num ~ dx_pers + dx_dep + dx_bi + dx_psy + dx_ea + dx_tr + dx_sa + dx_adhd + meds_anx + meds_psy + meds_mood + meds_sle + meds_dep + meds_sti + sib_freq + 
-                 age + sexual + gender + finpast + race + meds_count + body_sr + ed_any,
-               data = datatrain_dia)
-# dx_adhd
-summary(mod_dia) # check output
-
-step_dia <- stepAIC(mod_dia, direction = "both", trace = 10)
+#step_dia <- stepAIC(mod_dia, direction = "both", trace = 10)
 
 # sure fx
-dia_data <- mod_dia[["model"]]
+#dia_data <- mod_dia[["model"]]
 
 # residual plot
-dia_data$resid <- resids(mod_dia, method = c("jitter"),
-      jitter.scale = c("response"))
-dia_data <- cbind(dia_data, mod_dia[["fitted.values"]])
-ggplot(dia_data, aes(x = `passive SI`, y = resid)) +
-geom_point(color = "purple", alpha = 0.15)
-geom_smooth(method = "lm")
+#dia_data$resid <- resids(mod_dia, method = c("jitter"),
+#      jitter.scale = c("response"))
+#dia_data <- cbind(dia_data, mod_dia[["fitted.values"]])
+#ggplot(dia_data, aes(x = `passive SI`, y = resid)) +
+#geom_point(color = "purple", alpha = 0.15)
+#geom_smooth(method = "lm")
 
-dia_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+#dia_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 
-dia_data %>% 
- filter(si_type == "SA") %>%
- ggplot(aes(x = resid)) + geom_density(color = "magenta")
+#dia_data %>% 
+# filter(si_type == "SA") %>%
+# ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
 
@@ -1732,7 +1788,6 @@ data.v14 = subset(data.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoColl
 
 ## Environmental correlation
 ```{r}
-
 # Define environment vars for correlation matrix
 data_env <- data.v14 %>% select(c(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_4yr, school2_cc, school2_ad, satisfied_overall,
                                   ther_vis, talk, military, international))
@@ -1756,61 +1811,19 @@ print(corr)
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
-
-```
-
-## LASSO Environment
-```{r lasso_env}
-
-data.v14 <- data.v14 %>% 
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                ifelse(si_type == "passive SI", 1,
-                                       ifelse(si_type  == "active SI", 2, 3))))
-
-lasso_env <- data.v14 %>% select(c(si_type_num, discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_4yr, school2_cc, school2_ad, 
-                   satisfied_overall, ther_vis, talk, military, international))
-
-lasso_env <- NA_preproc(lasso_env)
-lasso_env <- as.data.frame(lasso_env)
-
-set.seed(1000) 
-
-index = sample(1:nrow(lasso_env), 0.7*nrow(lassoenv)) 
-
-train = lasso_env[index,] # Create the training data 
-test = lasso_env[-index,] # Create the test data
-
-dim(train)
-dim(test)
-
-# Set training control
-train_cont <- trainControl(method = "repeatedcv", number = 10, repeats = 5, search = "random", verboseIter = TRUE)
-
-# Train the model
-elastic_reg <- train(si_type_num ~ discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_4yr + school2_cc + school2_ad + satisfied_overall +
-                       ther_vis + talk + military + international,
-                           data = train,
-                           method = "glmnet",
-                           preProcess = c("center", "scale"),
-                           tuneLength = 10,
-                           trControl = train_cont)
-
-# Best tuning parameter
-elastic_reg$bestTune
-
 ```
 
 ## CLM environment
 ```{r CLM environment}
 
-ordclm_env <- data.v14 %>% select(c(si_type,  discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_4yr, school2_cc, school2_ad, 
-                   satisfied_overall, ther_vis, talk, military, international))
-clm_env <- NA_preproc(ordclm_env)
-clm_env <- as.data.frame(ordclm_env)
+clm_env <- data.v14 %>% select(si_type,  discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_4yr, school2_cc, school2_ad, 
+                   satisfied_overall, ther_vis, talk, military, international)
+clm_env <- NA_preproc(clm_env)
+clm_env <- as.data.frame(clm_env)
 
 str(clm_env)
 set.seed(1000) 
-
+ 
 index = sample(1:nrow(clm_env), 0.7*nrow(clm_env)) 
 
 train_env = clm_env[index,] # Create the training data 
@@ -1824,13 +1837,15 @@ summary(m_env)
 
 ```
 
-
-
 ## Environmental regression
 Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
 ```{r Environment regression}
 
 #Build logistic regression model
+data.v14 <- data.v14 %>%
+  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
+                                ifelse(si_type == "passive SI", 1,
+                                       ifelse(si_type  == "active SI", 2, 3))))
 
 temp_reg <- select(data.v14, si_type_num, discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_4yr, school2_cc, school2_ad, 
                    satisfied_overall, ther_vis, talk, military, international)
@@ -1846,8 +1861,8 @@ datatrain_env = cleaned_temp_reg[index,]
 datatest_env = cleaned_temp_reg[-index,]
 
 #Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-mod_env <- glm(si_type_num ~ (discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_4yr +
-                  school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international)^2,
+mod_env <- glm(si_type_num ~ discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_4yr +
+                  school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international,
                data = datatrain_env)
 summary(mod_env) # check output
 
@@ -1857,18 +1872,18 @@ step_env <- stepAIC(mod_env, direction = "both", trace = 20)
 env_data <- mod_env[["model"]]
 
 # residual plot
-env_data$resid <- resids(mod_env, method = c("jitter"),
-      jitter.scale = c("response"))
-env_data <- cbind(env_data, mod_env[["fitted.values"]])
-ggplot(env_data, aes(x = `passive SI`, y = resid)) +
-geom_point(color = "purple", alpha = 0.15) +
-geom_smooth(method = "lm")
+#env_data$resid <- resids(mod_env, method = c("jitter"),
+#      jitter.scale = c("response"))
+#env_data <- cbind(env_data, mod_env[["fitted.values"]])
+#ggplot(env_data, aes(x = `passive SI`, y = resid)) +
+#geom_point(color = "purple", alpha = 0.15) +
+#geom_smooth(method = "lm")
 
-env_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+#env_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 
-env_data %>% 
- filter(si_type == "SA") %>%
- ggplot(aes(x = resid)) + geom_density(color = "magenta")
+#env_data %>% 
+# filter(si_type == "SA") %>%
+# ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
 
@@ -2056,7 +2071,6 @@ data.v18 = subset(data.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up
  table(data.v18$gpa_sr, useNA = "always")
 ```
  
-
 ## LE correlation
 ```{r LE correlation}
 
@@ -2083,50 +2097,13 @@ mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ```
-## LASSO: Life Events
-```{r lasso_LE}
-data.v18 <- data.v18 %>% 
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                ifelse(si_type == "passive SI", 1,
-                                       ifelse(si_type  == "active SI", 2, 3))))
-
-lasso_le <- data.v18 %>% select(c(si_type_num, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type))
-
-lasso_le <- NA_preproc(lasso_le)
-lasso_le <- as.data.frame(lasso_le)
-
-set.seed(1000) 
-
-index = sample(1:nrow(lasso_dia), 0.7*nrow(lasso_le)) 
-
-train = lasso_le[index,] # Create the training data 
-test = lasso_le[-index,] # Create the test data
-
-dim(train)
-dim(test)
-
-# Set training control
-train_cont <- trainControl(method = "repeatedcv", number = 10, repeats = 5, search = "random", verboseIter = TRUE)
-
-# Train the model
-elastic_reg <- train(si_type_num ~ ins_cover + abuse_year + gpa_sr + aca_impa + fincur + assault_phys + binge_fr +
-                    assault_sex + assault_emo + deprawsc + psyhx + drug_type,
-                           data = train,
-                           method = "glmnet",
-                           preProcess = c("center", "scale"),
-                           tuneLength = 10,
-                           trControl = train_cont)
-
-# Best tuning parameter
-elastic_reg$bestTune
-```
 
 ## CLM LE
 ```{r lasso_LE}
-ordclm_le <- data.v18 %>% select(c(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type))
+clm_le <- data.v18 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
 
-clm_le <- NA_preproc(ordclm_le)
-clm_le <- as.data.frame(ordclm_le)
+clm_le <- NA_preproc(clm_le)
+clm_le <- as.data.frame(clm_le)
 
 str(clm_le)
 set.seed(1000) 
@@ -2147,50 +2124,50 @@ summary(m_le)
 Regression variables: ins_cover, gpa_sr, aca_impa, abuse_year, psyhx, binge_fr, fincur, drug_type, assault_sex, assault_phys, assault_emo, isi_tot
 ```{r Life event regression}
 
-#Build logistic regression model
-data.v18 <- data.v18 %>% 
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                ifelse(si_type == "passive SI", 1,
-                                       ifelse(si_type  == "active SI", 2, 3))))
-
-temp_reg <- select(data.v18, si_type_num, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
-
-cleaned_temp_reg <- NA_preproc(temp_reg)
-
-#Dividing data into training and test set
-  #Random sampling 
-samplesize_le = 0.60*nrow(cleaned_temp_reg)
-set.seed(1000)
-index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_le)
-
-# Creating training and test set
-datatrain_le = cleaned_temp_reg[index,]
-datatest_le = cleaned_temp_reg[-index,]
-
-#Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-mod_le <- glm(si_type_num ~ (ins_cover + abuse_year + gpa_sr + aca_impa + fincur + assault_phys + binge_fr +
-                    assault_sex + assault_emo + deprawsc + psyhx + drug_type)^2,
-               data = datatrain_le)
-summary(mod_le) # check output
-
-step_le <- stepAIC(mod_le, direction = "both", trace = 20)
+# #Build logistic regression model
+# data.v18 <- data.v18 %>% 
+#   mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
+#                                 ifelse(si_type == "passive SI", 1,
+#                                        ifelse(si_type  == "active SI", 2, 3))))
+# 
+# temp_reg <- select(data.v18, si_type_num, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
+# 
+# cleaned_temp_reg <- NA_preproc(temp_reg)
+# 
+# #Dividing data into training and test set
+#   #Random sampling 
+# samplesize_le = 0.60*nrow(cleaned_temp_reg)
+# set.seed(1000)
+# index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_le)
+# 
+# # Creating training and test set
+# datatrain_le = cleaned_temp_reg[index,]
+# datatest_le = cleaned_temp_reg[-index,]
+# 
+# #Build  logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
+# mod_le <- glm(si_type_num ~ (ins_cover + abuse_year + gpa_sr + aca_impa + fincur + assault_phys + binge_fr +
+#                     assault_sex + assault_emo + deprawsc + psyhx + drug_type)^2,
+#                data = datatrain_le)
+# summary(mod_le) # check output
+# 
+# step_le <- stepAIC(mod_le, direction = "both", trace = 20)
 
 # sure fx
-le_data <- mod_le[["model"]]
+#le_data <- mod_le[["model"]]
 
 # residual plot
-le_data$resid <- resids(mod_le, method = c("jitter"),
-      jitter.scale = c("response"))
-le_data <- cbind(le_data, mod_le[["fitted.values"]])
-ggplot(le_data, aes(x = `passive SI`, y = resid)) +
-geom_point(color = "purple", alpha = 0.15) +
-geom_smooth(method = "lm")
+#le_data$resid <- resids(mod_le, method = c("jitter"),
+ #     jitter.scale = c("response"))
+#le_data <- cbind(le_data, mod_le[["fitted.values"]])
+#ggplot(le_data, aes(x = `passive SI`, y = resid)) +
+#geom_point(color = "purple", alpha = 0.15) +
+#geom_smooth(method = "lm")
 
-le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+#le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 
-le_data %>% 
- filter(si_type == "SA") %>%
- ggplot(aes(x = resid)) + geom_density(color = "magenta")
+#le_data %>% 
+# filter(si_type == "SA") %>%
+# ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
  
@@ -2254,64 +2231,13 @@ print(corr)
 
 ```
 
-## LASSO: Defeat
-```{r Lasso_def}
-data.v19 <- data.v19 %>% 
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                ifelse(si_type == "passive SI", 1,
-                                       ifelse(si_type  == "active SI", 2, 3))))
-
-lasso_def <- data.v19 %>% select(si_type_num, aca_impa, deprawsc)
-
-lasso_def <- NA_preproc(lasso_def)
-lasso_def <- as.data.frame(lasso_def)
-
-set.seed(1000) 
-
-index = sample(1:nrow(lasso_def), 0.5*nrow(lasso_def)) 
-
-train = lasso_def[index,] # Create the training data 
-test = lasso_def[-index,] # Create the test data
-
-dim(train)
-dim(test)
-
-# Set training control
-train_cont <- trainControl(method = "repeatedcv", number = 10, repeats = 5, search = "random", verboseIter = TRUE)
-
-# Train the model
-elastic_reg <- train(si_type_num ~ aca_impa + deprawsc,
-                           data = train,
-                           method = "glmnet",
-                           preProcess = c("center", "scale"),
-                           tunelength = 3,
-                           trControl = train_cont)
-
-# Best tuning parameter
-elastic_reg$bestTune
-
-
-y_train = train$si_type_num
-x_test = as.matrix(test)
-y_test = test$si_type_num
-
-# Make predictions on training set
-predictions_train <- predict(elastic_reg, train)
-eval(y_train, predictions_train, y_train) 
-
-# Make predictions on test set
-predictions_test <- predict(elastic_reg, x_test)
-eval_results(y_test, predictions_test, test)
-
-```
-
 ## CLM defeat
 ```{r CLM defeat}
 
-ordclm_def <- data.v19 %>% select(si_type, aca_impa, deprawsc)
+clm_def <- data.v19 %>% select(si_type, aca_impa, deprawsc)
 
-clm_def <- NA_preproc(ordclm_def)
-clm_def <- as.data.frame(ordclm_def)
+clm_def <- NA_preproc(clm_def)
+clm_def <- as.data.frame(clm_def)
 
 str(clm_def)
 set.seed(1000) 
@@ -2326,12 +2252,12 @@ dim(test_def)
 
 m_def <- clm(si_type ~., data = train_def)
 summary(m_def)
+
 ```
 
 ## Defeat regression
 Candidate variables: aca_impa, men_ill_ash, deprawsc
 ```{r mod_defeat}
-
 #Build logistic regression model
 data.v19 <- data.v19 %>% 
   mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
@@ -2358,6 +2284,33 @@ summary(mod_def) # check output
 
 #
 step_def <- stepAIC(mod_def, direction = "both", trace = 20)
+```
+
+## Stepwise defeat
+```{r stepwise_def}
+
+models <- regsubsets(si_type_num ~., data = datatrain_def, nvmax = 5,
+                     method = "seqrep")
+summary(models)
+
+# Set seed for reproducibility
+set.seed(1000)
+# Set up repeated k-fold cross-validation
+train.control <- trainControl(method = "cv", number = 10)
+# Train the model
+step.model <- train(si_type_num ~., data = datatrain_def,
+                    method = "lmStepAIC", 
+                    trControl = train.control,
+                    trace = FALSE
+                    )
+# Model accuracy
+step.model$results
+# Final model coefficients
+step.model$finalModel
+# Summary of the model
+summary(step.model$finalModel)
+coef(step.model$finalModel, 4)
+
 
 ```
 
@@ -2427,77 +2380,24 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
   
 ```
 
-## LASSO Threats to SM
-```{r lasso_tsm}
-data.v19 <- data.v20 %>% 
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                ifelse(si_type == "passive SI", 1,
-                                       ifelse(si_type  == "active SI", 2, 3))))
-
-lasso_tsm <- data.v20 %>% select(c(si_type_num, persist, anx_score, dep_secret, AAQ_tot))
-
-lasso_tsm <- NA_preproc(lasso_tsm)
-lasso_tsm <- as.data.frame(lasso_tsm)
-
-set.seed(1000) 
-
-index = sample(1:nrow(lasso_tsm), 0.5*nrow(lasso_tsm)) 
-
-train = lasso_tsm[index,] # Create the training data 
-test = lasso_tsm[-index,] # Create the test data
-
-dim(train)
-dim(test)
-
-x = lasso_tsm(lasso_tsm$~., Hitters)[,-1] # trim off the first column
-                                         # leaving only the predictors
-y = Hitters %>%
-  select(Salary) %>%
-  unlist() %>%
-  as.numeric()
-
-# Set training control
-train_cont <- trainControl(method = "repeatedcv", number = 10, repeats = 5, search = "random", verboseIter = TRUE)
-
-# Train the model
-elastic_reg <- train(si_type_num ~ persist + anx_score + dep_secret + AAQ_tot,
-                           data = train,
-                           method = "glmnet",
-                           preProcess = c("center", "scale"),
-                           tunelength = 3,
-                           trControl = train_cont)
-
-# Best tuning parameter
-elastic_reg$bestTune
-
-
-y_train = train$si_type_num
-x_test = as.matrix(test)
-y_test = test$si_type_num
-
-# Make predictions on training set
-predictions_train <- predict(elastic_reg, train)
-eval(y_train, predictions_train, train) 
-
-# Make predictions on test set
-predictions_test <- predict(elastic_reg, x_test)
-eval_results(y_test, predictions_test, test)
-
-```
-
 ## CLM TSM
 ```{r CLM TSM}
-ordclm_tsm <- data.v19 %>% select(c(si_type, persist, anx_score, dep_secret, AAQ_tot))
+data.v19$persist <- as.factor(data.v19$persist)
+data.v19$anx_score <- as.integer(data.v19$anx_score)
+data.v19$dep_secret <- as.factor(data.v19$dep_secret)
+data.v19$AAQ_tot <- as.integer(data.v19$AAQ_tot)
 
-clm_tsm <- NA_preproc(ordclm_tsm)
-clm_tsm <- as.data.frame(ordclm_tsm)
+clm_tsm <- data.v19 %>% select(si_type, persist, anx_score, dep_secret, AAQ_tot)
+
+clm_tsm <- NA_preproc(clm_tsm)
+clm_tsm <- as.data.frame(clm_tsm)
 
 str(clm_tsm)
-set.seed(1000) 
+set.seed(1000)
 
 index = sample(1:nrow(clm_tsm), 0.7*nrow(clm_tsm))
 
-train_tsm = clm_tsm[index,] # Create the training data 
+train_tsm = clm_tsm[index,] # Create the training data
 test_tsm = clm_tsm[-index,] # Create the test data
 
 dim(train_tsm)
@@ -2531,7 +2431,7 @@ cleaned_temp_reg <- NA_preproc(temp_reg)
   datatest_tsm = cleaned_temp_reg[-index,]
 
 #Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-mod_tsm <- glm(si_type_num ~ ., data = datatrain_tsm)
+mod_tsm <- glm(si_type_num ~ (persist + anx_score + dep_secret + AAQ_tot)^2, data = datatrain_tsm)
 summary(mod_tsm) # check output
 
 step_tsm <- stepAIC(mod_tsm, direction = "both", trace = 20)
@@ -2554,6 +2454,7 @@ step_tsm <- stepAIC(mod_tsm, direction = "both", trace = 20)
 # ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
+
 
 
 # ENTRAPMENT
@@ -2583,7 +2484,7 @@ table(data.v21$percneed_cur, useNA = "always")
 ```{r Entrapment corr}
 
 # Define entrapment variable candidates for correlation matrix
-data_entrap <- data.v21 %>% select(c(dep_impa, gad7_impa, percneed_cur))
+data_entrap <- data.v21 %>% select(dep_impa, gad7_impa, percneed_cur)
 data <- data_entrap
 sig <- 0.6
 
@@ -2602,24 +2503,24 @@ print(corr)
 
 ```
 
-## Regression (ordinal) Entrapment
-```{r lasso_entrap}
+##  CLM Entrapment
+```{r clm_entrap}
 
-lasso_entrap <- data.v21 %>% select(c(si_type, dep_impa, gad7_impa, percneed_cur))
+clm_entrap <- data.v21 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
 
-str(lasso_entrap)
+str(clm_entrap)
 set.seed(1000) 
 
-index = sample(1:nrow(lasso_entrap), 0.7*nrow(lasso_entrap)) 
+index = sample(1:nrow(clm_entrap), 0.7*nrow(clm_entrap)) 
 
-train = lasso_entrap[index,] # Create the training data 
-test = lasso_entrap[-index,] # Create the test data
+train_entrap = clm_entrap[index,] # Create the training data 
+test_entrap = clm_entrap[-index,] # Create the test data
 
-dim(train)
-dim(test)
+dim(train_entrap)
+dim(test_entrap)
 
-m <- clm(si_type ~., data = train)
-summary(m)
+m_entrap <- clm(si_type ~., data = train_entrap)
+summary(m_entrap)
 
 
 ```
@@ -2662,15 +2563,41 @@ step_entrap <- stepAIC(mod_entrap, direction = "both", trace = 20)
 #  geom_smooth(method = "lm")
 
 #entrap_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-
-#entrap_data %>% 
-#  filter(si_type == "SA") %>% 
-#  ggplot(aes(x = resid)) + 
-#  geom_density(color = "magenta")
+#entrap_data %>% filter(si_type == "SI") %>% ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 
 
 ```
+
+## EFA
+
+
+## StepAIC entrapment
+```{r StepAIC entrapment}
+
+models <- regsubsets(si_type_num ~., data = datatrain_entrap, nvmax = 5,
+                     method = "seqrep")
+summary(models)
+
+# Set seed for reproducibility
+set.seed(1000)
+# Set up repeated k-fold cross-validation
+train.control <- trainControl(method = "cv", number = 10)
+# Train the model
+step.model <- train(si_type_num ~., data = datatrain_entrap,
+                    method = "lmStepAIC", 
+                    trControl = train.control,
+                    trace = FALSE
+                    )
+# Model accuracy
+step.model$results
+# Final model coefficients
+step.model$finalModel
+# Summary of the model
+summary(step.model$finalModel)
+coef(step.model$finalModel, 4)
+```
+
 
 
 # MOTIVATIONAL MODERATORS
@@ -2789,62 +2716,13 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ```
 
-## LASSO Motivational Mods
-```{r lasso_mm}
-data.v22 <- data.v22 %>% 
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                ifelse(si_type == "passive SI", 1,
-                                       ifelse(si_type  == "active SI", 2, 3))))
+## CLM MM
+```{r CLM mm}
 
-lasso_mm <- data.v22 %>% select(c(si_type_num, inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot))
+clm_mm <- data.v22 %>% select(si_type, inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
 
-lasso_mm <- NA_preproc(lasso_mm)
-lasso_mm <- as.data.frame(lasso_mm)
-
-set.seed(1000) 
-
-index = sample(1:nrow(lasso_mm), 0.5*nrow(lasso_mm)) 
-
-train = lasso_mm[index,] # Create the training data 
-test = lasso_mm[-index,] # Create the test data
-
-dim(train)
-dim(test)
-
-# Set training control
-train_cont <- trainControl(method = "repeatedcv", number = 10, repeats = 5, search = "random", verboseIter = TRUE)
-
-# Train the model
-elastic_reg <- train(si_type_num ~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + brs_tot,
-                           data = train,
-                           method = "glmnet",
-                           preProcess = c("center", "scale"),
-                           tunelength = 3,
-                           trControl = train_cont)
-
-# Best tuning parameter
-elastic_reg$bestTune
-
-# train data
-y_train = train$si_type_num
-x_test = as.matrix(test)
-y_test = test$si_type_num
-
-# Make predictions on training set
-predictions_train <- predict(elastic_reg, train)
-eval(y_train, predictions_train, train) 
-
-# Make predictions on test set
-predictions_test <- predict(elastic_reg, x_test)
-eval_results(y_test, predictions_test, test)
-```
-
-
-```{r}
-ordclm_mm <- data.v22 %>% select(c(si_type, inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot))
-
-clm_mm <- NA_preproc(ordclm_mm)
-clm_mm <- as.data.frame(ordclm_mm)
+clm_mm <- NA_preproc(clm_mm)
+clm_mm <- as.data.frame(clm_mm)
 
 str(clm_mm)
 set.seed(1000) 
@@ -2859,8 +2737,8 @@ dim(test_mm)
 
 m_mm <- clm(si_type ~., data = train_mm)
 summary(m_mm)
-```
 
+```
 
 ## Motivational moderators regression
 Variables for consideration:  inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot
@@ -3033,14 +2911,14 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 ## Missingness regression
 ```{r correlation and missingness rates}
 
-missing_mods <- list()
-for (i in 1:length(missing_dfs)) {
-  for (j in 1:(ncol(missing_dfs[[1]]) - 2)) {
-    mod <- glm(missing_dfs[[i]][,j + 2] ~ missing_dfs[[i]][,1])
-    missing_mods[[i]] <- coef(mod)
-  }
-}
-names(missing_mods) <- names(missing_dfs)
+# missing_mods <- list()
+# for (i in 1:length(missing_dfs)) {
+#   for (j in 1:(ncol(missing_dfs[[1]]) - 2)) {
+#     mod <- glm(missing_dfs[[i]][,j + 2] ~ missing_dfs[[i]][,1])
+#     missing_mods[[i]] <- coef(mod)
+#   }
+# }
+# names(missing_mods) <- names(missing_dfs)
 ```
 
 
