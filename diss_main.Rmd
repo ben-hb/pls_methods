@@ -25,6 +25,7 @@ library(emulator)
 library(esc)
 library(expss)
 library(finalfit)
+library(FactoMineR)
 library(glmnet)
 library(glmnetcr)
 library(haven)
@@ -36,8 +37,8 @@ library(leaps)
 library(lsr)
 library(magrittr)
 library(MASS)
-library(mice)
 library(missForest)
+library(missMDA)
 library(MissMech)
 library(mvord)
 library(ordinal)
@@ -234,15 +235,12 @@ data.v1 <- data.raw %>%
 
 # Call functions
 ```{r Functions}
-
-
 # delogodd
 delogodd <- function(x) {
   oddsratio <- exp(x)
   p <- oddsratio / (1 + oddsratio)
   return(p)
 }
-
 
 # debug_contr_error
 debug_contr_error <- function (dat, subset_vec = NULL) {
@@ -292,7 +290,6 @@ debug_contr_error <- function (dat, subset_vec = NULL) {
   list(nlevels = nl, levels = lev)
 }
 
-
 # debug_contr_error2
 debug_contr_error2 <- function (form, dat, subset_vec = NULL) {
   ## step 0
@@ -323,7 +320,6 @@ debug_contr_error2 <- function (form, dat, subset_vec = NULL) {
   c(list(mf = dat_internal), debug_contr_error(dat_internal, NULL))
 }
 
-
 # NA)preproc
 NA_preproc <- function (dat) {
   for (j in 1:ncol(dat)) {
@@ -350,7 +346,6 @@ fill.na.with.mode = function(df){
   }
   return (df)
 }
-
 
 # corr_simple -- by https://towardsdatascience.com/how-to-create-a-correlation-matrix-with-too-many-variables-309cc0c0a57
 corr_simple <- function(data=corr_vars,sig=0.5){
@@ -1388,6 +1383,7 @@ data_dia <- data.v11 %>% select(c(age, sexual, gender, finpast, sib_freq, race, 
                                   dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
                                   meds_oth, meds_none, alc_tx, meds_count, ed_any))
 
+# create corr matrix, with dummy vars -- https://cran.r-project.org/web/packages/fastDummies/vignettes/making-dummy-variables.html
 data_dia <- data_dia %>% 
   mutate_if(is.numeric, as.factor) %>% 
   mutate(
@@ -1397,33 +1393,17 @@ data_dia <- data_dia %>%
     ed_scoff = as.numeric(ed_scoff)
   ) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
-  as.matrix()
-results <- dummy_cols(data_dia, remove_first_dummy = TRUE)
+  data.matrix()
+data_dia   # check output
 
-# PCA -- determine # of underlying components
-dia.matrix <- cor(na.omit(data_dia), use = "pairwise.complete.obs")
-dia.matrix
+results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender", "finpast", "sib_freq", "race", "disab_1", "ed_scoff", "body_sr",
+                                  "audit_tot", "dx_dep", "dx_any", "dx_bi", "dx_adhd", "dx_psy", "dx_ea", "dx_tr", "dx_sa", "dx_pers",
+                                  "dx_none", "meds_sti", "meds_dep", "meds_psy", "meds_anx", "meds_mood", "meds_sle", "meds_oth", "meds_none",
+                                  "alc_tx", "meds_count", "ed_any"), remove_first_dummy = TRUE)
 
-dia.pca <- princomp(data.dia, cor = TRUE, scores= TRUE)
-summary(dia.pca)
-plot(dia.pca)  # scree plot
-
-# Based on the summary, XX components exist
-dia.fa1 <- factanal(data.pca, factors=XX, rotation="XX")
-dia.fa1
-
-# run with 2 factors
-dia.fa2 <- factanal(data.pca, factors=XX, rotation="XX")
-dia.fa2
-
-# 3 components
-dia.fa5 <- factanal(dia.pca, factors=XX, rotation="XX", scores="regression")
-dia.fa5
-head(dia.fa5$scores)
-
-# EFA
-
-
+dia_pca <- imputePCA(results_dia, ncp = 2)
+dia_pca <- PCA(dia_pca)  # apply PCA
+dia_pca$eig   # output matrix with eigenvalues
 
 ```
 
