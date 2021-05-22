@@ -1401,13 +1401,10 @@ results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender"
                                   "dx_none", "meds_sti", "meds_dep", "meds_psy", "meds_anx", "meds_mood", "meds_sle", "meds_oth", "meds_none",
                                   "alc_tx", "meds_count", "ed_any"), remove_first_dummy = TRUE)
 
-dia_pca <- imputePCA(results_dia, ncp = 2)
-dia_pca <- PCA(dia_pca)  # apply PCA
+dia_pca <- PCA(results_dia)  # apply PCA
 dia_pca$eig   # output matrix with eigenvalues
 
 ```
-
-
 
 ## CLM diathesis
 ```{r lasso_dia}
@@ -1776,8 +1773,9 @@ data.v14 = subset(data.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoColl
 ## Environmental correlation
 ```{r}
 # Define environment vars for correlation matrix
-data_env <- data.v14 %>% select(c(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_4yr, school2_cc, school2_ad, satisfied_overall,
-                                  ther_vis, talk, military, international))
+data_env <- data.v14 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
+                                  school2_4yr, school2_cc, school2_ad, satisfied_overall, ther_vis, 
+                                  talk, military, international)
 data <- data_env
 sig <- 0.6
 
@@ -1799,6 +1797,29 @@ mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ```
+
+##EFA Environment
+```{r}
+data_env <- data.v14 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
+                                school2_4yr, school2_cc, school2_ad, satisfied_overall, ther_vis, 
+                                talk, military, international)
+
+# create corr matrix, with dummy vars -- https://cran.r-project.org/web/packages/fastDummies/vignettes/making-dummy-variables.html
+data_env <- data_env %>% 
+  mutate_if(is.numeric, as.factor) %>% 
+  dummy_cols(remove_first_dummy = TRUE) %>% 
+  data.matrix()
+data_env   # check output
+
+results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender", "finpast", "sib_freq", "race", "disab_1", "ed_scoff", "body_sr",
+                                  "audit_tot", "dx_dep", "dx_any", "dx_bi", "dx_adhd", "dx_psy", "dx_ea", "dx_tr", "dx_sa", "dx_pers",
+                                  "dx_none", "meds_sti", "meds_dep", "meds_psy", "meds_anx", "meds_mood", "meds_sle", "meds_oth", "meds_none",
+                                  "alc_tx", "meds_count", "ed_any"), remove_first_dummy = TRUE)
+
+dia_pca <- PCA(results_dia)  # apply PCA
+dia_pca$eig   # output matrix with eigenvalues
+```
+
 
 ## CLM environment
 ```{r CLM environment}
