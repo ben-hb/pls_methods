@@ -32,6 +32,7 @@ library(haven)
 library(Hmisc)
 library(ISLR)
 library(janitor)
+library(lavaan)
 library(lattice)
 library(leaps)
 library(lsr)
@@ -1811,13 +1812,13 @@ data_env <- data_env %>%
   data.matrix()
 data_env   # check output
 
-results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender", "finpast", "sib_freq", "race", "disab_1", "ed_scoff", "body_sr",
-                                  "audit_tot", "dx_dep", "dx_any", "dx_bi", "dx_adhd", "dx_psy", "dx_ea", "dx_tr", "dx_sa", "dx_pers",
-                                  "dx_none", "meds_sti", "meds_dep", "meds_psy", "meds_anx", "meds_mood", "meds_sle", "meds_oth", "meds_none",
-                                  "alc_tx", "meds_count", "ed_any"), remove_first_dummy = TRUE)
+results_env <- dummy_cols(data_env, select_columns = c("discrim", "religios", "env_mh", "residenc", "ther_vis",
+                                                       "activ_yn", "divers", "school2_4yr", "school2_cc", "school2_ad",
+                                                       "satisfied_overall", "ther_vis", "talk", "military", "international"),
+                          remove_first_dummy = TRUE)
 
-dia_pca <- PCA(results_dia)  # apply PCA
-dia_pca$eig   # output matrix with eigenvalues
+env_pca <- PCA(results_env)  # apply PCA
+env_pca$eig   # output matrix with eigenvalues
 ```
 
 
@@ -2083,7 +2084,7 @@ data.v18 = subset(data.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up
 ```{r LE correlation}
 
 # Define life event var candidates for correlation matrix
-data_le <- data.v18 %>% select(c(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type))
+data_le <- data.v18 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
 data <- data_le
 sig <- 0.6
 
@@ -2105,10 +2106,30 @@ mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ```
+## EFA LE
+```{r}
+data_le <- data.v18 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
+                               binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
+
+# create corr matrix, with dummy vars -- https://cran.r-project.org/web/packages/fastDummies/vignettes/making-dummy-variables.html
+data_le <- data_le %>% 
+  mutate_if(is.numeric, as.factor) %>% 
+  dummy_cols(remove_first_dummy = TRUE) %>% 
+  data.matrix()
+data_le   # check output
+
+results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", "gpa_sr", "aca_impa", "fincur", "assault_phys", 
+                               "binge_fr", "assault_sex", "assault_emo", "deprawsc", "psyhx", "drug_type"),
+                         remove_first_dummy = TRUE)
+
+le_pca <- PCA(results_le)  # apply PCA
+le_pca$eig   # output matrix with eigenvalues
+```
 
 ## CLM LE
-```{r lasso_LE}
-clm_le <- data.v18 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
+```{r clm_LE}
+clm_le <- data.v18 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
+                              binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
 
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
@@ -2129,7 +2150,8 @@ summary(m_le)
 ```
 
 ## Life event regression
-Regression variables: ins_cover, gpa_sr, aca_impa, abuse_year, psyhx, binge_fr, fincur, drug_type, assault_sex, assault_phys, assault_emo, isi_tot
+Regression variables: ins_cover, gpa_sr, aca_impa, abuse_year, psyhx, binge_fr, fincur, 
+drug_type, assault_sex, assault_phys, assault_emo, isi_tot
 ```{r Life event regression}
 
 # #Build logistic regression model
@@ -2138,7 +2160,8 @@ Regression variables: ins_cover, gpa_sr, aca_impa, abuse_year, psyhx, binge_fr, 
 #                                 ifelse(si_type == "passive SI", 1,
 #                                        ifelse(si_type  == "active SI", 2, 3))))
 # 
-# temp_reg <- select(data.v18, si_type_num, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
+# temp_reg <- select(data.v18, si_type_num, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, 
+#assault_phys, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
 # 
 # cleaned_temp_reg <- NA_preproc(temp_reg)
 # 
@@ -2220,7 +2243,7 @@ data.v19 = subset(data.v19, select= -c(men_ill_ash)) # clean up var
 ```{r Defeat cor}
 
 # Define defeat variable candidates for correlation matrix
-data_def <- data.v19 %>% select(c(aca_impa, deprawsc))
+data_def <- data.v19 %>% select(aca_impa, deprawsc)
 data <- data_def
 sig <- 0.6
 
@@ -2237,6 +2260,24 @@ corr <- na.omit(corr)                                    #remove the NA values f
 corr <- corr[order(-abs(corr$Freq)),]                    #sort by highest correlation
 print(corr)
 
+```
+
+## EFA defeat
+```{r}
+data_def <- data.v19 %>% select(aca_impa, deprawsc)
+
+# create corr matrix, with dummy vars 
+data_def <- data_def %>% 
+  mutate_if(is.numeric, as.factor) %>% 
+  dummy_cols(remove_first_dummy = TRUE) %>% 
+  data.matrix()
+data_def   # check output
+
+results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "deprawsc"),
+                         remove_first_dummy = TRUE)
+
+def_pca <- PCA(results_def)  # apply PCA
+def_pca$eig   # output matrix with eigenvalues
 ```
 
 ## CLM defeat
@@ -2365,7 +2406,7 @@ table(data.v20$persist, useNA = "always")
 ```{r}
 
 # Define TSM variable candidates for correlation matrix
-data_tsm <- data.v20 %>% select(c(persist, anx_score, dep_secret, achieve4, AAQ_tot))
+data_tsm <- data.v20 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
 data <- data_tsm
 sig <- 0.6
 
@@ -2388,14 +2429,32 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
   
 ```
 
+##EFA TSM
+```{r EFA TSM}
+data_tsm <- data.v20 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
+
+# create corr matrix, with dummy vars 
+data_tsm <- data_tsm %>% 
+  mutate_if(is.numeric, as.factor) %>% 
+  dummy_cols(remove_first_dummy = TRUE) %>% 
+  data.matrix()
+data_tsm   # check output
+
+results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_score", "dep_secret", "achieve4", "AAQ_tot"),
+                         remove_first_dummy = TRUE)
+
+tsm_pca <- PCA(results_tsm)  # apply PCA
+tsm_pca$eig   # output matrix with eigenvalues
+```
+
 ## CLM TSM
 ```{r CLM TSM}
-data.v19$persist <- as.factor(data.v19$persist)
-data.v19$anx_score <- as.integer(data.v19$anx_score)
-data.v19$dep_secret <- as.factor(data.v19$dep_secret)
-data.v19$AAQ_tot <- as.integer(data.v19$AAQ_tot)
+data.v20$persist <- as.factor(data.v19$persist)
+data.v20$anx_score <- as.integer(data.v19$anx_score)
+data.v20$dep_secret <- as.factor(data.v19$dep_secret)
+data.v20$AAQ_tot <- as.integer(data.v19$AAQ_tot)
 
-clm_tsm <- data.v19 %>% select(si_type, persist, anx_score, dep_secret, AAQ_tot)
+clm_tsm <- data.v20 %>% select(si_type, persist, anx_score, dep_secret, AAQ_tot)
 
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
@@ -2511,9 +2570,26 @@ print(corr)
 
 ```
 
+## EFA Entrapment
+```{r CFA entrap}
+data_entrap <- data.v21 %>% select(dep_impa, gad7_impa, percneed_cur)
+
+# create corr matrix, with dummy vars 
+data_entrap <- data_entrap %>% 
+  mutate_if(is.numeric, as.factor) %>% 
+  dummy_cols(remove_first_dummy = TRUE) %>% 
+  data.matrix()
+data_entrap   # check output
+
+results_entrap <- dummy_cols(data_entrap, select_columns = c("dep_impa", "gad7_impa", "percneed_cur"),
+                         remove_first_dummy = TRUE)
+
+entrap_pca <- PCA(results_entrap)  # apply PCA
+entrap_pca$eig   # output matrix with eigenvalues
+```
+
 ##  CLM Entrapment
 ```{r clm_entrap}
-
 clm_entrap <- data.v21 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
 
 str(clm_entrap)
@@ -2529,7 +2605,6 @@ dim(test_entrap)
 
 m_entrap <- clm(si_type ~., data = train_entrap)
 summary(m_entrap)
-
 
 ```
 
@@ -2577,9 +2652,6 @@ step_entrap <- stepAIC(mod_entrap, direction = "both", trace = 20)
 
 ```
 
-## EFA
-
-
 ## StepAIC entrapment
 ```{r StepAIC entrapment}
 
@@ -2605,7 +2677,6 @@ step.model$finalModel
 summary(step.model$finalModel)
 coef(step.model$finalModel, 4)
 ```
-
 
 
 # MOTIVATIONAL MODERATORS
@@ -2701,7 +2772,7 @@ table(data.v22$stig_pcv_3, useNA = "always")
 ```{r}
 
 # Define MM variable candidates for correlation matrix
-data_mm <- data.v22 %>% select(c(inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot))
+data_mm <- data.v22 %>% select(inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
 data <- data_mm
 sig <- 0.6
 
@@ -2723,6 +2794,27 @@ mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ```
+
+## EFA MM
+```{r EFA MM}
+data_mm <- data.v22 %>% select(inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
+
+# create corr matrix, with dummy vars 
+data_mm <- data_mm %>% 
+  mutate_if(is.numeric, as.factor) %>% 
+  dummy_cols(remove_first_dummy = TRUE) %>% 
+  data.matrix()
+data_mm   # check output
+
+results_mm <- dummy_cols(data_mm, select_columns = c("inf", "flourish", "belong1", "belong2", "belong8",
+                                                     "belong9", "stig_pcv_2", "stig_pcv_3", "brs_tot"),
+                         remove_first_dummy = TRUE)
+
+mm_pca <- PCA(results_mm)  # apply PCA
+mm_pca$eig   # output matrix with eigenvalues
+```
+
+
 
 ## CLM MM
 ```{r CLM mm}
