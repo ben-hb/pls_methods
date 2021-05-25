@@ -3057,7 +3057,12 @@ dim(testdf.v23)
 
 ```{r SEM}
 
-SI_model_tr <- ' dia_sem =~ traindf.v23$age + traindf.v23$sexual + traindf.v23$gender + traindf.v23$finpast + traindf.v23$sib_freq + 
+SI_model_tr <- ' '
+
+
+model <- '
+  # measurement model
+                dia_sem =~ traindf.v23$age + traindf.v23$sexual + traindf.v23$gender + traindf.v23$finpast + traindf.v23$sib_freq + 
                     traindf.v23$race + traindf.v23$body_sr + traindf.v23$ed_scoff + traindf.v23$audit_tot + traindf.v23$dx_dep + 
                     traindf.v23$dx_bi + traindf.v23$dx_psy + traindf.v23$dx_ea + traindf.v23$dx_tr + traindf.v23$dx_sa + traindf.v23$dx_adhd +
                     traindf.v23$dx_pers + traindf.v23$dx_none + traindf.v23$meds_sti + traindf.v23$meds_dep + traindf.v23$meds_psy +
@@ -3072,7 +3077,17 @@ SI_model_tr <- ' dia_sem =~ traindf.v23$age + traindf.v23$sexual + traindf.v23$g
                 tsm_sem =~ traindf.v23$persist + traindf.v23$anx_score + traindf.v23$dep_secret + traindf.v23$AAQ_tot
                 entrap_sem =~ traindf.v23$dep_impa + traindf.v23$gad7_impa + traindf.v23$perneed_cur
                 mm_sm =~ traindf.v23$flourish + traindf.v23$belong + traindf.v23$inf + traindf.v23$stig_pcv_2 + traindf.v23$stig_pcv_3 +
-                    traindf.v23$brs_tot '
+                    traindf.v23$brs_tot 
+  # regressions
+     ~ env_sum
+    def_sem ~ dia_sem + env_sem + le_sem
+    dem65 ~ ind60 + dem60
+  # residual correlations
+    y1 ~~ y5
+    y2 ~~ y4 + y6
+    y3 ~~ y7
+    y4 ~~ y8
+    y6 ~~ y8
 
 fit_train <- cfa(SI_model_tr, data=testdf.v23)
 summary(fit_train, fit.measures=TRUE)
@@ -3174,13 +3189,15 @@ fitted(fit_train)
 resid(fit_train)
 fitMeasures(fit_train, c("cfi","rmsea","srmr"))
 lavInspect(fit_train, what = "start")
+lavInspect(fit_train, what = "list")
 
 # test
 parameterEstimates(fit_test)
 fitted(fit_test)
 resid(fit_test)
 fitMeasures(fit_test, c("cfi","rmsea","srmr"))
-lavInspect(fit_test, what = "start"))
+lavInspect(fit_test, what = "start")
+lavInspect(fit_test, what = "list")
 
 ```
 
