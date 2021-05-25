@@ -3106,6 +3106,8 @@ summary(fit_test, fit.measures=TRUE)
 
 
 ```{r Indirect_fx}
+
+# Training data analyses for indirect effects
 set.seed(1234)
 X <- rnorm(100)
 M <- 0.5*X + rnorm(100)
@@ -3123,6 +3125,29 @@ total := c + (a*b)
 '
 fit <- sem(model, data = Data)
 summary(fit)
+
+
+# Testing data analyses for indirect effects
+set.seed(1234)
+X <- rnorm(100)
+M <- 0.5*X + rnorm(100)
+Y <- 0.7*M + rnorm(100)
+Data <- data.frame(X = X, Y = Y, M = M)
+model <- ' # direct effect
+Y ~ c*X
+# mediator
+M ~ a*X
+Y ~ b*M
+# indirect effect (a*b)
+ab := a*b
+# total effect
+total := c + (a*b)
+'
+fit <- sem(model, data = Data)
+summary(fit)
+
+
+
 ```
 
 
@@ -3131,6 +3156,33 @@ summary(fit)
 
 ```{r mod_indices}
 
-modindices(fit_test, sort = TRUE, maximum.number = 5)
+mi_train <- modindices(fit_train, sort = TRUE, maximum.number = 5)  # might need to use lavTestScore() function
 
-modindices(fit_train, sort = TRUE, maximum.number = 5)
+mi_test <- modindices(fit_test, sort = TRUE, maximum.number = 5)
+
+```
+
+
+# PARAMETER ESTIMATES
+
+
+```{r parameter_est}
+
+#train
+parameterEstimates(fit_train)
+fitted(fit_train)
+resid(fit_train)
+fitMeasures(fit_train, c("cfi","rmsea","srmr"))
+lavInspect(fit_train, what = "start")
+
+# test
+parameterEstimates(fit_test)
+fitted(fit_test)
+resid(fit_test)
+fitMeasures(fit_test, c("cfi","rmsea","srmr"))
+lavInspect(fit_test, what = "start"))
+
+```
+
+
+```{r parameter_est}
