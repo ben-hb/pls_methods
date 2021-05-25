@@ -471,21 +471,25 @@ data.v3$gender[str_detect(data.v3$gender_text, "[A|a]gender")] <- "gender divers
 data.v3$gender[str_detect(data.v3$gender_text, "[A|a]ndrogynous")] <- "gender diverse"
 data.v3$gender[str_detect(data.v3$gender_text, "[P|p]angender")] <- "gender diverse"
 data.v3$gender[str_detect(data.v3$gender_text, "[B|b]igender")] <- "gender diverse"
-data.v3$gender[data.v3$gender_text %in% c("she/they", "Closeted genderfluid (female presenting)", "female / infinite star being / gender non conforming",
-                                          "Not sure, nonbinary I guess", "Non-binary trans maculine", "No preference", "Somewhere between GNC and transfemme",
-                                          "Non-binary leaning towards trans man", "She/they", "He or they", "Pan-gender")] <- "gender diverse"
+data.v3$gender[data.v3$gender_text %in% c("she/they", "Closeted genderfluid (female presenting)", "Pan-gender",
+                                          "female / infinite star being / gender non conforming","He or they",
+                                          "Not sure, nonbinary I guess", "Non-binary trans maculine", "No preference", 
+                                          "Somewhere between GNC and transfemme", "She/they",
+                                          "Non-binary leaning towards trans man")] <- "gender diverse"
 
  #transgender
-data.v3$gender[data.v3$gender_text %in% c("Transmasculine", "Trans-masculine person", "Trans Masculine", "gender non-conforming trans man")] <- "transgender"
+data.v3$gender[data.v3$gender_text %in% c("Transmasculine", "Trans-masculine person", "Trans Masculine", 
+                                          "gender non-conforming trans man")] <- "transgender"
 
   # male
 data.v3$gender[str_detect(data.v3$gender_text, "[D|d]ude")] <- "cis-gender"
 data.v3$gender[str_detect(data.v3$gender_text, "[M|m]ale")] <- "cis-gender"
 data.v3$gender[str_detect(data.v3$gender_text, "[B|b]oy")] <- "cis-gender"
-data.v3$gender[data.v3$gender_text %in% c("Male: there are only 2 genders", "if you have a penis you're a male", "Cisgender man",
+data.v3$gender[data.v3$gender_text %in% c("Male: there are only 2 genders", "if you have a penis you're a male", 
+                                          "Cisgender man", "Male motherfucker. stop making up gender shit.", "He-male",
                                           "I have male parts so therefore I am a MALE and there are only TWO genders!!!!!!!!!!!!!!!!!",
-                                          "SATSYG (Savage about to steal yo girl", "Male motherfucker. stop making up gender shit.", "He-male",
-                                          "I say male, but I think gender is fluid", "My sex is male", "Theres only two genders, I'm male",
+                                          "SATSYG (Savage about to steal yo girl", "My sex is male", 
+                                          "I say male, but I think gender is fluid", "Theres only two genders, I'm male",
                                           "Probably heterosexual, but so commitment-phobic that I can't actually tell if I'm asexual.",
                                           "I'm a male. Born a male, always will be a male. There should only be two choices.")] <- "cis-gender"
 
@@ -503,35 +507,41 @@ data.v3$gender[str_detect(data.v3$gender_text, "[I|i]dk")] <- "gender diverse"
 data.v3$gender[str_detect(data.v3$gender_text, "Hermaphrodite")] <- "gender diverse"
 data.v3$gender[str_detect(data.v3$gender_text, "Questioning")] <- "gender diverse"
 data.v3$gender[str_detect(data.v3$gender_text, "Undecided")] <- "gender diverse"
-data.v3$gender[data.v3$gender_text %in% c("Literally no clue as of late", "Kynigender", "Adrogynous", "Hermaphrodite", "idk yet", "Questioning", 
-                                          "Questioning; female", "Still questioning", "not female/questioning", "Questioning (unsure)", "Girl ? Idk",
-                                          "not sure", "Not Sure???", "Not sure", "I don't know, still trying to purse it out", "Undecided")] <- "gender diverse"
+data.v3$gender[data.v3$gender_text %in% c("Literally no clue as of late", "Kynigender", "Adrogynous", "Hermaphrodite", "idk yet", 
+                                          "Questioning", "Questioning; female", "Still questioning", "not female/questioning", 
+                                          "Questioning (unsure)", "Girl ? Idk", "not sure", "Not Sure???", "Not sure", 
+                                          "I don't know, still trying to purse it out", "Undecided")] <- "gender diverse"
 
   # non-answers jokesters
 data.v3$gender[str_detect(data.v3$gender_text, "[H|h]elicopter")] <- "non-answers"
 data.v3$gender[str_detect(data.v3$gender_text, "[C|c]hinook")] <- "non-answers" 
 data.v3$gender[str_detect(data.v3$gender_text, "[A|a]pache")] <- "non-answers"
 data.v3$gender[str_detect(data.v3$gender_text, "[U|u]nicorn")] <- "non-answers"
-data.v3$gender[data.v3$gender_text %in% c("Albino stingray", "Karate Chop Action", "Flying Spaghetti Monster", "Pio Nono", "God", "None", "Baseball bat", 
-                                          "Mountain lion", "Oil Platform", "Chair", "This doesn't matter and you're an idiot for thinking it does.","REZZBIAN",
-                                          "Baguette", "fairy", "a 5 year old girl", "tree", "unicorn", "His Majesty", "Call of Duty: Modern Warfare 2", 
-                                          "Attack hellcopter", "Meme God", "Stainless Steel Toaster", "God himself", "baseball bat", "Mountain","Trans Former",
-                                          "M1A1 Main Battle Tank", "AH-64D", "Potato", "I will literally give you $100 to h*ck off", "Indian tape worm", 
-                                          "Metallic Hyper-Entity", "2X4 treated lumber", "pizza", "sPecIaL SNowFlAkE", "Deppressed", "eh", "George Michael",
-                                          "Metaknight Main", "Microwave", "Pizza", "Sea turtle", "1941 Nihon Giagun Yamato-Class Battleship", 
-                                          "penguin wearing a sombrero and sunglasses", "Fire hydrant/hockey puck", "Attack Hellicopter", "The Senate", 
+data.v3$gender[data.v3$gender_text %in% c("Albino stingray", "Karate Chop Action", "Flying Spaghetti Monster", "Pio Nono", "God", 
+                                          "None", "Baseball bat", "Mountain lion", "Oil Platform", "Chair", 
+                                          "This doesn't matter and you're an idiot for thinking it does.","REZZBIAN",
+                                          "Baguette", "fairy", "a 5 year old girl", "tree", "unicorn", "His Majesty", 
+                                          "Call of Duty: Modern Warfare 2", "Attack hellcopter", "Meme God", "Stainless Steel Toaster", 
+                                          "God himself", "baseball bat", "Mountain","Trans Former", "M1A1 Main Battle Tank", "AH-64D", 
+                                          "Potato", "I will literally give you $100 to h*ck off", "Indian tape worm", 
+                                          "Metallic Hyper-Entity", "2X4 treated lumber", "pizza", "sPecIaL SNowFlAkE", "Deppressed",
+                                          "eh", "George Michael", "Metaknight Main", "Microwave", "Pizza", "Sea turtle", 
+                                          "1941 Nihon Giagun Yamato-Class Battleship", "penguin wearing a sombrero and sunglasses", 
+                                          "Fire hydrant/hockey puck", "Attack Hellicopter", "The Senate", 
                                           "I identify as a fruit cup")] <- "non-answers"
 
   # non-answers, decline to answer
 data.v3$gender[str_detect(data.v3$gender_text, "[D|d]ecline")] <- "non-answers"
-data.v3$gender[data.v3$gender_text %in% c("I am me. A human.", "I'm not yet sure where I identify", "Human-being", "genders", "okay", "guess", "none", 
-                                          "Just my name.", "the above options are sex, not genders", "the above options are sex, not genders", 
-                                          "its difficult", "any", "?", "Biological male who identifies as a lesbian female.", "Prefer not to answer",
-                                          "The universe conscious of itself",  "no",  "I only try to use gender when it's useful", "fuck gender",
-                                          "it's weird to separate out trans male and trans female if you're also asking for birth assignment.", "2 genders",
-                                          "I don't understand the question.", "'Male' and 'female' are not gender identities.","#love", "No",
-                                          "I don't have one because it's not a legitimate concept.", "Gender is a construct which serves no purpose.",
-                                          "Gender and sex are the same", "gender is a lie", "Prefer not to specifiy")] <- "non-answers"
+data.v3$gender[data.v3$gender_text %in% c("I am me. A human.", "I'm not yet sure where I identify", "Human-being", "genders", "okay", 
+                                          "guess", "none", "Just my name.", "the above options are sex, not genders", 
+                                          "the above options are sex, not genders", "its difficult", "any", "?", 
+                                          "Biological male who identifies as a lesbian female.", "Prefer not to answer",
+                                          "The universe conscious of itself",  "no",  "I only try to use gender when it's useful", 
+                                          "fuck gender", "Gender and sex are the same", "gender is a lie", "#love", "No",
+                                          "it's weird to separate out trans male and trans female if you're also asking for birth assignment.", 
+                                          "2 genders", "I don't understand the question.", "'Male' and 'female' are not gender identities.",
+                                          "I don't have one because it's not a legitimate concept.", 
+                                          "Gender is a construct which serves no purpose.", "Prefer not to specifiy")] <- "non-answers"
 table(data.v3$gender, useNA = "always")   # check output
 ```
 
@@ -554,7 +564,8 @@ data.v4 <- data.v3 %>%
                        FALSE ~ 9,                                    # creating 'pansexual' var
                        FALSE ~ 10)) %>%                               # creating 'asexual/demi' var
   mutate(sexual = factor(sexual, levels=1:10,
-                         labels=c("Heterosexual", "Gay", "Lesbian", "Bisexual", "Queer", "Questioning", "Other", "Non-answers", "Pansexual", "Asexual/Demi")))
+                         labels=c("Heterosexual", "Gay", "Lesbian", "Bisexual", "Queer", "Questioning", "Other", 
+                                  "Non-answers", "Pansexual", "Asexual/Demi")))
 table(data.v4$sexual, useNA = "always") # tabulate and check outputs
 
 ```
@@ -565,12 +576,14 @@ table(data.v4$sexual, useNA = "always") # tabulate and check outputs
 # identifying non-answers
   ## jokesters
 data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]elicopter")] <- "Non-answers"
-data.v4$sexual[data.v4$sexual_text %in% c("Yes", "i identify as a lamp", "I only like baseballs", "helisexual", "Autosexual", "now", "Miguel Garcia", "toasteroven",
-                         "must have gills", "Potsexual", "Tailpipes turn me on", "Tyrannosaurus rex", "Traps are not gay", "Toaster sexual", "Crooked",
-                         "Pantsexual", "FREE", "Frozen Foods", "Giraffe", "Attracted to other self-identifying flying spaghetti monsters",
-                         "Demiqueer quasiflux asexual foxkin", "Attracted to Vehicles", "sPecIaL SNowFlAkE", "I'm sexually attracted to fire",
-                         "I sleep around. Also into bestiality", "Bobcats", "Sexually attracted to kitchen appliances", "Elitistual. I'm into elitists",
-                         "sexually attracted to fictional characters and men twice my age", "I sleep around. Also into bestiality")] <- "Non-answers"
+data.v4$sexual[data.v4$sexual_text %in% c("Yes", "i identify as a lamp", "I only like baseballs", "helisexual", "Autosexual",
+                                          "now", "Miguel Garcia", "toasteroven", "must have gills", "Potsexual", "Bobcats",
+                                          "Tailpipes turn me on", "Tyrannosaurus rex", "Traps are not gay", "Toaster sexual", 
+                                          "Crooked", "Pantsexual", "FREE", "Frozen Foods", "Giraffe", "I'm sexually attracted to fire",
+                                          "Attracted to other self-identifying flying spaghetti monsters", "sPecIaL SNowFlAkE", 
+                                          "Demiqueer quasiflux asexual foxkin", "Attracted to Vehicles", "Elitistual. I'm into elitists",
+                                          "I sleep around. Also into bestiality",  "Sexually attracted to kitchen appliances",
+                                          "sexually attracted to fictional characters and men twice my age")] <- "Non-answers"
   ## declined to answer
   data.v4$sexual[str_detect(data.v4$sexual_text, "identi[t|f]y")] <- "Non-answers"
   data.v4$sexual[str_detect(data.v4$sexual_text, "label")] <- "Non-answers"
@@ -584,24 +597,28 @@ data.v4$sexual[data.v4$sexual_text %in% c("Yes", "i identify as a lamp", "I only
   data.v4$sexual[str_detect(data.v4$sexual_text, "[U|u]nknown")]  <- "Non-answers"
   data.v4$sexual[str_detect(data.v4$sexual_text, "[N|n]/[A|a]")]  <- "Non-answers"
   data.v4$sexual[str_detect(data.v4$sexual_text, "[I|i] like")]  <- "Non-answers"
-  data.v4$sexual[data.v4$sexual_text %in% c("dating a trans male", "Attracted to personalities, not genders", "non", "i like people", 
-                                            "Fuck sexuality", "personality based", "Don't think about it too much", "Anyone that I like", 
-                                            "leave me alone", "define", "This is more bullshit", "I am who I am", "Just there", "Don't care", 
-                                            "Questions like this are the reason we are even having this debate.", "no label", "No Label", "No labels",
-                                            "prefer not", "I do not understand why this is necessary", "Just there", "irrelevant", "i like who i like", 
-                                            "No", "Me", "non", "Normal", "Human Being", "It doesn't matter my question is why is this an actual question", 
-                                            "I hate this PC bs", "FUCK YOU BIG TIME", "No", "Me", "human being", "Closeted at home", "Polyamorous", 
-                                            "Sexuality shouldn't matter", "No preference", "i like boys.", "gay leaning bi", "other", "Prefer not to specify",
-                                            "i fall in love with a human being",  "everyone's a little gay", "I prefer men, but have had women before", 
-                                            "Unknown", "#love", "Whatever I feel like at the time", "Situational", "Traps are not gay", "No one right now", 
-                                            "sometimes i dabble", "People", "Prefer not", "I am", "Whatever Happens", "Crooked", "love is love", "Open", 
-                                            "Autistic", "Human", "No one right now", "Situational", "I don't", "The universe conscious of itself", "Aromantic",
-                                            "Not dealing with men or women at the moment", "Repressed", "?", "Undefined", "Never had sex", "None?", "neutral", 
-                                            "no sexual orientation", "No idea, but I'm not straight", "Unlabeled", "Curious", "not sure", "Not sure", 
-                                            "Anyone that I like", "Disinterested", "Do not define", "Fake Gay", "irrelevant", "People", "No preference", 
-                                            "love is love", "Sometimes gender doesn't matter and I don't have time to learn about these things life gets too busy",
-                                            "Prefer not to answer", "just sexual (need no prefix!)", "It's complicated", "Sexuality shouldn't matter", 
-                                            "no particular sexual identity", "there is no such thing", "I'm just me and I love who I love. I don't like these labels.",
+  data.v4$sexual[data.v4$sexual_text %in% c("dating a trans male", "Attracted to personalities, not genders", "non", "irrelevant",
+                                            "i like people", "Fuck sexuality", "personality based", "Don't think about it too much",
+                                            "Anyone that I like", "leave me alone", "define", "This is more bullshit", "No", "Me",
+                                            "I am who I am", "Just there", "Don't care", "no label", "No Label", "No labels",
+                                            "Questions like this are the reason we are even having this debate.", "i like who i like", 
+                                            "prefer not", "I do not understand why this is necessary", "Just there", "non", "Normal",
+                                            "Human Being", "It doesn't matter my question is why is this an actual question", 
+                                            "I hate this PC bs", "FUCK YOU BIG TIME", "No", "Me", "human being", "Closeted at home", 
+                                            "Polyamorous", "Sexuality shouldn't matter", "No preference", "i like boys.", 
+                                            "gay leaning bi", "other", "Prefer not to specify", "i fall in love with a human being",
+                                            "everyone's a little gay", "I prefer men, but have had women before", "Traps are not gay",
+                                            "Unknown", "#love", "Whatever I feel like at the time", "Situational",  "No one right now", 
+                                            "sometimes i dabble", "People", "Prefer not", "I am", "Whatever Happens", "Crooked", 
+                                            "love is love", "Open", "Autistic", "Human", "No one right now", "Situational", "I don't",
+                                            "The universe conscious of itself", "Aromantic", "Not dealing with men or women at the moment",
+                                            "Repressed", "?", "Undefined", "Never had sex", "None?", "neutral", "not sure", "Not sure",
+                                            "no sexual orientation", "No idea, but I'm not straight", "Unlabeled", "Curious",  
+                                            "Anyone that I like", "Disinterested", "Do not define", "Fake Gay", "irrelevant", "People", 
+                                            "No preference", "love is love", "no particular sexual identity", "there is no such thing", 
+                                            "Sometimes gender doesn't matter and I don't have time to learn about these things life gets too busy",
+                                            "Prefer not to answer", "just sexual (need no prefix!)", "It's complicated", 
+                                            "Sexuality shouldn't matter", "I'm just me and I love who I love. I don't like these labels.",
                                             "I'm not a fucking part of lgbtqrstuxyz bullshit association")]  <- "Non-answers"
   
     # identifying queer  individuals:
@@ -609,23 +626,25 @@ data.v4$sexual[str_detect(data.v4$sexual_text, "[Q|q]ueer")] <- "Queer"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[F|f]luid")] <- "Queer"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[O|o]pen")] <- "Queer"
 data.v4$sexual[data.v4$sexual_text %in% c("potentially interested", "somewhere between", "homoflexible", "heteroflexible", "fluid",
-                                          "Only other trans people", "non-binary", "so I guess I could check queer", "Only other trans people", 
-                                          "Androsexual", "Not straight", "Polysexual", "Attracted to masculinity and androgony", "Androsexual",
-                                          "Non-binary", "nonbinary", "Joto")] <- "Queer"
+                                          "Only other trans people", "non-binary", "so I guess I could check queer", 
+                                          "Only other trans people", "Androsexual", "Not straight", "Polysexual", "Joto",
+                                          "Attracted to masculinity and androgony", "Androsexual", "Non-binary", "nonbinary")] <- "Queer"
 
   # identifying questioning
 data.v4$sexual[str_detect(data.v4$sexual_text, "[Q|q]uestion")] <- "Questioning"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[P|p]robably")] <- "Questioning"
-data.v4$sexual[data.v4$sexual_text %in% c("possibly", "curious", "Unknown", "potentially interested", "don't know", "Unknown", "don't know", 
-                                          "not sure", "still figuring it out", "idk", "Idk",  "don't know", "Not sure. Working on it.",
+data.v4$sexual[data.v4$sexual_text %in% c("possibly", "curious", "Unknown", "potentially interested", "don't know", "Unknown", 
+                                          "don't know", "not sure", "still figuring it out", "idk", "Idk",  "don't know", 
                                           "I have a girlfriend but i am not attracted to any other females. I am attracted to males", 
-                                          "Sometimes gender doesn't matter and I don't have time to learn about these things life gets too busy")] <- "Questioning"
+                                          "Sometimes gender doesn't matter and I don't have time to learn about these things life gets too busy",
+                                          "Not sure. Working on it.")] <- "Questioning"
 
 # identifying  pansexual write-ins
 data.v4$sexual[str_detect(data.v4$sexual_text, "[P|p]an")] <- "Pansexual"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[S|s]apiosexual")] <- "Pansexual"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[S|s]apiosexual")] <- "Pansexual"
-data.v4$sexual[data.v4$sexual_text %in% c("all", "Polyamorous Pansexual", "Pan Sexual", "Pan-sexual", "any but ive only had relationships with men")] <- "Pansexual"
+data.v4$sexual[data.v4$sexual_text %in% c("all", "Polyamorous Pansexual", "Pan Sexual", "Pan-sexual", 
+                                          "any but ive only had relationships with men")] <- "Pansexual"
 
 # identifying asexual / demisexual write-ins:  
 data.v4$sexual[str_detect(data.v4$sexual_text, "[G|g]r[a|e]y")] <- "Asexual/Demi"
@@ -635,10 +654,11 @@ data.v4$sexual[str_detect(data.v4$sexual_text, "[D|d]emi")] <- "Asexual/Demi"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[A|a]sex")] <- "Asexual/Demi"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[C|c]elibate")] <- "Asexual/Demi"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[A|a]ce")] <- "Asexual/Demi"
-data.v4$sexual[data.v4$sexual_text %in% c("Mostly asexual", "Most likely asexual", "Masexual", "Tridium Vykon Jace 8000", "Demi-romantic", "asexual lesbian",
-                                          "Ase", "Bi-demisexual", "a sexual", "Demiqueer quasiflux asexual foxkin", "DemiAsexual", "a-sexual", 
-                                          "no sexual attraction", "Gay-ish, I am Demi-sexual which means I don't pay attention to sex/gender",
-                                          "Pan-Quoiromantic Asexual", "demiromantic asexual", "Hetroromantic Asexual", "Homoromantic Demisexual",
+data.v4$sexual[data.v4$sexual_text %in% c("Mostly asexual", "Most likely asexual", "Masexual", "Tridium Vykon Jace 8000", 
+                                          "Demi-romantic", "asexual lesbian", "Ase", "Bi-demisexual",  "Hetroromantic Asexual",
+                                          "Demiqueer quasiflux asexual foxkin", "DemiAsexual", "a-sexual", "no sexual attraction", 
+                                          "Gay-ish, I am Demi-sexual which means I don't pay attention to sex/gender", "a sexual",
+                                          "Pan-Quoiromantic Asexual", "demiromantic asexual", "Homoromantic Demisexual",
                                           "experience no sexual attraction but do experience a small amount of romantic attraction", 
                                           "lithromantic", "A sexual")] <- "Asexual/Demi"
 
@@ -646,9 +666,10 @@ data.v4$sexual[data.v4$sexual_text %in% c("Mostly asexual", "Most likely asexual
 data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]etero")] <- "Heterosexual"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[S|s]traight")] <- "Heterosexual"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]etrosex")] <- "Heterosexual"
-data.v4$sexual[data.v4$sexual_text %in% c("Kinsey scale 1", "I would put myself as a 1-1.5 on the kinsey scale", "Staight", "Stragiht", "strait", "Str8!!!!",
-                                          "Changing from gay to heterosexual", "Gynophilic", "Into females", "I fuck bitches.", "1 on the Kinsey Scale",
-                                          "Gynophilic", "gynosexual", "Changing from gay to heterosexual", "100% Hetro")] <- "Heterosexual"
+data.v4$sexual[data.v4$sexual_text %in% c("Kinsey scale 1", "I would put myself as a 1-1.5 on the kinsey scale", "Staight", 
+                                          "Stragiht", "strait", "Str8!!!!", "Changing from gay to heterosexual", "Gynophilic",
+                                          "Into females", "I fuck bitches.", "1 on the Kinsey Scale", "Gynophilic", "gynosexual",
+                                          "Changing from gay to heterosexual", "100% Hetro")] <- "Heterosexual"
 
   # identified as gay or lesbian
 data.v4$sexual[str_detect(data.v4$sexual_text, "[G|g]ay")] <- "Gay"
@@ -660,11 +681,12 @@ data.v4$sexual[str_detect(data.v4$sexual_text, "[D|d]yke")] <- "Lesbian"
   # identifying bisexual individuals
 data.v4$sexual[str_detect(data.v4$sexual_text, "[B|b]isex")] <- "Bisexual"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[B|b]icurious")] <- "Bisexual"
-data.v4$sexual[data.v4$sexual_text %in% c("I'm straight but I like girls too sexually, not emotionally.", "straight but DTF sexy females",
-                                          "bicurious but i like girls more", "hetero with occasional bi tendencies", "gay leaning bi", "Bi-curious", 
-                                          "Herero-romantic bisexual", "Bi with a stronger attraction to same sex", "Half bisexual", 
-                                          "No boundaries in place - though probably bisexual", 
-                                          "I'm like halfway to bisexual. Never had a crush on another girl but I'm still interested. Idk.")] <- "Bisexual"
+data.v4$sexual[data.v4$sexual_text %in% c("I'm straight but I like girls too sexually, not emotionally.", "Half bisexual", 
+                                          "straight but DTF sexy females", "bicurious but i like girls more", 
+                                          "hetero with occasional bi tendencies", "gay leaning bi", "Bi-curious", 
+                                          "Herero-romantic bisexual", "Bi with a stronger attraction to same sex",
+                                          "I'm like halfway to bisexual. Never had a crush on another girl but I'm still interested. Idk.",
+                                          "No boundaries in place - though probably bisexual", )] <- "Bisexual"
 table(data.v4$sexual, useNA = "always")   # tabulate and check outputs
 ```
 
@@ -866,8 +888,7 @@ data.v6$race[str_detect(data.v6$race_other_text, "[M|m]estiz[o|a]")] <- "Hispani
 data.v6$race[str_detect(data.v6$race_other_text, "[P|p]ortuguese")] <- "Hispanic"
 data.v6$race[str_detect(data.v6$race_other_text, "[B|b]razil")] <- "Hispanic"
 data.v6$race[str_detect(data.v6$race_other_text, "[C|c]uba")] <- "Hispanic"
-data.v6$race[data.v6$race_other_text %in% c("If I identify as puerto rican does that mean i get more scholarship money?", 
-                                            "Costa Rican", "Central American Native", "Andean")] <- "Hispanic"
+data.v6$race[data.v6$race_other_text %in% c("Costa Rican", "Central American Native", "Andean")] <- "Hispanic"
 
   # Identifies as Middle Eastern or of Arab descent
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]rmenia")] <- "ME/Arab"
@@ -920,7 +941,8 @@ data.v6$race[data.v6$race_other_text %in% c("Japanese, Chinese, French, British,
   # Identifies as Hispanic and White as 'Other/Mixed'
 data.v6$race[data.v6$race_other_text %in% c("I am 1/4th Hispanic 3/4 German",  "Honduran, Irish", "White hispanic",
                                             "White, and Hispanic", "Hispanic/Jewish", "White and Hispanic", "White Hispanic",
-                                            "French and spanish", "LATINA/WHITE", "white/hispanic")] <- "Other/Mixed"
+                                            "French and spanish", "LATINA/WHITE", "white/hispanic",
+                                            "If I identify as puerto rican does that mean i get more scholarship money?")] <- "Other/Mixed"
 	 # Identifies as MR and White as 'Other/Mixed'
 data.v6$race[data.v6$race_other_text %in% c("Half Middle Eastern half white", 
                                             "Half my family is white and the other middle eastern")] <- "Other/Mixed"
@@ -1386,10 +1408,10 @@ corr_simple()
 ## EFA diathesis
 ```{r EFA diathesis}
 
-data_dia <- data.v11 %>% select(c(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
+data_dia <- data.v11 %>% select(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
                                   audit_tot, dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, 
                                   dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
-                                  meds_oth, meds_none, alc_tx, meds_count, ed_any))
+                                  meds_oth, meds_none, alc_tx, meds_count, ed_any)
 
 # create corr matrix, with dummy vars -- https://cran.r-project.org/web/packages/fastDummies/vignettes/making-dummy-variables.html
 data_dia <- data_dia %>% 
@@ -1417,8 +1439,10 @@ dia_pca$eig   # output matrix with eigenvalues
 ## CLM diathesis
 ```{r lasso_dia}
 
-clm_dia <- data.v11 %>% select(si_type, age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_adhd, meds_count, ed_any,
-                                   dx_ea, dx_tr, dx_sa, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle, meds_oth, meds_none, alc_tx)
+clm_dia <- data.v11 %>% select(si_type, age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, 
+                               body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_adhd, meds_count, ed_any,
+                               dx_ea, dx_tr, dx_sa, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, 
+                               meds_mood, meds_sle, meds_oth, meds_none, alc_tx)
 
 clm_dia <- NA_preproc(clm_dia)
 clm_dia <- as.data.frame(clm_dia)
@@ -1428,8 +1452,8 @@ set.seed(1000)
 
 index = sample(1:nrow(clm_dia), 0.7*nrow(clm_dia)) 
 
-train_dia = clm_dia[index,] # Create the training data 
-test_dia = clm_dia[-index,] # Create the test data
+train_dia = clm_dia[index,]       # Create the training data for diathesis
+test_dia = clm_dia[-index,]       # Create the test data for diathesis
 
 dim(train_dia)
 dim(test_dia)
@@ -1744,8 +1768,7 @@ data.v14 <- data.v14 %>%
     
   # Community colleges
     mutate(school2_cc = ifelse(var_OaklandCC + var_OklahomaCityCC + var_PaloAltoCollege + var_RedlandsCC == 1, TRUE, 
-                               ifelse(var_OaklandCC + var_OklahomaCityCC + var_PaloAltoCollege + var_RedlandsCC == 0, FALSE, NA)
-                               )) %>%
+                               ifelse(var_OaklandCC + var_OklahomaCityCC + var_PaloAltoCollege + var_RedlandsCC == 0, FALSE, NA))) %>%
     
   # Art, design, culinary
     mutate(school2_ad = ifelse(var_AlbertaCAD + var_CIA + var_ColumbusCAD + var_MDInstituteCollegeArt + var_MassArt +
@@ -1760,6 +1783,17 @@ data.v14 <- data.v14 %>%
 table(data.v14$school2_4yr)
 table(data.v14$school2_cc)
 table(data.v14$school2_ad)
+
+#  create one school type variables
+
+data.v14 <- data.v14 %>%
+  mutate(school2_type = case_when(school2_4yr == 1 ~ 1,
+                                  school2_cc == 1 ~ 2,
+                                  school2_ad == 1 ~ 3)) %>%
+  mutate(school2_type = factor(school2_type, levels=1:3,
+                               labels=c("4-yr colleges", "commununity colleges", "art & design schools")))
+table(data.v14$school2_type)
+      
 
 # Clean-up school2 var
 data.v14 = subset(data.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain, var_Delaware,
@@ -1776,12 +1810,6 @@ data.v14 = subset(data.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoColl
                                        var_MassArt, var_MinnesotaCAD, var_NHInstituteArt, var_Pratt, var_Ringling, var_SAIC,
                                        var_UNCSchoolArt, var_Watkins))
 
-#  create one school type variables
-
-data.v14 <- data.v14 %>%
-  mutate(school2_type = case_when(school2_4yr == 1 ~ 1,
-                                  school2_cc == 1 ~ 2,
-                                  school2_ad == 1 ~ 3))
 
 ```
 
@@ -1794,20 +1822,21 @@ data_env <- data.v14 %>% select(discrim, religios, env_mh, residenc, ther_vis, a
 data <- data_env
 sig <- 0.6
 
- # convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA_
+ # Convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data 
+ # Each value will become a number rather than turn into NA_
 data_env <- data_env %>% mutate_if(is.character, as.factor)
 data_env <-  data_env %>% mutate_if(is.factor, as.numeric)
 
 # run a correlation and drop the insignificant ones
 corr <- cor(data_env, use = "pairwise.complete.obs")                               
 corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                                   # drop perfect correlations
+corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
 corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
 corr <- na.omit(corr)                                   #remove the NA values from above 
 corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
 print(corr)
   
-#turn corr back into matrix in order to plot with corrplot
+# turn corr back into matrix in order to plot with corrplot
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
@@ -2510,7 +2539,7 @@ cleaned_temp_reg <- NA_preproc(temp_reg)
   datatest_tsm = cleaned_temp_reg[-index,]
 
 #Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-mod_tsm <- glm(si_type_num ~ (persist + anx_score + dep_secret + AAQ_tot)^2, data = datatrain_tsm)
+mod_tsm <- glm(si_type_num ~ persist + anx_score + dep_secret + AAQ_tot, data = datatrain_tsm)
 summary(mod_tsm) # check output
 
 step_tsm <- stepAIC(mod_tsm, direction = "both", trace = 20)
@@ -2826,8 +2855,6 @@ mm_pca <- PCA(results_mm)  # apply PCA
 mm_pca$eig   # output matrix with eigenvalues
 ```
 
-
-
 ## CLM MM
 ```{r CLM mm}
 
@@ -3057,10 +3084,7 @@ dim(testdf.v23)
 
 ```{r SEM}
 
-SI_model_tr <- ' '
-
-
-model <- '
+SI_model_tr <- '
   # measurement model
                 dia_sem =~ traindf.v23$age + traindf.v23$sexual + traindf.v23$gender + traindf.v23$finpast + traindf.v23$sib_freq + 
                     traindf.v23$race + traindf.v23$body_sr + traindf.v23$ed_scoff + traindf.v23$audit_tot + traindf.v23$dx_dep + 
@@ -3078,91 +3102,84 @@ model <- '
                 entrap_sem =~ traindf.v23$dep_impa + traindf.v23$gad7_impa + traindf.v23$perneed_cur
                 mm_sm =~ traindf.v23$flourish + traindf.v23$belong + traindf.v23$inf + traindf.v23$stig_pcv_2 + traindf.v23$stig_pcv_3 +
                     traindf.v23$brs_tot 
+                    
   # regressions
-     ~ env_sum
+    dia_sem ~ env_sem
+    env_sem ~ le_sem
+    le_sem ~ dia_sem
     def_sem ~ dia_sem + env_sem + le_sem
-    dem65 ~ ind60 + dem60
+    entrap_sem ~ def_sem + tsm_sem
+    si_sem ~ entrap_sem + mm_sem
+    si_sem ~ def_sem + tsm_sem + entrap_sem + mm_sem
+    
   # residual correlations
-    y1 ~~ y5
-    y2 ~~ y4 + y6
-    y3 ~~ y7
-    y4 ~~ y8
-    y6 ~~ y8
+    med_count ~~ traindf.v23$meds_sti + traindf.v23$meds_dep + traindf.v23$meds_psy +
+                 traindf.v23$meds_anx + traindf.v23$meds_mood + traindf.v23$meds_sle + traindf.v23$meds_oth + traindf.v23$meds_none +
+                 traindf.v23$meds_count
+    dx_any ~~ traindf.v23$dx_dep + traindf.v23$dx_bi + traindf.v23$dx_psy + traindf.v23$dx_ea + traindf.v23$dx_tr + traindf.v23$dx_sa +
+              traindf.v23$dx_adhd +
+              traindf.v23$dx_pers + traindf.v23$dx_non  '
 
-fit_train <- cfa(SI_model_tr, data=testdf.v23)
+fit_train <- sem(SI_model_tr, data=testdf.v23)
 summary(fit_train, fit.measures=TRUE)
 
 # test data comparator
-SI_model_test <- ' dia_sem =~ testdf.v23$age + testdf.v23$sexual + testdf.v23$gender + testdf.v23$finpast + testdf.v23$sib_freq + 
-                testdf.v23$race + testdf.v23$body_sr + testdf.v23$ed_scoff + testdf.v23$audit_tot + testdf.v23$dx_dep + 
-                testdf.v23$dx_bi + testdf.v23$dx_psy + testdf.v23$dx_ea + testdf.v23$dx_tr + testdf.v23$dx_sa + testdf.v23$dx_adhd +
-                testdf.v23$dx_pers + testdf.v23$dx_none + testdf.v23$meds_sti + testdf.v23$meds_dep + testdf.v23$meds_psy +
-                testdf.v23$meds_anx + testdf.v23$meds_mood + testdf.v23$meds_sle + testdf.v23$meds_oth + testdf.v23$meds_none +
-                testdf.v23$meds_count + testdf.v23$disab_1 + testdf.v23$alc_tx
-              env_sem =~ testdf.v23$env_mh + testdf.v23$fam_support_aca + testdf.v23$ther_vis + testdf.v23$divers + t
-                raindf.v23$satisfied_overall + testdf.v23$residenc + testdf.v23$talk + testdf.v23$religios + testdf.v23$discrim +
-                testdf.v23$school2_type
-              le_sem =~ testdf.v23$ins_cover + testdf.v23$gpa_sr + testdf.v23$assault_phys + testdf.v23$binge_fr + testdf.v23$assault_sex + 
-                testdf.v23$assault_emo + testdf.v23$psyhx + testdf.v23$fincur + testdf.v23$drug_type + testdf.v23$drug_none
-              def_sem =~ testdf.v23$aca_impa + testdf.v23$deprawsc
-              tsm_sem =~ testdf.v23$persist + testdf.v23$anx_score + testdf.v23$dep_secret + testdf.v23$AAQ_tot
-              entrap_sem =~ testdf.v23$dep_impa + testdf.v23$gad7_impa + testdf.v23$perneed_cur
-              mm_sm =~ testdf.v23$flourish + testdf.v23$belong + testdf.v23$inf + testdf.v23$stig_pcv_2 + testdf.v23$stig_pcv_3 +
-                testdf.v23$brs_tot '
+SI_model_tr <- ' # measurement model
+                  dia_sem =~ testdf.v23$age + testdf.v23$sexual + testdf.v23$gender + testdf.v23$finpast + testdf.v23$sib_freq + 
+                    testdf.v23$race + testdf.v23$body_sr + testdf.v23$ed_scoff + testdf.v23$audit_tot + testdf.v23$dx_dep + 
+                    testdf.v23$dx_bi + testdf.v23$dx_psy + testdf.v23$dx_ea + testdf.v23$dx_tr + testdf.v23$dx_sa + testdf.v23$dx_adhd +
+                    testdf.v23$dx_pers + testdf.v23$dx_none + testdf.v23$meds_sti + testdf.v23$meds_dep + testdf.v23$meds_psy +
+                    testdf.v23$meds_anx + testdf.v23$meds_mood + testdf.v23$meds_sle + testdf.v23$meds_oth + testdf.v23$meds_none +
+                    testdf.v23$meds_count + testdf.v23$disab_1 + testdf.v23$alc_tx
+                  env_sem =~ testdf.v23$env_mh + testdf.v23$fam_support_aca + testdf.v23$ther_vis + testdf.v23$divers +
+                    testdf.v23$satisfied_overall + testdf.v23$residenc + testdf.v23$talk + testdf.v23$religios + testdf.v23$discrim +
+                    testdf.v23$school2_type
+                  le_sem =~ testdf.v23$ins_cover + testdf.v23$gpa_sr + testdf.v23$assault_phys + testdf.v23$binge_fr + testdf.v23$assault_sex + 
+                    testdf.v23$assault_emo + testdf.v23$psyhx + testdf.v23$fincur + testdf.v23$drug_type + testdf.v23$drug_none
+                  def_sem =~ testdf.v23$aca_impa + testdf.v23$deprawsc
+                  tsm_sem =~ testdf.v23$persist + testdf.v23$anx_score + testdf.v23$dep_secret + testdf.v23$AAQ_tot
+                  entrap_sem =~ testdf.v23$dep_impa + testdf.v23$gad7_impa + testdf.v23$perneed_cur
+                  mm_sm =~ testdf.v23$flourish + testdf.v23$belong + testdf.v23$inf + testdf.v23$stig_pcv_2 + testdf.v23$stig_pcv_3 +
+                    testdf.v23$brs_tot 
+                
+                # regressions
+                    dia_sem ~ env_sem
+                    env_sem ~ le_sem
+                    le_sem ~ dia_sem
+                    def_sem ~ dia_sem + env_sem + le_sem
+                    entrap_sem ~ def_sem + tsm_sem
+                    si_sem ~ entrap_sem + mm_sem
+                    si_sem ~ def_sem + tsm_sem + entrap_sem + mm_sem
+    
+                # residual correlations
+                    med_count ~~ testdf.v23$meds_sti + testdf.v23$meds_dep + testdf.v23$meds_psy + testdf.v23$meds_anx + testdf.v23$meds_mood +
+                                 testdf.v23$meds_sle + testdf.v23$meds_oth + testdf.v23$meds_none + testdf.v23$meds_count
+                    dx_any ~~ testdf.v23$dx_dep + testdf.v23$dx_bi + testdf.v23$dx_psy + testdf.v23$dx_ea + testdf.v23$dx_tr + testdf.v23$dx_sa +
+                                 testdf.v23$dx_adhd + testdf.v23$dx_pers + testdf.v23$dx_non  '
 
-fit_test <- cfa(SI_model_test, data=testdf.v23)
-summary(fit_test, fit.measures=TRUE)
-
-
-```
-
-
-# INDIRECT EFFECTS
-
-
-```{r Indirect_fx}
 
 # Training data analyses for indirect effects
-set.seed(1234)
+set.seed(1000)
 X <- rnorm(100)
-M <- 0.5*X + rnorm(100)
+M <- 0.5*X + rnorm(100)  # what are X, Y, M
 Y <- 0.7*M + rnorm(100)
 Data <- data.frame(X = X, Y = Y, M = M)
 model <- ' # direct effect
-Y ~ c*X
-# mediator
-M ~ a*X
-Y ~ b*M
-# indirect effect (a*b)
-ab := a*b
-# total effect
-total := c + (a*b)
-'
-fit <- sem(model, data = Data)
-summary(fit)
+           Y ~ c*X
+           # mediator
+           M ~ a*X
+           Y ~ b*M
+           # indirect effect (a*b)
+           ab := a*b
+           # total effect
+           total := c + (a*b)  '
+
+fit_train <- sem(model, data=data.v23)
+summary(fit_train, fit.measures=TRUE)
 
 
-# Testing data analyses for indirect effects
-set.seed(1234)
-X <- rnorm(100)
-M <- 0.5*X + rnorm(100)
-Y <- 0.7*M + rnorm(100)
-Data <- data.frame(X = X, Y = Y, M = M)
-model <- ' # direct effect
-Y ~ c*X
-# mediator
-M ~ a*X
-Y ~ b*M
-# indirect effect (a*b)
-ab := a*b
-# total effect
-total := c + (a*b)
-'
-fit <- sem(model, data = Data)
-summary(fit)
-
-
-
+fit_test <- sem(SI_model_tr, data=testdf.v23)
+summary(fit_test, fit.measures=TRUE)
 ```
 
 
