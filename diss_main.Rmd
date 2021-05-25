@@ -3056,27 +3056,81 @@ dim(testdf.v23)
 
 
 ```{r SEM}
-data.v24 <- data.v23
 
-SI_model <- ' dia_sem =~ data.v24$age + data.v24$sexual + data.v24$gender + data.v24$finpast + data.v24$sib_freq + 
-                data.v24$race + data.v24$body_sr + data.v24$ed_scoff + data.v24$audit_tot + data.v24$dx_dep + 
-                data.v24$dx_bi + data.v24$dx_psy + data.v24$dx_ea + data.v24$dx_tr + data.v24$dx_sa + data.v24$dx_adhd +
-                data.v24$dx_pers + data.v24$dx_none + data.v24$meds_sti + data.v24$meds_dep + data.v24$meds_psy +
-                data.v24$meds_anx + data.v24$meds_mood + data.v24$meds_sle + data.v24$meds_oth + data.v24$meds_none +
-                data.v24$meds_count + data.v24$disab_1 + data.v24$alc_tx
-              env_sem =~ data.v24$env_mh + data.v24$fam_support_aca + data.v24$ther_vis + data.v24$divers + data.v24$satisfied_overall +
-                data.v24$residenc + data.v24$talk + data.v24$religios + data.v24$discrim + data.v24$school2_type
-              le_sem =~ data.v24$ins_cover + data.v24$gpa_sr + data.v24$assault_phys + data.v24$binge_fr + data.v24$assault_sex + 
-                data.v24$assault_emo + data.v24$psyhx + data.v24$fincur + data.v24$drug_type + data.v24$drug_none
-              def_sem =~ data.v24$aca_impa + data.v24$deprawsc
-              tsm_sem =~ data.v24$persist + data.v24$anx_score + data.v24$dep_secret + data.v24$AAQ_tot
-              entrap_sem =~ data.v24$dep_impa + data.v24$gad7_impa + data.v24$perneed_cur
-              mm_sm =~ data.v24$flourish + data.v24$belong + data.v24$inf + data.v24$stig_pcv_2 + data.v24$stig_pcv_3 + data.v24$brs_tot '
+SI_model_tr <- ' dia_sem =~ traindf.v23$age + traindf.v23$sexual + traindf.v23$gender + traindf.v23$finpast + traindf.v23$sib_freq + 
+                    traindf.v23$race + traindf.v23$body_sr + traindf.v23$ed_scoff + traindf.v23$audit_tot + traindf.v23$dx_dep + 
+                    traindf.v23$dx_bi + traindf.v23$dx_psy + traindf.v23$dx_ea + traindf.v23$dx_tr + traindf.v23$dx_sa + traindf.v23$dx_adhd +
+                    traindf.v23$dx_pers + traindf.v23$dx_none + traindf.v23$meds_sti + traindf.v23$meds_dep + traindf.v23$meds_psy +
+                    traindf.v23$meds_anx + traindf.v23$meds_mood + traindf.v23$meds_sle + traindf.v23$meds_oth + traindf.v23$meds_none +
+                    traindf.v23$meds_count + traindf.v23$disab_1 + traindf.v23$alc_tx
+                env_sem =~ traindf.v23$env_mh + traindf.v23$fam_support_aca + traindf.v23$ther_vis + traindf.v23$divers +
+                    traindf.v23$satisfied_overall + traindf.v23$residenc + traindf.v23$talk + traindf.v23$religios + traindf.v23$discrim +
+                    traindf.v23$school2_type
+                le_sem =~ traindf.v23$ins_cover + traindf.v23$gpa_sr + traindf.v23$assault_phys + traindf.v23$binge_fr + traindf.v23$assault_sex + 
+                    traindf.v23$assault_emo + traindf.v23$psyhx + traindf.v23$fincur + traindf.v23$drug_type + traindf.v23$drug_none
+                def_sem =~ traindf.v23$aca_impa + traindf.v23$deprawsc
+                tsm_sem =~ traindf.v23$persist + traindf.v23$anx_score + traindf.v23$dep_secret + traindf.v23$AAQ_tot
+                entrap_sem =~ traindf.v23$dep_impa + traindf.v23$gad7_impa + traindf.v23$perneed_cur
+                mm_sm =~ traindf.v23$flourish + traindf.v23$belong + traindf.v23$inf + traindf.v23$stig_pcv_2 + traindf.v23$stig_pcv_3 +
+                    traindf.v23$brs_tot '
 
-fit <- cfa(SI_model, data=HolzingerSwineford1939)
+fit_train <- cfa(SI_model_tr, data=testdf.v23)
+summary(fit_train, fit.measures=TRUE)
+
+# test data comparator
+SI_model_test <- ' dia_sem =~ testdf.v23$age + testdf.v23$sexual + testdf.v23$gender + testdf.v23$finpast + testdf.v23$sib_freq + 
+                testdf.v23$race + testdf.v23$body_sr + testdf.v23$ed_scoff + testdf.v23$audit_tot + testdf.v23$dx_dep + 
+                testdf.v23$dx_bi + testdf.v23$dx_psy + testdf.v23$dx_ea + testdf.v23$dx_tr + testdf.v23$dx_sa + testdf.v23$dx_adhd +
+                testdf.v23$dx_pers + testdf.v23$dx_none + testdf.v23$meds_sti + testdf.v23$meds_dep + testdf.v23$meds_psy +
+                testdf.v23$meds_anx + testdf.v23$meds_mood + testdf.v23$meds_sle + testdf.v23$meds_oth + testdf.v23$meds_none +
+                testdf.v23$meds_count + testdf.v23$disab_1 + testdf.v23$alc_tx
+              env_sem =~ testdf.v23$env_mh + testdf.v23$fam_support_aca + testdf.v23$ther_vis + testdf.v23$divers + t
+                raindf.v23$satisfied_overall + testdf.v23$residenc + testdf.v23$talk + testdf.v23$religios + testdf.v23$discrim +
+                testdf.v23$school2_type
+              le_sem =~ testdf.v23$ins_cover + testdf.v23$gpa_sr + testdf.v23$assault_phys + testdf.v23$binge_fr + testdf.v23$assault_sex + 
+                testdf.v23$assault_emo + testdf.v23$psyhx + testdf.v23$fincur + testdf.v23$drug_type + testdf.v23$drug_none
+              def_sem =~ testdf.v23$aca_impa + testdf.v23$deprawsc
+              tsm_sem =~ testdf.v23$persist + testdf.v23$anx_score + testdf.v23$dep_secret + testdf.v23$AAQ_tot
+              entrap_sem =~ testdf.v23$dep_impa + testdf.v23$gad7_impa + testdf.v23$perneed_cur
+              mm_sm =~ testdf.v23$flourish + testdf.v23$belong + testdf.v23$inf + testdf.v23$stig_pcv_2 + testdf.v23$stig_pcv_3 +
+                testdf.v23$brs_tot '
+
+fit_test <- cfa(SI_model_test, data=testdf.v23)
+summary(fit_test, fit.measures=TRUE)
 
 
 ```
 
 
-```{r Data division}
+# INDIRECT EFFECTS
+
+
+```{r Indirect_fx}
+set.seed(1234)
+X <- rnorm(100)
+M <- 0.5*X + rnorm(100)
+Y <- 0.7*M + rnorm(100)
+Data <- data.frame(X = X, Y = Y, M = M)
+model <- ' # direct effect
+Y ~ c*X
+# mediator
+M ~ a*X
+Y ~ b*M
+# indirect effect (a*b)
+ab := a*b
+# total effect
+total := c + (a*b)
+'
+fit <- sem(model, data = Data)
+summary(fit)
+```
+
+
+# MODIFICATION INDICES
+
+
+```{r mod_indices}
+
+modindices(fit_test, sort = TRUE, maximum.number = 5)
+
+modindices(fit_train, sort = TRUE, maximum.number = 5)
