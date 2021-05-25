@@ -3161,7 +3161,7 @@ SI_model_tr <- ' # measurement model
 # Training data analyses for indirect effects
 set.seed(1000)
 X <- rnorm(100)
-M <- 0.5*X + rnorm(100)  # what are X, Y, M
+M <- 0.5*X + rnorm(100)  # what are X, Y, M??????
 Y <- 0.7*M + rnorm(100)
 Data <- data.frame(X = X, Y = Y, M = M)
 model <- ' # direct effect
