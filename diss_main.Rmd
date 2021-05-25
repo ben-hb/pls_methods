@@ -24,6 +24,7 @@ library(effectsize)
 library(emulator)
 library(esc)
 library(expss)
+library(FactoMineR)
 library(finalfit)
 library(FactoMineR)
 library(glmnet)
@@ -1434,6 +1435,9 @@ results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender"
 dia_pca <- PCA(results_dia)  # apply PCA
 dia_pca$eig   # output matrix with eigenvalues
 
+
+
+
 ```
 
 ## CLM diathesis
@@ -1785,11 +1789,10 @@ table(data.v14$school2_cc)
 table(data.v14$school2_ad)
 
 #  create one school type variables
-
 data.v14 <- data.v14 %>%
-  mutate(school2_type = case_when(school2_4yr == 1 ~ 1,
-                                  school2_cc == 1 ~ 2,
-                                  school2_ad == 1 ~ 3)) %>%
+  mutate(school2_type = case_when(school2_4yr == TRUE ~ 1,
+                                  school2_cc == TRUE ~ 2,
+                                  school2_ad == TRUE ~ 3)) %>%
   mutate(school2_type = factor(school2_type, levels=1:3,
                                labels=c("4-yr colleges", "commununity colleges", "art & design schools")))
 table(data.v14$school2_type)
@@ -1847,7 +1850,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 data_env <- data.v14 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
                                 school2_type, satisfied_overall, ther_vis, talk, military, international)
 
-# create corr matrix, with dummy vars -- https://cran.r-project.org/web/packages/fastDummies/vignettes/making-dummy-variables.html
+# create corr matrix, with dummy vars
 data_env <- data_env %>% 
   mutate_if(is.numeric, as.factor) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
@@ -1859,8 +1862,19 @@ results_env <- dummy_cols(data_env, select_columns = c("discrim", "religios", "e
                                                        "talk", "military", "international"),
                           remove_first_dummy = TRUE)
 
+# impute???
+nb = estim_ncpPCA(results_env,ncp.max=5)
+res.comp = imputePCA(results_env,ncp=2)
+res.pca = PCA(res.comp$completeObs)
+
+res.famd <- FAMD(res.pca, graph = FALSE)
+fviz_screeplot(res.famd)
+fviz_famd_var(res.famd)
+
+# PCA
 env_pca <- PCA(results_env)  # apply PCA
 env_pca$eig   # output matrix with eigenvalues
+
 ```
 
 ## CLM environment
@@ -3065,6 +3079,7 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 
 
 ```{r Data division}
+
 set.seed(1000) 
 split = sample.split(data.v23$school2, SplitRatio = 0.50)
  
@@ -3084,43 +3099,41 @@ dim(testdf.v23)
 
 ```{r SEM}
 
-SI_model_tr <- '
-  # measurement model
-                dia_sem =~ traindf.v23$age + traindf.v23$sexual + traindf.v23$gender + traindf.v23$finpast + traindf.v23$sib_freq + 
-                    traindf.v23$race + traindf.v23$body_sr + traindf.v23$ed_scoff + traindf.v23$audit_tot + traindf.v23$dx_dep + 
-                    traindf.v23$dx_bi + traindf.v23$dx_psy + traindf.v23$dx_ea + traindf.v23$dx_tr + traindf.v23$dx_sa + traindf.v23$dx_adhd +
-                    traindf.v23$dx_pers + traindf.v23$dx_none + traindf.v23$meds_sti + traindf.v23$meds_dep + traindf.v23$meds_psy +
-                    traindf.v23$meds_anx + traindf.v23$meds_mood + traindf.v23$meds_sle + traindf.v23$meds_oth + traindf.v23$meds_none +
-                    traindf.v23$meds_count + traindf.v23$disab_1 + traindf.v23$alc_tx
-                env_sem =~ traindf.v23$env_mh + traindf.v23$fam_support_aca + traindf.v23$ther_vis + traindf.v23$divers +
-                    traindf.v23$satisfied_overall + traindf.v23$residenc + traindf.v23$talk + traindf.v23$religios + traindf.v23$discrim +
-                    traindf.v23$school2_type
-                le_sem =~ traindf.v23$ins_cover + traindf.v23$gpa_sr + traindf.v23$assault_phys + traindf.v23$binge_fr + traindf.v23$assault_sex + 
-                    traindf.v23$assault_emo + traindf.v23$psyhx + traindf.v23$fincur + traindf.v23$drug_type + traindf.v23$drug_none
-                def_sem =~ traindf.v23$aca_impa + traindf.v23$deprawsc
-                tsm_sem =~ traindf.v23$persist + traindf.v23$anx_score + traindf.v23$dep_secret + traindf.v23$AAQ_tot
-                entrap_sem =~ traindf.v23$dep_impa + traindf.v23$gad7_impa + traindf.v23$perneed_cur
-                mm_sm =~ traindf.v23$flourish + traindf.v23$belong + traindf.v23$inf + traindf.v23$stig_pcv_2 + traindf.v23$stig_pcv_3 +
-                    traindf.v23$brs_tot 
+SI_model_tr <- '# measurement model
+                dia_sem =~ age + sexual + gender + finpast + sib_freq + 
+                    race + body_sr + ed_scoff + audit_tot + dx_dep + 
+                    dx_bi + dx_psy + dx_ea + dx_tr + dx_sa + dx_adhd +
+                    dx_pers + dx_none + meds_sti + meds_dep + meds_psy +
+                    meds_anx + meds_mood + meds_sle + meds_oth + meds_none +
+                    meds_count + disab_1 + alc_tx
+                env_sem =~ env_mh + fam_support_aca + ther_vis + divers +
+                    satisfied_overall + residenc + talk + religios + discrim +
+                    school2_type
+                le_sem =~ ins_cover + gpa_sr + assault_phys + binge_fr + assault_sex + 
+                    assault_emo + psyhx + fincur + drug_type + drug_none
+                def_sem =~ aca_impa + deprawsc
+                tsm_sem =~ persist + anx_score + dep_secret + AAQ_tot
+                entrap_sem =~ dep_impa + gad7_impa + perneed_cur
+                mm_sm =~ flourish + belong + inf + stig_pcv_2 + stig_pcv_3 +
+                    brs_tot
+                si_sem =~ si_type
                     
-  # regressions
-    dia_sem ~ env_sem
-    env_sem ~ le_sem
-    le_sem ~ dia_sem
-    def_sem ~ dia_sem + env_sem + le_sem
+                # regressions
+                  # pre-motivational
+                      dia_sem ~ env_sem
+                      env_sem ~ le_sem
+                      le_sem ~ dia_sem
+                      def_sem ~ dia_sem + env_sem + le_sem
+    # motivational
     entrap_sem ~ def_sem + tsm_sem
     si_sem ~ entrap_sem + mm_sem
     si_sem ~ def_sem + tsm_sem + entrap_sem + mm_sem
     
   # residual correlations
-    med_count ~~ traindf.v23$meds_sti + traindf.v23$meds_dep + traindf.v23$meds_psy +
-                 traindf.v23$meds_anx + traindf.v23$meds_mood + traindf.v23$meds_sle + traindf.v23$meds_oth + traindf.v23$meds_none +
-                 traindf.v23$meds_count
-    dx_any ~~ traindf.v23$dx_dep + traindf.v23$dx_bi + traindf.v23$dx_psy + traindf.v23$dx_ea + traindf.v23$dx_tr + traindf.v23$dx_sa +
-              traindf.v23$dx_adhd +
-              traindf.v23$dx_pers + traindf.v23$dx_non  '
+    med_count ~~ meds_sti + meds_dep + meds_psy + meds_anx + meds_mood + meds_sle + meds_oth + meds_none + meds_count
+    dx_any ~~ dx_dep + dx_bi + dx_psy + dx_ea + dx_tr + dx_sa + dx_adhd + dx_pers + dx_non  '
 
-fit_train <- sem(SI_model_tr, data=testdf.v23)
+fit_train <- sem(SI_model_tr, data=traindf.v23)
 summary(fit_train, fit.measures=TRUE)
 
 # test data comparator
@@ -3192,6 +3205,15 @@ mi_train <- modindices(fit_train, sort = TRUE, maximum.number = 5)  # might need
 
 mi_test <- modindices(fit_test, sort = TRUE, maximum.number = 5)
 
+```
+
+
+
+```{r FAMD}
+res.famd <- FAMD(wine[,c(1,2, 16, 22, 29, 28, 30,31)], graph = FALSE)
+ 
+ 
+ 
 ```
 
 
