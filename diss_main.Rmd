@@ -3026,7 +3026,6 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 
 
 ```{r Data division}
-
 set.seed(1000) 
 split = sample.split(data.v23$school2, SplitRatio = 0.50)
  
@@ -3038,3 +3037,16 @@ testdf.v23 <- subset(data.v23, split == FALSE)
 dim(data.v23)
 dim(traindf.v23)
 dim(testdf.v23)
+```
+
+
+# SEM ANALYSIS
+
+
+```{r SEM}
+
+
+```
+
+
+```{r Data division}
