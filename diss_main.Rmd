@@ -1789,7 +1789,7 @@ data.v14 <- data.v14 %>%
 ```{r}
 # Define environment vars for correlation matrix
 data_env <- data.v14 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
-                                  school2_4yr, school2_cc, school2_ad, satisfied_overall, ther_vis, 
+                                  school2_type, satisfied_overall, ther_vis, 
                                   talk, military, international)
 data <- data_env
 sig <- 0.6
@@ -1868,7 +1868,7 @@ data.v14 <- data.v14 %>%
                                 ifelse(si_type == "passive SI", 1,
                                        ifelse(si_type  == "active SI", 2, 3))))
 
-temp_reg <- select(data.v14, si_type_num, discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_4yr, school2_cc, school2_ad, 
+temp_reg <- select(data.v14, si_type_num, discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type, 
                    satisfied_overall, ther_vis, talk, military, international)
 cleaned_temp_reg <- NA_preproc(temp_reg)
 
@@ -1882,8 +1882,8 @@ datatrain_env = cleaned_temp_reg[index,]
 datatest_env = cleaned_temp_reg[-index,]
 
 #Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-mod_env <- glm(si_type_num ~ discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_4yr +
-                  school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international,
+mod_env <- glm(si_type_num ~ discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_type + 
+                 satisfied_overall + ther_vis + talk + military + international,
                data = datatrain_env)
 summary(mod_env) # check output
 
@@ -2916,7 +2916,7 @@ var_names <- c(
   "meds_sle", "meds_oth", "meds_none", "meds_count", "disab_1", "alc_tx", "wcs_tot",
   # environment
   "env_mh", "fam_support_aca", "ther_vis", "divers", "satisfied_overall", "residenc", "talk", "religios", 
-  "discrim", "school2_cc", "school2_4yr", "school2_ad", "school2",
+  "discrim", "school2_type",
   # life events
   "ins_cover", "gpa_sr", "assault_phys", "binge_fr", "assault_sex", "assault_emo", "psyhx", 
   "fincur", "drug_type", "drug_none",
@@ -3056,6 +3056,24 @@ dim(testdf.v23)
 
 
 ```{r SEM}
+data.v24 <- data.v23
+
+SI_model <- ' dia_sem =~ data.v24$age + data.v24$sexual + data.v24$gender + data.v24$finpast + data.v24$sib_freq + 
+                data.v24$race + data.v24$body_sr + data.v24$ed_scoff + data.v24$audit_tot + data.v24$dx_dep + 
+                data.v24$dx_bi + data.v24$dx_psy + data.v24$dx_ea + data.v24$dx_tr + data.v24$dx_sa + data.v24$dx_adhd +
+                data.v24$dx_pers + data.v24$dx_none + data.v24$meds_sti + data.v24$meds_dep + data.v24$meds_psy +
+                data.v24$meds_anx + data.v24$meds_mood + data.v24$meds_sle + data.v24$meds_oth + data.v24$meds_none +
+                data.v24$meds_count + data.v24$disab_1 + data.v24$alc_tx
+              env_sem =~ data.v24$env_mh + data.v24$fam_support_aca + data.v24$ther_vis + data.v24$divers + data.v24$satisfied_overall +
+                data.v24$residenc + data.v24$talk + data.v24$religios + data.v24$discrim + data.v24$school2_type
+              le_sem =~ data.v24$ins_cover + data.v24$gpa_sr + data.v24$assault_phys + data.v24$binge_fr + data.v24$assault_sex + 
+                data.v24$assault_emo + data.v24$psyhx + data.v24$fincur + data.v24$drug_type + data.v24$drug_none
+              def_sem =~ data.v24$aca_impa + data.v24$deprawsc
+              tsm_sem =~ data.v24$persist + data.v24$anx_score + data.v24$dep_secret + data.v24$AAQ_tot
+              entrap_sem =~ data.v24$dep_impa + data.v24$gad7_impa + data.v24$perneed_cur
+              mm_sm =~ data.v24$flourish + data.v24$belong + data.v24$inf + data.v24$stig_pcv_2 + data.v24$stig_pcv_3 + data.v24$brs_tot '
+
+fit <- cfa(SI_model, data=HolzingerSwineford1939)
 
 
 ```
