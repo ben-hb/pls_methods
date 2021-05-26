@@ -1445,12 +1445,6 @@ dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, m
 meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none,  meds_count 
 ```{r clm_dia}
 
-# prime si_type as numeric for future analysis
-data.v11 <- data.v11 %>% 
-    mutate(si_type_num = ifelse(si_type == "No SI", 0, 
-                                 ifelse(si_type == "passive SI", 1,
-                                        ifelse(si_type  == "active SI", 2, 3))))
-
 clm_dia <- data.v11 %>% select(si_type, age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, 
                                body_sr, dx_dep, dx_any, dx_bi, dx_psy, dx_adhd, meds_count, ed_any,
                                dx_ea, dx_tr, dx_sa, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, 
@@ -1470,9 +1464,9 @@ test_dia = clm_dia[-index,]       # Create the test data for diathesis
 dim(train_dia)
 dim(test_dia)
 
-m_dia <- clm(si_type ~ si_type + age + sexual + gender + finpast + sib_freq + race + disab_1 + ed_scoff + 
-               meds_count + ed_any + dx_ea + dx_tr + dx_sa + dx_pers + dx_none + meds_sti + meds_dep + meds_psy +
-               body_sr + dx_dep + dx_any + dx_bi + dx_psy + dx_adhd, data = data.v11)
+m_dia <- clm(si_type ~ age + sexual + gender + finpast + sib_freq + race + disab_1 + ed_scoff + 
+               meds_count + ed_any + dx_ea + dx_tr + dx_sa + dx_pers + meds_sti + meds_dep + meds_psy +
+               body_sr + dx_dep + dx_bi + dx_psy + dx_adhd, data = clm_dia)
 summary(m_dia)
 
 # sure fx
