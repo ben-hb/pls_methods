@@ -1024,7 +1024,7 @@ data.v9 <- data.v8 %>%
          dx_dep = factor(dx_dep, levels=0:1,
                          labels=c("No dep dx", "Depression"))) %>%
   mutate(dx_anx = case_when(dx_anx == 1 ~ 1,
-                            dx_none == 1 ~ 0),    # anxiety
+                            dx_none == 1 ~ 0),     # anxiety
          dx_anx = factor(dx_anx, levels=0:1,
                          labels=c("No anx dx", "Anxiety"))) %>%
   mutate(dx_bi = case_when(dx_bi == 1 ~ 1,
@@ -1830,13 +1830,13 @@ data_env <- data_env %>%
 data_env   # check output
 
 # impute to perform FAMD calculation
-require(missMDA)
-data(data_env)
-res.impute <- imputeFAMD(data_env, ncp=3)
-res.famd <- FAMD(res.pca, tab.disj=res.impute$tab.disj)
-
-fviz_screeplot(res.famd)
-fviz_famd_var(res.famd)
+# require(missMDA)
+# data(data_env)
+# res.impute <- imputeFAMD(data_env, ncp=3)
+# res.famd <- FAMD(res.pca, tab.disj=res.impute$tab.disj)
+# 
+# fviz_screeplot(res.famd)
+# fviz_famd_var(res.famd)
 
 # PCA map with eigenvalues
 results_env <- dummy_cols(data_env, select_columns = c("discrim", "religios", "env_mh", "residenc", "ther_vis",
@@ -2079,11 +2079,13 @@ data.v18 = subset(data.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up
 ```{r LE correlation}
 
 # Define life event var candidates for correlation matrix
-data_le <- data.v18 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
+data_le <- data.v18 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
+                               binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
 data <- data_le
 sig <- 0.6
 
- # convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA_
+ # convert data to numeric in order to run correlations (i.e., convert to factor first to keep 
+ # the integrity of the data - each value will become a number rather than turn into NA_
 data_le <- data_le %>% mutate_if(is.character, as.factor)
 data_le <-  data_le %>% mutate_if(is.factor, as.numeric)
 
@@ -2106,15 +2108,16 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 data_le <- data.v18 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
                                binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
 
-# create corr matrix, with dummy vars -- https://cran.r-project.org/web/packages/fastDummies/vignettes/making-dummy-variables.html
+# create corr matrix, with dummy vars
 data_le <- data_le %>% 
   mutate_if(is.numeric, as.factor) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 data_le   # check output
 
-results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", "gpa_sr", "aca_impa", "fincur", "assault_phys", 
-                               "binge_fr", "assault_sex", "assault_emo", "deprawsc", "psyhx", "drug_type"),
+results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", "gpa_sr", "aca_impa", 
+                                                     "fincur", "assault_phys", "binge_fr", "assault_sex", 
+                                                     "assault_emo", "deprawsc", "psyhx", "drug_type"),
                          remove_first_dummy = TRUE)
 
 le_pca <- PCA(results_le)  # apply PCA
@@ -2264,22 +2267,22 @@ dim(test_def)
 m_def <- clm(si_type ~., data = train_def)
 summary(m_def)
 
-# sure fx
-le_data <- mod_le[["model"]]
-
-# residual plot
-le_data$resid <- resids(mod_le, method = c("jitter"),
-     jitter.scale = c("response"))
-le_data <- cbind(le_data, mod_le[["fitted.values"]])
-ggplot(le_data, aes(x = `passive SI`, y = resid)) +
-geom_point(color = "purple", alpha = 0.15) +
-geom_smooth(method = "lm")
-
-le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-
-le_data %>% 
- filter(si_type == "SA") %>%
- ggplot(aes(x = resid)) + geom_density(color = "magenta")
+# # sure fx
+# le_data <- mod_le[["model"]]
+# 
+# # residual plot
+# le_data$resid <- resids(mod_le, method = c("jitter"),
+#      jitter.scale = c("response"))
+# le_data <- cbind(le_data, mod_le[["fitted.values"]])
+# ggplot(le_data, aes(x = `passive SI`, y = resid)) +
+# geom_point(color = "purple", alpha = 0.15) +
+# geom_smooth(method = "lm")
+# 
+# le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+# 
+# le_data %>% 
+#  filter(si_type == "SA") %>%
+#  ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
 
