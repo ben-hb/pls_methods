@@ -322,7 +322,7 @@ debug_contr_error2 <- function (form, dat, subset_vec = NULL) {
   c(list(mf = dat_internal), debug_contr_error(dat_internal, NULL))
 }
 
-# NA)preproc
+# NA_preproc
 NA_preproc <- function (dat) {
   for (j in 1:ncol(dat)) {
     x <- dat[[j]]
@@ -394,14 +394,7 @@ Creates indicator variable 'si_type' using the subtypes of suicidal ideation usi
 
 ```{r si_type}
 
-# combines PHQ9-9 and sui_idea to make 'suic_idea'
 data.v2 <- data.v1 %>%
-    # mutate(suic_idea = case_when(phq9_9 == 2 ~ 1, 
-    #                              phq9_9 == 3 ~ 1,
-    #                              phq9_9 == 4 ~ 1,
-    #                              sui_idea == 1 ~ 1)) %>% # sui_idea = 6612 -> 11508. Will run regression to see relationship
- # table(data.v2$suic_idea)
- # table(data.v2$phq9_9)  # "In the last 2 weeks, have you had thoughts that you would be better off dead or of hurting yourself in some way"
 
 # create si_type var
   mutate(si_type = case_when((sui_idea == 1 & suic_plan == 1 & suic_att == 1) ~ 4,   # volitional, suicide attempt or related bx
@@ -563,7 +556,7 @@ data.v4 <- data.v3 %>%
                        sexual_other == 1 ~ 7,                        # other
                        FALSE ~ 8,                                    # non-answers
                        FALSE ~ 9,                                    # creating 'pansexual' var
-                       FALSE ~ 10)) %>%                               # creating 'asexual/demi' var
+                       FALSE ~ 10)) %>%                              # creating 'asexual/demi' var
   mutate(sexual = factor(sexual, levels=1:10,
                          labels=c("Heterosexual", "Gay", "Lesbian", "Bisexual", "Queer", "Questioning", "Other", 
                                   "Non-answers", "Pansexual", "Asexual/Demi")))
@@ -757,7 +750,8 @@ data.v6 <- data.v5 %>%
                           race_oth == 1 ~ 8,
                           FALSE ~ 9)) %>%
     mutate(race = factor(race, levels=1:9,
-                         labels=c("Black", "AI/AN", "Asian", "Hispanic", "Pac Island", "ME/Arab", "White", "Other/Mixed", "Non-answers")))
+                         labels=c("Black", "AI/AN", "Asian", "Hispanic", "Pac Island", "ME/Arab", 
+                                  "White", "Other/Mixed", "Non-answers")))
 table(data.v6$race) # check output
 ```
 
@@ -809,13 +803,13 @@ data.v6$race[str_detect(data.v6$race_other_text, "[G|g]reek")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[I|i]rish")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[I|i]talian")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]lbania")] <- "White"
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]em[e|i]tic")] <- "White" # if Israeli, could be White, Asian, or ME (Palestine)
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]em[e|i]tic")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[R|r]ussian")] <- "White" # could be Asian depending on region
 data.v6$race[str_detect(data.v6$race_other_text, "[R|r]oma")] <- "White"
-data.v6$race[str_detect(data.v6$race_other_text, "[T|t]urkish")] <- "White"  # Turkish people... Asian? They are not Arab.
+data.v6$race[str_detect(data.v6$race_other_text, "[T|t]urkish")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[S|s]lavic")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[M|m]etis")] <- "White"
-data.v6$race[str_detect(data.v6$race_other_text, "[B|b]asque")] <- "White"  # could be caucasian or hispanic... need to figure out the majority
+data.v6$race[str_detect(data.v6$race_other_text, "[B|b]asque")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[S|s]icilian")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[P|p]olish")] <- "White"
 data.v6$race[str_detect(data.v6$race_other_text, "[S|s]candinavian")] <- "White"
@@ -1022,39 +1016,39 @@ data.v8 <- data.v8 %>%
 data.v9 <- data.v8 %>%
   filter(!is.na(dx_any)) %>%   # filters out any respondents who skipped the MH section 
   mutate(dx_dep = case_when(dx_dep == 1 ~ 1,
-                            dx_none == 1 ~ 0),   # depression
+                            dx_none == 1 ~ 0),     # depression
          dx_dep = factor(dx_dep, levels=0:1,
                          labels=c("No dep dx", "Depression"))) %>%
   mutate(dx_anx = case_when(dx_anx == 1 ~ 1,
-                            dx_none == 1 ~ 0),  # anxiety
+                            dx_none == 1 ~ 0),    # anxiety
          dx_anx = factor(dx_anx, levels=0:1,
                          labels=c("No anx dx", "Anxiety"))) %>%
   mutate(dx_bi = case_when(dx_bi == 1 ~ 1,
-                           dx_none == 1 ~ 0),  # bipolar
+                           dx_none == 1 ~ 0),     # bipolar
          dx_bi = factor(dx_bi, levels=0:1, 
                         labels=c("No BPD dx", "Bipolar"))) %>%
   mutate(dx_psy = case_when(dx_psy == 1 ~ 1,
-                            dx_none == 1 ~ 0),  # psychotic
+                            dx_none == 1 ~ 0),    # psychotic
          dx_psy = factor(dx_psy, levels=0:1,
                          labels=c("No psychosis", "Psychosis"))) %>%
   mutate(dx_ea = case_when(dx_ea == 1 ~ 1,
-                           dx_none == 1 ~ 0),  # eating d/o
+                           dx_none == 1 ~ 0),     # eating d/o
          dx_ea = factor(dx_ea, levels=0:1,
                         labels=c("No EA dx", "Eating"))) %>%
   mutate(dx_tr = case_when(dx_tr == 1 ~ 1,
-                           dx_none == 1 ~ 0),  # trauma
+                           dx_none == 1 ~ 0),     # trauma
          dx_tr = factor(dx_tr, levels=0:1,
                         labels=c("No trauma dx", "Trauma"))) %>%
   mutate(dx_sa = case_when(dx_sa == 1 ~ 1,
-                           dx_none == 1 ~ 0), # substance abuse
+                           dx_none == 1 ~ 0),     # substance abuse
          dx_sa = factor(dx_sa, levels=0:1,
                         labels=c("No SA dx", "Substance"))) %>%
   mutate(dx_adhd = case_when(dx_adhd == 1 ~ 1,
-                             dx_none == 1 ~ 0),  # adhd
+                             dx_none == 1 ~ 0),   # adhd
          dx_adhd = factor(dx_adhd, levels=0:1,
                           labels=c("No ADHD dx", "ADHD"))) %>%
   mutate(dx_pers = case_when(dx_pers == 1 ~ 1,
-                             dx_none == 1 ~ 0),  # personality
+                             dx_none == 1 ~ 0),   # personality
          dx_pers = factor(dx_pers, levels=0:1,
                           labels=c("No personality d/o dx", "Personality"))) %>%
   mutate(dx_none = factor(dx_none, levels=0:1,
@@ -1081,7 +1075,7 @@ data.v9 <- data.v9 %>%
   filter(!is.na(religios)) %>% 
   mutate(religios = factor(religios, levels=1:5,
                     labels=c("Very Important", "Important", "Neutral", "Unimportant", "Very unimportant")))
-table(data.v9$religios, useNA = "always") # Check output
+table(data.v9$religios, useNA = "always")       # Check output
 ```
 
 ## AUDIT  
@@ -1107,8 +1101,9 @@ data.v9 <- data.v9 %>%
          audit_9 = as.numeric(audit_9),
          audit_10 = as.numeric(audit_10)) %>%
   # Find audit_tot
-  mutate(audit_tot = as.numeric(audit_1) + as.numeric(audit_2) + as.numeric(audit_3) + as.numeric(audit_4) + as.numeric(audit_5) +
-           as.numeric(audit_6) + as.numeric(audit_7) + as.numeric(audit_8) + as.numeric(audit_9) + as.numeric(audit_10))
+  mutate(audit_tot = as.numeric(audit_1) + as.numeric(audit_2) + as.numeric(audit_3) + 
+           as.numeric(audit_4) + as.numeric(audit_5) + as.numeric(audit_6) + as.numeric(audit_7) + 
+           as.numeric(audit_8) + as.numeric(audit_9) + as.numeric(audit_10))
 table(data.v9$audit_tot)
 
 ```
@@ -1138,7 +1133,8 @@ table(data.v9$wcs_3)
 table(data.v9$wcs_4)
 table(data.v9$wcs_5)
 
-data.v9 = subset(data.v9, select= -c(wcs_1_f, wcs_1_m, wcs_1_o, wcs_2, wcs_3, wcs_4, wcs_5)) # clean up vars/columns
+data.v9 = subset(data.v9, select= -c(wcs_1_f, wcs_1_m, wcs_1_o, wcs_2, 
+                                     wcs_3, wcs_4, wcs_5)) # clean up vars/columns
 
 ```
 
@@ -1163,8 +1159,8 @@ data.v11 <- data.v9 %>%
       data.v11$meds_sti[str_detect(data.v11$meds_7_text, "[N|n]uvigil")] <- 1
       data.v11$meds_sti[str_detect(data.v11$meds_7_text, "ADHD")] <- 1
       data.v11$meds_sti[str_detect(data.v11$meds_7_text, "[M|m]odafinil")] <- 1
-      data.v11$meds_sti[data.v11$meds_7_text %in% c("Vyance", "Vivance adhd", "Stratera", "Aderol", "Aderal", "Adderrall (for ADHD)", 
-                                                    "Adderal, vyvance", "Adderal", "Celltech")] <- 1
+      data.v11$meds_sti[data.v11$meds_7_text %in% c("Vyance", "Vivance adhd", "Stratera", "Aderol", "Aderal", "Adderal",
+                                                    "Adderrall (for ADHD)", "Adderal, vyvance",  "Celltech")] <- 1
       
 # Create antidepressant
 data.v11 <- data.v11 %>%
@@ -1347,8 +1343,8 @@ table(data.v11$meds_none)
 ```
 
 ## Psychopharm medication count
-Create 'meds_count' to be used in future regression to capture quantity and diversity of medications to see what is associated
-(i.e. the count is meant to find the common meds in suicidality)
+Create 'meds_count' to be used in future regression to capture quantity and diversity of medications 
+to see what is associated (i.e. the count is meant to find the common meds in suicidality)
 ```{r med_count}
 data.v11$meds_1 <- as.numeric(data.v11$meds_1)
 data.v11$meds_2 <- as.numeric(data.v11$meds_2)
@@ -1386,17 +1382,18 @@ data_dia <- data.v11 %>% select(c(age, sexual, gender, finpast, sib_freq, race, 
 
 # Corr_simple function
 corr_simple <- function(data=data_dia, sig=0.6){
-  # convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA)
+  # convert data to numeric in order to run correlations 
+  # (i.e., convert to factor first to keep the integrity of the data - each value will become a num rather than NA)
   data_dia <- data_dia %>% mutate_if(is.character, as.factor)
   data_dia <-  data_dia %>% mutate_if(is.factor, as.numeric)
   # run a correlation and drop the insignificant ones
   corr <- cor(data_dia, use = "pairwise.complete.obs")                               
   corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
   corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-  corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
-  corr <- na.omit(corr)                                   #remove the NA values from above 
-  corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
-  corr <- subset(corr, abs(Freq) > sig)                   #select significant values 
+  corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
+  corr <- na.omit(corr)                                   # remove the NA values from above 
+  corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
+  corr <- subset(corr, abs(Freq) > sig)                   # select significant values 
   print(corr)
   
   #turn corr back into matrix in order to plot with corrplot
@@ -1414,7 +1411,7 @@ data_dia <- data.v11 %>% select(age, sexual, gender, finpast, sib_freq, race, di
                                   dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
                                   meds_oth, meds_none, alc_tx, meds_count, ed_any)
 
-# create corr matrix, with dummy vars -- https://cran.r-project.org/web/packages/fastDummies/vignettes/making-dummy-variables.html
+# create corr matrix, with dummy vars
 data_dia <- data_dia %>% 
   mutate_if(is.numeric, as.factor) %>% 
   mutate(
@@ -1427,22 +1424,23 @@ data_dia <- data_dia %>%
   data.matrix()
 data_dia   # check output
 
-results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender", "finpast", "sib_freq", "race", "disab_1", "ed_scoff", "body_sr",
-                                  "audit_tot", "dx_dep", "dx_any", "dx_bi", "dx_adhd", "dx_psy", "dx_ea", "dx_tr", "dx_sa", "dx_pers",
-                                  "dx_none", "meds_sti", "meds_dep", "meds_psy", "meds_anx", "meds_mood", "meds_sle", "meds_oth", "meds_none",
-                                  "alc_tx", "meds_count", "ed_any"), remove_first_dummy = TRUE)
+results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender", "finpast", "sib_freq", "race", "ed_any",
+                                                       "disab_1", "ed_scoff", "body_sr", "audit_tot", "dx_dep", "dx_any",
+                                                       "dx_bi", "dx_adhd", "dx_psy", "dx_ea", "dx_tr", "dx_sa", "dx_pers",
+                                                       "dx_none", "meds_sti", "meds_dep", "meds_psy", "meds_anx", 
+                                                       "meds_mood", "meds_sle", "meds_oth", "meds_none", "alc_tx", "meds_count"), 
+                          remove_first_dummy = TRUE)
 
 dia_pca <- PCA(results_dia)  # apply PCA
 dia_pca$eig   # output matrix with eigenvalues
 
-
-
-
 ```
 
 ## CLM diathesis regression
-Regression variables: age, sexual, gender, finpast, sib_freq, race, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none, alc_tx, meds_count, disab_1
-```{r lasso_dia}
+Regression variables: age, sexual, gender, finpast, sib_freq, race, ed_scoff, body_sr, audit_tot, 
+dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, meds_sti, meds_dep, 
+meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none, alc_tx, meds_count, disab_1
+```{r clm_dia}
 
 clm_dia <- data.v11 %>% select(si_type, age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, 
                                body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_adhd, meds_count, ed_any,
@@ -1467,20 +1465,26 @@ m_dia <- clm(si_type ~., data = train_dia)
 summary(m_dia)
 
 # sure fx
-dia_data <- mod_dia[["model"]]
+dia_data <- m_dia[["model"]]
 
 # residual plot
-dia_data$resid <- resids(mod_dia, method = c("jitter"),
+
+data.v11 <- data.v1 %>% 
+    mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
+                                 ifelse(si_type == "passive SI", 1,
+                                        ifelse(si_type  == "active SI", 2, 3))))
+
+dia_data$resid <- resids(m_dia, method = c("jitter"),
       jitter.scale = c("response"))
-dia_data <- cbind(dia_data, mod_dia[["fitted.values"]])
-ggplot(dia_data, aes(x = `passive SI`, y = resid)) +
+dia_data <- cbind(dia_data, m_dia[["fitted.values"]])
+ggplot(dia_data, aes(x = `active SI`, y = resid)) +
 geom_point(color = "purple", alpha = 0.15)
 geom_smooth(method = "lm")
 
-dia_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+dia_data %>% group_by(si_type_num) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 
 dia_data %>% 
-  filter(si_type == "SA") %>%
+  filter(si_type == "active SI") %>%
   ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
