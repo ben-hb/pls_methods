@@ -512,11 +512,11 @@ data.v3$gender[str_detect(data.v3$gender_text, "[C|c]hinook")] <- "non-answers"
 data.v3$gender[str_detect(data.v3$gender_text, "[A|a]pache")] <- "non-answers"
 data.v3$gender[str_detect(data.v3$gender_text, "[U|u]nicorn")] <- "non-answers"
 data.v3$gender[data.v3$gender_text %in% c("Albino stingray", "Karate Chop Action", "Flying Spaghetti Monster", "Pio Nono", "God", 
-                                          "None", "Baseball bat", "Mountain lion", "Oil Platform", "Chair", 
+                                          "None", "Baseball bat", "Mountain lion", "Oil Platform", "Chair", "M1A1 Main Battle Tank",
                                           "This doesn't matter and you're an idiot for thinking it does.","REZZBIAN",
                                           "Baguette", "fairy", "a 5 year old girl", "tree", "unicorn", "His Majesty", 
-                                          "Call of Duty: Modern Warfare 2", "Attack hellcopter", "Meme God", "Stainless Steel Toaster", 
-                                          "God himself", "baseball bat", "Mountain","Trans Former", "M1A1 Main Battle Tank", "AH-64D", 
+                                          "Call of Duty: Modern Warfare 2", "Attack hellcopter", "Meme God", "AH-64D", 
+                                          "Stainless Steel Toaster", "God himself", "baseball bat", "Mountain","Trans Former", 
                                           "Potato", "I will literally give you $100 to h*ck off", "Indian tape worm", 
                                           "Metallic Hyper-Entity", "2X4 treated lumber", "pizza", "sPecIaL SNowFlAkE", "Deppressed",
                                           "eh", "George Michael", "Metaknight Main", "Microwave", "Pizza", "Sea turtle", 
@@ -526,16 +526,18 @@ data.v3$gender[data.v3$gender_text %in% c("Albino stingray", "Karate Chop Action
 
   # non-answers, decline to answer
 data.v3$gender[str_detect(data.v3$gender_text, "[D|d]ecline")] <- "non-answers"
-data.v3$gender[data.v3$gender_text %in% c("I am me. A human.", "I'm not yet sure where I identify", "Human-being", "genders", "okay", 
-                                          "guess", "none", "Just my name.", "the above options are sex, not genders", 
+data.v3$gender[data.v3$gender_text %in% c("I am me. A human.", "I'm not yet sure where I identify", "Human-being", "genders", 
+                                          "okay", "guess", "none", "Just my name.", "the above options are sex, not genders", 
                                           "the above options are sex, not genders", "its difficult", "any", "?", 
                                           "Biological male who identifies as a lesbian female.", "Prefer not to answer",
                                           "The universe conscious of itself",  "no",  "I only try to use gender when it's useful", 
                                           "fuck gender", "Gender and sex are the same", "gender is a lie", "#love", "No",
                                           "it's weird to separate out trans male and trans female if you're also asking for birth assignment.", 
-                                          "2 genders", "I don't understand the question.", "'Male' and 'female' are not gender identities.",
+                                          "2 genders", "I don't understand the question.", "Prefer not to specifiy",
+                                          "'Male' and 'female' are not gender identities.",
                                           "I don't have one because it's not a legitimate concept.", 
-                                          "Gender is a construct which serves no purpose.", "Prefer not to specifiy")] <- "non-answers"
+                                          "Gender is a construct which serves no purpose.")] <- "non-answers"
+
 table(data.v3$gender, useNA = "always")   # check output
 ```
 
@@ -558,8 +560,9 @@ data.v4 <- data.v3 %>%
                        FALSE ~ 9,                                    # creating 'pansexual' var
                        FALSE ~ 10)) %>%                              # creating 'asexual/demi' var
   mutate(sexual = factor(sexual, levels=1:10,
-                         labels=c("Heterosexual", "Gay", "Lesbian", "Bisexual", "Queer", "Questioning", "Other", 
-                                  "Non-answers", "Pansexual", "Asexual/Demi")))
+                         labels=c("Heterosexual", "Gay", "Lesbian", "Bisexual", "Queer", "Questioning",
+                                  "Other", "Non-answers", "Pansexual", "Asexual/Demi")))
+
 table(data.v4$sexual, useNA = "always") # tabulate and check outputs
 
 ```
@@ -680,7 +683,8 @@ data.v4$sexual[data.v4$sexual_text %in% c("I'm straight but I like girls too sex
                                           "hetero with occasional bi tendencies", "gay leaning bi", "Bi-curious", 
                                           "Herero-romantic bisexual", "Bi with a stronger attraction to same sex",
                                           "I'm like halfway to bisexual. Never had a crush on another girl but I'm still interested. Idk.",
-                                          "No boundaries in place - though probably bisexual", )] <- "Bisexual"
+                                          "No boundaries in place - though probably bisexual")] <- "Bisexual"
+
 table(data.v4$sexual, useNA = "always")   # tabulate and check outputs
 ```
 
