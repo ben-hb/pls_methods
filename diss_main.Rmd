@@ -2462,19 +2462,52 @@ clm_entrap <- data.v21 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
 str(clm_entrap)
 set.seed(1000) 
 
-index = sample(1:nrow(clm_entrap), 0.7*nrow(clm_entrap)) 
+clm_entrap <- NA_preproc(clm_entrap)
 
-train_entrap = clm_entrap[index,] # Create the training data 
-test_entrap = clm_entrap[-index,] # Create the test data
+# index = sample(1:nrow(clm_entrap), 0.7*nrow(clm_entrap)) 
+# 
+# train_entrap = clm_entrap[index,] # Create the training data 
+# test_entrap = clm_entrap[-index,] # Create the test data
+# 
+# dim(train_entrap)
+# dim(test_entrap)
+# 
+# clm_entrap <- clm_entrap %>%
+#   mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
+#                                 ifelse(si_type == "passive SI", 1,
+#                                        ifelse(si_type  == "active SI", 2, 3))))
 
-dim(train_entrap)
-dim(test_entrap)
-
-m_entrap <- clm(si_type ~., data = train_entrap)
+m_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_entrap)
 summary(m_entrap)
 
 # sure fx
 entrap_data <- mod_entrap[["model"]]
+
+
+
+
+# data.v21 <- data.v21 %>%
+#   mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
+#                                ifelse(si_type == "passive SI", 1,
+#                                       ifelse(si_type  == "active SI", 2, 3))))
+# 
+# temp_reg <- select(data.v21, si_type_num, dep_impa, gad7_impa, percneed_cur)
+# cleaned_temp_reg <- NA_preproc(temp_reg)
+# 
+# # Dividing data into training and test set
+#   # Random sampling 
+# samplesize_entrap = 0.60*nrow(cleaned_temp_reg)
+# set.seed(1000)
+# index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_entrap)
+# 
+# # Creating training and test set
+# datatrain_entrap = cleaned_temp_reg[index,]
+# datatest_entrap = cleaned_temp_reg[-index,]
+# 
+# # Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
+# mod_entrap <- glm(si_type_num ~ (dep_impa + gad7_impa + percneed_cur)^2, data = datatrain_entrap)
+# summary(mod_entrap) # check output
+
 
 # residual plot
 entrap_data$resid <- resids(mod_entrap, method = c("jitter"),
@@ -2561,8 +2594,8 @@ data.v22$inf_7[is.na(data.v22$inf_7)] <- 0
 
 # change inf_ var to numeric
 data.v22 <- data.v22 %>% 
-  mutate(inf_sum = as.numeric(inf_1) + as.numeric(inf_2) + as.numeric(inf_3) + as.numeric(inf_4) + as.numeric(inf_5) +
-                   as.numeric(inf_6) + as.numeric(inf_7)) %>%
+  mutate(inf_sum = as.numeric(inf_1) + as.numeric(inf_2) + as.numeric(inf_3) + as.numeric(inf_4) + 
+           as.numeric(inf_5) + as.numeric(inf_6) + as.numeric(inf_7)) %>%
   mutate(inf_multi = ifelse(inf_sum > 1, 1, 0)) %>%
   
   # merge all var into inf_type
@@ -2585,6 +2618,7 @@ data.v22 = subset(data.v22, select= -c(inf_1:inf_help, inf_sum))
 ```{r BRS_tot}
 data.v22 <- data.v22 %>%
   mutate(brs_tot = as.integer(BRS_1) + as.integer(BRS_2) + as.integer(BRS_3) + as.integer(BRS_4) + as.integer(BRS_5))
+
 table(data.v22$brs_tot)
 ```
 
@@ -2593,7 +2627,7 @@ table(data.v22$brs_tot)
 table(data.v22$friend_devel, useNA = "always")
 
 # sample too small in the elective, remove
-#data.v22 = subset(data.v22, select= -c(friend_devel)) # clean up var
+data.v22 = subset(data.v22, select= -c(friend_devel)) # clean up var
 ```
 
 ## Perceived MH as failure
@@ -2661,18 +2695,7 @@ clm_mm <- data.v22 %>% select(si_type, inf, flourish, belong1, belong2, belong8,
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
 
-str(clm_mm)
-set.seed(1000) 
-
-index = sample(1:nrow(clm_mm), 0.7*nrow(clm_mm))
-
-train_mm = clm_mm[index,] # Create the training data 
-test_mm = clm_mm[-index,] # Create the test data
-
-dim(train_mm)
-dim(test_mm)
-
-m_mm <- clm(si_type ~., data = train_mm)
+m_mm <- clm(si_type ~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + brs_tot, data = data.v22)
 summary(m_mm)
 
 # sure fx
