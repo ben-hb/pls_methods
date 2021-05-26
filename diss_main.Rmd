@@ -1440,7 +1440,8 @@ dia_pca$eig   # output matrix with eigenvalues
 
 ```
 
-## CLM diathesis
+## CLM diathesis regression
+Regression variables: age, sexual, gender, finpast, sib_freq, race, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none, alc_tx, meds_count, disab_1
 ```{r lasso_dia}
 
 clm_dia <- data.v11 %>% select(si_type, age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, 
@@ -1465,59 +1466,22 @@ dim(test_dia)
 m_dia <- clm(si_type ~., data = train_dia)
 summary(m_dia)
 
-
-```
-
-## Diathesis regression
-
-Regression variables: age, sexual, gender, finpast, sib_freq, race, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none, alc_tx, meds_count, disab_1
-
-```{r Diathesis regression}
-
-# #Build logistic regression model
-# data.v11 <- data.v11 %>%
-#   mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-#                                 ifelse(si_type == "passive SI", 1,
-#                                        ifelse(si_type  == "active SI", 2, 3))))
-# 
-# temp_reg <- select(data.v11, si_type_num, dx_pers, dx_dep, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, meds_anx, meds_psy, meds_mood, meds_sle, meds_dep, meds_sti, sib_freq, 
-#                    age, sexual, gender, finpast, race, meds_count, body_sr, ed_any)
-# cleaned_temp_reg <- NA_preproc(temp_reg)
-# 
-# #Dividing data into training and test set
-#   #Random sampling 
-# samplesize_dia = 0.60*nrow(cleaned_temp_reg)
-# set.seed(1000)
-# index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_dia)
-# # Creating training and test set
-# datatrain_dia = cleaned_temp_reg[index,]
-# datatest_dia = cleaned_temp_reg[-index,]
-# 
-# #Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-# mod_dia <- glm(si_type_num ~ dx_pers + dx_dep + dx_bi + dx_psy + dx_ea + dx_tr + dx_sa + dx_adhd + meds_anx + meds_psy + meds_mood + meds_sle + meds_dep + meds_sti + sib_freq + 
-#                  age + sexual + gender + finpast + race + meds_count + body_sr + ed_any,
-#                data = datatrain_dia)
-# # dx_adhd
-# summary(mod_dia) # check output
-
-#step_dia <- stepAIC(mod_dia, direction = "both", trace = 10)
-
 # sure fx
-#dia_data <- mod_dia[["model"]]
+dia_data <- mod_dia[["model"]]
 
 # residual plot
-#dia_data$resid <- resids(mod_dia, method = c("jitter"),
-#      jitter.scale = c("response"))
-#dia_data <- cbind(dia_data, mod_dia[["fitted.values"]])
-#ggplot(dia_data, aes(x = `passive SI`, y = resid)) +
-#geom_point(color = "purple", alpha = 0.15)
-#geom_smooth(method = "lm")
+dia_data$resid <- resids(mod_dia, method = c("jitter"),
+      jitter.scale = c("response"))
+dia_data <- cbind(dia_data, mod_dia[["fitted.values"]])
+ggplot(dia_data, aes(x = `passive SI`, y = resid)) +
+geom_point(color = "purple", alpha = 0.15)
+geom_smooth(method = "lm")
 
-#dia_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+dia_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 
-#dia_data %>% 
-# filter(si_type == "SA") %>%
-# ggplot(aes(x = resid)) + geom_density(color = "magenta")
+dia_data %>% 
+  filter(si_type == "SA") %>%
+  ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
 
@@ -1857,27 +1821,28 @@ data_env <- data_env %>%
   data.matrix()
 data_env   # check output
 
+# impute to perform FAMD calculation
+require(missMDA)
+data(data_env)
+res.impute <- imputeFAMD(data_env, ncp=3)
+res.famd <- FAMD(res.pca, tab.disj=res.impute$tab.disj)
+
+fviz_screeplot(res.famd)
+fviz_famd_var(res.famd)
+
+# PCA map with eigenvalues
 results_env <- dummy_cols(data_env, select_columns = c("discrim", "religios", "env_mh", "residenc", "ther_vis",
                                                        "activ_yn", "divers", "school2_type", "satisfied_overall", "ther_vis", 
                                                        "talk", "military", "international"),
                           remove_first_dummy = TRUE)
 
-# impute???
-nb = estim_ncpPCA(results_env,ncp.max=5)
-res.comp = imputePCA(results_env,ncp=2)
-res.pca = PCA(res.comp$completeObs)
-
-res.famd <- FAMD(res.pca, graph = FALSE)
-fviz_screeplot(res.famd)
-fviz_famd_var(res.famd)
-
-# PCA
 env_pca <- PCA(results_env)  # apply PCA
 env_pca$eig   # output matrix with eigenvalues
 
 ```
 
-## CLM environment
+## CLM environmental regression
+Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
 ```{r CLM environment}
 
 clm_env <- data.v14 %>% select(si_type,  discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type, 
@@ -1899,55 +1864,22 @@ dim(test_env)
 m_env <- clm(si_type ~., data = train_env)
 summary(m_env)
 
-```
-
-## Environmental regression
-Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
-```{r Environment regression}
-
-#Build logistic regression model
-data.v14 <- data.v14 %>%
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                ifelse(si_type == "passive SI", 1,
-                                       ifelse(si_type  == "active SI", 2, 3))))
-
-temp_reg <- select(data.v14, si_type_num, discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type, 
-                   satisfied_overall, ther_vis, talk, military, international)
-cleaned_temp_reg <- NA_preproc(temp_reg)
-
-#Dividing data into training and test set
-  #Random sampling 
-samplesize_env = 0.60*nrow(cleaned_temp_reg)
-set.seed(1000)
-index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_env)
-# Creating training and test set
-datatrain_env = cleaned_temp_reg[index,]
-datatest_env = cleaned_temp_reg[-index,]
-
-#Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-mod_env <- glm(si_type_num ~ discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_type + 
-                 satisfied_overall + ther_vis + talk + military + international,
-               data = datatrain_env)
-summary(mod_env) # check output
-
-step_env <- stepAIC(mod_env, direction = "both", trace = 20)
-
 # sure fx
 env_data <- mod_env[["model"]]
 
 # residual plot
-#env_data$resid <- resids(mod_env, method = c("jitter"),
-#      jitter.scale = c("response"))
-#env_data <- cbind(env_data, mod_env[["fitted.values"]])
-#ggplot(env_data, aes(x = `passive SI`, y = resid)) +
-#geom_point(color = "purple", alpha = 0.15) +
-#geom_smooth(method = "lm")
+env_data$resid <- resids(mod_env, method = c("jitter"),
+    jitter.scale = c("response"))
+env_data <- cbind(env_data, mod_env[["fitted.values"]])
+ggplot(env_data, aes(x = `passive SI`, y = resid)) +
+geom_point(color = "purple", alpha = 0.15) +
+geom_smooth(method = "lm")
 
-#env_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+env_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 
-#env_data %>% 
-# filter(si_type == "SA") %>%
-# ggplot(aes(x = resid)) + geom_density(color = "magenta")
+env_data %>% 
+  filter(si_type == "SA") %>% 
+  ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
 
@@ -2181,7 +2113,9 @@ le_pca <- PCA(results_le)  # apply PCA
 le_pca$eig   # output matrix with eigenvalues
 ```
 
-## CLM LE
+## CLM Life event regression
+Regression variables: ins_cover, gpa_sr, aca_impa, abuse_year, psyhx, binge_fr, fincur, 
+drug_type, assault_sex, assault_phys, assault_emo, isi_tot
 ```{r clm_LE}
 clm_le <- data.v18 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
                               binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
@@ -2202,61 +2136,26 @@ dim(test_le)
 
 m_le <- clm(si_type ~., data = train_le)
 summary(m_le)
-```
-
-## Life event regression
-Regression variables: ins_cover, gpa_sr, aca_impa, abuse_year, psyhx, binge_fr, fincur, 
-drug_type, assault_sex, assault_phys, assault_emo, isi_tot
-```{r Life event regression}
-
-# #Build logistic regression model
-# data.v18 <- data.v18 %>% 
-#   mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-#                                 ifelse(si_type == "passive SI", 1,
-#                                        ifelse(si_type  == "active SI", 2, 3))))
-# 
-# temp_reg <- select(data.v18, si_type_num, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, 
-#assault_phys, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
-# 
-# cleaned_temp_reg <- NA_preproc(temp_reg)
-# 
-# #Dividing data into training and test set
-#   #Random sampling 
-# samplesize_le = 0.60*nrow(cleaned_temp_reg)
-# set.seed(1000)
-# index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_le)
-# 
-# # Creating training and test set
-# datatrain_le = cleaned_temp_reg[index,]
-# datatest_le = cleaned_temp_reg[-index,]
-# 
-# #Build  logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-# mod_le <- glm(si_type_num ~ (ins_cover + abuse_year + gpa_sr + aca_impa + fincur + assault_phys + binge_fr +
-#                     assault_sex + assault_emo + deprawsc + psyhx + drug_type)^2,
-#                data = datatrain_le)
-# summary(mod_le) # check output
-# 
-# step_le <- stepAIC(mod_le, direction = "both", trace = 20)
 
 # sure fx
-#le_data <- mod_le[["model"]]
+le_data <- mod_le[["model"]]
 
 # residual plot
-#le_data$resid <- resids(mod_le, method = c("jitter"),
- #     jitter.scale = c("response"))
-#le_data <- cbind(le_data, mod_le[["fitted.values"]])
-#ggplot(le_data, aes(x = `passive SI`, y = resid)) +
-#geom_point(color = "purple", alpha = 0.15) +
-#geom_smooth(method = "lm")
+le_data$resid <- resids(mod_le, method = c("jitter"),
+     jitter.scale = c("response"))
+le_data <- cbind(le_data, mod_le[["fitted.values"]])
+ggplot(le_data, aes(x = `passive SI`, y = resid)) +
+geom_point(color = "purple", alpha = 0.15) +
+geom_smooth(method = "lm")
 
-#le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 
-#le_data %>% 
-# filter(si_type == "SA") %>%
-# ggplot(aes(x = resid)) + geom_density(color = "magenta")
+le_data %>% 
+ filter(si_type == "SA") %>%
+ ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
- 
+
 
 # DEFEAT
 Candidate variables: aca_impa, failed, men_ill_ash, deprawsc
@@ -2357,64 +2256,22 @@ dim(test_def)
 m_def <- clm(si_type ~., data = train_def)
 summary(m_def)
 
-```
+# sure fx
+le_data <- mod_le[["model"]]
 
-## Defeat regression
-Candidate variables: aca_impa, men_ill_ash, deprawsc
-```{r mod_defeat}
-#Build logistic regression model
-data.v19 <- data.v19 %>% 
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                ifelse(si_type == "passive SI", 1,
-                                       ifelse(si_type  == "active SI", 2, 3))))
+# residual plot
+le_data$resid <- resids(mod_le, method = c("jitter"),
+     jitter.scale = c("response"))
+le_data <- cbind(le_data, mod_le[["fitted.values"]])
+ggplot(le_data, aes(x = `passive SI`, y = resid)) +
+geom_point(color = "purple", alpha = 0.15) +
+geom_smooth(method = "lm")
 
-temp_reg <- select(data.v19, si_type_num, aca_impa, deprawsc)
-cleaned_temp_reg <- NA_preproc(temp_reg)
+le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 
-#Dividing data into training and test set
-  #Random sampling 
-  samplesize_def = 0.60*nrow(cleaned_temp_reg)
-  set.seed(1000)
-  index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_def)
-
-  # Creating training and test set
-  datatrain_def = cleaned_temp_reg[index,]
-  datatest_def = cleaned_temp_reg[-index,]
-
-#Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-mod_def <- glm(si_type_num ~ (aca_impa + deprawsc)^2,
-               data = datatrain_def)
-summary(mod_def) # check output
-
-#
-step_def <- stepAIC(mod_def, direction = "both", trace = 20)
-```
-
-## Stepwise defeat
-```{r stepwise_def}
-
-models <- regsubsets(si_type_num ~., data = datatrain_def, nvmax = 5,
-                     method = "seqrep")
-summary(models)
-
-# Set seed for reproducibility
-set.seed(1000)
-# Set up repeated k-fold cross-validation
-train.control <- trainControl(method = "cv", number = 10)
-# Train the model
-step.model <- train(si_type_num ~., data = datatrain_def,
-                    method = "lmStepAIC", 
-                    trControl = train.control,
-                    trace = FALSE
-                    )
-# Model accuracy
-step.model$results
-# Final model coefficients
-step.model$finalModel
-# Summary of the model
-summary(step.model$finalModel)
-coef(step.model$finalModel, 4)
-
+le_data %>% 
+ filter(si_type == "SA") %>%
+ ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
 
@@ -2527,56 +2384,25 @@ dim(test_tsm)
 
 m_tsm <- clm(si_type ~., data = train_tsm)
 summary(m_tsm)
-```
-
-## Threats to Self-moderation regression
-Variables for consideration: persist, anx_score, dep_secret, achieve4, AAQ_tot
-```{r Threats to self-moderation var regression}
-
-#Build logistic regression model
-data.v20 <- data.v20 %>% 
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                ifelse(si_type == "passive SI", 1,
-                                       ifelse(si_type  == "active SI", 2, 3))))
-
-temp_reg <- select(data.v20, si_type_num, persist, anx_score, dep_secret, AAQ_tot)
-
-cleaned_temp_reg <- NA_preproc(temp_reg)
-
-#Dividing data into training and test set
-  #Random sampling 
-  samplesize_tsm = 0.60*nrow(cleaned_temp_reg)
-  set.seed(1000)
-  index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_tsm)
-  # Creating training and test set
-  datatrain_tsm = cleaned_temp_reg[index,]
-  datatest_tsm = cleaned_temp_reg[-index,]
-
-#Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-mod_tsm <- glm(si_type_num ~ persist + anx_score + dep_secret + AAQ_tot, data = datatrain_tsm)
-summary(mod_tsm) # check output
-
-step_tsm <- stepAIC(mod_tsm, direction = "both", trace = 20)
 
 # sure fx
-#tsm_data <- mod_tsm[["model"]]
+tsm_data <- mod_tsm[["model"]]
 
 # residual plot
-#tsm_data$resid <- resids(mod_tsm, method = c("jitter"),
-#      jitter.scale = c("response"))
-#tsm_data <- cbind(tsm_data, mod_tsm[["fitted.values"]])
-#ggplot(tsm_data, aes(x = `passive SI`, y = resid)) +
-#geom_point(color = "purple", alpha = 0.15) +
-#geom_smooth(method = "lm")
-#
-#tsm_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-#
-#tsm_data %>% 
-# filter(si_type == "SA") %>%
-# ggplot(aes(x = resid)) + geom_density(color = "magenta")
+tsm_data$resid <- resids(mod_tsm, method = c("jitter"),
+      jitter.scale = c("response"))
+tsm_data <- cbind(tsm_data, mod_tsm[["fitted.values"]])
+ggplot(tsm_data, aes(x = `passive SI`, y = resid)) +
+geom_point(color = "purple", alpha = 0.15) +
+geom_smooth(method = "lm")
+
+tsm_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+
+tsm_data %>% 
+  filter(si_type == "SA") %>%
+  ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
-
 
 
 # ENTRAPMENT
@@ -2643,7 +2469,7 @@ entrap_pca <- PCA(results_entrap)  # apply PCA
 entrap_pca$eig   # output matrix with eigenvalues
 ```
 
-##  CLM Entrapment
+##  CLM Entrapment regression
 ```{r clm_entrap}
 clm_entrap <- data.v21 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
 
@@ -2661,48 +2487,19 @@ dim(test_entrap)
 m_entrap <- clm(si_type ~., data = train_entrap)
 summary(m_entrap)
 
-```
-
-## Entrapment regression
-```{r mod_entrap}
-
-data.v21 <- data.v21 %>% 
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                ifelse(si_type == "passive SI", 1,
-                                       ifelse(si_type  == "active SI", 2, 3))))
-
-temp_reg <- select(data.v21, si_type_num, dep_impa, gad7_impa, percneed_cur)
-
-cleaned_temp_reg <- NA_preproc(temp_reg)
-
-#Dividing data into training and test set
-  #Random sampling 
-  samplesize_entrap = 0.60*nrow(cleaned_temp_reg)
-  set.seed(1000)
-  index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_entrap)
-  # Creating training and test set
-  datatrain_entrap = cleaned_temp_reg[index,]
-  datatest_entrap = cleaned_temp_reg[-index,]
-
-#Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-mod_entrap <- glm(si_type_num ~ (dep_impa + gad7_impa + percneed_cur)^2, data = datatrain_entrap)
-summary(mod_entrap) # check output
-
-step_entrap <- stepAIC(mod_entrap, direction = "both", trace = 20)
-
 # sure fx
-#entrap_data <- mod_entrap[["model"]]
+entrap_data <- mod_entrap[["model"]]
+
 # residual plot
-#entrap_data$resid <- resids(mod_entrap, method = c("jitter"),
-#       jitter.scale = c("response"))
-#entrap_data <- cbind(entrap_data, mod_entrap[["fitted.values"]])
-#ggplot(entrap_data, aes(x = `passive SI`, y = resid)) + 
-#  geom_point(color = "purple", alpha = 0.15) + 
-#  geom_smooth(method = "lm")
+entrap_data$resid <- resids(mod_entrap, method = c("jitter"),
+       jitter.scale = c("response"))
+entrap_data <- cbind(entrap_data, mod_entrap[["fitted.values"]])
+ggplot(entrap_data, aes(x = `passive SI`, y = resid)) + 
+  geom_point(color = "purple", alpha = 0.15) + 
+  geom_smooth(method = "lm")
 
-#entrap_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-#entrap_data %>% filter(si_type == "SI") %>% ggplot(aes(x = resid)) + geom_density(color = "magenta")
-
+entrap_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+entrap_data %>% filter(si_type == "SI") %>% ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 
 ```
@@ -2869,7 +2666,8 @@ mm_pca <- PCA(results_mm)  # apply PCA
 mm_pca$eig   # output matrix with eigenvalues
 ```
 
-## CLM MM
+## CLM Motivational moderators regression
+Variables for consideration:  inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot
 ```{r CLM mm}
 
 clm_mm <- data.v22 %>% select(si_type, inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
@@ -2891,51 +2689,23 @@ dim(test_mm)
 m_mm <- clm(si_type ~., data = train_mm)
 summary(m_mm)
 
-```
-
-## Motivational moderators regression
-Variables for consideration:  inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot
-```{r mod_mm}
-
-data.v22 <- data.v22 %>% 
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                ifelse(si_type == "passive SI", 1,
-                                       ifelse(si_type  == "active SI", 2, 3))))
-
-temp_reg <- select(data.v22, si_type_num, inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
-cleaned_temp_reg <- NA_preproc(temp_reg)
-
-#Dividing data into training and test set
-  #Random sampling 
-  samplesize_mm = 0.60*nrow(cleaned_temp_reg)
-  set.seed(1000)
-  index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_mm)
-  # Creating training and test set
-  datatrain_mm = cleaned_temp_reg[index,]
-  datatest_mm = cleaned_temp_reg[-index,]
-
-#Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-mod_mm <- glm(si_type_num ~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + brs_tot, data = datatrain_mm)
-summary(mod_mm) # check output
-
-step_mm <- stepAIC(mod_mm, direction = "both", trace = 20)
-
 # sure fx
-#mm_data <- mod_mm[["model"]]
+mm_data <- mod_mm[["model"]]
+
 # residual plot
-#mm_data$resid <- resids(mod_mm, method = c("jitter"),
-#       jitter.scale = c("response"))
-#mm_data <- cbind(mm_data, mod_mm[["fitted.values"]])
-#ggplot(mm_data, aes(x = `passive SI`, y = resid)) + 
-#  geom_point(color = "purple", alpha = 0.15) + 
-#  geom_smooth(method = "lm")
+mm_data$resid <- resids(mod_mm, method = c("jitter"),
+       jitter.scale = c("response"))
+mm_data <- cbind(mm_data, mod_mm[["fitted.values"]])
+ggplot(mm_data, aes(x = `passive SI`, y = resid)) + 
+  geom_point(color = "purple", alpha = 0.15) + 
+  geom_smooth(method = "lm")
 
-#mm_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+mm_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 
-#mm_data %>% 
-#  filter(si_type == "SA") %>% 
-#  ggplot(aes(x = resid)) + 
-#  geom_density(color = "magenta")
+mm_data %>% 
+  filter(si_type == "SA") %>% 
+  ggplot(aes(x = resid)) + 
+  geom_density(color = "magenta")
 
 ```
 
