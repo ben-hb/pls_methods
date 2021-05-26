@@ -1469,22 +1469,22 @@ m_dia <- clm(si_type ~ age + sexual + gender + finpast + sib_freq + race + disab
                body_sr + dx_dep + dx_bi + dx_psy + dx_adhd, data = clm_dia)
 summary(m_dia)
 
-# sure fx
-dia_data <- m_dia[["model"]]
-
-# residual plot
-dia_data$resid <- resids(m_dia, method = c("jitter"),
-      jitter.scale = c("response"))
-dia_data <- cbind(dia_data, m_dia[["fitted.values"]])
-ggplot(dia_data, aes(x = `active SI`, y = resid)) +
-geom_point(color = "purple", alpha = 0.15)
-geom_smooth(method = "lm")
-
-dia_data %>% group_by(si_type_num) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-
-dia_data %>% 
-  filter(si_type == "active SI") %>%
-  ggplot(aes(x = resid)) + geom_density(color = "magenta")
+# # sure fx
+# dia_data <- m_dia[["model"]]
+# 
+# # residual plot
+# dia_data$resid <- resids(m_dia, method = c("jitter"),
+#       jitter.scale = c("response"))
+# dia_data <- cbind(dia_data, m_dia[["fitted.values"]])
+# ggplot(dia_data, aes(x = `active SI`, y = resid)) +
+# geom_point(color = "purple", alpha = 0.15)
+# geom_smooth(method = "lm")
+# 
+# dia_data %>% group_by(si_type_num) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+# 
+# dia_data %>% 
+#   filter(si_type == "active SI") %>%
+#   ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
 
@@ -1492,6 +1492,7 @@ dia_data %>%
 # ENVIRONMENT VARIABLES
 Candidate variables: res_status, military, activ_yn, residenc, discrim, env_mh, ther_vis, school2, medtherc, medther, talk, 
 religios, residenc, satisfied_overall, firstgen
+
 
 ```{r Env frame}
 data.v12 <- data.v11
