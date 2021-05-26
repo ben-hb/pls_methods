@@ -2133,7 +2133,8 @@ ggplot(le_data, aes(x = `passive SI`, y = resid)) +
 geom_point(color = "purple", alpha = 0.15) +
 geom_smooth(method = "lm")
 
-le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), 
+                                            sd = sd(resid, na.rm = TRUE))
 
 le_data %>% 
  filter(si_type == "SA") %>%
@@ -2186,17 +2187,17 @@ data_def <- data.v19 %>% select(aca_impa, deprawsc)
 data <- data_def
 sig <- 0.6
 
- # convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA_
+ # convert data to numeric in order to run correlations
 data_def <- data_def %>% mutate_if(is.character, as.factor)
 data_def <-  data_def %>% mutate_if(is.factor, as.numeric)
 
 # run a correlation and drop the insignificant ones
 corr <- cor(data_def, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr, diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                           # drop perfect correlations
-corr <- as.data.frame(as.table(corr))                    #turn into a 3-column table
-corr <- na.omit(corr)                                    #remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]                    #sort by highest correlation
+corr[lower.tri(corr, diag=TRUE)] <- NA        # prepare to drop duplicates and correlations of 1    
+corr[corr %in% c(-1, 1)] <- NA                # drop perfect correlations
+corr <- as.data.frame(as.table(corr))         # turn into a 3-column table
+corr <- na.omit(corr)                         # remove the NA values from above 
+corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
 print(corr)
 
 ```
@@ -2222,7 +2223,9 @@ def_pca$eig   # output matrix with eigenvalues
 ## CLM defeat
 ```{r CLM defeat}
 
-clm_def <- data.v19 %>% select(si_type, aca_impa, deprawsc)
+clm_def <- dummy_cols(data.v19, select_columns = c("si_type", "aca_impa", "deprawsc"),
+                         remove_first_dummy = TRUE)
+# clm_def <- data.v19 %>% select(si_type, aca_impa, deprawsc)
 
 clm_def <- NA_preproc(clm_def)
 clm_def <- as.data.frame(clm_def)
@@ -2238,7 +2241,7 @@ test_def = clm_def[-index,] # Create the test data
 dim(train_def)
 dim(test_def)
 
-m_def <- clm(si_type ~., data = train_def)
+m_def <- clm(si_type ~ aca_impa + deprawsc, data = clm_def)
 summary(m_def)
 
 # # sure fx
@@ -2695,7 +2698,7 @@ clm_mm <- data.v22 %>% select(si_type, inf, flourish, belong1, belong2, belong8,
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
 
-m_mm <- clm(si_type ~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + brs_tot, data = data.v22)
+m_mm <- clm(si_type ~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + brs_tot, data = clm_mm)
 summary(m_mm)
 
 # sure fx
