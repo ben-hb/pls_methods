@@ -414,6 +414,12 @@ data.v2 <- data.v2 %>%
   filter(!is.na(si_type)) 
 table(data.v2$si_type, useNA = "always") # ensuring that all NAs are now clean
 
+# prime si_type as numeric for future analysis
+data.v2 <- data.v2 %>% 
+    mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
+                                 ifelse(si_type == "passive SI", 1,
+                                        ifelse(si_type  == "active SI", 2, 3))))
+
 # Define starting sample (n = 51137)
 length(unique(data.v2$responseid))
 
@@ -1379,10 +1385,10 @@ data.v11 = subset(data.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
 ```{r Diathesis correlation}
 
 # Define diathesis vars for correlation matrix
-data_dia <- data.v11 %>% select(c(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
-                                  audit_tot, dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, 
-                                  dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
-                                  meds_oth, meds_none, alc_tx, meds_count, ed_any))
+data_dia <- data.v11 %>% select(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
+                                dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, meds_count,
+                                dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
+                                meds_oth, meds_none, ed_any)
 
 # Corr_simple function
 corr_simple <- function(data=data_dia, sig=0.6){
@@ -1411,9 +1417,9 @@ corr_simple()
 ```{r EFA diathesis}
 
 data_dia <- data.v11 %>% select(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
-                                  audit_tot, dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, 
-                                  dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
-                                  meds_oth, meds_none, alc_tx, meds_count, ed_any)
+                                dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, ed_any,
+                                dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
+                                meds_oth, meds_none, meds_count)
 
 # create corr matrix, with dummy vars
 data_dia <- data_dia %>% 
@@ -1421,7 +1427,6 @@ data_dia <- data_dia %>%
   mutate(
     age = as.numeric(age),
     meds_count = as.numeric(meds_count),
-    audit_tot = as.numeric(audit_tot),
     ed_scoff = as.numeric(ed_scoff)
   ) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
@@ -1441,15 +1446,15 @@ dia_pca$eig   # output matrix with eigenvalues
 ```
 
 ## CLM diathesis regression
-Regression variables: age, sexual, gender, finpast, sib_freq, race, ed_scoff, body_sr, audit_tot, 
+Regression variables: age, sexual, gender, finpast, sib_freq, race, ed_scoff, body_sr, disab_1
 dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, meds_sti, meds_dep, 
-meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none, alc_tx, meds_count, disab_1
+meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none,  meds_count 
 ```{r clm_dia}
 
-clm_dia <- data.v11 %>% select(si_type, age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, 
-                               body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_adhd, meds_count, ed_any,
+clm_dia <- data.v11 %>% select(si_type_num, age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, 
+                               body_sr, dx_dep, dx_any, dx_bi, dx_psy, dx_adhd, meds_count, ed_any,
                                dx_ea, dx_tr, dx_sa, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, 
-                               meds_mood, meds_sle, meds_oth, meds_none, alc_tx)
+                               meds_mood, meds_sle, meds_oth, meds_none)
 
 clm_dia <- NA_preproc(clm_dia)
 clm_dia <- as.data.frame(clm_dia)
@@ -1472,12 +1477,6 @@ summary(m_dia)
 dia_data <- m_dia[["model"]]
 
 # residual plot
-
-data.v11 <- data.v1 %>% 
-    mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-                                 ifelse(si_type == "passive SI", 1,
-                                        ifelse(si_type  == "active SI", 2, 3))))
-
 dia_data$resid <- resids(m_dia, method = c("jitter"),
       jitter.scale = c("response"))
 dia_data <- cbind(dia_data, m_dia[["fitted.values"]])
@@ -1639,6 +1638,7 @@ data.v14 <- data.v13 %>%
                               (activ_ac == 1 | activ_athc == 1 | activ_athv == 1 | activ_athi == 1 | activ_cs == 1 | activ_cu |
                               activ_da == 1 | activ_fs == 1 | activ_gs == 1 | activ_gov == 1 | activ_mp == 1 | activ_md == 1 |
                               activ_rel == 1 | activ_soc == 1 | activ_art == 1 | activ_other == 1) ~ 1))
+
 table(data.v14$activ_yn)     # tabulate and check output
 data.v14 = subset(data.v14, select= -c(activ_none, activ_ac:activ_other))    # clean up vars
 ```
@@ -1853,7 +1853,7 @@ env_pca$eig   # output matrix with eigenvalues
 Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
 ```{r CLM environment}
 
-clm_env <- data.v14 %>% select(si_type,  discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type, 
+clm_env <- data.v14 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type, 
                    satisfied_overall, ther_vis, talk, military, international)
 clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
@@ -1869,7 +1869,8 @@ test_env = clm_env[-index,] # Create the test data
 dim(train_env)
 dim(test_env)
 
-m_env <- clm(si_type ~., data = train_env)
+m_env <- clm(si_type ~ discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_type + 
+                   satisfied_overall + ther_vis + talk + military + international, data = clm_env)
 summary(m_env)
 
 # sure fx
@@ -1965,28 +1966,6 @@ data.v16 <- data.v16 %>%
 table(data.v16$drug_type)   # tabulate and check output
 data.v16 = subset(data.v16, select= -c(drug_mar, drug_coc, drug_her, drug_poly, drug_met, drug_stim, drug_ect, drug_opi, drug_other)) # clean up var
 
-#Dividing data into training and test set
-#Random sampling 
-samplesize_drugs = 0.60*nrow(data.v16)
-set.seed(55204)
-index = sample(seq_len(nrow(data.v16)), size = samplesize_drugs)
-
-#Creating training and test set 
-datatrain_drugs = data.v16[index,]
-datatest_drugs = data.v16[-index,]
-
-#Build ordinal logistic regression model 
-mod_drugs <- polr(si_type ~ drug_type, data = datatrain_drugs, Hess = TRUE)
-summary(mod_drugs)
-
-# Find p-values, CI, OR
-ctable_drugs <- coef(summary(mod_drugs))
-p <- pnorm(abs(ctable_drugs[, "t value"]), lower.tail = FALSE) * 2    # p-value computation
-ctable_drugs <- cbind(ctable_drugs, "p value" = p)
-ctable_drugs                                                          # display p-value
-ci_drugs <- confint(mod_drugs)                                        # find CIs
-exp(cbind(OR = coef(mod_drugs), ci_drugs))                            # display odds ratio and CI outputs
-
 ```
 
 ## Current financial stressors
@@ -2041,7 +2020,6 @@ table(data.v17$assault_phys)
 
 ## Binging frequency
 ```{r binge_fr}
-
 # set all binge_fr values equal to 0
 data.v17$binge_fr_f[is.na(data.v17$binge_fr_f)] <- 0
 data.v17$binge_fr_m[is.na(data.v17$binge_fr_m)] <- 0
@@ -2059,7 +2037,6 @@ data.v18 = subset(data.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)) # cl
 
 ## Recent Psychiatric Hospitalization, last 12 months
 ```{r psyhx}
-
 # Create variable for any psychiatric hospitalization in the last 12 months
 data.v18 <- data.v18 %>% 
   mutate(psyhx = case_when((prov_pes == 1 | prov_inp == 1 | prov_par == 1) ~ 1, 
@@ -2447,7 +2424,8 @@ data_entrap <- data.v21 %>% select(dep_impa, gad7_impa, percneed_cur)
 data <- data_entrap
 sig <- 0.6
 
- # convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA_
+ # convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data
+ # each value will become a number rather than turn into NA_
 data_entrap <- data_entrap %>% mutate_if(is.character, as.factor)
 data_entrap <-  data_entrap %>% mutate_if(is.factor, as.numeric)
 
