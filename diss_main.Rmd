@@ -12,7 +12,6 @@ library(assertive)
 library(bestglm)
 library(broom)
 library(car)
-library(carat)
 library(caret)
 library(caTools)
 library(clipr)
@@ -27,8 +26,6 @@ library(expss)
 library(FactoMineR)
 library(factoextra)
 library(finalfit)
-library(glmnet)
-library(glmnetcr)
 library(haven)
 library(Hmisc)
 library(ISLR)
@@ -60,6 +57,7 @@ library(rococo)
 library(rpart)
 library(rpart.plot)
 library(rstatix)
+library(semPlot)
 library(stats)
 library(stringr)
 library(sure)
@@ -1470,7 +1468,7 @@ test_dia = clm_dia[-index,]       # Create the test data for diathesis
 dim(train_dia)
 dim(test_dia)
 
-m_dia <- clm(si_type ~ (age + sexual + gender + finpast + sib_freq + race + disab_1 + ed_scoff + 
+m_dia <- clm(si_type ~ age + sexual + gender + finpast + sib_freq + race + disab_1 + ed_scoff + 
                meds_count + ed_any + dx_ea + dx_tr + dx_sa + dx_pers + meds_sti + meds_dep + meds_psy +
                body_sr + dx_dep + dx_bi + dx_psy + dx_adhd, data = train_dia)
 summary(m_dia)
@@ -1788,10 +1786,13 @@ data.v14 = subset(data.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoColl
                                        var_MassArt, var_MinnesotaCAD, var_NHInstituteArt, var_Pratt, var_Ringling, var_SAIC,
                                        var_UNCSchoolArt, var_Watkins))
 
-
-data.v16 <- data.v14  # new dataframe for analysis
-
 ```
+
+## ENVIRONMENT ANALYSES
+```{r}
+data.v15 <- data.v14  # new dataframe for analysis
+```
+
 
 ## Environmental correlation
 ```{r}
