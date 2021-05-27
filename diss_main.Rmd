@@ -1167,7 +1167,7 @@ data.v11 <- data.v9 %>%
                                                     "Adderrall (for ADHD)", "Adderal, vyvance",  "Celltech")] <- 1
       
 # Create antidepressant
-data.v11 <- data.v11 %>%
+data.v11 <- data.v11 %>%data.v11
   mutate(meds_dep = case_when(meds_2 == 1 ~ 1,
                               meds_8 == 1 ~ 0,
                               meds_2 == 0 ~ 0))
@@ -1458,7 +1458,7 @@ clm_dia <- as.data.frame(clm_dia)
 str(clm_dia)
 set.seed(1000) 
 
-index = sample(1:nrow(clm_dia), 0.7*nrow(clm_dia)) 
+index = sample(1:nrow(clm_dia), 0.7*nrow(clm_dia))
 
 train_dia = clm_dia[index,]       # Create the training data for diathesis
 test_dia = clm_dia[-index,]       # Create the test data for diathesis
@@ -1466,9 +1466,9 @@ test_dia = clm_dia[-index,]       # Create the test data for diathesis
 dim(train_dia)
 dim(test_dia)
 
-m_dia <- clm(si_type ~ age + sexual + gender + finpast + sib_freq + race + disab_1 + ed_scoff + 
+m_dia <- clm(si_type ~ (age + sexual + gender + finpast + sib_freq + race + disab_1 + ed_scoff + 
                meds_count + ed_any + dx_ea + dx_tr + dx_sa + dx_pers + meds_sti + meds_dep + meds_psy +
-               body_sr + dx_dep + dx_bi + dx_psy + dx_adhd, data = clm_dia)
+               body_sr + dx_dep + dx_bi + dx_psy + dx_adhd), data = train_dia)
 summary(m_dia)
 
 # sure fx
@@ -1823,21 +1823,24 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 data_env <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
                                 school2_type, satisfied_overall, ther_vis, talk, military, international)
 
+# # create corr matrix, with dummy vars
+# data_dia <- data_dia %>% 
+#   mutate_if(is.numeric, as.factor) %>% 
+#   mutate(
+#     age = as.numeric(age),
+#     meds_count = as.numeric(meds_count),
+#     ed_scoff = as.numeric(ed_scoff)
+#   ) %>% 
+#   dummy_cols(remove_first_dummy = TRUE) %>% 
+#   data.matrix()
+# data_dia   # check output
+
 # create corr matrix, with dummy vars
 data_env <- data_env %>% 
   mutate_if(is.numeric, as.factor) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 data_env   # check output
-
-# impute to perform FAMD calculation
-# require(missMDA)
-# data(data_env)
-# res.impute <- imputeFAMD(data_env, ncp=3)
-# res.famd <- FAMD(res.pca, tab.disj=res.impute$tab.disj)
-# 
-# fviz_screeplot(res.famd)
-# fviz_famd_var(res.famd)
 
 # PCA map with eigenvalues
 results_env <- dummy_cols(data_env, select_columns = c("discrim", "religios", "env_mh", "residenc", "ther_vis",
