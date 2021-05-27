@@ -1468,7 +1468,7 @@ dim(test_dia)
 
 m_dia <- clm(si_type ~ (age + sexual + gender + finpast + sib_freq + race + disab_1 + ed_scoff + 
                meds_count + ed_any + dx_ea + dx_tr + dx_sa + dx_pers + meds_sti + meds_dep + meds_psy +
-               body_sr + dx_dep + dx_bi + dx_psy + dx_adhd), data = train_dia)
+               body_sr + dx_dep + dx_bi + dx_psy + dx_adhd)^2, data = train_dia)
 summary(m_dia)
 
 # sure fx
@@ -1785,7 +1785,7 @@ data.v14 = subset(data.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoColl
                                        var_UNCSchoolArt, var_Watkins))
 
 
-data.v15 <- data.v14  # new dataframe for analysis
+data.v16 <- data.v14  # new dataframe for analysis
 
 ```
 
@@ -1859,6 +1859,7 @@ Variables for consideration: discrim + religios + env_mh + residenc + ther_vis +
 
 clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type, 
                    satisfied_overall, ther_vis, talk, military, international)
+
 clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
 
@@ -1878,7 +1879,7 @@ m_env <- clm(si_type ~ discrim + religios + env_mh + residenc + ther_vis + activ
 summary(m_env)
 
 # sure fx
-env_data <- mod_env[["model"]]
+env_data <- m_env[["model"]]
 
 # residual plot
 env_data$resid <- resids(mod_env, method = c("jitter"),
@@ -1894,7 +1895,6 @@ env_data %>%
   filter(si_type == "passive SA") %>% 
   ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
-
 ```
 
 
@@ -1903,35 +1903,35 @@ Candidate variables: ins_cover, gpa_sr, abuse_year, psyhx, isi_risk, binge_fr, f
 
 
 ```{r LE frame}
-data.v15 <- data.v14
+data.v16 <- data.v14
 ```
 
 ## Insurance coverage
 ```{r ins_cover}
 
 # create one insurance var from related questions in 'ins_' module
-data.v15 <- data.v15 %>% 
+data.v16 <- data.v16 %>% 
   mutate(ins_cover = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 0,
                                (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 1))
-table(data.v15$ins_cover, useNA = "always")   # check output
+table(data.v16$ins_cover, useNA = "always")   # check output
 #data.v15 = subset(data.v15, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
 ```
 
 ## Illicit drug use
 Creates illicit drug use var to aggregate all drug answers into one, create drug_poly for >1 drug (limitation -- 30 days reflection)
 ```{r drug_type}
-data.v15$drug_mar[is.na(data.v15$drug_mar)] <- 0
-data.v15$drug_coc[is.na(data.v15$drug_coc)] <- 0
-data.v15$drug_her[is.na(data.v15$drug_her)] <- 0
-data.v15$drug_met[is.na(data.v15$drug_met)] <- 0
-data.v15$drug_stim[is.na(data.v15$drug_stim)] <- 0
-data.v15$drug_ect[is.na(data.v15$drug_ect)] <- 0
-data.v15$drug_opi[is.na(data.v15$drug_opi)] <- 0
-data.v15$drug_other[is.na(data.v15$drug_other)] <- 0
-data.v15$drug_none[is.na(data.v15$drug_none)] <- 0
+data.v16$drug_mar[is.na(data.v16$drug_mar)] <- 0
+data.v16$drug_coc[is.na(data.v16$drug_coc)] <- 0
+data.v16$drug_her[is.na(data.v16$drug_her)] <- 0
+data.v16$drug_met[is.na(data.v16$drug_met)] <- 0
+data.v16$drug_stim[is.na(data.v16$drug_stim)] <- 0
+data.v16$drug_ect[is.na(data.v16$drug_ect)] <- 0
+data.v16$drug_opi[is.na(data.v16$drug_opi)] <- 0
+data.v16$drug_other[is.na(data.v16$drug_other)] <- 0
+data.v16$drug_none[is.na(data.v16$drug_none)] <- 0
   
 # change drug_ var to numeric
-data.v16 <- data.v15 %>% 
+data.v16 <- data.v16 %>% 
   mutate(drug_sum = as.numeric(drug_mar) + as.numeric(drug_coc) + as.numeric(drug_her) + as.numeric(drug_met) + as.numeric(drug_stim) + as.numeric(drug_ect) + 
            as.numeric(drug_opi) + as.numeric(drug_other)) %>%
 
@@ -2057,11 +2057,16 @@ data.v18 = subset(data.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up
  table(data.v18$gpa_sr, useNA = "always")
 ```
  
+```{r LE data analysis}
+data.v19 <- data.v18
+```
+ 
+ 
 ## LE correlation
 ```{r LE correlation}
 
 # Define life event var candidates for correlation matrix
-data_le <- data.v18 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
+data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
                                binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
 data <- data_le
 sig <- 0.6
@@ -2087,7 +2092,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 ## EFA LE
 ```{r}
-data_le <- data.v18 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
+data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
                                binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
 
 # create corr matrix, with dummy vars
@@ -2110,7 +2115,8 @@ le_pca$eig   # output matrix with eigenvalues
 Regression variables: ins_cover, gpa_sr, aca_impa, abuse_year, psyhx, binge_fr, fincur, 
 drug_type, assault_sex, assault_phys, assault_emo, isi_tot
 ```{r clm_LE}
-clm_le <- data.v18 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
+
+clm_le <- data.v19 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
                               binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
 
 clm_le <- NA_preproc(clm_le)
@@ -2131,13 +2137,13 @@ m_le <- clm(si_type ~., data = train_le)
 summary(m_le)
 
 # sure fx
-le_data <- mod_le[["model"]]
+le_data <- m_le[["model"]]
 
 # residual plot
-le_data$resid <- resids(mod_le, method = c("jitter"),
+le_data$resid <- resids(m_le, method = c("jitter"),
      jitter.scale = c("response"))
-le_data <- cbind(le_data, mod_le[["fitted.values"]])
-ggplot(le_data, aes(x = `passive SI`, y = resid)) +
+le_data <- cbind(le_data, m_le[["fitted.values"]])
+ggplot(le_data, aes(x = si_type, y = resid)) +
 geom_point(color = "purple", alpha = 0.15) +
 geom_smooth(method = "lm")
 
@@ -2145,7 +2151,7 @@ le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE),
                                             sd = sd(resid, na.rm = TRUE))
 
 le_data %>% 
- filter(si_type == "SA") %>%
+ filter(si_type == "passive SI") %>%
  ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
@@ -2156,42 +2162,48 @@ Candidate variables: aca_impa, failed, men_ill_ash, deprawsc
 
 
 ```{r Defeat frame}
-data.v19 <- data.v18
+data.v20 <- data.v18
 ```
 
 ## PHQ risk/severity
 ```{r PHQ}
-table(data.v19$deprawsc, useNA = "always")
+table(data.v20$deprawsc, useNA = "always")
 ```
 
 ## Academic impact
 ```{r aca_imp}
-table(data.v19$aca_impa, useNA = "always")
+table(data.v20$aca_impa, useNA = "always")
 ```
 
 ## Academic failure
 ```{r failed}
-table(data.v19$failed, useNA = "always")
+table(data.v20$failed, useNA = "always")
 
 # sample too small in the elective, remove
-data.v19 = subset(data.v19, select= -c(failed)) # clean up var
+data.v20 = subset(data.v20, select= -c(failed)) # clean up var
 
 ```
 
 ## Ashamed
 n= 8916 ** too small
 ```{r men_ill_ash}
-table(data.v19$men_ill_ash, useNA = "always")
+table(data.v20$men_ill_ash, useNA = "always")
 
 # sample too small in the elective, remove
-data.v19 = subset(data.v19, select= -c(men_ill_ash)) # clean up var
+data.v20 = subset(data.v20, select= -c(men_ill_ash)) # clean up var
 ```
+
+
+```{r Defeat analyses}
+data.v21 <- data.v20
+```
+
 
 ## Defeat correlation
 ```{r Defeat cor}
 
 # Define defeat variable candidates for correlation matrix
-data_def <- data.v19 %>% select(aca_impa, deprawsc)
+data_def <- data.v21 %>% select(aca_impa, deprawsc)
 data <- data_def
 sig <- 0.6
 
@@ -2212,7 +2224,7 @@ print(corr)
 
 ## EFA defeat
 ```{r}
-data_def <- data.v19 %>% select(aca_impa, deprawsc)
+data_def <- data.v21 %>% select(aca_impa, deprawsc)
 
 # create corr matrix, with dummy vars 
 data_def <- data_def %>% 
@@ -2229,13 +2241,13 @@ def_pca$eig   # output matrix with eigenvalues
 
 
 #FAMD trial 
-data.v19 <- data.v19 %>%
+data.v21 <- data.v21 %>%
   mutate(si_type_num =  ifelse(si_type == "No SI", 0,
                                ifelse(si_type == "passive SI", 1,
                                       ifelse(si_type  == "active SI", 2, 3))))
 
 
-data_def <- data.v19 %>% select(si_type_num, aca_impa, deprawsc)
+data_def <- data.v21 %>% select(si_type_num, aca_impa, deprawsc)
 view(data_def)
 
 # create corr matrix, with dummy vars 
@@ -2263,7 +2275,7 @@ def_pca$eig   # output matrix with eigenvalues
 #                          remove_first_dummy = TRUE)
 
 
-results2_def <- data.v19 %>% select(si_type, aca_impa, deprawsc)
+results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
 
 
 
@@ -2334,44 +2346,50 @@ Candidate variables: persist, anx_score, dep_secret, AAQ_tot, achieve4
 
 
 ```{r TSM frame}
-data.v20 <- data.v19
+data.v22 <- data.v20
 ```
 
 ## GAD7 total
 ```{r anx_score}
-table(data.v20$anx_score, useNA = "always")
+table(data.v22$anx_score, useNA = "always")
 ```
 
 ## Secretive MH
 ```{r dep_secret}
-table(data.v20$dep_secret, useNA = "always")
+table(data.v22$dep_secret, useNA = "always")
 ```
 
 ## AAQ total (elective module)
 ```{r AAQ_tot}
 # create AAQ_tot variable to sum up imputed AAQ questions
-data.v20 <- data.v20 %>%
+data.v22 <- data.v22 %>%
   mutate(AAQ_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7))
 
-table(data.v20$AAQ_tot, useNA = "always")
+table(data.v22$AAQ_tot, useNA = "always")
 ```
 
 ## Achievement
 n = 594  ** too small
 ```{r achieve4}
-table(data.v20$achieve4, useNA = "always")
+table(data.v22$achieve4, useNA = "always")
 ```
 
 ## Persist
 ```{r persist}
-table(data.v20$persist, useNA = "always")
+table(data.v22$persist, useNA = "always")
 ```
+
+
+```{r TSM var analyses}
+data.v23 <- data.v22
+```
+
 
 ## Threats to self-moderation correlation
 ```{r}
 
 # Define TSM variable candidates for correlation matrix
-data_tsm <- data.v20 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
+data_tsm <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
 data <- data_tsm
 sig <- 0.6
 
@@ -2396,7 +2414,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ##EFA TSM
 ```{r EFA TSM}
-data_tsm <- data.v20 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
+data_tsm <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
 
 # create corr matrix, with dummy vars 
 data_tsm <- data_tsm %>% 
@@ -2414,12 +2432,12 @@ tsm_pca$eig   # output matrix with eigenvalues
 
 ## CLM TSM
 ```{r CLM TSM}
-data.v20$persist <- as.factor(data.v19$persist)
-data.v20$anx_score <- as.integer(data.v19$anx_score)
-data.v20$dep_secret <- as.factor(data.v19$dep_secret)
-data.v20$AAQ_tot <- as.integer(data.v19$AAQ_tot)
+data.v23$persist <- as.factor(data.v23$persist)
+data.v23$anx_score <- as.integer(data.v23$anx_score)
+data.v23$dep_secret <- as.factor(data.v23$dep_secret)
+data.v23$AAQ_tot <- as.integer(data.v23$AAQ_tot)
 
-clm_tsm <- data.v20 %>% select(si_type, persist, anx_score, dep_secret, AAQ_tot)
+clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, AAQ_tot)
 
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
@@ -2439,20 +2457,20 @@ m_tsm <- clm(si_type ~., data = train_tsm)
 summary(m_tsm)
 
 # sure fx
-tsm_data <- mod_tsm[["model"]]
+tsm_data <- m_tsm[["model"]]
 
 # residual plot
-tsm_data$resid <- resids(mod_tsm, method = c("jitter"),
+tsm_data$resid <- resids(tsm_data, method = c("jitter"),
       jitter.scale = c("response"))
 tsm_data <- cbind(tsm_data, mod_tsm[["fitted.values"]])
-ggplot(tsm_data, aes(x = `passive SI`, y = resid)) +
+ggplot(tsm_data, aes(x = si_type, y = resid)) +
 geom_point(color = "purple", alpha = 0.15) +
 geom_smooth(method = "lm")
 
 tsm_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 
 tsm_data %>% 
-  filter(si_type == "SA") %>%
+  filter(si_type == "Passive SI") %>%
   ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
@@ -2463,29 +2481,35 @@ Candidate variables: dep_impa, gad7_impa, perneed_cur
 
 
 ```{r Entrap frame}
-data.v21 <- data.v20
+data.v24 <- data.v22
 ```
 
 ## Depression impact
 ```{r dep_impac}
-table(data.v21$dep_impa, useNA = "always")
+table(data.v24$dep_impa, useNA = "always")
 ```
 
 ## Anxiety impact
 ```{r gad7_impa}
-table(data.v21$gad7_impa, useNA = "always")
+table(data.v24$gad7_impa, useNA = "always")
 ```
 
 ## Current needs
 ```{r perneed_cur}
-table(data.v21$percneed_cur, useNA = "always")
+table(data.v24$percneed_cur, useNA = "always")
 ```
+
+
+```{r Entrapment analyses}
+data.v25 <- data.v24
+```
+
 
 ## Entrapment correlation
 ```{r Entrapment corr}
 
 # Define entrapment variable candidates for correlation matrix
-data_entrap <- data.v21 %>% select(dep_impa, gad7_impa, percneed_cur)
+data_entrap <- data.v25 %>% select(dep_impa, gad7_impa, percneed_cur)
 data <- data_entrap
 sig <- 0.6
 
@@ -2507,7 +2531,7 @@ print(corr)
 
 ## EFA Entrapment
 ```{r CFA entrap}
-data_entrap <- data.v21 %>% select(dep_impa, gad7_impa, percneed_cur)
+data_entrap <- data.v25 %>% select(dep_impa, gad7_impa, percneed_cur)
 
 # create corr matrix, with dummy vars 
 data_entrap <- data_entrap %>% 
@@ -2525,7 +2549,7 @@ entrap_pca$eig   # output matrix with eigenvalues
 
 ##  CLM Entrapment regression
 ```{r clm_entrap}
-clm_entrap <- data.v21 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
+clm_entrap <- data.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
 
 str(clm_entrap)
 set.seed(1000) 
@@ -2581,12 +2605,12 @@ entrap_data <- mod_entrap[["model"]]
 entrap_data$resid <- resids(mod_entrap, method = c("jitter"),
        jitter.scale = c("response"))
 entrap_data <- cbind(entrap_data, mod_entrap[["fitted.values"]])
-ggplot(entrap_data, aes(x = `passive SI`, y = resid)) + 
+ggplot(entrap_data, aes(x = si_type, y = resid)) + 
   geom_point(color = "purple", alpha = 0.15) + 
   geom_smooth(method = "lm")
 
 entrap_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-entrap_data %>% filter(si_type == "SI") %>% ggplot(aes(x = resid)) + geom_density(color = "magenta")
+entrap_data %>% filter(si_type == "Passive SI") %>% ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 
 ```
@@ -2623,23 +2647,23 @@ Candidate variables: flourish, belong2, belong8, belong9, achieve1, achieve14, a
 
 
 ```{r MM frame}
-data.v22 <- data.v21
+data.v26 <- data.v24
 ```
 
 ## Belonging
 ```{r belong}
-table(data.v22$belong1)
-table(data.v22$belong2)
-table(data.v22$belong8)
-table(data.v22$belong9)
+table(data.v26$belong1)
+table(data.v26$belong2)
+table(data.v26$belong8)
+table(data.v26$belong9)
 ```
 
 ## Achievement
 ** too small for inclusion in model
 ```{r achieve_1_14_18}
-table(data.v22$achieve1, useNA = "always")
-table(data.v22$achieve14, useNA = "always")
-table(data.v22$achieve18, useNA = "always")
+table(data.v26$achieve1, useNA = "always")
+table(data.v26$achieve14, useNA = "always")
+table(data.v26$achieve18, useNA = "always")
 
 # sample too small in the elective, remove
 data.v22 = subset(data.v22, select= -c(achieve1, achieve14, achieve18)) # clean up var
@@ -2647,21 +2671,21 @@ data.v22 = subset(data.v22, select= -c(achieve1, achieve14, achieve18)) # clean 
 
 ## Flourishing Scale
 ```{r flourish}
-table(data.v22$flourish, useNA = "always")
+table(data.v26$flourish, useNA = "always")
 ```
 
 ## Informal Mental Health Support
 ```{r inf}
-data.v22$inf_1[is.na(data.v22$inf_1)] <- 0
-data.v22$inf_2[is.na(data.v22$inf_2)] <- 0
-data.v22$inf_3[is.na(data.v22$inf_3)] <- 0
-data.v22$inf_4[is.na(data.v22$inf_4)] <- 0
-data.v22$inf_5[is.na(data.v22$inf_5)] <- 0
-data.v22$inf_6[is.na(data.v22$inf_6)] <- 0
-data.v22$inf_7[is.na(data.v22$inf_7)] <- 0
+data.v26$inf_1[is.na(data.v26$inf_1)] <- 0
+data.v26$inf_2[is.na(data.v26$inf_2)] <- 0
+data.v26$inf_3[is.na(data.v26$inf_3)] <- 0
+data.v26$inf_4[is.na(data.v26$inf_4)] <- 0
+data.v26$inf_5[is.na(data.v26$inf_5)] <- 0
+data.v26$inf_6[is.na(data.v26$inf_6)] <- 0
+data.v26$inf_7[is.na(data.v26inf_7)] <- 0
 
 # change inf_ var to numeric
-data.v22 <- data.v22 %>% 
+data.v26 <- data.v26 %>% 
   mutate(inf_sum = as.numeric(inf_1) + as.numeric(inf_2) + as.numeric(inf_3) + as.numeric(inf_4) + 
            as.numeric(inf_5) + as.numeric(inf_6) + as.numeric(inf_7)) %>%
   mutate(inf_multi = ifelse(inf_sum > 1, 1, 0)) %>%
@@ -2676,43 +2700,48 @@ data.v22 <- data.v22 %>%
                         inf_6 == 1 ~ 7,
                         inf_7 == 1 ~ 8,
                         inf_8 == 1 ~ 1))
-table(data.v22$inf)
+table(data.v26$inf)
 
 # clean up vars
-data.v22 = subset(data.v22, select= -c(inf_1:inf_help, inf_sum))
+data.v26 = subset(data.v26, select= -c(inf_1:inf_help, inf_sum))
 ```
 
 ## BRS
 ```{r BRS_tot}
-data.v22 <- data.v22 %>%
+data.v26 <- data.v26 %>%
   mutate(brs_tot = as.integer(BRS_1) + as.integer(BRS_2) + as.integer(BRS_3) + as.integer(BRS_4) + as.integer(BRS_5))
 
-table(data.v22$brs_tot)
+table(data.v26$brs_tot)
 ```
 
 ## Friendship development
 ```{r friend_devel}
-table(data.v22$friend_devel, useNA = "always")
+table(data.v26$friend_devel, useNA = "always")
 
 # sample too small in the elective, remove
-data.v22 = subset(data.v22, select= -c(friend_devel)) # clean up var
+data.v26 = subset(data.v26, select= -c(friend_devel)) # clean up var
 ```
 
 ## Perceived MH as failure
 ```{r stig_pcv_2}
-table(data.v22$stig_pcv_2, useNA = "always")
+table(data.v26$stig_pcv_2, useNA = "always")
 ```
 
 ## Perceived MH tx as negative
 ```{r stig_pcv_3}
-table(data.v22$stig_pcv_3, useNA = "always")
+table(data.v26$stig_pcv_3, useNA = "always")
 ```
 
+```{r MM var analyses}
+data.v27 <- data.v26
+```
+
+
 ## Motivational Moderator correlation
-```{r}
+```{r MM_corr}
 
 # Define MM variable candidates for correlation matrix
-data_mm <- data.v22 %>% select(inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
+data_mm <- data.v27 %>% select(inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
 data <- data_mm
 sig <- 0.6
 
@@ -2726,8 +2755,8 @@ corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplic
 corr[corr %in% c(-1, 1)] <- NA                                   # drop perfect correlations
 corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
 corr <- na.omit(corr)                                   #remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
-print(corr)
+mm_corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
+print(MM_corr)
   
 #turn corr back into matrix in order to plot with corrplot
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
@@ -2737,7 +2766,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ## EFA MM
 ```{r EFA MM}
-data_mm <- data.v22 %>% select(inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
+data_mm <- data.v27 %>% select(inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
 
 # create corr matrix, with dummy vars 
 data_mm <- data_mm %>% 
@@ -2758,7 +2787,7 @@ mm_pca$eig   # output matrix with eigenvalues
 Variables for consideration:  inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot
 ```{r CLM mm}
 
-clm_mm <- data.v22 %>% select(si_type, inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
+clm_mm <- data.v27 %>% select(si_type, inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
 
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
@@ -2773,14 +2802,14 @@ mm_data <- mod_mm[["model"]]
 mm_data$resid <- resids(mod_mm, method = c("jitter"),
        jitter.scale = c("response"))
 mm_data <- cbind(mm_data, mod_mm[["fitted.values"]])
-ggplot(mm_data, aes(x = `passive SI`, y = resid)) + 
+ggplot(mm_data, aes(x = si_type, y = resid)) + 
   geom_point(color = "purple", alpha = 0.15) + 
   geom_smooth(method = "lm")
 
 mm_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 
 mm_data %>% 
-  filter(si_type == "SA") %>% 
+  filter(si_type == "passive SI") %>% 
   ggplot(aes(x = resid)) + 
   geom_density(color = "magenta")
 
@@ -2794,7 +2823,7 @@ mm_data %>%
 ```{r Structural missingness, by school}
 ## Absolute missingness by school module choice
 
-data.v23 <- data.v22
+data.v28 <- data.v26
 
 # school structural analysis
 var_names <- c(
@@ -2821,7 +2850,7 @@ var_names <- c(
 var_names <- sort(var_names)
 # build table for absolute missingness based on school2
 # create skeleton of missingness matrix
-school2 <- count(data.v23, school2)
+school2 <- count(data.v28, school2)
 school2_ncol <- ncol(school2)
 
 for (j in 1:length(var_names)) {
@@ -2834,7 +2863,7 @@ names(school2) <- names
 # input values for each school missingness across all variables
 for (j in 1:(length(var_names))) {
 for (i in 1:nrow(school2)) {   # i corresponds to rows, j to columns
-  school2[i, 2 + j] <- sum(!is.na(data.v23[data.v23$school2 == school2[[i,1]], var_names[j]]))
+  school2[i, 2 + j] <- sum(!is.na(data.v23[data.v28$school2 == school2[[i,1]], var_names[j]]))
 }
 }
 # add percentage in each column
@@ -2877,7 +2906,7 @@ for (k in 1:length(var_names)) {
 
 #build table for absolute missingness based on school2
 #create skeleton of missingness matrix
-var <- count(data.v23, data.v23[var_names[k]])
+var <- count(data.v28, data.v23[var_names[k]])
 var_ncol <- ncol(var)
 
 for (j in 1:length(var_names)) {
@@ -2890,7 +2919,7 @@ names(var) <- names
 # input values for each school missingness across all variables
 for (j in 1:(length(var_names))) {
 for (i in 1:nrow(var)) {   # i corresponds to rows, j to columns
-  var[i, 2 + j] <- sum(!is.na(data.v23[data.v23[[var_names[k]]] == var[[i,1]], var_names[j]]))
+  var[i, 2 + j] <- sum(!is.na(data.v28[data.v28[[var_names[k]]] == var[[i,1]], var_names[j]]))
 }
 }
 # add percentage in each column
@@ -2927,17 +2956,19 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 
 ```{r Data division}
 
+data.v29 <- data.v28
+
 set.seed(1000) 
-split = sample.split(data.v23$school2, SplitRatio = 0.50)
+split = sample.split(data.v29$school2, SplitRatio = 0.50)
  
 # Create training and testing sets
-traindf.v23 <- subset(data.v23, split == TRUE)
-testdf.v23 <- subset(data.v23, split == FALSE)
+traindf.v29 <- subset(data.v29, split == TRUE)
+testdf.v29 <- subset(data.v29, split == FALSE)
  
 #Check output
-dim(data.v23)
-dim(traindf.v23)
-dim(testdf.v23)
+dim(data.v29)
+dim(traindf.v29)
+dim(testdf.v29)
 ```
 
 
@@ -2980,7 +3011,7 @@ SI_model_tr <- '# measurement model
     med_count ~~ meds_sti + meds_dep + meds_psy + meds_anx + meds_mood + meds_sle + meds_oth + meds_none + meds_count
     dx_any ~~ dx_dep + dx_bi + dx_psy + dx_ea + dx_tr + dx_sa + dx_adhd + dx_pers + dx_non  '
 
-fit_train <- sem(SI_model_tr, data=traindf.v23)
+fit_train <- sem(SI_model_tr, data=traindf.v29)
 summary(fit_train, fit.measures=TRUE)
 
 # test data comparator
@@ -3034,11 +3065,11 @@ model <- ' # direct effect
            # total effect
            total := c + (a*b)  '
 
-fit_train <- sem(model, data=data.v23)
+fit_train <- sem(model, data=data.v29)
 summary(fit_train, fit.measures=TRUE)
 
 
-fit_test <- sem(SI_model_tr, data=testdf.v23)
+fit_test <- sem(SI_model_tr, data=testdf.v29)
 summary(fit_test, fit.measures=TRUE)
 ```
 
