@@ -1374,7 +1374,7 @@ data.v11 <- data.v11 %>%
 table(data.v11$meds_count)  # check output
 data.v11 = subset(data.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
 
-data.v12 <- data.v11
+data.v12 <- data.v11 # create new dataframe for summary stats. Will jump to v13 for environmental
 ```
 
 ## Diathesis correlation matrix
@@ -1471,22 +1471,22 @@ m_dia <- clm(si_type ~ age + sexual + gender + finpast + sib_freq + race + disab
                body_sr + dx_dep + dx_bi + dx_psy + dx_adhd, data = clm_dia)
 summary(m_dia)
 
-# # sure fx
-# dia_data <- m_dia[["model"]]
-# 
-# # residual plot
-# dia_data$resid <- resids(m_dia, method = c("jitter"),
-#       jitter.scale = c("response"))
-# dia_data <- cbind(dia_data, m_dia[["fitted.values"]])
-# ggplot(dia_data, aes(x = `active SI`, y = resid)) +
-# geom_point(color = "purple", alpha = 0.15)
-# geom_smooth(method = "lm")
-# 
-# dia_data %>% group_by(si_type_num) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-# 
-# dia_data %>% 
-#   filter(si_type == "active SI") %>%
-#   ggplot(aes(x = resid)) + geom_density(color = "magenta")
+# sure fx
+dia_data <- m_dia[["model"]]
+
+# residual plot
+dia_data$resid <- resids(m_dia, method = c("jitter"),
+      jitter.scale = c("response"))
+dia_data <- cbind(dia_data, m_dia[["fitted.values"]])
+ggplot(dia_data, aes(x = si_type, y = resid)) +
+geom_point(color = "purple", alpha = 0.15)
+geom_smooth(method = "lm")
+
+dia_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
+
+dia_data %>%
+  filter(si_type == "passive SI") %>%
+  ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
 ```
 
@@ -1504,56 +1504,56 @@ data.v13 <- data.v11
 n = 942 ** too small to include
 ```{r U.S. Resident Status}
 # aggregate all residency variables into 1 variable called 'res_status'
-data.v12 <- data.v12 %>% 
+data.v13 <- data.v13 %>% 
   mutate(res_status = case_when(citizen == 1 ~ 1,
                                 permanentres == 1 ~ 2, 
                                 visa == 1 ~ 3,
                                 undoc == 1 ~ 4,
                                 otherdoc == 1 ~ 5))
-table(data.v12$res_status)  # check output
-data.v12 = subset(data.v12, select= -c(citizen, permanentres, visa, otherdoc, undoc))   # clean up var
+table(data.v13$res_status)  # check output
+data.v13 = subset(data.v12, select= -c(citizen, permanentres, visa, otherdoc, undoc))   # clean up var
 ```
 
 ## Discrimination
 ```{r discrim}
-table(data.v12$discrim)
+table(data.v13$discrim)
 ```
 
 ## MH campus environment
 ```{r env_mh}
-table(data.v12$env_mh) 
+table(data.v13$env_mh) 
 ```
 
 ## Total therapy visits
 ```{r ther_vis}
-table(data.v11$ther_ever)
-table(data.v11$ther_vis)
+table(data.v13$ther_ever)
+table(data.v13$ther_vis)
 
 # Ther_ever is the parent variable to ther_vis. Combine for full sample.
-data.v12 <- data.v11 %>%
+data.v14 <- data.v13 %>%
   mutate(ther_vis = case_when(ther_ever == 0 ~ 0,
                               ther_vis == 0 ~ 0,
                               ther_vis == 1 ~ 1,
                               ther_vis == 2 ~ 2,
                               ther_vis == 3 ~ 3,
                               ther_vis == 4 ~ 4))
-table(data.v12$ther_vis)   # check output
+table(data.v14$ther_vis)   # check output
 ```
 
 ## Distress & social support
 Group talk var into subcategories of none, informal, formal, or a combo of support
 ```{r talk}
-data.v12$talk1_1[is.na(data.v12$talk1_1)] <- 0
-data.v12$talk1_2[is.na(data.v12$talk1_2)] <- 0
-data.v12$talk1_3[is.na(data.v12$talk1_3)] <- 0
-data.v12$talk1_4[is.na(data.v12$talk1_4)] <- 0
-data.v12$talk1_5[is.na(data.v12$talk1_5)] <- 0
-data.v12$talk1_6[is.na(data.v12$talk1_6)] <- 0
-data.v12$talk1_7[is.na(data.v12$talk1_7)] <- 0
-data.v12$talk1_8[is.na(data.v12$talk1_8)] <- 0
+data.v14$talk1_1[is.na(data.v14$talk1_1)] <- 0
+data.v14$talk1_2[is.na(data.v14$talk1_2)] <- 0
+data.v14$talk1_3[is.na(data.v14$talk1_3)] <- 0
+data.v14$talk1_4[is.na(data.v14$talk1_4)] <- 0
+data.v14$talk1_5[is.na(data.v14$talk1_5)] <- 0
+data.v14$talk1_6[is.na(data.v14$talk1_6)] <- 0
+data.v14$talk1_7[is.na(data.v14$talk1_7)] <- 0
+data.v14$talk1_8[is.na(data.v14$talk1_8)] <- 0
 
 # change talk_ var to numeric
-data.v13 <- data.v12 %>% 
+data.v14 <- data.v14 %>% 
   # aggregate all talk vars under 3 'talk' categories -- none, informal help, formal help, formal+informal help
   mutate(talk = case_when(((talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) &                      # combined
                              (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1)) ~ 4,
@@ -1562,77 +1562,77 @@ data.v13 <- data.v12 %>%
                           (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1) ~ 3)) %>%               # informal support
     mutate(talk = factor(talk, levels=1:4,
                                labels=c("No support", "Formal", "Informal", "Combined")))
-table(data.v13$talk)  # check output
-data.v13 = subset(data.v13, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
+table(data.v14$talk)  # check output
+data.v14 = subset(data.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
 ```
 
 ## Military status
 ```{r military}
-table(data.v13$military)
+table(data.v14$military)
 ```
 
 ## International student
 ```{r international}
-table(data.v13$international)
+table(data.v14$international)
 ```
 
 ## Therapy + Medication Treatment
 ```{r medtherc}
-table(data.v13$medther)  # med or therapy
-table(data.v13$medtherc) # meds + therapy
+table(data.v14$medther)  # med or therapy
+table(data.v14$medtherc) # meds + therapy
 ```
 
 ## Family support
 ```{r fam_support_aca}
-table(data.v13$fam_support_aca)
+table(data.v14$fam_support_aca)
 ```
 
 ## Overall school satisfaction
 ```{r satisfied_overall}
-table(data.v13$satisfied_overall)
+table(data.v14$satisfied_overall)
 ```
 
 ## Activity Involvement
 ```{r Activities}
 
   # set all NAs in acitvities equal to 0
-data.v13$activ_ac[is.na(data.v13$activ_ac)] <- 0
-data.v13$activ_athc[is.na(data.v13$activ_athc)] <- 0
-data.v13$activ_athv[is.na(data.v13$activ_athv)] <- 0
-data.v13$activ_athi[is.na(data.v13$activ_athi)] <- 0
-data.v13$activ_cs[is.na(data.v13$activ_cs)] <- 0
-data.v13$activ_cu[is.na(data.v13$activ_cu)] <- 0
-data.v13$activ_da[is.na(data.v13$activ_da)] <- 0
-data.v13$activ_fs[is.na(data.v13$activ_fs)] <- 0
-data.v13$activ_gs[is.na(data.v13$activ_gs)] <- 0
-data.v13$activ_gov[is.na(data.v13$activ_gov)] <- 0
-data.v13$activ_mp[is.na(data.v13$activ_md)] <- 0
-data.v13$activ_md[is.na(data.v13$activ_none)] <- 0
-data.v13$activ_soc[is.na(data.v13$activ_soc)] <- 0
-data.v13$activ_rel[is.na(data.v13$activ_rel)] <- 0
-data.v13$activ_art[is.na(data.v13$activ_art)] <- 0
-data.v13$activ_other[is.na(data.v13$activ_other)] <- 0
+data.v14$activ_ac[is.na(data.v14$activ_ac)] <- 0
+data.v14$activ_athc[is.na(data.v14$activ_athc)] <- 0
+data.v14$activ_athv[is.na(data.v14$activ_athv)] <- 0
+data.v14$activ_athi[is.na(data.v14$activ_athi)] <- 0
+data.v14$activ_cs[is.na(data.v14$activ_cs)] <- 0
+data.v14$activ_cu[is.na(data.v14$activ_cu)] <- 0
+data.v14$activ_da[is.na(data.v14$activ_da)] <- 0
+data.v14$activ_fs[is.na(data.v14$activ_fs)] <- 0
+data.v14$activ_gs[is.na(data.v14$activ_gs)] <- 0
+data.v14$activ_gov[is.na(data.v14$activ_gov)] <- 0
+data.v14$activ_mp[is.na(data.v14$activ_md)] <- 0
+data.v14$activ_md[is.na(data.v14$activ_none)] <- 0
+data.v14$activ_soc[is.na(data.v14$activ_soc)] <- 0
+data.v14$activ_rel[is.na(data.v14$activ_rel)] <- 0
+data.v14$activ_art[is.na(data.v14$activ_art)] <- 0
+data.v14$activ_other[is.na(data.v14$activ_other)] <- 0
 
   # change class to numeric
-data.v13$activ_ac <- as.numeric(data.v13$activ_ac)
-data.v13$activ_athc <- as.numeric(data.v13$activ_athc)
-data.v13$activ_athv <- as.numeric(data.v13$activ_athv)
-data.v13$activ_athi <- as.numeric(data.v13$activ_athi)
-data.v13$activ_cs <- as.numeric(data.v13$activ_cs)
-data.v13$activ_cu <- as.numeric(data.v13$activ_cu)
-data.v13$activ_da <- as.numeric(data.v13$activ_da)
-data.v13$activ_fs <- as.numeric(data.v13$activ_fs)
-data.v13$activ_gs <- as.numeric(data.v13$activ_gs)
-data.v13$activ_gov <- as.numeric(data.v13$activ_gov)
-data.v13$activ_mp <- as.numeric(data.v13$activ_md)
-data.v13$activ_md <- as.numeric(data.v13$activ_none)
-data.v13$activ_soc <- as.numeric(data.v13$activ_soc)
-data.v13$activ_rel <- as.numeric(data.v13$activ_rel)
-data.v13$activ_art <- as.numeric(data.v13$activ_art)
-data.v13$activ_other <- as.numeric(data.v13$activ_other)
+data.v14$activ_ac <- as.numeric(data.v14$activ_ac)
+data.v14$activ_athc <- as.numeric(data.v14$activ_athc)
+data.v14$activ_athv <- as.numeric(data.v14$activ_athv)
+data.v14$activ_athi <- as.numeric(data.v14$activ_athi)
+data.v14$activ_cs <- as.numeric(data.v14$activ_cs)
+data.v14$activ_cu <- as.numeric(data.v14$activ_cu)
+data.v14$activ_da <- as.numeric(data.v14$activ_da)
+data.v14$activ_fs <- as.numeric(data.v14$activ_fs)
+data.v14$activ_gs <- as.numeric(data.v14$activ_gs)
+data.v14$activ_gov <- as.numeric(data.v14$activ_gov)
+data.v14$activ_mp <- as.numeric(data.v14$activ_md)
+data.v14$activ_md <- as.numeric(data.v14$activ_none)
+data.v14$activ_soc <- as.numeric(data.v14$activ_soc)
+data.v14$activ_rel <- as.numeric(data.v14$activ_rel)
+data.v14$activ_art <- as.numeric(data.v14$activ_art)
+data.v14$activ_other <- as.numeric(data.v14$activ_other)
 
 # Create one activity variable (dichotomous) based on involment in campus activities (org, sports, etc) or not involved
-data.v14 <- data.v13 %>% 
+data.v14 <- data.v14 %>% 
   mutate(activ_yn = case_when(activ_none == 1 ~ 0,
                               (activ_ac == 1 | activ_athc == 1 | activ_athv == 1 | activ_athi == 1 | activ_cs == 1 | activ_cu |
                               activ_da == 1 | activ_fs == 1 | activ_gs == 1 | activ_gov == 1 | activ_mp == 1 | activ_md == 1 |
@@ -1785,12 +1785,14 @@ data.v14 = subset(data.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoColl
                                        var_UNCSchoolArt, var_Watkins))
 
 
+data.v15 <- data.v14  # new dataframe for analysis
+
 ```
 
 ## Environmental correlation
 ```{r}
 # Define environment vars for correlation matrix
-data_env <- data.v14 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
+data_env <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
                                   school2_type, satisfied_overall, ther_vis, 
                                   talk, military, international)
 data <- data_env
@@ -1818,7 +1820,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ##EFA Environment
 ```{r}
-data_env <- data.v14 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
+data_env <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
                                 school2_type, satisfied_overall, ther_vis, talk, military, international)
 
 # create corr matrix, with dummy vars
@@ -1852,7 +1854,7 @@ env_pca$eig   # output matrix with eigenvalues
 Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
 ```{r CLM environment}
 
-clm_env <- data.v14 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type, 
+clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type, 
                    satisfied_overall, ther_vis, talk, military, international)
 clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
@@ -1879,15 +1881,16 @@ env_data <- mod_env[["model"]]
 env_data$resid <- resids(mod_env, method = c("jitter"),
     jitter.scale = c("response"))
 env_data <- cbind(env_data, mod_env[["fitted.values"]])
-ggplot(env_data, aes(x = `passive SI`, y = resid)) +
+ggplot(env_data, aes(x = si_type, y = resid)) +
 geom_point(color = "purple", alpha = 0.15) +
 geom_smooth(method = "lm")
 
 env_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 
 env_data %>% 
-  filter(si_type == "SA") %>% 
+  filter(si_type == "passive SA") %>% 
   ggplot(aes(x = resid)) + geom_density(color = "magenta")
+
 
 ```
 
