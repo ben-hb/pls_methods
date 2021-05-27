@@ -420,7 +420,7 @@ length(unique(data.v2$responseid))
 ```
 
 
-# DIATHESIS VARIABLES
+# DIATHESIS VARIABLES (.v3 - .v11)
 
 Candidate variables: age, sexual, gender, finpast, sib_freq, sib, bmi, race, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, med_any, med_sti, med_dep, med_psy, med_anx, med_mood, med_sle, meds_other, meds_none, alc_tx, wcs_tot, med_count, dx_chronic, disab_1
 
@@ -636,14 +636,14 @@ data.v4$sexual[data.v4$sexual_text %in% c("possibly", "curious", "Unknown", "pot
                                           "Sometimes gender doesn't matter and I don't have time to learn about these things life gets too busy",
                                           "Not sure. Working on it.")] <- "Questioning"
 
-# identifying  pansexual write-ins
+  # identifying  pansexual write-ins
 data.v4$sexual[str_detect(data.v4$sexual_text, "[P|p]an")] <- "Pansexual"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[S|s]apiosexual")] <- "Pansexual"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[S|s]apiosexual")] <- "Pansexual"
 data.v4$sexual[data.v4$sexual_text %in% c("all", "Polyamorous Pansexual", "Pan Sexual", "Pan-sexual", 
                                           "any but ive only had relationships with men")] <- "Pansexual"
 
-# identifying asexual / demisexual write-ins:  
+  # identifying asexual / demisexual write-ins:  
 data.v4$sexual[str_detect(data.v4$sexual_text, "[G|g]r[a|e]y")] <- "Asexual/Demi"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[N|n]onsexual")] <-"Asexual/Demi"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[C|c]elibate")] <- "Asexual/Demi"
@@ -1412,6 +1412,7 @@ corr_simple <- function(data=data_dia, sig=0.6){
 corr_simple()
 
 ```
+
 ### EFA diathesis
 ```{r EFA diathesis}
 
@@ -1433,10 +1434,10 @@ data_dia <- data_dia %>%
 data_dia   # check output
 
 results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender", "finpast", "sib_freq", "race", "ed_any",
-                                                       "disab_1", "ed_scoff", "body_sr", "audit_tot", "dx_dep", "dx_any",
+                                                       "disab_1", "ed_scoff", "body_sr", "dx_dep", "dx_any",
                                                        "dx_bi", "dx_adhd", "dx_psy", "dx_ea", "dx_tr", "dx_sa", "dx_pers",
                                                        "dx_none", "meds_sti", "meds_dep", "meds_psy", "meds_anx", 
-                                                       "meds_mood", "meds_sle", "meds_oth", "meds_none", "alc_tx", "meds_count"), 
+                                                       "meds_mood", "meds_sle", "meds_oth", "meds_none", "meds_count"), 
                           remove_first_dummy = TRUE)
 
 dia_pca <- PCA(results_dia)  # apply PCA
@@ -1471,7 +1472,7 @@ dim(test_dia)
 
 m_dia <- clm(si_type ~ (age + sexual + gender + finpast + sib_freq + race + disab_1 + ed_scoff + 
                meds_count + ed_any + dx_ea + dx_tr + dx_sa + dx_pers + meds_sti + meds_dep + meds_psy +
-               body_sr + dx_dep + dx_bi + dx_psy + dx_adhd)^2, data = train_dia)
+               body_sr + dx_dep + dx_bi + dx_psy + dx_adhd, data = train_dia)
 summary(m_dia)
 
 # sure fx
