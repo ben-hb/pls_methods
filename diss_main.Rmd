@@ -25,8 +25,8 @@ library(emulator)
 library(esc)
 library(expss)
 library(FactoMineR)
+library(factoextra)
 library(finalfit)
-library(FactoMineR)
 library(glmnet)
 library(glmnetcr)
 library(haven)
@@ -1373,13 +1373,15 @@ data.v11 <- data.v11 %>%
 
 table(data.v11$meds_count)  # check output
 data.v11 = subset(data.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
+
+data.v12 <- data.v11
 ```
 
 ## Diathesis correlation matrix
 ```{r Diathesis correlation}
 
 # Define diathesis vars for correlation matrix
-data_dia <- data.v11 %>% select(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
+data_dia <- data.v12 %>% select(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
                                 dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, meds_count,
                                 dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
                                 meds_oth, meds_none, ed_any)
@@ -1410,7 +1412,7 @@ corr_simple()
 ## EFA diathesis
 ```{r EFA diathesis}
 
-data_dia <- data.v11 %>% select(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
+data_dia <- data.v12 %>% select(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
                                 dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, ed_any,
                                 dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
                                 meds_oth, meds_none, meds_count)
@@ -1445,7 +1447,7 @@ dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, m
 meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none,  meds_count 
 ```{r clm_dia}
 
-clm_dia <- data.v11 %>% select(si_type, age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, 
+clm_dia <- data.v12 %>% select(si_type, age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, 
                                body_sr, dx_dep, dx_any, dx_bi, dx_psy, dx_adhd, meds_count, ed_any,
                                dx_ea, dx_tr, dx_sa, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, 
                                meds_mood, meds_sle, meds_oth, meds_none)
@@ -1495,7 +1497,7 @@ religios, residenc, satisfied_overall, firstgen
 
 
 ```{r Env frame}
-data.v12 <- data.v11
+data.v13 <- data.v11
 ```
 
 ## US resident status
@@ -2218,31 +2220,87 @@ results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "deprawsc"),
 
 def_pca <- PCA(results_def)  # apply PCA
 def_pca$eig   # output matrix with eigenvalues
+
+
+#FAMD trial 
+data.v19 <- data.v19 %>%
+  mutate(si_type_num =  ifelse(si_type == "No SI", 0,
+                               ifelse(si_type == "passive SI", 1,
+                                      ifelse(si_type  == "active SI", 2, 3))))
+
+
+data_def <- data.v19 %>% select(si_type_num, aca_impa, deprawsc)
+view(data_def)
+
+# create corr matrix, with dummy vars 
+data_def <- data_def %>% 
+  mutate_if(is.numeric, as.factor) %>% 
+  dummy_cols(remove_first_dummy = TRUE) %>% 
+  data.matrix()
+data_def   # check output
+
+results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "deprawsc"),
+                         remove_first_dummy = TRUE)
+
+def_pca <- PCA(results_def)  # apply PCA
+def_pca$eig   # output matrix with eigenvalues
+
+
+
+
 ```
 
 ## CLM defeat
 ```{r CLM defeat}
 
-clm_def <- dummy_cols(data.v19, select_columns = c("si_type", "aca_impa", "deprawsc"),
-                         remove_first_dummy = TRUE)
-# clm_def <- data.v19 %>% select(si_type, aca_impa, deprawsc)
+# results_def <- dummy_cols(data.v19, select_columns = c("si_type", "aca_impa", "deprawsc"),
+#                          remove_first_dummy = TRUE)
 
-clm_def <- NA_preproc(clm_def)
+
+results2_def <- data.v19 %>% select(si_type, aca_impa, deprawsc)
+
+
+
+clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
 
-str(clm_def)
-set.seed(1000) 
+# str(clm_def)
+# set.seed(1000) 
+# 
+# index = sample(1:nrow(clm_def), 0.7*nrow(clm_def))
+# 
+# train_def = clm_def[index,] # Create the training data 
+# test_def = clm_def[-index,] # Create the test data
+# 
+# dim(train_def)
+# dim(test_def)
 
-index = sample(1:nrow(clm_def), 0.7*nrow(clm_def))
+fm1 <- clm2(si_type ~ aca_impa + deprawsc, data = clm_def)
+summary(fm1)
 
-train_def = clm_def[index,] # Create the training data 
-test_def = clm_def[-index,] # Create the test data
+coef(fm1)
+vcov(fm1)
+AIC(fm1)
+extractAIC(fm1)
+logLik(fm1)
+fitted(fm1)
+confint(fm1) ## type = "profile"
+confint(fm1, type = "Wald")
+pr1 <- profile(fm1)
+confint(pr1)
 
-dim(train_def)
-dim(test_def)
+## plotting the profiles:
+par(mfrow = c(2, 2))
+plot(pr1, root = TRUE) ## check for linearity
+par(mfrow = c(2, 2))
+plot(pr1)
+par(mfrow = c(2, 2))
+plot(pr1, approx = TRUE)
+par(mfrow = c(2, 2))
+plot(pr1, Log = TRUE)
+par(mfrow = c(2, 2))
+plot(pr1, Log = TRUE, relative = FALSE)
 
-m_def <- clm(si_type ~ aca_impa + deprawsc, data = clm_def)
-summary(m_def)
 
 # # sure fx
 # le_data <- mod_le[["model"]]
@@ -2260,6 +2318,7 @@ summary(m_def)
 # le_data %>% 
 #  filter(si_type == "SA") %>%
 #  ggplot(aes(x = resid)) + geom_density(color = "magenta")
+
 
 ```
 
