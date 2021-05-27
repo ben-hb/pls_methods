@@ -2246,29 +2246,11 @@ def_pca$eig   # output matrix with eigenvalues
 
 
 #FAMD trial 
-data.v21 <- data.v21 %>%
-  mutate(si_type_num =  ifelse(si_type == "No SI", 0,
-                               ifelse(si_type == "passive SI", 1,
-                                      ifelse(si_type  == "active SI", 2, 3))))
-
-
-data_def <- data.v21 %>% select(si_type_num, aca_impa, deprawsc)
-view(data_def)
-
-# create corr matrix, with dummy vars 
-data_def <- data_def %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
-  data.matrix()
-data_def   # check output
-
-results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "deprawsc"),
-                         remove_first_dummy = TRUE)
-
-def_pca <- PCA(results_def)  # apply PCA
-def_pca$eig   # output matrix with eigenvalues
-
-
+# data.v21 <- data.v21 %>%
+#   mutate(si_type_num =  ifelse(si_type == "No SI", 0,
+#                                ifelse(si_type == "passive SI", 1,
+#                                       ifelse(si_type  == "active SI", 2, 3))))
+# 
 
 
 ```
@@ -2279,10 +2261,7 @@ def_pca$eig   # output matrix with eigenvalues
 # results_def <- dummy_cols(data.v19, select_columns = c("si_type", "aca_impa", "deprawsc"),
 #                          remove_first_dummy = TRUE)
 
-
 results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
-
-
 
 clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
@@ -2307,7 +2286,6 @@ AIC(fm1)
 extractAIC(fm1)
 logLik(fm1)
 fitted(fm1)
-confint(fm1) ## type = "profile"
 confint(fm1, type = "Wald")
 pr1 <- profile(fm1)
 confint(pr1)
