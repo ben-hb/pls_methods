@@ -1167,7 +1167,7 @@ data.v11 <- data.v9 %>%
                                                     "Adderrall (for ADHD)", "Adderal, vyvance",  "Celltech")] <- 1
       
 # Create antidepressant
-data.v11 <- data.v11 %>%data.v11
+data.v11 <- data.v11 %>%
   mutate(meds_dep = case_when(meds_2 == 1 ~ 1,
                               meds_8 == 1 ~ 0,
                               meds_2 == 0 ~ 0))
@@ -1374,10 +1374,14 @@ data.v11 <- data.v11 %>%
 table(data.v11$meds_count)  # check output
 data.v11 = subset(data.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
 
+```
+
+## DIATHESIS ANALYSES
+```{r Diathesis analyses}
 data.v12 <- data.v11 # create new dataframe for summary stats. Will jump to v13 for environmental
 ```
 
-## Diathesis correlation matrix
+### Diathesis correlation matrix
 ```{r Diathesis correlation}
 
 # Define diathesis vars for correlation matrix
@@ -1389,7 +1393,6 @@ data_dia <- data.v12 %>% select(age, sexual, gender, finpast, sib_freq, race, di
 # Corr_simple function
 corr_simple <- function(data=data_dia, sig=0.6){
   # convert data to numeric in order to run correlations 
-  # (i.e., convert to factor first to keep the integrity of the data - each value will become a num rather than NA)
   data_dia <- data_dia %>% mutate_if(is.character, as.factor)
   data_dia <-  data_dia %>% mutate_if(is.factor, as.numeric)
   # run a correlation and drop the insignificant ones
@@ -1409,7 +1412,7 @@ corr_simple <- function(data=data_dia, sig=0.6){
 corr_simple()
 
 ```
-## EFA diathesis
+### EFA diathesis
 ```{r EFA diathesis}
 
 data_dia <- data.v12 %>% select(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
@@ -1441,7 +1444,7 @@ dia_pca$eig   # output matrix with eigenvalues
 
 ```
 
-## CLM diathesis regression
+### CLM diathesis regression
 Regression variables: age, sexual, gender, finpast, sib_freq, race, ed_scoff, body_sr, disab_1
 dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, meds_sti, meds_dep, 
 meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none,  meds_count 
