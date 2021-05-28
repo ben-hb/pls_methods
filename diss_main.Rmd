@@ -1438,8 +1438,14 @@ results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender"
                                                        "meds_mood", "meds_sle", "meds_oth", "meds_none", "meds_count"), 
                           remove_first_dummy = TRUE)
 
-dia_pca <- PCA(results_dia)  # apply PCA
-dia_pca$eig   # output matrix with eigenvalues
+dia_pca <- PCA(results_dia, graph=FALSE)  # apply PCA
+fviz_pca_var(dia_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+eigval_dia <- get_eigenvalue(dia_pca)
+eigval_dia
 
 ```
 
@@ -1828,18 +1834,6 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 data_env <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
                                 school2_type, satisfied_overall, ther_vis, talk, military, international)
 
-# # create corr matrix, with dummy vars
-# data_dia <- data_dia %>% 
-#   mutate_if(is.numeric, as.factor) %>% 
-#   mutate(
-#     age = as.numeric(age),
-#     meds_count = as.numeric(meds_count),
-#     ed_scoff = as.numeric(ed_scoff)
-#   ) %>% 
-#   dummy_cols(remove_first_dummy = TRUE) %>% 
-#   data.matrix()
-# data_dia   # check output
-
 # create corr matrix, with dummy vars
 data_env <- data_env %>% 
   mutate_if(is.numeric, as.factor) %>% 
@@ -1853,8 +1847,14 @@ results_env <- dummy_cols(data_env, select_columns = c("discrim", "religios", "e
                                                        "talk", "military", "international"),
                           remove_first_dummy = TRUE)
 
-env_pca <- PCA(results_env)  # apply PCA
-env_pca$eig   # output matrix with eigenvalues
+env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
+fviz_pca_var(env_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+eigval_env <- get_eigenvalue(env_pca)
+eigval_env
 
 ```
 
@@ -1988,7 +1988,6 @@ table(data.v16$fincur)
 ```{r isi_tot}
 table(data.v16$isi_1)
 table(data.v16$isi_2)
-
 ```
 
 ## Abuse
@@ -2112,8 +2111,14 @@ results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", 
                                                      "assault_emo", "deprawsc", "psyhx", "drug_type"),
                          remove_first_dummy = TRUE)
 
-le_pca <- PCA(results_le)  # apply PCA
-le_pca$eig   # output matrix with eigenvalues
+le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
+fviz_pca_var(le_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+eigval_le <- get_eigenvalue(le_pca)
+eigval_le
 ```
 
 ## CLM Life event regression
@@ -2241,18 +2246,14 @@ data_def   # check output
 results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "deprawsc"),
                          remove_first_dummy = TRUE)
 
-def_pca <- PCA(results_def)  # apply PCA
-def_pca$eig   # output matrix with eigenvalues
-
-
-#FAMD trial 
-# data.v21 <- data.v21 %>%
-#   mutate(si_type_num =  ifelse(si_type == "No SI", 0,
-#                                ifelse(si_type == "passive SI", 1,
-#                                       ifelse(si_type  == "active SI", 2, 3))))
-# 
-
-
+def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
+fviz_pca_var(le_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+eigval_le <- get_eigenvalue(le_pca)
+eigval_le
 ```
 
 ## CLM defeat
@@ -2574,8 +2575,17 @@ data_entrap   # check output
 results_entrap <- dummy_cols(data_entrap, select_columns = c("dep_impa", "gad7_impa", "percneed_cur"),
                          remove_first_dummy = TRUE)
 
-entrap_pca <- PCA(results_entrap)  # apply PCA
+entrap_pca <- PCA(results_entrap, graph=FALSE)  # apply PCA
 entrap_pca$eig   # output matrix with eigenvalues
+
+fviz_pca_var(entrap_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+eigval_entrap <- get_eigenvalue(entrap_pca)
+eigval_entrap
+
 ```
 
 ##  CLM Entrapment regression
@@ -2713,7 +2723,7 @@ data.v26$inf_3[is.na(data.v26$inf_3)] <- 0
 data.v26$inf_4[is.na(data.v26$inf_4)] <- 0
 data.v26$inf_5[is.na(data.v26$inf_5)] <- 0
 data.v26$inf_6[is.na(data.v26$inf_6)] <- 0
-data.v26$inf_7[is.na(data.v26inf_7)] <- 0
+data.v26$inf_7[is.na(data.v26$inf_7)] <- 0
 
 # change inf_ var to numeric
 data.v26 <- data.v26 %>% 
@@ -2786,8 +2796,8 @@ corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplic
 corr[corr %in% c(-1, 1)] <- NA                                   # drop perfect correlations
 corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
 corr <- na.omit(corr)                                   #remove the NA values from above 
-mm_corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
-print(MM_corr)
+corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
+print(corr)
   
 #turn corr back into matrix in order to plot with corrplot
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
@@ -2810,8 +2820,15 @@ results_mm <- dummy_cols(data_mm, select_columns = c("inf", "flourish", "belong1
                                                      "belong9", "stig_pcv_2", "stig_pcv_3", "brs_tot"),
                          remove_first_dummy = TRUE)
 
-mm_pca <- PCA(results_mm)  # apply PCA
-mm_pca$eig   # output matrix with eigenvalues
+mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
+fviz_pca_var(mm_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+eigval_mm <- get_eigenvalue(mm_pca)
+eigval_mm
+
 ```
 
 ## CLM Motivational moderators regression
