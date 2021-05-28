@@ -444,65 +444,71 @@ data.v3 <- data.v3 %>%
   mutate(gender = case_when((gender == 3 | gender == 4) ~ 3,     # transgender
                             (gender == 5 | gender == 6) ~ 2,     # gender diverse
                             (gender == 1 | gender == 2) ~ 1,     # cis-gender
-                            FALSE ~ 4)) %>%                      # sets up non-answers
-  # label broad gender identities
-  mutate(gender = factor(gender, levels=1:4,
-                         labels=c("cis-gender", "gender diverse", "transgender", "non-answers")))
-table(data.v3$gender) # Check output
+                            FALSE ~ 4))                          # sets up non-answers
+table(data.v3$gender)
+  
+  # transform into cisgender and non-cisgender
+data.v3 <- data.v3 %>%  
+  mutate(gender_noncis = case_when(gender == 2 ~ 1,
+                                   gender == 3 ~ 1,
+                                   gender == 1 ~ 0))
+table(data.v3$gender_noncis)
+summary(data.v3$gender_noncis)
+
 ```
 
 ### Reconcile 'gender_text' 
 ```{r gender_text}
   # gender-diverse
-data.v3$gender[str_detect(data.v3$gender_text, "[D|d]emi")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "[B|b]inary")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "[N|n]eutral")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "[Q|q]ueer")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "[F|f]luid")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "[A|a]gender")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "[A|a]ndrogynous")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "[P|p]angender")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "[B|b]igender")] <- "gender diverse"
+data.v3$gender[str_detect(data.v3$gender_text, "[D|d]emi")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "[B|b]inary")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "[N|n]eutral")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "[Q|q]ueer")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "[F|f]luid")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "[A|a]gender")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "[A|a]ndrogynous")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "[P|p]angender")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "[B|b]igender")] <- 1
 data.v3$gender[data.v3$gender_text %in% c("she/they", "Closeted genderfluid (female presenting)", "Pan-gender",
                                           "female / infinite star being / gender non conforming","He or they",
                                           "Not sure, nonbinary I guess", "Non-binary trans maculine", "No preference", 
                                           "Somewhere between GNC and transfemme", "She/they",
-                                          "Non-binary leaning towards trans man")] <- "gender diverse"
+                                          "Non-binary leaning towards trans man")] <- 1
 
  #transgender
 data.v3$gender[data.v3$gender_text %in% c("Transmasculine", "Trans-masculine person", "Trans Masculine", 
-                                          "gender non-conforming trans man")] <- "transgender"
+                                          "gender non-conforming trans man")] <- 1
 
   # male
-data.v3$gender[str_detect(data.v3$gender_text, "[D|d]ude")] <- "cis-gender"
-data.v3$gender[str_detect(data.v3$gender_text, "[M|m]ale")] <- "cis-gender"
-data.v3$gender[str_detect(data.v3$gender_text, "[B|b]oy")] <- "cis-gender"
+data.v3$gender[str_detect(data.v3$gender_text, "[D|d]ude")] <- 0
+data.v3$gender[str_detect(data.v3$gender_text, "[M|m]ale")] <- 0
+data.v3$gender[str_detect(data.v3$gender_text, "[B|b]oy")] <- 0
 data.v3$gender[data.v3$gender_text %in% c("Male: there are only 2 genders", "if you have a penis you're a male", 
                                           "Cisgender man", "Male motherfucker. stop making up gender shit.", "He-male",
                                           "I have male parts so therefore I am a MALE and there are only TWO genders!!!!!!!!!!!!!!!!!",
                                           "SATSYG (Savage about to steal yo girl", "My sex is male", 
                                           "I say male, but I think gender is fluid", "Theres only two genders, I'm male",
                                           "Probably heterosexual, but so commitment-phobic that I can't actually tell if I'm asexual.",
-                                          "I'm a male. Born a male, always will be a male. There should only be two choices.")] <- "cis-gender"
+                                          "I'm a male. Born a male, always will be a male. There should only be two choices.")] <- 0
 
   # female
-data.v3$gender[str_detect(data.v3$gender_text, "[F|f]emale")] <- "cis-gender"
-data.v3$gender[str_detect(data.v3$gender_text, "[W|w]oman")]  <- "cis-gender" 
-data.v3$gender[str_detect(data.v3$gender_text, "[G|g]irl")]  <- "cis-gender"
+data.v3$gender[str_detect(data.v3$gender_text, "[F|f]emale")] <- 0
+data.v3$gender[str_detect(data.v3$gender_text, "[W|w]oman")]  <- 0
+data.v3$gender[str_detect(data.v3$gender_text, "[G|g]irl")]  <- 0
 data.v3$gender[data.v3$gender_text %in% c("Male and Female are not genders, they are sexes. I identify as a woman.", 
-                                          "Female, but currently going through a gender identity crisis!")] <- "cis-gender"
+                                          "Female, but currently going through a gender identity crisis!")] <- 0
 
   # questioning/other
-data.v3$gender[str_detect(data.v3$gender_text, "[Q|q]uestioning")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "[U|u]nsure")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "[I|i]dk")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "Hermaphrodite")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "Questioning")] <- "gender diverse"
-data.v3$gender[str_detect(data.v3$gender_text, "Undecided")] <- "gender diverse"
+data.v3$gender[str_detect(data.v3$gender_text, "[Q|q]uestioning")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "[U|u]nsure")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "[I|i]dk")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "Hermaphrodite")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "Questioning")] <- 1
+data.v3$gender[str_detect(data.v3$gender_text, "Undecided")] <- 1
 data.v3$gender[data.v3$gender_text %in% c("Literally no clue as of late", "Kynigender", "Adrogynous", "Hermaphrodite", "idk yet", 
                                           "Questioning", "Questioning; female", "Still questioning", "not female/questioning", 
                                           "Questioning (unsure)", "Girl ? Idk", "not sure", "Not Sure???", "Not sure", 
-                                          "I don't know, still trying to purse it out", "Undecided")] <- "gender diverse"
+                                          "I don't know, still trying to purse it out", "Undecided")] <- 1
 
   # non-answers jokesters
 data.v3$gender[str_detect(data.v3$gender_text, "[H|h]elicopter")] <- "non-answers"
@@ -536,20 +542,8 @@ data.v3$gender[data.v3$gender_text %in% c("I am me. A human.", "I'm not yet sure
                                           "I don't have one because it's not a legitimate concept.", 
                                           "Gender is a construct which serves no purpose.")] <- "non-answers"
 
-table(data.v3$gender, useNA = "always")   # check output
+table(data.v3$gender_noncis, useNA = "always")   # check output
 
-data.v3$gender_noncis <- data.v3$gender
-
-# create dichotomous var for non-cisgender v. cisgender
-data.v3 <- data.v3 %>%
-  mutate(gender_noncis = case_when("gender diverse" == 1 ~ 1,
-                                  "transgender" == 1 ~ 1,
-                                  "cis-gender" == 1 ~ 0))
-data.v3$gender_noncis <- as.numeric(data.v3$gender_noncis)
-table(data.v3$gender_noncis)
-summary(data.v3$gender_noncis)
-         
- 
 ```
 
 ## Sexual Identity
@@ -1396,7 +1390,7 @@ data.v12 <- data.v11 # create new dataframe for summary stats. Will jump to v13 
 ```{r Diathesis correlation}
 
 # Define diathesis vars for correlation matrix
-data_dia <- data.v12 %>% select(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
+data_dia <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
                                 dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, meds_count,
                                 dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
                                 meds_oth, meds_none, ed_any)
@@ -1427,7 +1421,7 @@ corr_simple()
 ### EFA diathesis
 ```{r EFA diathesis}
 
-data_dia <- data.v12 %>% select(age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
+data_dia <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
                                 dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, ed_any,
                                 dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
                                 meds_oth, meds_none, meds_count)
@@ -1444,7 +1438,7 @@ data_dia <- data_dia %>%
   data.matrix()
 data_dia   # check output
 
-results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender", "finpast", "sib_freq", "race", "ed_any",
+results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender_noncis", "finpast", "sib_freq", "race", "ed_any",
                                                        "disab_1", "ed_scoff", "body_sr", "dx_dep", "dx_any",
                                                        "dx_bi", "dx_adhd", "dx_psy", "dx_ea", "dx_tr", "dx_sa", "dx_pers",
                                                        "dx_none", "meds_sti", "meds_dep", "meds_psy", "meds_anx", 
