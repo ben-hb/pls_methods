@@ -537,6 +537,19 @@ data.v3$gender[data.v3$gender_text %in% c("I am me. A human.", "I'm not yet sure
                                           "Gender is a construct which serves no purpose.")] <- "non-answers"
 
 table(data.v3$gender, useNA = "always")   # check output
+
+data.v3$gender_noncis <- data.v3$gender
+
+# create dichotomous var for non-cisgender v. cisgender
+data.v3 <- data.v3 %>%
+  mutate(gender_noncis = case_when("gender diverse" == 1 ~ 1,
+                                  "transgender" == 1 ~ 1,
+                                  "cis-gender" == 1 ~ 0))
+data.v3$gender_noncis <- as.numeric(data.v3$gender_noncis)
+table(data.v3$gender_noncis)
+summary(data.v3$gender_noncis)
+         
+ 
 ```
 
 ## Sexual Identity
@@ -1864,6 +1877,17 @@ fviz_pca_var(env_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
+fviz_pca_biplot(env_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_famd_var(env_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
 eigval_env <- get_eigenvalue(env_pca)
 eigval_env
 
@@ -1936,57 +1960,17 @@ table(data.v16$ins_cover, useNA = "always")   # check output
 ## Illicit drug use
 Creates illicit drug use var to aggregate all drug answers into one, create drug_poly for >1 drug (limitation -- 30 days reflection)
 ```{r drug_type}
-data.v16$drug_mar[is.na(data.v16$drug_mar)] <- 0
-data.v16$drug_coc[is.na(data.v16$drug_coc)] <- 0
-data.v16$drug_her[is.na(data.v16$drug_her)] <- 0
-data.v16$drug_met[is.na(data.v16$drug_met)] <- 0
-data.v16$drug_stim[is.na(data.v16$drug_stim)] <- 0
-data.v16$drug_ect[is.na(data.v16$drug_ect)] <- 0
-data.v16$drug_opi[is.na(data.v16$drug_opi)] <- 0
-data.v16$drug_other[is.na(data.v16$drug_other)] <- 0
-data.v16$drug_none[is.na(data.v16$drug_none)] <- 0
-  
-# change drug_ var to numeric
-data.v16 <- data.v16 %>% 
-  mutate(drug_sum = as.numeric(drug_mar) + as.numeric(drug_coc) + as.numeric(drug_her) + as.numeric(drug_met) + as.numeric(drug_stim) + as.numeric(drug_ect) + 
-           as.numeric(drug_opi) + as.numeric(drug_other)) %>%
-
-  # If >1 drug is selected, create/add selection to 'drug_poly'
-  mutate(drug_poly = ifelse(drug_sum > 1, 1, 0)) %>%
-  
-  # drug_[subtype] specification, check for sub 1/0
-  mutate(drug_type = case_when(drug_poly == 1 ~ 9,
-                               drug_mar == 1 ~ 1,
-                               drug_coc == 1 ~ 2, 
-                               drug_her == 1 ~ 3,
-                               drug_met == 1 ~ 4,
-                               drug_stim == 1 ~ 5,
-                               drug_ect == 1 ~ 6,
-                               drug_opi == 1 ~ 7,
-                               drug_other == 1 ~ 8,
-                               drug_none == 1 ~ 10)) %>%
-  mutate(drug_type = factor(drug_type, levels=1:10,
-                    labels=c("Marijuana", "Cocaine", "Heroin", "Meth", "Stimulants", "Ecstasy", "Opioids", "Other", "Poly use", "None")))
-table(data.v16$drug_type)   # tabulate and check output
-data.v16 = subset(data.v16, select= -c(drug_sum)) # clean up var
-
-# sort into uppers and downers
-data.v16 <- data.v16 %>%
-  mutate(drug_type = case_when(drug_poly == 1 ~ 3,
-                               drug_mar == 1 ~ 1,
-                               drug_coc == 1 ~ 2, 
-                               drug_her == 1 ~ 1,
-                               drug_met == 1 ~ 2,
-                               drug_stim == 1 ~ 2,
-                               drug_ect == 1 ~ 2,
-                               drug_opi == 1 ~ 7,
-                               drug_other == 1 ~ 4,
-                               drug_none == 1 ~ 0)) %>%
-  mutate(drug_type = factor(drug_type, levels=0:4,
-                    labels=c("None", "Downer", "Upper", "Poly", "Other")))
-table(data.v16$drug_type)   # tabulate and check output
-data.v16 = subset(data.v16, select= -c(drug_mar, drug_coc, drug_her, drug_poly, drug_met, drug_stim, drug_ect, drug_opi, drug_other)) # clean up var
-
+## add summary of each
+table(data.v16$drug_any)
+table(data.v16$drug_none)
+table(data.v16$drug_mar)  
+table(data.v16$drug_coc)
+table(data.v16$drug_her)
+table(data.v16$drug_met)
+table(data.v16$drug_stim)
+table(data.v16$drug_ect)
+table(data.v16$drug_opi)
+table(data.v16$drug_other)
 ```
 
 ## Current financial stressors
@@ -2108,7 +2092,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ## EFA LE
 ```{r}
 data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
-                               binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
+                               binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_any)
 
 # create corr matrix, with dummy vars
 data_le <- data_le %>% 
@@ -2119,7 +2103,7 @@ data_le   # check output
 
 results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", "gpa_sr", "aca_impa", 
                                                      "fincur", "assault_phys", "binge_fr", "assault_sex", 
-                                                     "assault_emo", "deprawsc", "psyhx", "drug_type"),
+                                                     "assault_emo", "deprawsc", "psyhx", "drug_any"),
                          remove_first_dummy = TRUE)
 
 le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
@@ -2150,11 +2134,11 @@ eigval_le
 
 ## CLM Life event regression
 Regression variables: ins_cover, gpa_sr, aca_impa, abuse_year, psyhx, binge_fr, fincur, 
-drug_type, assault_sex, assault_phys, assault_emo, isi_tot
+drug_any, assault_sex, assault_phys, assault_emo, isi_tot
 ```{r clm_LE}
 
 clm_le <- data.v19 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
-                              binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
+                              binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_any)
 
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
