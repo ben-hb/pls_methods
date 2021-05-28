@@ -2112,11 +2112,37 @@ results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", 
                          remove_first_dummy = TRUE)
 
 le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
+le_pca$eig   # output matrix with eigenvalues
+
+# Visualize PCA, FAMD results
 fviz_pca_var(le_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
+
+def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
+
+
+#Visualize PCA, FAMD results
+fviz_pca_var(def_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_pca_biplot(tsm_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_famd_var(tsm_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+eigval_def <- get_eigenvalue(def_pca)
+eigval_def
 eigval_le <- get_eigenvalue(le_pca)
 eigval_le
 ```
@@ -2247,11 +2273,25 @@ results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "deprawsc"),
                          remove_first_dummy = TRUE)
 
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
+entrap_pca$eig   # output matrix with eigenvalues
+
+#Visualize PCA, FAMD results
 fviz_pca_var(def_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
+fviz_pca_biplot(def_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_famd_var(def_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
 eigval_def <- get_eigenvalue(def_pca)
 eigval_def
 ```
@@ -2411,56 +2451,29 @@ results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_score", "
                          remove_first_dummy = TRUE)
 
 tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
+entrap_pca$eig   # output matrix with eigenvalues
+
+# Visualize PCA, FAMD results
 fviz_pca_var(tsm_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
+fviz_pca_biplot(tsm_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_famd_var(tsm_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
 eigval_tsm <- get_eigenvalue(tsm_pca)
 eigval_tsm
 
 ```
-
-### FAMD TSM
-```{r FAMD TSM}
-
-# create compatible df for FAMD analysis
-results_tsm <- as.factor(results_tsm)
-
-res.famd <- FAMD(results_tsm, graph = FALSE)
-eig.val <- get_eigenvalue(res.famd)
-fviz_screeplot(res.famd)
-
-var <- get_famd_var(res.famd)
-# Plot of variables
-fviz_famd_var(res.famd, repel = TRUE)
-# Contribution to the first dimension
-fviz_contrib(res.famd, "var", axes = 1)
-# Contribution to the second dimension
-fviz_contrib(res.famd, "var", axes = 2)
-
-
-quanti.var <- get_famd_var(res.famd, "quanti.var")
-quanti.var 
-
-fviz_famd_var(res.famd, "quanti.var", repel = TRUE,
-              col.var = "black")
-
-fviz_famd_var(res.famd, "quanti.var", col.var = "contrib", 
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-# Color by cos2 values: quality on the factor map
-fviz_famd_var(res.famd, "quanti.var", col.var = "cos2",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
-             repel = TRUE)
-
-
-
-
-
-```
-
-
 
 ## CLM TSM
 ```{r CLM TSM}
@@ -2578,13 +2591,26 @@ results_entrap <- dummy_cols(data_entrap, select_columns = c("dep_impa", "gad7_i
 entrap_pca <- PCA(results_entrap, graph=FALSE)  # apply PCA
 entrap_pca$eig   # output matrix with eigenvalues
 
+# Visualize PCA, FAMD results
 fviz_pca_var(entrap_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
+fviz_pca_biplot(entrap_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_famd_var(entrap_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
 eigval_entrap <- get_eigenvalue(entrap_pca)
 eigval_entrap
+
 
 ```
 
@@ -2821,11 +2847,24 @@ results_mm <- dummy_cols(data_mm, select_columns = c("inf", "flourish", "belong1
                          remove_first_dummy = TRUE)
 
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
+
+# Visualize PCA, FAMD
 fviz_pca_var(mm_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
+fviz_pca_biplot(mm_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_famd_var(mm_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
 eigval_mm <- get_eigenvalue(mm_pca)
 eigval_mm
 
