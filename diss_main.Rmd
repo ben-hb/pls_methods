@@ -712,7 +712,6 @@ data.v5 <- data.v4 %>%
                        labels=c("Heterosexual", "Gay/Lesbian", "Bisexual", "Queer/non-binary", "Questioning", "Non-answers")))
 table(data.v5$sexual) # tabulate and check outputs
 
-
 ```
 
 ## BMI
@@ -1075,6 +1074,21 @@ table(data.v9$dx_sa)
 table(data.v9$dx_adhd)
 table(data.v9$dx_pers)
 table(data.v9$dx_none)
+
+
+# likely frontrunners for eval
+table(data.v9$dep_or_a_all)
+table(data.v9$dep_or_anx)
+table(data.v9$dep_any)
+table(data.v9$anx_any)
+
+
+table(data.v9$dx_bi)
+table(data.v9$dx_ea)
+table(data.v9$dx_tr)
+table(data.v9$dx_adhd)
+
+
 ```
 
 ## Religion
