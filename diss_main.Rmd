@@ -2302,12 +2302,11 @@ plot(pr1, Log = TRUE)
 par(mfrow = c(2, 2))
 plot(pr1, Log = TRUE, relative = FALSE)
 
-
 # # sure fx
-# le_data <- mod_le[["model"]]
+# le_data <- fm1[["model"]]
 # 
 # # residual plot
-# le_data$resid <- resids(mod_le, method = c("jitter"),
+# le_data$resid <- resids(fm1, method = c("jitter"),
 #      jitter.scale = c("response"))
 # le_data <- cbind(le_data, mod_le[["fitted.values"]])
 # ggplot(le_data, aes(x = `passive SI`, y = resid)) +
@@ -2316,7 +2315,7 @@ plot(pr1, Log = TRUE, relative = FALSE)
 # 
 # le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
 # 
-# le_data %>% 
+# le_data %>%
 #  filter(si_type == "SA") %>%
 #  ggplot(aes(x = resid)) + geom_density(color = "magenta")
 
@@ -2346,7 +2345,8 @@ table(data.v22$dep_secret, useNA = "always")
 ```{r AAQ_tot}
 # create AAQ_tot variable to sum up imputed AAQ questions
 data.v22 <- data.v22 %>%
-  mutate(AAQ_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7))
+  mutate(AAQ_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
+           as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7))
 
 table(data.v22$AAQ_tot, useNA = "always")
 ```
@@ -2412,6 +2412,44 @@ results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_score", "
 tsm_pca <- PCA(results_tsm)  # apply PCA
 tsm_pca$eig   # output matrix with eigenvalues
 ```
+
+### FAMD TSM
+```{r FAMD TSM}
+
+res.famd <- FAMD(results_tsm, graph = FALSE)
+eig.val <- get_eigenvalue(res.famd)
+fviz_screeplot(res.famd)
+
+var <- get_famd_var(res.famd)
+# Plot of variables
+fviz_famd_var(res.famd, repel = TRUE)
+# Contribution to the first dimension
+fviz_contrib(res.famd, "var", axes = 1)
+# Contribution to the second dimension
+fviz_contrib(res.famd, "var", axes = 2)
+
+
+quanti.var <- get_famd_var(res.famd, "quanti.var")
+quanti.var 
+
+fviz_famd_var(res.famd, "quanti.var", repel = TRUE,
+              col.var = "black")
+
+fviz_famd_var(res.famd, "quanti.var", col.var = "contrib", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+# Color by cos2 values: quality on the factor map
+fviz_famd_var(res.famd, "quanti.var", col.var = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE)
+
+
+
+
+
+```
+
+
 
 ## CLM TSM
 ```{r CLM TSM}
