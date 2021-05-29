@@ -2115,7 +2115,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ```
 ## EFA LE
-```{r}
+```{r le_pca}
 data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
                                binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
 
@@ -2288,7 +2288,6 @@ print(corr)
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
-
 # Redefining defeat variable to account for significant overlaps
 
 data.v21 <- data.v21 %>%
@@ -2300,8 +2299,6 @@ data.v21 <- data.v21 %>%
 table(data.v21$dep_mod)
 
 data_def <- data.v21 %>% select(aca_impa, dep_mild, dep_mod, dep_sev)
-data <- data_def
-sig <- 0.6
 
  # convert data to numeric in order to run correlations
 data_def <- data_def %>% mutate_if(is.character, as.factor)
@@ -2313,21 +2310,14 @@ corr[lower.tri(corr, diag=TRUE)] <- NA        # prepare to drop duplicates and c
 corr[corr %in% c(-1, 1)] <- NA                # drop perfect correlations
 corr <- as.data.frame(as.table(corr))         # turn into a 3-column table
 corr <- na.omit(corr)                         # remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)), sig>]         # sort by highest correlation
+corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
 print(corr)
-
-#turn corr back into matrix in order to plot with corrplot
-mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-```
-
-
 
 ```
 
 ## EFA defeat
-```{r}
-data_def <- data.v21 %>% select(aca_impa, dep_mild, dep_mod, dep_modsev, dep_sev)
+```{r EFA_def}
+data_def <- data.v21 %>% select(aca_impa, dep_mild, dep_mod, dep_sev)
 
 # create corr matrix, with dummy vars 
 data_def <- data_def %>% 
@@ -2336,7 +2326,7 @@ data_def <- data_def %>%
   data.matrix()
 data_def   # check output
 
-results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "dep_mild", "dep_mod", "dep_modsev", "dep_sev"),
+results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "dep_mild", "dep_mod", "dep_sev"),
                          remove_first_dummy = TRUE)
 
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
@@ -2369,23 +2359,12 @@ eigval_def
 # results_def <- dummy_cols(data.v19, select_columns = c("si_type", "aca_impa", "deprawsc"),
 #                          remove_first_dummy = TRUE)
 
-results2_def <- data.v21 %>% select(si_type, aca_impa, dep_mild, dep_mod, dep_modsev, dep_sev)
+results2_def <- data.v21 %>% select(si_type, aca_impa, dep_mod, dep_sev)
 
 clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
 
-# str(clm_def)
-# set.seed(1000) 
-# 
-# index = sample(1:nrow(clm_def), 0.7*nrow(clm_def))
-# 
-# train_def = clm_def[index,] # Create the training data 
-# test_def = clm_def[-index,] # Create the test data
-# 
-# dim(train_def)
-# dim(test_def)
-
-fm1 <- clm2(si_type ~ aca_impa + deprawsc, data = clm_def)
+fm1 <- clm2(si_type ~ aca_impa + dep_mod + dep_sev, data = clm_def)
 summary(fm1)
 
 coef(fm1)
@@ -2394,39 +2373,6 @@ AIC(fm1)
 extractAIC(fm1)
 logLik(fm1)
 fitted(fm1)
-confint(fm1, type = "Wald")
-pr1 <- profile(fm1)
-confint(pr1)
-
-## plotting the profiles:
-par(mfrow = c(2, 2))
-plot(pr1, root = TRUE) ## check for linearity
-par(mfrow = c(2, 2))
-plot(pr1)
-par(mfrow = c(2, 2))
-plot(pr1, approx = TRUE)
-par(mfrow = c(2, 2))
-plot(pr1, Log = TRUE)
-par(mfrow = c(2, 2))
-plot(pr1, Log = TRUE, relative = FALSE)
-
-# # sure fx
-# le_data <- fm1[["model"]]
-# 
-# # residual plot
-# le_data$resid <- resids(fm1, method = c("jitter"),
-#      jitter.scale = c("response"))
-# le_data <- cbind(le_data, mod_le[["fitted.values"]])
-# ggplot(le_data, aes(x = `passive SI`, y = resid)) +
-# geom_point(color = "purple", alpha = 0.15) +
-# geom_smooth(method = "lm")
-# 
-# le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-# 
-# le_data %>%
-#  filter(si_type == "SA") %>%
-#  ggplot(aes(x = resid)) + geom_density(color = "magenta")
-
 
 ```
 
