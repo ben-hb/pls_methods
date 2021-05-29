@@ -1118,12 +1118,15 @@ data.v9 <- data.v9 %>%
            as.numeric(audit_8) + as.numeric(audit_9) + as.numeric(audit_10))
 table(data.v9$audit_tot)
 
+data.v7 = subset(data.v7, select= -c(audit_1:audit_10, audit_3_m, audit_3_f, audit_3_o)) # clean up vars/columns
+
 ```
 
 ## ETOH treatment
 n= 3885 ** sample is too small
 ```{r alc_tx}
 table(data.v9$alc_tx)
+data.v7 = subset(data.v7, select= -c(alc_tx)) # clean up vars/columns
 ```
 
 ## Eating disorder, any type
@@ -2446,11 +2449,6 @@ eigval_tsm
 
 ## CLM TSM
 ```{r CLM TSM}
-# data.v23$persist <- as.factor(data.v23$persist)
-# data.v23$anx_score <- as.integer(data.v23$anx_score)
-# data.v23$dep_secret <- as.factor(data.v23$dep_secret)
-# data.v23$AAQ_tot <- as.integer(data.v23$AAQ_tot)
-
 clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, AAQ_tot)
 
 clm_tsm <- NA_preproc(clm_tsm)
@@ -2569,32 +2567,6 @@ clm_entrap <- clm2(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_ent
 summary(clm_entrap)
 coef(clm_entrap)
 vcov(clm_entrap)
-
-
-
-
-# data.v21 <- data.v21 %>%
-#   mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-#                                ifelse(si_type == "passive SI", 1,
-#                                       ifelse(si_type  == "active SI", 2, 3))))
-# 
-# temp_reg <- select(data.v21, si_type_num, dep_impa, gad7_impa, percneed_cur)
-# cleaned_temp_reg <- NA_preproc(temp_reg)
-# 
-# # Dividing data into training and test set
-#   # Random sampling 
-# samplesize_entrap = 0.60*nrow(cleaned_temp_reg)
-# set.seed(1000)
-# index = sample(seq_len(nrow(cleaned_temp_reg)), size = samplesize_entrap)
-# 
-# # Creating training and test set
-# datatrain_entrap = cleaned_temp_reg[index,]
-# datatest_entrap = cleaned_temp_reg[-index,]
-# 
-# # Build ordinal logistic regression model, exclude: meds_oth, meds_none, dx_none, audit_tot
-# mod_entrap <- glm(si_type_num ~ (dep_impa + gad7_impa + percneed_cur)^2, data = datatrain_entrap)
-# summary(mod_entrap) # check output
-
 
 # residual plot
 entrap_data$resid <- resids(mod_entrap, method = c("jitter"),
