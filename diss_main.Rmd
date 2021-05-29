@@ -2225,13 +2225,13 @@ data.v20 <- data.v20 %>%
   mutate(dep_mild = case_when((deprawsc > 5 & deprawsc < 11) ~ 1,
                               (deprawsc < 6 | deprawsc > 10) ~ 0)) %>%
   mutate(dep_mod = case_when((deprawsc > 10 & deprawsc < 16) ~ 1,
-                              (deprawsc > 15 | deprawsc < 11) ~ 0)) %>%
+                             (deprawsc > 15 | deprawsc < 11) ~ 0)) %>%
   mutate(dep_modsev = case_when((deprawsc > 14 & deprawsc < 20) ~ 1,
                                (deprawsc > 19 | deprawsc < 15) ~ 0)) %>%
   mutate(dep_sev = case_when(deprawsc > 19 ~ 1,
                              deprawsc < 20 ~ 0))
 
-Check outputs
+# Check outputs
 table(data.v20$dep_none, useNA = "always")
 table(data.v20$dep_mild, useNA = "always")
 table(data.v20$dep_mod, useNA = "always")
@@ -2273,7 +2273,7 @@ data.v21 <- data.v20
 ```{r Defeat cor}
 
 # Define defeat variable candidates for correlation matrix
-data_def <- data.v21 %>% select(aca_impa, deprawsc)
+data_def <- data.v21 %>% select(aca_impa, dep_mild, dep_mod, dep_modsev, dep_sev, dep_none)
 data <- data_def
 sig <- 0.6
 
@@ -2290,11 +2290,14 @@ corr <- na.omit(corr)                         # remove the NA values from above
 corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
 print(corr)
 
+#turn corr back into matrix in order to plot with corrplot
+mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
+corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 
 ## EFA defeat
 ```{r}
-data_def <- data.v21 %>% select(aca_impa, deprawsc)
+data_def <- data.v21 %>% select(aca_impa, dep_mild, dep_mod, dep_modsev, dep_sev)
 
 # create corr matrix, with dummy vars 
 data_def <- data_def %>% 
@@ -2303,7 +2306,7 @@ data_def <- data_def %>%
   data.matrix()
 data_def   # check output
 
-results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "deprawsc"),
+results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "dep_mild", "dep_mod", "dep_modsev", "dep_sev"),
                          remove_first_dummy = TRUE)
 
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
@@ -2336,7 +2339,7 @@ eigval_def
 # results_def <- dummy_cols(data.v19, select_columns = c("si_type", "aca_impa", "deprawsc"),
 #                          remove_first_dummy = TRUE)
 
-results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
+results2_def <- data.v21 %>% select(si_type, aca_impa, dep_mild, dep_mod, dep_modsev, dep_sev)
 
 clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
