@@ -2156,11 +2156,9 @@ fviz_famd_var(le_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
+eigval_le <- get_eigenvalue(le_pca)
+eigval_le
 
-eigval_le <- get_eigenvalue(le_pca)
-eigval_le
-eigval_le <- get_eigenvalue(le_pca)
-eigval_le
 ```
 
 ## CLM Life event regression
@@ -2169,7 +2167,7 @@ drug_any, assault_sex, assault_phys, assault_emo, isi_tot
 ```{r clm_LE}
 
 clm_le <- data.v19 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
-                              binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_any)
+                              binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
 
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
@@ -2289,7 +2287,7 @@ results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "deprawsc"),
                          remove_first_dummy = TRUE)
 
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
-entrap_pca$eig   # output matrix with eigenvalues
+def_pca$eig   # output matrix with eigenvalues
 
 #Visualize PCA, FAMD results
 fviz_pca_var(def_pca,
