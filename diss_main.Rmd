@@ -2567,32 +2567,6 @@ vcov(clm_entrap)
 
 ```
 
-## StepAIC entrapment
-```{r StepAIC entrapment}
-
-models <- regsubsets(si_type_num ~., data = datatrain_entrap, nvmax = 5,
-                     method = "seqrep")
-summary(models)
-
-# Set seed for reproducibility
-set.seed(1000)
-# Set up repeated k-fold cross-validation
-train.control <- trainControl(method = "cv", number = 10)
-# Train the model
-step.model <- train(si_type_num ~., data = datatrain_entrap,
-                    method = "lmStepAIC", 
-                    trControl = train.control,
-                    trace = FALSE
-                    )
-# Model accuracy
-step.model$results
-# Final model coefficients
-step.model$finalModel
-# Summary of the model
-summary(step.model$finalModel)
-coef(step.model$finalModel, 4)
-```
-
 
 # MOTIVATIONAL MODERATORS
 Candidate variables: flourish, belong2, belong8, belong9, achieve1, achieve14, achieve18, stig_pcv_2, stig_pcv_3, friend_devel, inf, brs_tot
@@ -2764,8 +2738,11 @@ clm_mm <- data.v27 %>% select(si_type, inf, flourish, belong1, belong2, belong8,
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
 
-m_mm <- clm(si_type ~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + brs_tot, data = clm_mm)
-summary(m_mm)
+clm_mm <- clm(si_type ~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + brs_tot, data = clm_mm)
+
+summary(clm_mm)
+coef(clm_mm)
+vcov(clm_mm)
 
 ```
 
@@ -2782,15 +2759,13 @@ data.v28 <- data.v26
 # school structural analysis
 var_names <- c(
   # diathesis
-  "age", "sexual", "gender", "finpast", "sib_freq", "race", "body_sr", "ed_scoff", "audit_tot", "dx_dep", "dx_bi", "dx_psy", 
-  "dx_ea", "dx_tr", "dx_sa", "dx_adhd", "dx_pers", "dx_none", "meds_sti", "meds_dep", "meds_psy", "meds_anx", "meds_mood",
-  "meds_sle", "meds_oth", "meds_none", "meds_count", "disab_1", "alc_tx", "wcs_tot",
+  "age", "sexual", "gender_noncis", "finpast", "sib_freq", "race", "body_sr", "ed_any", "audit_tot", "dx_dep", "dx_bi",
+  "dx_ea", "dx_tr", "dx_adhd", "dx_pers", "meds_sti", "meds_dep", "meds_psy", "meds_anx", "meds_mood",
+  "meds_sle", "meds_count",
   # environment
-  "env_mh", "fam_support_aca", "ther_vis", "divers", "satisfied_overall", "residenc", "talk", "religios", 
-  "discrim", "school2_type",
+  "env_mh", "ther_vis", "divers", "satisfied_overall", "residenc", "talk", "religios", "discrim", "school2_type", "activ_yn",
   # life events
-  "ins_cover", "gpa_sr", "assault_phys", "binge_fr", "assault_sex", "assault_emo", "psyhx", 
-  "fincur", "drug_type", "drug_none",
+  "ins_cover", "gpa_sr", "assault_phys", "binge_fr", "assault_sex", "assault_emo", "psyhx", "fincur", "drugs_yn", "abuse_year",
   # defeat
   "aca_impa", "deprawsc", 
   # threats to self-moderation
@@ -2799,7 +2774,6 @@ var_names <- c(
   "dep_impa", "gad7_impa", "percneed_cur",
   # motivational moderators
   "inf", "flourish", "belong1", "belong2", "belong8", "belong9", "stig_pcv_2", "stig_pcv_3", "BRS_tot")  
-# "abuse_year" now working, "activ_yn
 
 var_names <- sort(var_names)
 # build table for absolute missingness based on school2
