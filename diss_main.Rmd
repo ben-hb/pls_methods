@@ -1075,17 +1075,10 @@ table(data.v9$dx_adhd)
 table(data.v9$dx_pers)
 table(data.v9$dx_none)
 
-# need to figure out where these are from....
-table(data.v9$dep_or_a_all)
-table(data.v9$dep_or_anx)
-table(data.v9$dep_any)
-table(data.v9$anx_any)
-
 # likely frontrunners for eval
 table(data.v9$dx_dep)
 table(data.v9$dx_anx)
 table(data.v9$dx_bi)
-table(data.v9$dx_ea)
 table(data.v9$dx_tr)
 table(data.v9$dx_adhd)
 
@@ -1510,10 +1503,9 @@ dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, m
 meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none,  meds_count 
 ```{r clm_dia}
 
-clm_dia <- data.v12 %>% select(si_type, age, sexual, gender, finpast, sib_freq, race, disab_1, ed_scoff, 
-                               body_sr, dx_dep, dx_any, dx_bi, dx_psy, dx_adhd, meds_count, ed_any,
-                               dx_ea, dx_tr, dx_sa, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, 
-                               meds_mood, meds_sle, meds_oth, meds_none)
+clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
+                                dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, meds_dep, ed_any,
+                                meds_anx, meds_mood, meds_sle, meds_count)
 
 clm_dia <- NA_preproc(clm_dia)
 clm_dia <- as.data.frame(clm_dia)
@@ -1529,9 +1521,9 @@ test_dia = clm_dia[-index,]       # Create the test data for diathesis
 dim(train_dia)
 dim(test_dia)
 
-m_dia <- clm(si_type ~ age + sexual + gender + finpast + sib_freq + race + disab_1 + ed_scoff + 
-               meds_count + ed_any + dx_ea + dx_tr + dx_sa + dx_pers + meds_sti + meds_dep + meds_psy +
-               body_sr + dx_dep + dx_bi + dx_psy + dx_adhd, data = train_dia)
+m_dia <- clm(si_type ~ age +sexual + gender_noncis + finpast + sib_freq + race + body_sr +
+                       dx_dep + dx_bi + dx_adhd + dx_tr + dx_pers + meds_dep + ed_any +
+                       meds_anx + meds_mood + meds_sle + meds_count, data = train_dia)
 summary(m_dia)
 
 # sure fx
