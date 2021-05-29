@@ -2216,8 +2216,28 @@ data.v20 <- data.v18
 ```
 
 ## PHQ risk/severity
-```{r PHQ}
+```{r deprawsc}
 table(data.v20$deprawsc, useNA = "always")
+
+data.v20 <- data.v20 %>%
+  mutate(dep_none = case_when(deprawsc < 6 ~ 1,
+                              deprawsc > 5 ~ 0)) %>%
+  mutate(dep_mild = case_when((deprawsc > 5 & deprawsc < 11) ~ 1,
+                              (deprawsc < 6 | deprawsc > 10) ~ 0)) %>%
+  mutate(dep_mod = case_when((deprawsc > 10 & deprawsc < 16) ~ 1,
+                              (deprawsc > 15 | deprawsc < 11) ~ 0)) %>%
+  mutate(dep_modsev = case_when((deprawsc > 14 & deprawsc < 20) ~ 1,
+                               (deprawsc > 19 | deprawsc < 15) ~ 0)) %>%
+  mutate(dep_sev = case_when(deprawsc > 19 ~ 1,
+                             deprawsc < 20 ~ 0))
+
+Check outputs
+table(data.v20$dep_none, useNA = "always")
+table(data.v20$dep_mild, useNA = "always")
+table(data.v20$dep_mod, useNA = "always")
+table(data.v20$dep_modsev, useNA = "always")
+table(data.v20$dep_sev, useNA = "always")
+
 ```
 
 ## Academic impact
