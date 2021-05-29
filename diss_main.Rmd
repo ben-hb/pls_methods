@@ -1509,7 +1509,7 @@ clm_dia <- as.data.frame(clm_dia)
 
 clm_dia <- clm2(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr +
                        dx_dep + dx_bi + dx_adhd + meds_count, data = clm_dia)
-summary(m_dia)
+summary(clm_dia)
 coef(clm_dia)
 vcov(clm_dia)
 
@@ -1825,8 +1825,7 @@ data.v15 <- data.v14  # new dataframe for analysis
 data_env <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type,
                                 satisfied_overall, ther_vis, talk, military, international)
 
- # Convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data 
- # Each value will become a number rather than turn into NA_
+ # Convert data to numeric in order to run correlations
 data_env <- data_env %>% mutate_if(is.character, as.factor)
 data_env <-  data_env %>% mutate_if(is.factor, as.numeric)
 
