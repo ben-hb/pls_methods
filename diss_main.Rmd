@@ -1504,38 +1504,13 @@ clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib
 clm_dia <- NA_preproc(clm_dia)
 clm_dia <- as.data.frame(clm_dia)
 
-str(clm_dia)
-set.seed(1000) 
-
-index = sample(1:nrow(clm_dia), 0.7*nrow(clm_dia))
-
-train_dia = clm_dia[index,]       # Create the training data for diathesis
-test_dia = clm_dia[-index,]       # Create the test data for diathesis
-
-dim(train_dia)
-dim(test_dia)
-
-m_dia <- clm(si_type ~ age +sexual + gender_noncis + finpast + sib_freq + race + body_sr +
-                       dx_dep + dx_bi + dx_adhd + dx_tr + dx_pers + meds_dep + ed_any +
-                       meds_anx + meds_mood + meds_sle + meds_count, data = train_dia)
+clm_dia <- clm2(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr +
+                       dx_dep + dx_bi + dx_adhd + meds_count, data = clm_dia)
 summary(m_dia)
+coef(clm_dia)
+vcov(clm_dia)
 
-# sure fx
-dia_data <- m_dia[["model"]]
-
-# residual plot
-dia_data$resid <- resids(m_dia, method = c("jitter"),
-      jitter.scale = c("response"))
-dia_data <- cbind(dia_data, m_dia[["fitted.values"]])
-ggplot(dia_data, aes(x = si_type, y = resid)) +
-geom_point(color = "purple", alpha = 0.15)
-geom_smooth(method = "lm")
-
-dia_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-
-dia_data %>%
-  filter(si_type == "passive SI") %>%
-  ggplot(aes(x = resid)) + geom_density(color = "magenta")
+## NOT WORKING: race + + meds_dep + ed_any +  meds_anx + meds_mood + meds_sle + + dx_pers + dx_tr 
 
 ```
 
@@ -1916,37 +1891,14 @@ clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, the
 clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
 
-str(clm_env)
-set.seed(1000) 
- 
-index = sample(1:nrow(clm_env), 0.7*nrow(clm_env)) 
-
-train_env = clm_env[index,] # Create the training data 
-test_env = clm_env[-index,] # Create the test data
-
-dim(train_env)
-dim(test_env)
-
-m_env <- clm(si_type ~ discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_type + 
-                   satisfied_overall + ther_vis + talk + military + international, data = clm_env)
+m_env <- clm2(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
+                ther_vis + divers + + military + school2_type + residenc + env_mh, data = clm_env)
 summary(m_env)
 
-# sure fx
-env_data <- m_env[["model"]]
+#  NOT WORKING: + religios 
 
-# residual plot
-env_data$resid <- resids(mod_env, method = c("jitter"),
-    jitter.scale = c("response"))
-env_data <- cbind(env_data, mod_env[["fitted.values"]])
-ggplot(env_data, aes(x = si_type, y = resid)) +
-geom_point(color = "purple", alpha = 0.15) +
-geom_smooth(method = "lm")
-
-env_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-
-env_data %>% 
-  filter(si_type == "passive SA") %>% 
-  ggplot(aes(x = resid)) + geom_density(color = "magenta")
+coef(clm_env)
+vcov(clm_env)
 
 ```
 
@@ -2161,42 +2113,17 @@ drug_any, assault_sex, assault_phys, assault_emo, isi_tot
 ```{r clm_LE}
 
 clm_le <- data.v19 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
-                              binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
+                              binge_fr, assault_sex, assault_emo, psyhx, drugs_yn)
 
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
 
-str(clm_le)
-set.seed(1000) 
+clm_le <- clm2(si_type ~ ins_cover + abuse_year + gpa_sr + aca_impa + fincur + assault_phys + binge_fr +
+               assault_sex + assault_emo + + psyhx + drugs_yn, data = clm_le)
+summary(clm_le)
 
-index = sample(1:nrow(clm_le), 0.7*nrow(clm_le))
-
-train_le = clm_le[index,] # Create the training data 
-test_le = clm_le[-index,] # Create the test data
-
-dim(train_le)
-dim(test_le)
-
-m_le <- clm(si_type ~., data = train_le)
-summary(m_le)
-
-# sure fx
-le_data <- m_le[["model"]]
-
-# residual plot
-le_data$resid <- resids(m_le, method = c("jitter"),
-     jitter.scale = c("response"))
-le_data <- cbind(le_data, m_le[["fitted.values"]])
-ggplot(le_data, aes(x = si_type, y = resid)) +
-geom_point(color = "purple", alpha = 0.15) +
-geom_smooth(method = "lm")
-
-le_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), 
-                                            sd = sd(resid, na.rm = TRUE))
-
-le_data %>% 
- filter(si_type == "passive SI") %>%
- ggplot(aes(x = resid)) + geom_density(color = "magenta")
+coef(clm_le)
+vcov(clm_le)
 
 ```
 
@@ -2214,12 +2141,12 @@ data.v20 <- data.v18
 table(data.v20$deprawsc, useNA = "always")
 
 data.v20 <- data.v20 %>%
-  mutate(dep_none = case_when(deprawsc < 6 ~ 1,
-                              deprawsc > 5 ~ 0)) %>%
-  mutate(dep_mild = case_when((deprawsc > 5 & deprawsc < 11) ~ 1,
-                              (deprawsc < 6 | deprawsc > 10) ~ 0)) %>%
-  mutate(dep_mod = case_when((deprawsc > 10 & deprawsc < 16) ~ 1,
-                             (deprawsc > 15 | deprawsc < 11) ~ 0)) %>%
+  mutate(dep_none = case_when(deprawsc < 5 ~ 1,
+                              deprawsc > 4 ~ 0)) %>%
+  mutate(dep_mild = case_when((deprawsc > 4 & deprawsc < 10) ~ 1,
+                              (deprawsc < 5 | deprawsc > 9) ~ 0)) %>%
+  mutate(dep_mod = case_when((deprawsc > 9 & deprawsc < 15) ~ 1,
+                             (deprawsc > 14 | deprawsc < 10) ~ 0)) %>%
   mutate(dep_modsev = case_when((deprawsc > 14 & deprawsc < 20) ~ 1,
                                (deprawsc > 19 | deprawsc < 15) ~ 0)) %>%
   mutate(dep_sev = case_when(deprawsc > 19 ~ 1,
@@ -2356,23 +2283,16 @@ eigval_def
 ## CLM defeat
 ```{r CLM defeat}
 
-# results_def <- dummy_cols(data.v19, select_columns = c("si_type", "aca_impa", "deprawsc"),
-#                          remove_first_dummy = TRUE)
-
 results2_def <- data.v21 %>% select(si_type, aca_impa, dep_mod, dep_sev)
 
 clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
 
-fm1 <- clm2(si_type ~ aca_impa + dep_mod + dep_sev, data = clm_def)
-summary(fm1)
+clm_def <- clm2(si_type ~ aca_impa + dep_mod + dep_sev, data = clm_def)
+summary(clm_def)
 
-coef(fm1)
-vcov(fm1)
-AIC(fm1)
-extractAIC(fm1)
-logLik(fm1)
-fitted(fm1)
+coef(clm_def)
+vcov(clm_def)
 
 ```
 
@@ -2388,6 +2308,24 @@ data.v22 <- data.v20
 ## GAD7 total
 ```{r anx_score}
 table(data.v22$anx_score, useNA = "always")
+
+data.v22 <- data.v22 %>%
+  mutate(anx_none = case_when(anx_score < 6 ~ 1,
+                              anx_score > 5 ~ 0)) %>%
+  mutate(anx_mild = case_when((anx_score > 5 & anx_score < 11) ~ 1,
+                              (anx_score < 6 | anx_score > 10) ~ 0)) %>%
+  mutate(anx_mod = case_when((anx_score > 10 & anx_score < 16) ~ 1,
+                             (anx_score > 15 | anx_score < 11) ~ 0)) %>%
+  mutate(anx_sev = case_when(anx_score > 15 ~ 1,
+                             anx_score < 16 ~ 0))
+# Check outputs
+table(data.v22$anx_none, useNA = "always")
+table(data.v22$anx_mild, useNA = "always")
+table(data.v22$anx_mod, useNA = "always")
+table(data.v22$anx_sev, useNA = "always")
+
+
+
 ```
 
 ## Secretive MH
@@ -2423,7 +2361,7 @@ data.v23 <- data.v22
 
 
 ## Threats to self-moderation correlation
-```{r}
+```{r CORR TSM}
 
 # Define TSM variable candidates for correlation matrix
 data_tsm <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
