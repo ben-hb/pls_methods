@@ -1843,12 +1843,11 @@ data.v15 <- data.v14  # new dataframe for analysis
 ```
 
 
-## Environmental correlation
+### Environmental correlation
 ```{r}
 # Define environment vars for correlation matrix
-data_env <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
-                                  school2_type, satisfied_overall, ther_vis, 
-                                  talk, military, international)
+data_env <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type,
+                                satisfied_overall, ther_vis, talk, military, international)
 data <- data_env
 sig <- 0.6
 
@@ -1882,7 +1881,6 @@ data_env <- data_env %>%
   mutate_if(is.numeric, as.factor) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
-data_env   # check output
 
 # PCA map with eigenvalues
 results_env <- dummy_cols(data_env, select_columns = c("discrim", "religios", "env_mh", "residenc", "ther_vis",
@@ -1912,7 +1910,7 @@ eigval_env
 
 ```
 
-## CLM environmental regression
+### CLM environmental regression
 Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
 ```{r CLM environment}
 
@@ -1980,16 +1978,30 @@ table(data.v16$ins_cover, useNA = "always")   # check output
 Creates illicit drug use var to aggregate all drug answers into one, create drug_poly for >1 drug (limitation -- 30 days reflection)
 ```{r drug_type}
 ## add summary of each
-table(data.v16$drug_any)
-table(data.v16$drug_none)
-table(data.v16$drug_mar)  
-table(data.v16$drug_coc)
-table(data.v16$drug_her)
-table(data.v16$drug_met)
-table(data.v16$drug_stim)
-table(data.v16$drug_ect)
-table(data.v16$drug_opi)
-table(data.v16$drug_other)
+table(data.v16$drug_none, useNA="always")
+table(data.v16$drug_mar, useNA="always")  
+table(data.v16$drug_coc, useNA="always")
+table(data.v16$drug_her, useNA="always")  # too small
+table(data.v16$drug_met, useNA="always")  # too small
+table(data.v16$drug_stim, useNA="always")
+table(data.v16$drug_ect, useNA="always")  # too small
+table(data.v16$drug_opi, useNA="always")   # too small
+table(data.v16$drug_other, useNA="always")  # too vague, small
+
+# Sample is too small to analyze individual drugs, except for marijuana. Transform to illicit drug y/n
+data.v16 <- data.v16 %>%
+  mutate(drugs_yn = case_when(drug_none == 1 ~ 0,
+                              drug_mar == 1 ~ 1,
+                              drug_coc == 1 ~ 1,
+                              drug_her == 1 ~ 1,
+                              drug_met == 1 ~ 1,
+                              drug_stim == 1 ~ 1,
+                              drug_ect == 1 ~ 1,
+                              drug_opi == 1 ~ 1,
+                              drug_other == 1 ~ 1,
+                              ))
+table(data.v16$drugs_yn)
+
 ```
 
 ## Current financial stressors
@@ -2085,7 +2097,7 @@ data.v19 <- data.v18
 
 # Define life event var candidates for correlation matrix
 data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
-                               binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_type)
+                               binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
 data <- data_le
 sig <- 0.6
 
@@ -2111,7 +2123,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ## EFA LE
 ```{r}
 data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
-                               binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drug_any)
+                               binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
 
 # create corr matrix, with dummy vars
 data_le <- data_le %>% 
@@ -2122,7 +2134,7 @@ data_le   # check output
 
 results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", "gpa_sr", "aca_impa", 
                                                      "fincur", "assault_phys", "binge_fr", "assault_sex", 
-                                                     "assault_emo", "deprawsc", "psyhx", "drug_any"),
+                                                     "assault_emo", "deprawsc", "psyhx", "drugs_yn"),
                          remove_first_dummy = TRUE)
 
 le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
