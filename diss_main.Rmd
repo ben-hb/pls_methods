@@ -2812,8 +2812,8 @@ missing_rates <- data.frame("variable" = var_names,
 
 # loop to replicate row for all var
 for (i in 1:nrow(missing_rates)) {
-  missing_rates[i, 2] = sum(!is.na(data.v23[[i]]))
-  missing_rates[i, 3] = missing_rates[i, 2] / nrow(data.v23)
+  missing_rates[i, 2] = sum(!is.na(data.v28[[i]]))
+  missing_rates[i, 3] = missing_rates[i, 2] / nrow(data.v28)
 }
 # view matrix
 view(missing_rates)
@@ -2830,7 +2830,7 @@ for (k in 1:length(var_names)) {
 
 #build table for absolute missingness based on school2
 #create skeleton of missingness matrix
-var <- count(data.v28, data.v23[var_names[k]])
+var <- count(data.v28, data.v28[var_names[k]])
 var_ncol <- ncol(var)
 
 for (j in 1:length(var_names)) {
@@ -2902,22 +2902,15 @@ dim(testdf.v29)
 ```{r SEM}
 
 SI_model_tr <- '# measurement model
-                dia_sem =~ age + sexual + gender + finpast + sib_freq + 
-                    race + body_sr + ed_scoff + audit_tot + dx_dep + 
-                    dx_bi + dx_psy + dx_ea + dx_tr + dx_sa + dx_adhd +
-                    dx_pers + dx_none + meds_sti + meds_dep + meds_psy +
-                    meds_anx + meds_mood + meds_sle + meds_oth + meds_none +
-                    meds_count + disab_1 + alc_tx
-                env_sem =~ env_mh + fam_support_aca + ther_vis + divers +
-                    satisfied_overall + residenc + talk + religios + discrim +
-                    school2_type
-                le_sem =~ ins_cover + gpa_sr + assault_phys + binge_fr + assault_sex + 
-                    assault_emo + psyhx + fincur + drug_type + drug_none
-                def_sem =~ aca_impa + deprawsc
-                tsm_sem =~ persist + anx_score + dep_secret + AAQ_tot
-                entrap_sem =~ dep_impa + gad7_impa + perneed_cur
-                mm_sm =~ flourish + belong + inf + stig_pcv_2 + stig_pcv_3 +
-                    brs_tot
+                dia_sem =~ age + sexual + gender_noncis + finpast + sib_freq + race + body_sr + ed_any + audit_tot + dx_dep + dx_bi + 
+                           dx_tr + dx_adhd + dx_pers + meds_sti + meds_dep + meds_anx + meds_mood + meds_sle + meds_count
+                env_sem =~ env_mh + ther_vis + divers + satisfied_overall + residenc + talk + religios + discrim + school2_type + 
+                           activ_yn + military + international
+                le_sem =~  ins_cover + gpa_sr + assault_phys + binge_fr + assault_sex + assault_emo + psyhx + fincur + drugs_yn + abuse_year
+                def_sem =~ aca_impa + dep_mod + dep_sev
+                tsm_sem =~ persist + anx_mod + anx_sev + dep_secret + AAQ_tot
+                entrap_sem =~ dep_impa + gad7_impa + percneed_cur
+                mm_sm =~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + BRS_tot
                 si_sem =~ si_type
                     
                 # regressions
@@ -2926,6 +2919,7 @@ SI_model_tr <- '# measurement model
                       env_sem ~ le_sem
                       le_sem ~ dia_sem
                       def_sem ~ dia_sem + env_sem + le_sem
+                      
     # motivational
     entrap_sem ~ def_sem + tsm_sem
     si_sem ~ entrap_sem + mm_sem
