@@ -2900,6 +2900,8 @@ dim(testdf.v29)
 
 
 ```{r SEM}
+testdf.v29 <- NA_preproc(testdf.v29)
+testdf.v29 <- as.data.frame(testdf.v29)
 
 SI_model_tr <- '# measurement model
                 dia_sem =~ age + sexual + gender_noncis + finpast + sib_freq + race + body_sr + ed_any + audit_tot + dx_dep + dx_bi + 
@@ -2910,24 +2912,19 @@ SI_model_tr <- '# measurement model
                 def_sem =~ aca_impa + dep_mod + dep_sev
                 tsm_sem =~ persist + anx_mod + anx_sev + dep_secret + AAQ_tot
                 entrap_sem =~ dep_impa + gad7_impa + percneed_cur
-                mm_sm =~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + BRS_tot
+                mm_sem =~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + BRS_tot
                 si_sem =~ si_type
                     
                 # regressions
-                  # pre-motivational
-                      dia_sem ~ env_sem
-                      env_sem ~ le_sem
-                      le_sem ~ dia_sem
-                      def_sem ~ dia_sem + env_sem + le_sem
+                    # pre-motivational
+                        dia_sem ~ env_sem
+                        env_sem ~ le_sem
+                        le_sem ~ dia_sem
                       
-    # motivational
-    entrap_sem ~ def_sem + tsm_sem
-    si_sem ~ entrap_sem + mm_sem
-    si_sem ~ def_sem + tsm_sem + entrap_sem + mm_sem
-    
-  # residual correlations
-    med_count ~~ meds_sti + meds_dep + meds_psy + meds_anx + meds_mood + meds_sle + meds_oth + meds_none + meds_count
-    dx_any ~~ dx_dep + dx_bi + dx_psy + dx_ea + dx_tr + dx_sa + dx_adhd + dx_pers + dx_non  '
+                    # motivational
+                        entrap_sem ~ def_sem + tsm_sem
+                        def_sem ~ dia_sem + env_sem + le_sem 
+                        si_sem ~ entrap_sem + mm_sem   '
 
 fit_train <- sem(SI_model_tr, data=traindf.v29)
 summary(fit_train, fit.measures=TRUE)
@@ -2970,7 +2967,7 @@ SI_model_tr <- ' # measurement model
 # Training data analyses for indirect effects
 set.seed(1000)
 X <- rnorm(100)
-M <- 0.5*X + rnorm(100)  # what are X, Y, M??????
+M <- 0.5*X + rnorm(100)
 Y <- 0.7*M + rnorm(100)
 Data <- data.frame(X = X, Y = Y, M = M)
 model <- ' # direct effect
@@ -2983,7 +2980,7 @@ model <- ' # direct effect
            # total effect
            total := c + (a*b)  '
 
-fit_train <- sem(model, data=data.v29)
+fit_train <- sem(model, data=traindf.v29)
 summary(fit_train, fit.measures=TRUE)
 
 
