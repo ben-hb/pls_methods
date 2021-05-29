@@ -2324,8 +2324,6 @@ table(data.v22$anx_mild, useNA = "always")
 table(data.v22$anx_mod, useNA = "always")
 table(data.v22$anx_sev, useNA = "always")
 
-
-
 ```
 
 ## Secretive MH
@@ -2364,11 +2362,9 @@ data.v23 <- data.v22
 ```{r CORR TSM}
 
 # Define TSM variable candidates for correlation matrix
-data_tsm <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
-data <- data_tsm
-sig <- 0.6
+data_tsm <- data.v23 %>% select(persist, anx_none, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, AAQ_tot)
 
- # convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA_
+# convert data to numeric in order to run correlations 
 data_tsm <- data_tsm %>% mutate_if(is.character, as.factor)
 data_tsm <-  data_tsm %>% mutate_if(is.factor, as.numeric)
 
@@ -2389,7 +2385,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ##EFA TSM
 ```{r EFA TSM}
-data_tsm <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
+data_tsm <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, AAQ_tot)
 
 # create corr matrix, with dummy vars 
 data_tsm <- data_tsm %>% 
@@ -2398,7 +2394,7 @@ data_tsm <- data_tsm %>%
   data.matrix()
 data_tsm   # check output
 
-results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_score", "dep_secret", "achieve4", "AAQ_tot"),
+results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_mild", "anx_mod", "anx_sev", "dep_secret", "achieve4", "AAQ_tot"),
                          remove_first_dummy = TRUE)
 
 tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
