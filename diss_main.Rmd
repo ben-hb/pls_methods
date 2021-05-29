@@ -1495,9 +1495,6 @@ eigval_dia
 ```
 
 ### CLM diathesis regression
-Regression variables: age, sexual, gender, finpast, sib_freq, race, ed_scoff, body_sr, disab_1
-dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, meds_sti, meds_dep, 
-meds_psy, meds_anx, meds_mood, meds_sle, meds_other, meds_none,  meds_count 
 ```{r clm_dia}
 
 clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
@@ -1513,7 +1510,7 @@ summary(clm_dia)
 coef(clm_dia)
 vcov(clm_dia)
 
-## NOT WORKING: race + + meds_dep + ed_any +  meds_anx + meds_mood + meds_sle + + dx_pers + dx_tr 
+## NOT WORKING: race + meds_dep + ed_any + meds_anx + meds_mood + meds_sle + dx_pers + dx_tr
 
 ```
 
@@ -2110,8 +2107,6 @@ eigval_le
 ```
 
 ## CLM Life event regression
-Regression variables: ins_cover, gpa_sr, aca_impa, abuse_year, psyhx, binge_fr, fincur, 
-drug_any, assault_sex, assault_phys, assault_emo, isi_tot
 ```{r clm_LE}
 
 clm_le <- data.v19 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
@@ -2757,19 +2752,20 @@ vcov(clm_mm)
 data.v28 <- data.v26
 
 # school structural analysis
+
 var_names <- c(
   # diathesis
   "age", "sexual", "gender_noncis", "finpast", "sib_freq", "race", "body_sr", "ed_any", "audit_tot", "dx_dep", "dx_bi",
-  "dx_ea", "dx_tr", "dx_adhd", "dx_pers", "meds_sti", "meds_dep", "meds_psy", "meds_anx", "meds_mood",
-  "meds_sle", "meds_count",
+  "dx_tr", "dx_adhd", "dx_pers", "meds_sti", "meds_dep", "meds_anx", "meds_mood", "meds_sle", "meds_count",
   # environment
   "env_mh", "ther_vis", "divers", "satisfied_overall", "residenc", "talk", "religios", "discrim", "school2_type", "activ_yn",
+  "military", "international",
   # life events
   "ins_cover", "gpa_sr", "assault_phys", "binge_fr", "assault_sex", "assault_emo", "psyhx", "fincur", "drugs_yn", "abuse_year",
   # defeat
-  "aca_impa", "deprawsc", 
+  "aca_impa", "dep_mod", "dep_sev",
   # threats to self-moderation
-  "persist", "anx_score", "dep_secret", "AAQ_tot", "achieve4",
+  "persist", "anx_mod", "anx_sev", "dep_secret", "AAQ_tot",
   # entrapment
   "dep_impa", "gad7_impa", "percneed_cur",
   # motivational moderators
@@ -2791,7 +2787,7 @@ names(school2) <- names
 # input values for each school missingness across all variables
 for (j in 1:(length(var_names))) {
 for (i in 1:nrow(school2)) {   # i corresponds to rows, j to columns
-  school2[i, 2 + j] <- sum(!is.na(data.v23[data.v28$school2 == school2[[i,1]], var_names[j]]))
+  school2[i, 2 + j] <- sum(!is.na(data.v28[data.v28$school2 == school2[[i,1]], var_names[j]]))
 }
 }
 # add percentage in each column
