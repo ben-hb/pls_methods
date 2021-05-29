@@ -1893,9 +1893,9 @@ clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, the
 clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
 
-m_env <- clm2(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
+clm_env <- clm2(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
                 ther_vis + divers + + military + school2_type + residenc + env_mh, data = clm_env)
-summary(m_env)
+summary(clm_env)
 
 #  NOT WORKING: + religios 
 
@@ -2448,7 +2448,7 @@ eigval_tsm
 
 ## CLM TSM
 ```{r CLM TSM}
-clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, AAQ_tot)
+clm_tsm <- data.v23 %>% select(si_type, persist, anx_mod, anx_sev, dep_secret, AAQ_tot)
 
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
@@ -2496,11 +2496,8 @@ data.v25 <- data.v24
 
 # Define entrapment variable candidates for correlation matrix
 data_entrap <- data.v25 %>% select(dep_impa, gad7_impa, percneed_cur)
-data <- data_entrap
-sig <- 0.6
 
- # convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data
- # each value will become a number rather than turn into NA_
+ # convert data to numeric in order to run correlations
 data_entrap <- data_entrap %>% mutate_if(is.character, as.factor)
 data_entrap <-  data_entrap %>% mutate_if(is.factor, as.numeric)
 
@@ -2560,24 +2557,13 @@ eigval_entrap
 clm_entrap <- data.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
 
 clm_entrap <- NA_preproc(clm_entrap)
+clm_entrap <- as.data.frame(clm_entrap)
 
 clm_entrap <- clm2(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_entrap)
 
 summary(clm_entrap)
 coef(clm_entrap)
 vcov(clm_entrap)
-
-# residual plot
-entrap_data$resid <- resids(mod_entrap, method = c("jitter"),
-       jitter.scale = c("response"))
-entrap_data <- cbind(entrap_data, mod_entrap[["fitted.values"]])
-ggplot(entrap_data, aes(x = si_type, y = resid)) + 
-  geom_point(color = "purple", alpha = 0.15) + 
-  geom_smooth(method = "lm")
-
-entrap_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-entrap_data %>% filter(si_type == "Passive SI") %>% ggplot(aes(x = resid)) + geom_density(color = "magenta")
-
 
 ```
 
