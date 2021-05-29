@@ -1430,7 +1430,7 @@ corr_simple <- function(data=data_dia, sig=0.6){
 }
 corr_simple()
 
-# Extracting overlapping vars
+# Extracting overlapping vars to visualize correlation for regression
 data_dia <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
                                 dx_dep, dx_bi, dx_adhd, dx_ea, dx_tr, dx_pers, meds_dep,
                                 meds_anx, meds_mood, meds_sle, meds_count)
@@ -1462,7 +1462,7 @@ corr_simple()
 ```{r EFA diathesis}
 
 data_dia <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
-                                dx_dep, dx_bi, dx_adhd, dx_ea, dx_tr, dx_pers, meds_dep,
+                                dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, meds_dep, ed_any,
                                 meds_anx, meds_mood, meds_sle, meds_count)
 
 # create corr matrix, with dummy vars
@@ -1471,14 +1471,13 @@ data_dia <- data_dia %>%
   mutate(
     age = as.numeric(age),
     meds_count = as.numeric(meds_count),
-    ed_scoff = as.numeric(ed_scoff)
   ) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 data_dia   # check output
 
 results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender_noncis", "finpast", "sib_freq", "race",
-                                                       "body_sr", "dx_dep", "dx_bi", "dx_adhd", "dx_ea", "dx_tr",
+                                                       "body_sr", "dx_dep", "dx_bi", "dx_adhd", "dx_tr",
                                                        "ed_any", "dx_pers", "meds_dep","meds_anx", "meds_mood",
                                                        "meds_sle", "meds_count"), 
                           remove_first_dummy = TRUE)
