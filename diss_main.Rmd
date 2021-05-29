@@ -1082,6 +1082,8 @@ table(data.v9$dep_any)
 table(data.v9$anx_any)
 
 # likely frontrunners for eval
+table(data.v9$dx_dep)
+table(data.v9$dx_anx)
 table(data.v9$dx_bi)
 table(data.v9$dx_ea)
 table(data.v9$dx_tr)
@@ -1402,10 +1404,36 @@ data.v12 <- data.v11 # create new dataframe for summary stats. Will jump to v13 
 ```{r Diathesis correlation}
 
 # Define diathesis vars for correlation matrix
-data_dia <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
-                                dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, meds_count,
+data_dia <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, ed_scoff, body_sr,
+                                dx_dep, dx_any, dx_bi, dx_adhd, dx_ea, dx_tr, meds_count, ed_any,
                                 dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
-                                meds_oth, meds_none, ed_any)
+                                meds_none, )
+
+# Corr_simple function
+corr_simple <- function(data=data_dia, sig=0.6){
+  # convert data to numeric in order to run correlations 
+  data_dia <- data_dia %>% mutate_if(is.character, as.factor)
+  data_dia <-  data_dia %>% mutate_if(is.factor, as.numeric)
+  # run a correlation and drop the insignificant ones
+  corr <- cor(data_dia, use = "pairwise.complete.obs")                               
+  corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
+  corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
+  corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
+  corr <- na.omit(corr)                                   # remove the NA values from above 
+  corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
+  corr <- subset(corr, abs(Freq) > sig)                   # select significant values 
+  print(corr)
+  
+  #turn corr back into matrix in order to plot with corrplot
+  mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
+  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+}
+corr_simple()
+
+# Extracting overlapping vars
+data_dia <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
+                                dx_dep, dx_bi, dx_adhd, dx_ea, dx_tr, dx_pers, meds_dep,
+                                meds_anx, meds_mood, meds_sle, meds_count)
 
 # Corr_simple function
 corr_simple <- function(data=data_dia, sig=0.6){
@@ -1433,10 +1461,9 @@ corr_simple()
 ### EFA diathesis
 ```{r EFA diathesis}
 
-data_dia <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, disab_1, ed_scoff, body_sr,
-                                dx_dep, dx_any, dx_bi, dx_adhd, dx_psy, dx_ea, dx_tr, dx_sa, ed_any,
-                                dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
-                                meds_oth, meds_none, meds_count)
+data_dia <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
+                                dx_dep, dx_bi, dx_adhd, dx_ea, dx_tr, dx_pers, meds_dep,
+                                meds_anx, meds_mood, meds_sle, meds_count)
 
 # create corr matrix, with dummy vars
 data_dia <- data_dia %>% 
@@ -1450,11 +1477,10 @@ data_dia <- data_dia %>%
   data.matrix()
 data_dia   # check output
 
-results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender_noncis", "finpast", "sib_freq", "race", "ed_any",
-                                                       "disab_1", "ed_scoff", "body_sr", "dx_dep", "dx_any",
-                                                       "dx_bi", "dx_adhd", "dx_psy", "dx_ea", "dx_tr", "dx_sa", "dx_pers",
-                                                       "dx_none", "meds_sti", "meds_dep", "meds_psy", "meds_anx", 
-                                                       "meds_mood", "meds_sle", "meds_oth", "meds_none", "meds_count"), 
+results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender_noncis", "finpast", "sib_freq", "race",
+                                                       "body_sr", "dx_dep", "dx_bi", "dx_adhd", "dx_ea", "dx_tr",
+                                                       "ed_any", "dx_pers", "meds_dep","meds_anx", "meds_mood",
+                                                       "meds_sle", "meds_count"), 
                           remove_first_dummy = TRUE)
 
 dia_pca <- PCA(results_dia, graph=FALSE)  # apply PCA
