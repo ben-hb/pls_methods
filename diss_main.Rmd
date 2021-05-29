@@ -434,7 +434,8 @@ table(data.v3$age)
 
 ## Gender identity
 
-- Original (n=55138): 1=Male; 2=Female; 3=Trans male/Trans man; 4=Trans female/Trans woman; 5=Genderqueer/Gender non-conforming, 6=Other, self-identify
+- Original (n=55138): 1=Male; 2=Female; 3=Trans male/Trans man; 4=Trans female/Trans woman; 5=Genderqueer/Gender 
+non-conforming, 6=Other, self-identify
 - Transformed (n=55138): 1 = cis-gender, 2=transgender 3=gender diverse, 4=non-answer (NA, jokesters, decline to answer)
 
 ```{r gender}
@@ -453,7 +454,6 @@ data.v3 <- data.v3 %>%
                                    gender == 3 ~ 1,
                                    gender == 1 ~ 0))
 table(data.v3$gender_noncis)
-summary(data.v3$gender_noncis)
 
 ```
 
