@@ -2290,7 +2290,6 @@ clm_def <- as.data.frame(clm_def)
 
 clm_def <- clm2(si_type ~ aca_impa + dep_mod + dep_sev, data = clm_def)
 summary(clm_def)
-
 coef(clm_def)
 vcov(clm_def)
 
@@ -2381,6 +2380,27 @@ print(corr)
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
   
+
+# Re-run corr with non-overlapping vars
+data_tsm <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, AAQ_tot)
+
+# convert data to numeric in order to run correlations 
+data_tsm <- data_tsm %>% mutate_if(is.character, as.factor)
+data_tsm <-  data_tsm %>% mutate_if(is.factor, as.numeric)
+
+# run a correlation and drop the insignificant ones
+corr <- cor(data_tsm, use = "pairwise.complete.obs")                               
+corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
+corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
+corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
+corr <- na.omit(corr)                                   #remove the NA values from above 
+corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
+print(corr)
+  
+#turn corr back into matrix in order to plot with corrplot
+mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
+corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+
 ```
 
 ##EFA TSM
@@ -2390,6 +2410,9 @@ data_tsm <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret,
 # create corr matrix, with dummy vars 
 data_tsm <- data_tsm %>% 
   mutate_if(is.numeric, as.factor) %>% 
+    mutate(
+    AAQ_tot = as.numeric(AAQ_tot),
+  ) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 data_tsm   # check output
@@ -2423,46 +2446,21 @@ eigval_tsm
 
 ## CLM TSM
 ```{r CLM TSM}
-data.v23$persist <- as.factor(data.v23$persist)
-data.v23$anx_score <- as.integer(data.v23$anx_score)
-data.v23$dep_secret <- as.factor(data.v23$dep_secret)
-data.v23$AAQ_tot <- as.integer(data.v23$AAQ_tot)
+# data.v23$persist <- as.factor(data.v23$persist)
+# data.v23$anx_score <- as.integer(data.v23$anx_score)
+# data.v23$dep_secret <- as.factor(data.v23$dep_secret)
+# data.v23$AAQ_tot <- as.integer(data.v23$AAQ_tot)
 
 clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, AAQ_tot)
 
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
 
-str(clm_tsm)
-set.seed(1000)
+clm_tsm <- clm2(si_type ~ persist + anx_mod + anx_sev + dep_secret + AAQ_tot, data = clm_tsm)
 
-index = sample(1:nrow(clm_tsm), 0.7*nrow(clm_tsm))
-
-train_tsm = clm_tsm[index,] # Create the training data
-test_tsm = clm_tsm[-index,] # Create the test data
-
-dim(train_tsm)
-dim(test_tsm)
-
-m_tsm <- clm(si_type ~., data = train_tsm)
-summary(m_tsm)
-
-# sure fx
-tsm_data <- m_tsm[["model"]]
-
-# residual plot
-tsm_data$resid <- resids(tsm_data, method = c("jitter"),
-      jitter.scale = c("response"))
-tsm_data <- cbind(tsm_data, mod_tsm[["fitted.values"]])
-ggplot(tsm_data, aes(x = si_type, y = resid)) +
-geom_point(color = "purple", alpha = 0.15) +
-geom_smooth(method = "lm")
-
-tsm_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-
-tsm_data %>% 
-  filter(si_type == "Passive SI") %>%
-  ggplot(aes(x = resid)) + geom_density(color = "magenta")
+summary(clm_tsm)
+coef(clm_tsm)
+vcov(clm_tsm)
 
 ```
 
@@ -2564,29 +2562,13 @@ eigval_entrap
 ```{r clm_entrap}
 clm_entrap <- data.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
 
-str(clm_entrap)
-set.seed(1000) 
-
 clm_entrap <- NA_preproc(clm_entrap)
 
-# index = sample(1:nrow(clm_entrap), 0.7*nrow(clm_entrap)) 
-# 
-# train_entrap = clm_entrap[index,] # Create the training data 
-# test_entrap = clm_entrap[-index,] # Create the test data
-# 
-# dim(train_entrap)
-# dim(test_entrap)
-# 
-# clm_entrap <- clm_entrap %>%
-#   mutate(si_type_num =  ifelse(si_type == "No SI", 0, 
-#                                 ifelse(si_type == "passive SI", 1,
-#                                        ifelse(si_type  == "active SI", 2, 3))))
+clm_entrap <- clm2(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_entrap)
 
-m_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_entrap)
-summary(m_entrap)
-
-# sure fx
-entrap_data <- mod_entrap[["model"]]
+summary(clm_entrap)
+coef(clm_entrap)
+vcov(clm_entrap)
 
 
 
@@ -2827,24 +2809,6 @@ clm_mm <- as.data.frame(clm_mm)
 
 m_mm <- clm(si_type ~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + brs_tot, data = clm_mm)
 summary(m_mm)
-
-# sure fx
-mm_data <- mod_mm[["model"]]
-
-# residual plot
-mm_data$resid <- resids(mod_mm, method = c("jitter"),
-       jitter.scale = c("response"))
-mm_data <- cbind(mm_data, mod_mm[["fitted.values"]])
-ggplot(mm_data, aes(x = si_type, y = resid)) + 
-  geom_point(color = "purple", alpha = 0.15) + 
-  geom_smooth(method = "lm")
-
-mm_data %>% group_by(si_type) %>% summarize(mean = mean(resid, na.rm = TRUE), sd = sd(resid, na.rm = TRUE))
-
-mm_data %>% 
-  filter(si_type == "passive SI") %>% 
-  ggplot(aes(x = resid)) + 
-  geom_density(color = "magenta")
 
 ```
 
