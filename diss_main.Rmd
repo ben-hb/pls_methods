@@ -984,11 +984,6 @@ table(data.v7$sib_freq, useNA = "always")  # tabulate and check output
 data.v7 = subset(data.v7, select= -c(sib_none:sib_oth)) # clean up vars/columns
 ```
 
-## Disability
-```{r disab_1}
-table(data.v7$disab_1)  # missing question codebook will likely drop if insignificant
-```
-
 ## SCOFF scale
 ```{r SCOFF}
 table(data.v7$ed_scoff)
@@ -1075,12 +1070,13 @@ table(data.v9$dx_adhd)
 table(data.v9$dx_pers)
 table(data.v9$dx_none)
 
-# likely frontrunners for eval
+# likely frontrunners for dx
 table(data.v9$dx_dep)
 table(data.v9$dx_anx)
 table(data.v9$dx_bi)
 table(data.v9$dx_tr)
 table(data.v9$dx_adhd)
+table(data.v9$ed_any)
 
 ```
 
