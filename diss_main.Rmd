@@ -1410,7 +1410,6 @@ corr_simple <- function(data=data_dia, sig=0.6){
   corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
   corr <- na.omit(corr)                                   # remove the NA values from above 
   corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
-  corr <- subset(corr, abs(Freq) > sig)                   # select significant values 
   print(corr)
   
   #turn corr back into matrix in order to plot with corrplot
@@ -1436,7 +1435,6 @@ corr_simple <- function(data=data_dia, sig=0.6){
   corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
   corr <- na.omit(corr)                                   # remove the NA values from above 
   corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
-  corr <- subset(corr, abs(Freq) > sig)                   # select significant values 
   print(corr)
   
   #turn corr back into matrix in order to plot with corrplot
@@ -1848,8 +1846,6 @@ data.v15 <- data.v14  # new dataframe for analysis
 # Define environment vars for correlation matrix
 data_env <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type,
                                 satisfied_overall, ther_vis, talk, military, international)
-data <- data_env
-sig <- 0.6
 
  # Convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data 
  # Each value will become a number rather than turn into NA_
@@ -1862,7 +1858,7 @@ corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplic
 corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
 corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
 corr <- na.omit(corr)                                   #remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
+corr <- corr[order(-abs(corr$Freq)), ]                   #sort by highest correlation
 print(corr)
   
 # turn corr back into matrix in order to plot with corrplot
@@ -2098,8 +2094,6 @@ data.v19 <- data.v18
 # Define life event var candidates for correlation matrix
 data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
                                binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
-data <- data_le
-sig <- 0.6
 
  # convert data to numeric in order to run correlations (i.e., convert to factor first to keep 
  # the integrity of the data - each value will become a number rather than turn into NA_
@@ -2287,12 +2281,48 @@ corr[lower.tri(corr, diag=TRUE)] <- NA        # prepare to drop duplicates and c
 corr[corr %in% c(-1, 1)] <- NA                # drop perfect correlations
 corr <- as.data.frame(as.table(corr))         # turn into a 3-column table
 corr <- na.omit(corr)                         # remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
+corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
 print(corr)
 
 #turn corr back into matrix in order to plot with corrplot
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+
+
+# Redefining defeat variable to account for significant overlaps
+
+data.v21 <- data.v21 %>%
+  mutate(dep_mod = case_when(dep_mod == 1 ~ 1,
+                             dep_modsev == 1 ~ 1,
+                             dep_sev == 1 ~ 0,
+                             dep_mild == 1 ~ 0,
+                             dep_none == 1 ~ 0))
+table(data.v21$dep_mod)
+
+data_def <- data.v21 %>% select(aca_impa, dep_mild, dep_mod, dep_sev)
+data <- data_def
+sig <- 0.6
+
+ # convert data to numeric in order to run correlations
+data_def <- data_def %>% mutate_if(is.character, as.factor)
+data_def <-  data_def %>% mutate_if(is.factor, as.numeric)
+
+# run a correlation and drop the insignificant ones
+corr <- cor(data_def, use = "pairwise.complete.obs")                               
+corr[lower.tri(corr, diag=TRUE)] <- NA        # prepare to drop duplicates and correlations of 1    
+corr[corr %in% c(-1, 1)] <- NA                # drop perfect correlations
+corr <- as.data.frame(as.table(corr))         # turn into a 3-column table
+corr <- na.omit(corr)                         # remove the NA values from above 
+corr <- corr[order(-abs(corr$Freq)), sig>]         # sort by highest correlation
+print(corr)
+
+#turn corr back into matrix in order to plot with corrplot
+mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
+corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+```
+
+
+
 ```
 
 ## EFA defeat
