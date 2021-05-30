@@ -2747,12 +2747,8 @@ vcov(clm_mm)
 
 ## Absolute missingness, by school
 ```{r Structural missingness, by school}
-## Absolute missingness by school module choice
-
 data.v28 <- data.v26
-
 # school structural analysis
-
 var_names <- c(
   # diathesis
   "age", "sexual", "gender_noncis", "finpast", "sib_freq", "race", "body_sr", "ed_any", "audit_tot", "dx_dep", "dx_bi",
@@ -2770,16 +2766,16 @@ var_names <- c(
   "dep_impa", "gad7_impa", "percneed_cur",
   # motivational moderators
   "inf", "flourish", "belong1", "belong2", "belong8", "belong9", "stig_pcv_2", "stig_pcv_3", "BRS_tot")  
-
 var_names <- sort(var_names)
+
 # build table for absolute missingness based on school2
-# create skeleton of missingness matrix
 school2 <- count(data.v28, school2)
 school2_ncol <- ncol(school2)
 
 for (j in 1:length(var_names)) {
   school2[, school2_ncol + j] <- 999
 }
+
 # create column headers and vectors for school, total students, then each variable count
 names <- c("school2_values", "total", var_names)
 names(school2) <- names
@@ -2792,12 +2788,12 @@ for (i in 1:nrow(school2)) {   # i corresponds to rows, j to columns
 }
 # add percentage in each column
 school2_m <- as.matrix(school2[-1]) 
-  
 props <- school2_m[,2:ncol(school2_m)] / school2_m[,1]
 school2 <- data.frame(school2[, 1:2], props)
 
 # view missingness matrix
 view(school2)
+
 # save matrix
 write_xlsx(school2, path = "sch2_missing.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
@@ -2819,7 +2815,6 @@ for (i in 1:nrow(missing_rates)) {
 view(missing_rates)
 # save matrix
 write_xlsx(missing_rates, path = "overall_missing.xlsx", col_names = TRUE, format_headers = TRUE)
-  
 ```
 
 ## Missingness of each var w/in each var
@@ -2858,7 +2853,6 @@ names(missing_dfs) <- var_names
 save(missing_dfs, file = "missing_dfs.RData")
 load("missing_dfs.RData")
 write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers = TRUE)
-
 ```
 
 ## Missingness regression
@@ -2875,11 +2869,62 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 ```
 
 
-# DATA DIVISION
+# DATA PREP
+
+## Create all dummy vars for SEM
+```{r dummy_cols SEM}
+
+# Prep SEM data vars
+data_sem <- data.v28 %>% select(
+  # diathesis
+  age, sexual, gender_noncis, finpast, sib_freq, race, body_sr, ed_any, audit_tot, dx_dep, dx_bi,
+  dx_tr, dx_adhd, dx_pers, meds_sti, meds_dep, meds_anx, meds_mood, meds_sle, meds_count,
+  # environment
+  env_mh, ther_vis, divers, satisfied_overall, residenc, talk, religios, discrim, school2_type, activ_yn,
+  military, international,
+  # life events
+  ins_cover, gpa_sr, assault_phys, binge_fr, assault_sex, assault_emo, psyhx, fincur, drugs_yn, abuse_year,
+  # defeat
+  aca_impa, dep_mod, dep_sev,
+  # threats to self-moderation
+  persist, anx_mod, anx_sev, dep_secret, AAQ_tot,
+  # entrapment
+  dep_impa, gad7_impa, percneed_cur,
+  # motivational moderators
+  inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, BRS_tot)
+
+# create corr matrix, with dummy vars 
+data_sem <- data_sem %>% 
+  mutate_if(is.numeric, as.factor) %>% 
+  dummy_cols(remove_first_dummy = TRUE) %>% 
+  data.matrix()
+data_sem   # check output
+
+results_sem <- dummy_cols(data_sem, select_columns = c(
+    # diathesis
+    "age", "sexual", "gender_noncis", "finpast", "sib_freq", "race", "body_sr", "ed_any", "audit_tot", "dx_dep", "dx_bi",
+    "dx_tr", "dx_adhd", "dx_pers", "meds_sti", "meds_dep", "meds_anx", "meds_mood", "meds_sle", "meds_count",
+    # environment
+    "env_mh", "ther_vis", "divers", "satisfied_overall", "residenc", "talk", "religios", "discrim", "school2_type", "activ_yn",
+   "military", "international",
+    # life events
+    "ins_cover", "gpa_sr", "assault_phys", "binge_fr", "assault_sex", "assault_emo", "psyhx", "fincur", "drugs_yn", "abuse_year",
+    # defeat
+    "aca_impa", "dep_mod", "dep_sev",
+    # threats to self-moderation
+    "persist", "anx_mod", "anx_sev", "dep_secret", "AAQ_tot",
+    # entrapment
+    "dep_impa", "gad7_impa", "percneed_cur",
+    # motivational moderators
+    "inf", "flourish", "belong1", "belong2", "belong8", "belong9", "stig_pcv_2", "stig_pcv_3", "BRS_tot"), 
+                         remove_first_dummy = TRUE)
+```
+
+
+## Data Division
 
 
 ```{r Data division}
-
 data.v29 <- data.v28
 
 set.seed(1000) 
@@ -2899,9 +2944,10 @@ dim(testdf.v29)
 # SEM ANALYSIS
 
 
+## SEM data train
 ```{r SEM}
-testdf.v29 <- NA_preproc(testdf.v29)
-testdf.v29 <- as.data.frame(testdf.v29)
+traindf.v29 <- NA_preproc(traindf.v29)
+traindf.v29 <- as.data.frame(traindf.v29)
 
 SI_model_tr <- '# measurement model
                 dia_sem =~ age + sexual + gender_noncis + finpast + sib_freq + race + body_sr + ed_any + audit_tot + dx_dep + dx_bi + 
@@ -2926,11 +2972,17 @@ SI_model_tr <- '# measurement model
                         def_sem ~ dia_sem + env_sem + le_sem 
                         si_sem ~ entrap_sem + mm_sem   '
 
-fit_train <- sem(SI_model_tr, data=traindf.v29)
-summary(fit_train, fit.measures=TRUE)
+fit_train <- sem(SI_model_tr, data=data.v29)
+summary(fit_train, fit.measures=TRUE, standardized = TRUE))
 
-# test data comparator
-SI_model_tr <- ' # measurement model
+```
+
+## SEM data test
+```{r SEM test model}
+testdf.v29 <- NA_preproc(testdf.v29)
+testdf.v29 <- as.data.frame(testdf.v29)
+
+SI_model_test <- ' # measurement model
                   dia_sem =~ testdf.v23$age + testdf.v23$sexual + testdf.v23$gender + testdf.v23$finpast + testdf.v23$sib_freq + 
                     testdf.v23$race + testdf.v23$body_sr + testdf.v23$ed_scoff + testdf.v23$audit_tot + testdf.v23$dx_dep + 
                     testdf.v23$dx_bi + testdf.v23$dx_psy + testdf.v23$dx_ea + testdf.v23$dx_tr + testdf.v23$dx_sa + testdf.v23$dx_adhd +
@@ -2980,12 +3032,9 @@ model <- ' # direct effect
            # total effect
            total := c + (a*b)  '
 
-fit_train <- sem(model, data=traindf.v29)
-summary(fit_train, fit.measures=TRUE)
-
-
-fit_test <- sem(SI_model_tr, data=testdf.v29)
+fit_test <- sem(SI_model_test, data=testdf.v29)
 summary(fit_test, fit.measures=TRUE)
+
 ```
 
 
