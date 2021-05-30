@@ -2962,7 +2962,6 @@ SI_model_tr <- '# measurement model
                 tsm_sem =~ persist + anx_mod + anx_sev + dep_secret + AAQ_tot
                 entrap_sem =~ dep_impa + gad7_impa + percneed_cur
                 mm_sem =~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + BRS_tot
-                si_sem =~ si_type
                     
                 # regressions
                     # pre-motivational
@@ -2972,8 +2971,7 @@ SI_model_tr <- '# measurement model
                       
                     # motivational
                         entrap_sem ~ def_sem + tsm_sem
-                        def_sem ~ dia_sem + env_sem + le_sem 
-                        si_sem ~ entrap_sem + mm_sem   '
+                        def_sem ~ dia_sem + env_sem + le_sem  '
 
 fit_train <- sem(SI_model_tr, data=traindf.v29)
 summary(fit_train, fit.measures=TRUE, standardized = TRUE))
@@ -2982,42 +2980,6 @@ summary(fit_train, fit.measures=TRUE, standardized = TRUE))
 
 ## SEM data test
 ```{r SEM test model}
-testdf.v29 <- NA_preproc(testdf.v29)
-testdf.v29 <- as.data.frame(testdf.v29)
-
-SI_model_test <- ' # measurement model
-                  dia_sem =~ testdf.v23$age + testdf.v23$sexual + testdf.v23$gender + testdf.v23$finpast + testdf.v23$sib_freq + 
-                    testdf.v23$race + testdf.v23$body_sr + testdf.v23$ed_scoff + testdf.v23$audit_tot + testdf.v23$dx_dep + 
-                    testdf.v23$dx_bi + testdf.v23$dx_psy + testdf.v23$dx_ea + testdf.v23$dx_tr + testdf.v23$dx_sa + testdf.v23$dx_adhd +
-                    testdf.v23$dx_pers + testdf.v23$dx_none + testdf.v23$meds_sti + testdf.v23$meds_dep + testdf.v23$meds_psy +
-                    testdf.v23$meds_anx + testdf.v23$meds_mood + testdf.v23$meds_sle + testdf.v23$meds_oth + testdf.v23$meds_none +
-                    testdf.v23$meds_count + testdf.v23$disab_1 + testdf.v23$alc_tx
-                  env_sem =~ testdf.v23$env_mh + testdf.v23$fam_support_aca + testdf.v23$ther_vis + testdf.v23$divers +
-                    testdf.v23$satisfied_overall + testdf.v23$residenc + testdf.v23$talk + testdf.v23$religios + testdf.v23$discrim +
-                    testdf.v23$school2_type
-                  le_sem =~ testdf.v23$ins_cover + testdf.v23$gpa_sr + testdf.v23$assault_phys + testdf.v23$binge_fr + testdf.v23$assault_sex + 
-                    testdf.v23$assault_emo + testdf.v23$psyhx + testdf.v23$fincur + testdf.v23$drug_type + testdf.v23$drug_none
-                  def_sem =~ testdf.v23$aca_impa + testdf.v23$deprawsc
-                  tsm_sem =~ testdf.v23$persist + testdf.v23$anx_score + testdf.v23$dep_secret + testdf.v23$AAQ_tot
-                  entrap_sem =~ testdf.v23$dep_impa + testdf.v23$gad7_impa + testdf.v23$perneed_cur
-                  mm_sm =~ testdf.v23$flourish + testdf.v23$belong + testdf.v23$inf + testdf.v23$stig_pcv_2 + testdf.v23$stig_pcv_3 +
-                    testdf.v23$brs_tot 
-                
-                # regressions
-                    dia_sem ~ env_sem
-                    env_sem ~ le_sem
-                    le_sem ~ dia_sem
-                    def_sem ~ dia_sem + env_sem + le_sem
-                    entrap_sem ~ def_sem + tsm_sem
-                    si_sem ~ entrap_sem + mm_sem
-                    si_sem ~ def_sem + tsm_sem + entrap_sem + mm_sem
-    
-                # residual correlations
-                    med_count ~~ testdf.v23$meds_sti + testdf.v23$meds_dep + testdf.v23$meds_psy + testdf.v23$meds_anx + testdf.v23$meds_mood +
-                                 testdf.v23$meds_sle + testdf.v23$meds_oth + testdf.v23$meds_none + testdf.v23$meds_count
-                    dx_any ~~ testdf.v23$dx_dep + testdf.v23$dx_bi + testdf.v23$dx_psy + testdf.v23$dx_ea + testdf.v23$dx_tr + testdf.v23$dx_sa +
-                                 testdf.v23$dx_adhd + testdf.v23$dx_pers + testdf.v23$dx_non  '
-
 
 # Training data analyses for indirect effects
 set.seed(1000)
