@@ -2876,6 +2876,8 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 
 # Prep SEM data vars
 data_sem <- data.v28 %>% select(
+  # outcome var
+  si_type,
   # diathesis
   age, sexual, gender_noncis, finpast, sib_freq, race, body_sr, ed_any, audit_tot, dx_dep, dx_bi,
   dx_tr, dx_adhd, dx_pers, meds_sti, meds_dep, meds_anx, meds_mood, meds_sle, meds_count,
@@ -2901,6 +2903,8 @@ data_sem <- data_sem %>%
 data_sem   # check output
 
 results_sem <- dummy_cols(data_sem, select_columns = c(
+    # outcome var
+    "si_type",
     # diathesis
     "age", "sexual", "gender_noncis", "finpast", "sib_freq", "race", "body_sr", "ed_any", "audit_tot", "dx_dep", "dx_bi",
     "dx_tr", "dx_adhd", "dx_pers", "meds_sti", "meds_dep", "meds_anx", "meds_mood", "meds_sle", "meds_count",
@@ -2925,17 +2929,16 @@ results_sem <- dummy_cols(data_sem, select_columns = c(
 
 
 ```{r Data division}
-data.v29 <- data.v28
 
 set.seed(1000) 
-split = sample.split(data.v29$school2, SplitRatio = 0.50)
+split = sample.split(results_sem, SplitRatio = 0.50)
  
 # Create training and testing sets
-traindf.v29 <- subset(data.v29, split == TRUE)
-testdf.v29 <- subset(data.v29, split == FALSE)
+traindf.v29 <- subset(results_sem, split == TRUE)
+testdf.v29 <- subset(results_sem, split == FALSE)
  
 #Check output
-dim(data.v29)
+dim(results_sem)
 dim(traindf.v29)
 dim(testdf.v29)
 ```
@@ -2972,7 +2975,7 @@ SI_model_tr <- '# measurement model
                         def_sem ~ dia_sem + env_sem + le_sem 
                         si_sem ~ entrap_sem + mm_sem   '
 
-fit_train <- sem(SI_model_tr, data=data.v29)
+fit_train <- sem(SI_model_tr, data=traindf.v29)
 summary(fit_train, fit.measures=TRUE, standardized = TRUE))
 
 ```
