@@ -2332,9 +2332,11 @@ table(data.v22$dep_secret, useNA = "always")
 # create AAQ_tot variable to sum up imputed AAQ questions
 data.v22 <- data.v22 %>%
   mutate(AAQ_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
-           as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7))
+           as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7)) %>%
+  mutate(AAQ_yn = case_when(AAQ_tot > 24 ~ 1,
+                            AAQ_tot < 25 ~ 0))
+table(data.v22$AAQ_yn, useNA = "always")
 
-table(data.v22$AAQ_tot, useNA = "always")
 ```
 
 ## Achievement
@@ -2873,7 +2875,6 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 
 ## Create all dummy vars for SEM
 ```{r dummy_cols SEM}
-
 # Prep SEM data vars
 data_sem <- data.v28 %>% select(
   # outcome var
@@ -2889,7 +2890,7 @@ data_sem <- data.v28 %>% select(
   # defeat
   aca_impa, dep_mod, dep_sev,
   # threats to self-moderation
-  persist, anx_mod, anx_sev, dep_secret, AAQ_tot,
+  persist, anx_mod, anx_sev, dep_secret, AAQ_yn,
   # entrapment
   dep_impa, gad7_impa, percneed_cur,
   # motivational moderators
@@ -2924,10 +2925,7 @@ results_sem <- dummy_cols(data_sem, select_columns = c(
                          remove_first_dummy = TRUE)
 ```
 
-
 ## Data Division
-
-
 ```{r Data division}
 
 set.seed(1000) 
