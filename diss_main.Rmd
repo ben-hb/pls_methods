@@ -2031,7 +2031,7 @@ data.v19 <- data.v18
 ```{r LE correlation}
 
 # Define life event var candidates for correlation matrix
-data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, drugs_mar,
+data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, drug_mar,
                                binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
 
  # convert data to numeric in order to run correlations (i.e., convert to factor first to keep 
@@ -2055,7 +2055,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 ## EFA LE
 ```{r le_pca}
-data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, drugs_mar,
+data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, drug_mar,
                                binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
 
 # create corr matrix, with dummy vars
@@ -2065,7 +2065,7 @@ data_le <- data_le %>%
   data.matrix()
 data_le   # check output
 
-results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", "gpa_sr", "aca_impa", "drugs_mar",
+results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", "gpa_sr", "aca_impa", "drug_mar",
                                                      "fincur", "assault_phys", "binge_fr", "assault_sex", 
                                                      "assault_emo", "deprawsc", "psyhx", "drugs_yn"),
                          remove_first_dummy = TRUE)
@@ -2092,18 +2092,17 @@ eigval_le
 ## CLM Life event regression
 ```{r clm_LE}
 
-clm_le <- data.v19 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
+clm_le <- data.v19 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, drug_mar,
                               binge_fr, assault_sex, assault_emo, psyhx, drugs_yn)
 
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
 
-clm_le <- clm(si_type ~ ins_cover + abuse_year + gpa_sr + aca_impa + fincur + assault_phys + binge_fr +
+clm_le <- clm(si_type ~ ins_cover + abuse_year + gpa_sr + aca_impa + fincur + assault_phys + binge_fr + drug_mar +
                assault_sex + assault_emo + + psyhx + drugs_yn, data = clm_le)
 summary(clm_le)
-
 coef(clm_le)
-vcov(clm_le)
+
 
 ```
 
@@ -2189,10 +2188,6 @@ corr <- na.omit(corr)                         # remove the NA values from above
 corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
 print(corr)
 
-#turn corr back into matrix in order to plot with corrplot
-mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-
 # Redefining defeat variable to account for significant overlaps
 data.v21 <- data.v21 %>%
   mutate(dep_mod = case_when(dep_mod == 1 ~ 1,
@@ -2265,13 +2260,13 @@ summary(clm_def)
 coef(clm_def)
 vcov(clm_def)
 
-# Find p-values, CI, OR
-ctable_def <- coef(summary(clm_def))
-p <- pnorm(abs(ctable_def[, "t value"]), lower.tail = FALSE) * 2    # p-value computation
-ctable_def <- cbind(ctable_def, "p value" = p)
-ctable_def                                                          # display p-value
-ci_def <- confint(clm_def)                           # find CIs
-exp(cbind(OR = coef(clm_def), ci_def))     # display odds ratio and CI outputs
+# # Find p-values, CI, OR
+# ctable_def <- coef(summary(clm_def))
+# p <- pnorm(abs(ctable_def[, "t value"]), lower.tail = FALSE) * 2    # p-value computation
+# ctable_def <- cbind(ctable_def, "p value" = p)
+# ctable_def                                                          # display p-value
+# ci_def <- confint(clm_def)                           # find CIs
+# exp(cbind(OR = coef(clm_def), ci_def))     # display odds ratio and CI outputs
 
 
 ```
@@ -2347,7 +2342,7 @@ data.v23 <- data.v22
 ```{r CORR TSM}
 
 # Define TSM variable candidates for correlation matrix
-data_tsm <- data.v23 %>% select(persist, anx_none, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, AAQ_yn)
+data_tsm <- data.v23 %>% select(persist, anx_none, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, aaq_yn)
 
 # convert data to numeric in order to run correlations 
 data_tsm <- data_tsm %>% mutate_if(is.character, as.factor)
@@ -2431,7 +2426,7 @@ clm_tsm <- data.v23 %>% select(si_type, persist, anx_mod, anx_sev, dep_secret, a
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
 
-clm_tsm <- clm2(si_type ~ persist + anx_mod + anx_sev + dep_secret + aaq_yn, data = clm_tsm)
+clm_tsm <- clm(si_type ~ persist + anx_mod + anx_sev + dep_secret + aaq_yn, data = clm_tsm)
 
 summary(clm_tsm)
 coef(clm_tsm)
@@ -2462,13 +2457,13 @@ table(data.v24$gad7_impa, useNA = "always")
 table(data.v24$percneed_cur, useNA = "always")
 ```
 
-
+## ENTRAPMENT ANALYSES
 ```{r Entrapment analyses}
 data.v25 <- data.v24
 ```
 
 
-## Entrapment correlation
+### Entrapment correlation
 ```{r Entrapment corr}
 
 # Define entrapment variable candidates for correlation matrix
@@ -2489,7 +2484,7 @@ print(corr)
 
 ```
 
-## EFA Entrapment
+### EFA Entrapment
 ```{r CFA entrap}
 data_entrap <- data.v25 %>% select(dep_impa, gad7_impa, percneed_cur)
 
@@ -2524,19 +2519,17 @@ eigval_entrap
 
 ```
 
-##  CLM Entrapment regression
+###  CLM Entrapment regression
 ```{r clm_entrap}
 clm_entrap <- data.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
 
 clm_entrap <- NA_preproc(clm_entrap)
 clm_entrap <- as.data.frame(clm_entrap)
 
-clm_entrap <- clm2(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_entrap)
+clm_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_entrap)
 
 summary(clm_entrap)
 coef(clm_entrap)
-vcov(clm_entrap)
-
 ```
 
 
