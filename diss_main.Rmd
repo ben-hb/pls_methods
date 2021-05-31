@@ -81,7 +81,7 @@ Premotivational variables
 
 Motivational variables
   - Defeat: aca_impac, men_ill_ash, deprawsc **
-  - Threats to Self-Moderation: persist, anx_score, dep_secret, AAQ_tot, achieve4 **
+  - Threats to Self-Moderation: persist, anx_score, dep_secret, aaq_yn, achieve4 **
   - Entrapment: dep_impa, gad7_impa, percneed_cur **
   - Motivational Moderators: inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, BRS_tot 
   
@@ -2294,7 +2294,7 @@ vcov(clm_def)
 
 
 # THREATS TO SELF-MODERATION
-Candidate variables: persist, anx_score, dep_secret, AAQ_tot, achieve4
+Candidate variables: persist, anx_score, dep_secret, aaq_yn, achieve4
 
 
 ```{r TSM frame}
@@ -2328,7 +2328,7 @@ table(data.v22$dep_secret, useNA = "always")
 ```
 
 ## AAQ total (elective module)
-```{r AAQ_tot}
+```{r aaq_yn}
 # create AAQ_tot variable to sum up imputed AAQ questions
 data.v22 <- data.v22 %>%
   mutate(AAQ_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
@@ -2381,7 +2381,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
   
 
 # Re-run corr with non-overlapping vars
-data_tsm <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, AAQ_tot)
+data_tsm <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, aaq_yn)
 
 # convert data to numeric in order to run correlations 
 data_tsm <- data_tsm %>% mutate_if(is.character, as.factor)
@@ -2404,19 +2404,19 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ##EFA TSM
 ```{r EFA TSM}
-data_tsm <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, AAQ_tot)
+data_tsm <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, aaq_yn)
 
 # create corr matrix, with dummy vars 
 data_tsm <- data_tsm %>% 
   mutate_if(is.numeric, as.factor) %>% 
     mutate(
-    AAQ_tot = as.numeric(AAQ_tot),
+    aaq_yn = as.numeric(aaq_yn),
   ) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 data_tsm   # check output
 
-results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_mild", "anx_mod", "anx_sev", "dep_secret", "achieve4", "AAQ_tot"),
+results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_mild", "anx_mod", "anx_sev", "dep_secret", "achieve4", "aaq_yn"),
                          remove_first_dummy = TRUE)
 
 tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
@@ -2445,12 +2445,12 @@ eigval_tsm
 
 ## CLM TSM
 ```{r CLM TSM}
-clm_tsm <- data.v23 %>% select(si_type, persist, anx_mod, anx_sev, dep_secret, AAQ_tot)
+clm_tsm <- data.v23 %>% select(si_type, persist, anx_mod, anx_sev, dep_secret, aaq_yn)
 
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
 
-clm_tsm <- clm2(si_type ~ persist + anx_mod + anx_sev + dep_secret + AAQ_tot, data = clm_tsm)
+clm_tsm <- clm2(si_type ~ persist + anx_mod + anx_sev + dep_secret + aaq_yn, data = clm_tsm)
 
 summary(clm_tsm)
 coef(clm_tsm)
@@ -2763,7 +2763,7 @@ var_names <- c(
   # defeat
   "aca_impa", "dep_mod", "dep_sev",
   # threats to self-moderation
-  "persist", "anx_mod", "anx_sev", "dep_secret", "AAQ_tot",
+  "persist", "anx_mod", "anx_sev", "dep_secret", "aaq_yn",
   # entrapment
   "dep_impa", "gad7_impa", "percneed_cur",
   # motivational moderators
@@ -2917,7 +2917,7 @@ results_sem <- dummy_cols(data_sem, select_columns = c(
     # defeat
     "aca_impa", "dep_mod", "dep_sev",
     # threats to self-moderation
-    "persist", "anx_mod", "anx_sev", "dep_secret", "AAQ_tot",
+    "persist", "anx_mod", "anx_sev", "dep_secret", "aaq_yn",
     # entrapment
     "dep_impa", "gad7_impa", "percneed_cur",
     # motivational moderators
@@ -2950,31 +2950,65 @@ dim(testdf.v29)
 traindf.v29 <- NA_preproc(traindf.v29)
 traindf.v29 <- as.data.frame(traindf.v29)
 
-SI_model_tr <- '# measurement model
-                dia_sem =~ age + sexual + gender_noncis + finpast + sib_freq + race + body_sr + ed_any + audit_tot + dx_dep + dx_bi + 
-                           dx_tr + dx_adhd + dx_pers + meds_sti + meds_dep + meds_anx + meds_mood + meds_sle + meds_count
-                env_sem =~ env_mh + ther_vis + divers + satisfied_overall + residenc + talk + religios + discrim + school2_type + 
-                           activ_yn + military + international
-                le_sem =~  ins_cover + gpa_sr + assault_phys + binge_fr + assault_sex + assault_emo + psyhx + fincur + drugs_yn + abuse_year
-                def_sem =~ aca_impa + dep_mod + dep_sev
-                tsm_sem =~ persist + anx_mod + anx_sev + dep_secret + AAQ_tot
-                entrap_sem =~ dep_impa + gad7_impa + percneed_cur
-                mm_sem =~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + BRS_tot
-                    
-                # regressions
-                    # pre-motivational
-                        dia_sem ~ env_sem
-                        env_sem ~ le_sem
-                        le_sem ~ dia_sem
-                      
-                    # motivational
-                        entrap_sem ~ def_sem + tsm_sem
-                        def_sem ~ dia_sem + env_sem + le_sem  '
+model <- "
+# Measurement model
+SUP_Parents =~ sup_parents_p1 + sup_parents_p2 + sup_parents_p3
+SUP_Friends =~ sup_friends_p1 + sup_friends_p2 + sup_friends_p3
+SE_Academic =~ se_acad_p1 + se_acad_p2 + se_acad_p3
+SE_Social =~ se_social_p1 + se_social_p2 + se_social_p3
+LS  =~ ls_p1 + ls_p2 + ls_p3
 
+# Structural model 
+# Regressions
+SE_Academic ~ SUP_Parents + SUP_Friends
+SE_Social ~ SUP_Parents + SUP_Friends
+LS ~ SE_Academic + SE_Social + SUP_Parents + SUP_Friends
+
+# Residual covariances
+SE_Academic ~~ SE_Social
+"
+
+SI_model_tr <- '# measurement model
+                  dia_sem =~ age + sexual + gender_noncis + finpast + sib_freq + race + body_sr + ed_any + audit_tot + dx_dep + dx_bi + 
+                           dx_tr + dx_adhd + dx_pers + meds_sti + meds_dep + meds_anx + meds_mood + meds_sle + meds_count
+                  env_sem =~ env_mh + ther_vis + divers + satisfied_overall + residenc + talk + religios + discrim + school2_type + 
+                           activ_yn + military + international
+                  le_sem =~  ins_cover + gpa_sr + assault_phys + binge_fr + assault_sex + assault_emo + psyhx + fincur + drugs_yn + abuse_year
+                  def_sem =~ aca_impa + dep_mod + dep_sev
+                  tsm_sem =~ persist + anx_mod + anx_sev + dep_secret + AAQ_yn
+                  entrap_sem =~ dep_impa + gad7_impa + percneed_cur
+                  mm_sem =~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + BRS_tot
+                  si_sem =~ si_type
+                    
+                # structural model - regressions
+                  def_sem =~ dia_sem + env_sem + le_sem
+                  entrap_sem ~ def_sem + tsm_sem
+                  def_sem ~ dia_sem + env_sem + le_sem
+                  si_sem =~ def_sem + entrap_sem  
+
+                # residual covariances
+                  dep_imp~~gad7_impa
+                  dx_bi~~meds_mood
+                  meds_count~~dx_dep
+                  meds_count~~dx_mood
+                  meds_count~~dx_anx
+                  meds_count~~dx_sle
+
+# Model estimation
 fit_train <- sem(SI_model_tr, data=traindf.v29)
-summary(fit_train, fit.measures=TRUE, standardized = TRUE))
+summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
 ```
+
+```{r SEM path diagram}
+cols <- wes_palette(name = "Moonrise2", n = 4, type = "discrete")
+colorlist <- list(man = cols[2], lat = cols[3])
+
+semPaths(fit_train, what = "col", whatLabels = "std", style = "mx",  
+         color = colorlist, rotation =1 , layout = "spring",  nCharNodes = 7, 
+         shapeMan = "rectangle", sizeMan = 8, sizeMan2 = 5)
+```
+
 
 ## SEM data test
 ```{r SEM test model}
@@ -3007,9 +3041,10 @@ summary(fit_test, fit.measures=TRUE)
 ```{r mod_indices}
 
 mi_train <- modindices(fit_train, sort = TRUE, maximum.number = 5)  # might need to use lavTestScore() function
+mi_train
 
 mi_test <- modindices(fit_test, sort = TRUE, maximum.number = 5)
-
+mi_test
 ```
 
 
