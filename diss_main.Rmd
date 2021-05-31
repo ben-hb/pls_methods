@@ -1509,13 +1509,6 @@ clm_dia <- clm2(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + bo
 summary(clm_dia)
 coef(clm_dia)
 
-#Find p-values, CI, OR
-ctable_clmdia <- coef(summary(clm_dia))
-p <- pnorm(abs(ctable_clmdia[, "t value"]), lower.tail = FALSE) * 2    # p-value computation
-ctable_clmdia <- cbind(ctable_clmdia, "p value" = p)
-ctable_clmdia                                                         # display p-value
-ci_drugs <- confint(clm_dia)                           # find CIs
-exp(cbind(OR = coef(clm_dia), ci_drugs))     # display odds ratio and CI outputs
 ## NOT WORKING: race + meds_dep + ed_any + meds_anx + meds_mood + meds_sle + dx_pers + dx_tr
 
 ```
@@ -2999,6 +2992,7 @@ SI_model_tr <- '# measurement model
                   meds_count~~dx_mood
                   meds_count~~dx_anx
                   meds_count~~dx_sle
+                  assault_phys~~abuse_year
 
 # Model estimation
 fit_train <- sem(SI_model_tr, data=traindf.v29)
