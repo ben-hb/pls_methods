@@ -109,14 +109,14 @@ data.v1 <- data.raw %>%
   select(-c(
 
     # demographic info
-    children_dep, educ_par1_rel, educ_par2_rel, hours_work_paid, timeclass, timestud, educ_par1, educ_par2, age_US, langpast, langcur, 
-    age18:age41pl, educ_par, eductemp, educ_1:educ_4, age18_22, age31pl,
+    children_dep, educ_par1_rel, educ_par2_rel, hours_work_paid, timeclass, timestud, educ_par1, educ_par2, age_US, langpast, 
+    langcur, age18:age41pl, educ_par, eductemp, educ_1:educ_4, age18_22, age31pl,
     # relationship info
     relship, relship_text, rel_sing:rel_divw,
     #  HMS-based
-    SweepsIncentiveContact, endmessageSuicide, UniversityofSouthernCalifornia1a, consentFollowup1, excl_pers_oth_TEXT, exp_rude, 
-    exp_accuse, exp_othersafraid, exp_ideaignore, exp_offendjoke, exp_stupid, exp_notserious, exp_superficial, exp_re_prof, exp_re_fear, 
-    exp_re_speakall,
+    SweepsIncentiveContact, endmessageSuicide, UniversityofSouthernCalifornia1a, consentFollowup1, excl_pers_oth_TEXT, 
+    exp_rude,exp_accuse, exp_othersafraid, exp_ideaignore, exp_offendjoke, exp_stupid, exp_notserious, exp_superficial,
+    exp_re_prof, exp_re_fear, exp_re_speakall,
     #  religious affiliations
     relig_aff_ag:relig_aff_oth, relig_aff_other_text, relig_1:relig_5,
     #  residence
@@ -395,7 +395,7 @@ Creates indicator variable 'si_type' using the subtypes of suicidal ideation usi
 data.v2 <- data.v1 %>%
 
 # create si_type var
-  mutate(si_type = case_when((sui_idea == 1 & suic_plan == 1 & suic_att == 1) ~ 4,   # volitional, suicide attempt or related bx
+  mutate(si_type = case_when((sui_idea == 1 & suic_plan == 1 & suic_att == 1) ~ 4, # volitional, suicide attempt or related bx
                            (sui_idea == 1 & suic_plan == 1) ~ 3,                   # active SI
                            (sui_idea == 1) ~ 2,                                    # passive SI
                            sui_idea == 0 ~ 1)) %>%                                 # no SI reported
@@ -1478,11 +1478,6 @@ fviz_pca_var(dia_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-fviz_pca_biplot(dia_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
 fviz_famd_var(dia_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -1504,7 +1499,7 @@ clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib
 clm_dia <- NA_preproc(clm_dia)
 clm_dia <- as.data.frame(clm_dia)
 
-clm_dia <- clm2(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr +
+clm_dia <- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr +
                        dx_dep + dx_bi + dx_adhd + meds_count, data = clm_dia)
 summary(clm_dia)
 coef(clm_dia)
@@ -1863,11 +1858,6 @@ fviz_pca_var(env_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-fviz_pca_biplot(env_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
 fviz_famd_var(env_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -1889,14 +1879,13 @@ clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, the
 clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
 
-clm_env <- clm2(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
+clm_env <- clm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
                 ther_vis + divers + + military + school2_type + residenc + env_mh, data = clm_env)
 summary(clm_env)
 
-#  NOT WORKING: + religios 
+#  NOT WORKING: + religios ... need to figure out why
 
 coef(clm_env)
-vcov(clm_env)
 
 ```
 
@@ -1921,7 +1910,7 @@ table(data.v16$ins_cover, useNA = "always")   # check output
 ```
 
 ## Illicit drug use
-Creates illicit drug use var to aggregate all drug answers into one, create drug_poly for >1 drug (limitation -- 30 days reflection)
+Creates illicit drug use var (limitation -- 30 days reflection)
 ```{r drug_type}
 ## add summary of each
 table(data.v16$drug_none, useNA="always")
@@ -1937,16 +1926,16 @@ table(data.v16$drug_other, useNA="always")  # too vague, small
 # Sample is too small to analyze individual drugs, except for marijuana. Transform to illicit drug y/n
 data.v16 <- data.v16 %>%
   mutate(drugs_yn = case_when(drug_none == 1 ~ 0,
-                              drug_mar == 1 ~ 1,
                               drug_coc == 1 ~ 1,
                               drug_her == 1 ~ 1,
                               drug_met == 1 ~ 1,
                               drug_stim == 1 ~ 1,
                               drug_ect == 1 ~ 1,
                               drug_opi == 1 ~ 1,
-                              drug_other == 1 ~ 1,
-                              ))
-table(data.v16$drugs_yn)
+                              drug_other == 1 ~ 1))
+
+table(data.v16$drugs_yn, useNA="always")
+table(data.v16$drug_mar, useNA="always")
 
 ```
 
@@ -2042,7 +2031,7 @@ data.v19 <- data.v18
 ```{r LE correlation}
 
 # Define life event var candidates for correlation matrix
-data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
+data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, drugs_mar,
                                binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
 
  # convert data to numeric in order to run correlations (i.e., convert to factor first to keep 
@@ -2066,7 +2055,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 ## EFA LE
 ```{r le_pca}
-data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, 
+data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, drugs_mar,
                                binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
 
 # create corr matrix, with dummy vars
@@ -2076,7 +2065,7 @@ data_le <- data_le %>%
   data.matrix()
 data_le   # check output
 
-results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", "gpa_sr", "aca_impa", 
+results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", "gpa_sr", "aca_impa", "drugs_mar",
                                                      "fincur", "assault_phys", "binge_fr", "assault_sex", 
                                                      "assault_emo", "deprawsc", "psyhx", "drugs_yn"),
                          remove_first_dummy = TRUE)
@@ -2086,11 +2075,6 @@ le_pca$eig   # output matrix with eigenvalues
 
 # Visualize PCA, FAMD results
 fviz_pca_var(le_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_pca_biplot(le_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
@@ -2114,7 +2098,7 @@ clm_le <- data.v19 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, 
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
 
-clm_le <- clm2(si_type ~ ins_cover + abuse_year + gpa_sr + aca_impa + fincur + assault_phys + binge_fr +
+clm_le <- clm(si_type ~ ins_cover + abuse_year + gpa_sr + aca_impa + fincur + assault_phys + binge_fr +
                assault_sex + assault_emo + + psyhx + drugs_yn, data = clm_le)
 summary(clm_le)
 
@@ -2191,8 +2175,6 @@ data.v21 <- data.v20
 
 # Define defeat variable candidates for correlation matrix
 data_def <- data.v21 %>% select(aca_impa, dep_mild, dep_mod, dep_modsev, dep_sev, dep_none)
-data <- data_def
-sig <- 0.6
 
  # convert data to numeric in order to run correlations
 data_def <- data_def %>% mutate_if(is.character, as.factor)
@@ -2204,7 +2186,7 @@ corr[lower.tri(corr, diag=TRUE)] <- NA        # prepare to drop duplicates and c
 corr[corr %in% c(-1, 1)] <- NA                # drop perfect correlations
 corr <- as.data.frame(as.table(corr))         # turn into a 3-column table
 corr <- na.omit(corr)                         # remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
+corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
 print(corr)
 
 #turn corr back into matrix in order to plot with corrplot
@@ -2212,7 +2194,6 @@ mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 # Redefining defeat variable to account for significant overlaps
-
 data.v21 <- data.v21 %>%
   mutate(dep_mod = case_when(dep_mod == 1 ~ 1,
                              dep_modsev == 1 ~ 1,
@@ -2223,7 +2204,7 @@ table(data.v21$dep_mod)
 
 data_def <- data.v21 %>% select(aca_impa, dep_mild, dep_mod, dep_sev)
 
- # convert data to numeric in order to run correlations
+# convert data to numeric in order to run correlations
 data_def <- data_def %>% mutate_if(is.character, as.factor)
 data_def <-  data_def %>% mutate_if(is.factor, as.numeric)
 
@@ -2261,11 +2242,6 @@ fviz_pca_var(def_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-fviz_pca_biplot(def_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
 fviz_famd_var(def_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2284,10 +2260,19 @@ results2_def <- data.v21 %>% select(si_type, aca_impa, dep_mod, dep_sev)
 clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
 
-clm_def <- clm2(si_type ~ aca_impa + dep_mod + dep_sev, data = clm_def)
+clm_def <- clm(si_type ~ aca_impa + dep_mod + dep_sev, data = clm_def)
 summary(clm_def)
 coef(clm_def)
 vcov(clm_def)
+
+# Find p-values, CI, OR
+ctable_def <- coef(summary(clm_def))
+p <- pnorm(abs(ctable_def[, "t value"]), lower.tail = FALSE) * 2    # p-value computation
+ctable_def <- cbind(ctable_def, "p value" = p)
+ctable_def                                                          # display p-value
+ci_def <- confint(clm_def)                           # find CIs
+exp(cbind(OR = coef(clm_def), ci_def))     # display odds ratio and CI outputs
+
 
 ```
 
@@ -2332,9 +2317,12 @@ table(data.v22$dep_secret, useNA = "always")
 data.v22 <- data.v22 %>%
   mutate(AAQ_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
            as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7)) %>%
-  mutate(AAQ_yn = case_when(AAQ_tot > 24 ~ 1,
+  mutate(aaq_yn = case_when(AAQ_tot > 24 ~ 1,
                             AAQ_tot < 25 ~ 0))
-table(data.v22$AAQ_yn, useNA = "always")
+table(data.v22$aaq_yn, useNA = "always")
+
+#  for loop for predictive cutoff point needed
+
 
 ```
 
@@ -2359,7 +2347,7 @@ data.v23 <- data.v22
 ```{r CORR TSM}
 
 # Define TSM variable candidates for correlation matrix
-data_tsm <- data.v23 %>% select(persist, anx_none, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, AAQ_tot)
+data_tsm <- data.v23 %>% select(persist, anx_none, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, AAQ_yn)
 
 # convert data to numeric in order to run correlations 
 data_tsm <- data_tsm %>% mutate_if(is.character, as.factor)
@@ -2378,7 +2366,6 @@ print(corr)
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
   
-
 # Re-run corr with non-overlapping vars
 data_tsm <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, aaq_yn)
 
@@ -2426,11 +2413,6 @@ fviz_pca_var(tsm_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-fviz_pca_biplot(tsm_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
 fviz_famd_var(tsm_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2453,7 +2435,6 @@ clm_tsm <- clm2(si_type ~ persist + anx_mod + anx_sev + dep_secret + aaq_yn, dat
 
 summary(clm_tsm)
 coef(clm_tsm)
-vcov(clm_tsm)
 
 ```
 
@@ -2527,11 +2508,6 @@ entrap_pca$eig   # output matrix with eigenvalues
 
 # Visualize PCA, FAMD results
 fviz_pca_var(entrap_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_pca_biplot(entrap_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
@@ -2705,11 +2681,6 @@ mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 
 # Visualize PCA, FAMD
 fviz_pca_var(mm_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_pca_biplot(mm_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
@@ -2949,40 +2920,26 @@ dim(testdf.v29)
 traindf.v29 <- NA_preproc(traindf.v29)
 traindf.v29 <- as.data.frame(traindf.v29)
 
-model <- "
-# Measurement model
-SUP_Parents =~ sup_parents_p1 + sup_parents_p2 + sup_parents_p3
-SUP_Friends =~ sup_friends_p1 + sup_friends_p2 + sup_friends_p3
-SE_Academic =~ se_acad_p1 + se_acad_p2 + se_acad_p3
-SE_Social =~ se_social_p1 + se_social_p2 + se_social_p3
-LS  =~ ls_p1 + ls_p2 + ls_p3
-
-# Structural model 
-# Regressions
-SE_Academic ~ SUP_Parents + SUP_Friends
-SE_Social ~ SUP_Parents + SUP_Friends
-LS ~ SE_Academic + SE_Social + SUP_Parents + SUP_Friends
-
-# Residual covariances
-SE_Academic ~~ SE_Social
-"
-
 SI_model_tr <- '# measurement model
-                  dia_sem =~ age + sexual + gender_noncis + finpast + sib_freq + race + body_sr + ed_any + audit_tot + dx_dep + dx_bi + 
-                           dx_tr + dx_adhd + dx_pers + meds_sti + meds_dep + meds_anx + meds_mood + meds_sle + meds_count
-                  env_sem =~ env_mh + ther_vis + divers + satisfied_overall + residenc + talk + religios + discrim + school2_type + 
-                           activ_yn + military + international
-                  le_sem =~  ins_cover + gpa_sr + assault_phys + binge_fr + assault_sex + assault_emo + psyhx + fincur + drugs_yn + abuse_year
+                  dia_sem =~ age + sexual + gender_noncis + finpast + sib_freq + 
+                             race + body_sr + ed_any + audit_tot + dx_dep + dx_bi + 
+                             dx_tr + dx_adhd + dx_pers + meds_sti + meds_dep + 
+                             meds_anx + meds_mood + meds_sle + meds_count
+                  env_sem =~ env_mh + ther_vis + divers + satisfied_overall +
+                             residenc + talk + religios + discrim + school2_type + 
+                             activ_yn + military + international
+                  le_sem =~  ins_cover + gpa_sr + assault_phys + binge_fr +
+                             assault_sex + assault_emo + psyhx + fincur + drugs_yn + abuse_year
                   def_sem =~ aca_impa + dep_mod + dep_sev
                   tsm_sem =~ persist + anx_mod + anx_sev + dep_secret + AAQ_yn
                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
-                  mm_sem =~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + BRS_tot
-                  si_sem =~ si_type
+                  mm_sem =~  inf + flourish + belong1 + belong2 + belong8 + belong9 + 
+                             stig_pcv_2 + stig_pcv_3 + BRS_tot
+                  si_sem =~  si_type
                     
                 # structural model - regressions
                   def_sem =~ dia_sem + env_sem + le_sem
                   entrap_sem ~ def_sem + tsm_sem
-                  def_sem ~ dia_sem + env_sem + le_sem
                   si_sem =~ def_sem + entrap_sem  
 
                 # residual covariances
@@ -2992,7 +2949,7 @@ SI_model_tr <- '# measurement model
                   meds_count~~dx_mood
                   meds_count~~dx_anx
                   meds_count~~dx_sle
-                  assault_phys~~abuse_year
+                  assault_phys~~abuse_year   '
 
 # Model estimation
 fit_train <- sem(SI_model_tr, data=traindf.v29)
@@ -3000,6 +2957,15 @@ summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
 ```
 
+## SEM data test
+```{r SEM test model}
+
+fit_test <- sem(SI_model_test, data=testdf.v29)
+summary(fit_test, fit.measures=TRUE)
+
+```
+
+## SEM Path diagram
 ```{r SEM path diagram}
 cols <- wes_palette(name = "Moonrise2", n = 4, type = "discrete")
 colorlist <- list(man = cols[2], lat = cols[3])
@@ -3007,53 +2973,6 @@ colorlist <- list(man = cols[2], lat = cols[3])
 semPaths(fit_train, what = "col", whatLabels = "std", style = "mx",  
          color = colorlist, rotation =1 , layout = "spring",  nCharNodes = 7, 
          shapeMan = "rectangle", sizeMan = 8, sizeMan2 = 5)
-```
-
-
-## SEM data test
-```{r SEM test model}
-
-# Training data analyses for indirect effects
-set.seed(1000)
-X <- rnorm(100)
-M <- 0.5*X + rnorm(100)
-Y <- 0.7*M + rnorm(100)
-Data <- data.frame(X = X, Y = Y, M = M)
-model <- ' # direct effect
-           Y ~ c*X
-           # mediator
-           M ~ a*X
-           Y ~ b*M
-           # indirect effect (a*b)
-           ab := a*b
-           # total effect
-           total := c + (a*b)  '
-
-fit_test <- sem(SI_model_test, data=testdf.v29)
-summary(fit_test, fit.measures=TRUE)
-
-```
-
-
-# MODIFICATION INDICES
-
-
-```{r mod_indices}
-
-mi_train <- modindices(fit_train, sort = TRUE, maximum.number = 5)  # might need to use lavTestScore() function
-mi_train
-
-mi_test <- modindices(fit_test, sort = TRUE, maximum.number = 5)
-mi_test
-```
-
-
-
-```{r FAMD}
-res.famd <- FAMD(wine[,c(1,2, 16, 22, 29, 28, 30,31)], graph = FALSE)
- 
- 
- 
 ```
 
 
@@ -3079,6 +2998,3 @@ lavInspect(fit_test, what = "start")
 lavInspect(fit_test, what = "list")
 
 ```
-
-
-```{r parameter_est}
