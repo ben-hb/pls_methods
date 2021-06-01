@@ -2430,6 +2430,8 @@ clm_tsm <- clm(si_type ~ persist + anx_mod + anx_sev + dep_secret + aaq_yn, data
 
 summary(clm_tsm)
 coef(clm_tsm)
+# ci_tsm <- confint(clm_tsm)                 # find CIs
+# exp(cbind(OR = coef(clm_tsm), ci_tsm))     # display odds ratio and CI outputs
 
 ```
 
@@ -2530,6 +2532,14 @@ clm_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_entr
 
 summary(clm_entrap)
 coef(clm_entrap)
+
+model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
+model.entrap 
+
+model.entrap  %>% 
+  mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
 ```
 
 
@@ -2702,6 +2712,14 @@ clm_mm <- clm(si_type ~ inf + flourish + belong1 + belong2 + belong8 + belong9 +
 
 summary(clm_mm)
 coef(clm_mm)
+
+model.mm <- tidy(clm_mm)  # Convert model to dataframe for easy manipulation
+model.mm 
+
+model.mm  %>% 
+  mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_mm)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
 ```
 
 
@@ -2932,14 +2950,14 @@ SI_model_tr <- '# measurement model
                 # structural model - regressions
                   def_sem =~ dia_sem + env_sem + le_sem
                   entrap_sem ~ def_sem + tsm_sem
-                  si_sem =~ def_sem + entrap_sem  
+                  si_sem =~ def_sem + entrap_sem  '
 
-                # residual covariances
-                  dep_impa~~gad7_impa
-                  dx_bi~~meds_mood
-                  meds_count~~dx_dep
-                  meds_count~~meds_mood
-                  assault_phys~~abuse_year   '
+                # # residual covariances
+                #   dep_impa~~gad7_impa
+                #   dx_bi~~meds_mood
+                #   meds_count~~dx_dep
+                #   meds_count~~meds_mood
+                #   assault_phys~~abuse_year   '
 
 # Model estimation
 fit_train <- sem(SI_model_tr, data=traindf.v29)
