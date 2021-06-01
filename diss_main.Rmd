@@ -1550,10 +1550,10 @@ coef(clm_dia)
 model.dia <- tidy(clm_dia)  # Convert model to dataframe for easy manipulation
 model.dia 
 
-model.dia  %>% 
-  mutate(or = exp(estimate),  # Odds ratio/gradient
-         var.diag = diag(vcov(clm_dia)),  # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
+# model.dia  %>% 
+#   mutate(or = exp(estimate),  # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_dia)),  # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
 
 ```
 
@@ -2389,9 +2389,6 @@ table(data.v22$aaq_yn)
 #  for loop for predictive cutoff point needed
 
 
-g
-
-
 ```
 
 ## Achievement
@@ -2481,8 +2478,6 @@ fviz_famd_var(tsm_pca,
 
 eigval_tsm <- get_eigenvalue(tsm_pca)
 eigval_tsm
-
-ggbiplot(tsm_pca, labels=rownames(tsm_pca))
 ```
 
 ## CLM TSM
@@ -2996,7 +2991,7 @@ dim(testdf.v29)
 # SEM ANALYSIS
 
 
-## SEM data train
+## SEM specification
 ```{r SEM}
 traindf.v29 <- NA_preproc(traindf.v29)
 traindf.v29 <- as.data.frame(traindf.v29)
@@ -3029,7 +3024,10 @@ SI_model_tr <- '# measurement model
                 #   meds_count~~dx_dep
                 #   meds_count~~meds_mood
                 #   assault_phys~~abuse_year   '
+```
 
+## Model estimation
+```{r SEM model estimation}
 # Model estimation
 fit_train <- sem(SI_model_tr, data=traindf.v29)
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
@@ -3038,7 +3036,7 @@ list(summary_train$coefficient,
 
 ```
 
-## SEM data test
+## Model prediction
 ```{r SEM test model}
 
 fit_test <- sem(SI_model_test, data=testdf.v29)
@@ -3061,7 +3059,7 @@ theme_economist()
 
 ## SEM Path diagram
 ```{r SEM path diagram}
-cols <- wes_palette(name = "Moonrise2", n = 4, type = "discrete")
+cols <- wes_palette(name = "SI Conceptualization in College Students", n = 4, type = "discrete")
 colorlist <- list(man = cols[2], lat = cols[3])
 
 semPaths(fit_train, what = "col", whatLabels = "std", style = "mx",  
