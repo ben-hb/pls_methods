@@ -60,6 +60,7 @@ library(rpart.plot)
 library(rstatix)
 library(Rtsne)
 library(semPlot)
+library(semTools)
 library(stats)
 library(stringr)
 library(sure)
@@ -1868,7 +1869,6 @@ data.v14 = subset(data.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoColl
 data.v15 <- data.v14  # new dataframe for analysis
 ```
 
-
 ### Environmental correlation
 ```{r}
 # Define environment vars for correlation matrix
@@ -1912,7 +1912,23 @@ results_env <- dummy_cols(data_env, select_columns = c("discrim", "religios", "e
                           remove_first_dummy = TRUE)
 
 env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
+names(env_pca)
+summary(env_pca)
+
+std_dev <- prin_comp$sdev
+
 fviz_screeplot(env_pca, addlabels = TRUE, ylim = c(0, 50))
+
+plot((env_pca), xlab = "Principle Component",
+     ylab = "Cumulative Proportion of Variance Explained",
+     type = "b"
+     )
+plot(cumsum(env_pca), xlab = "Principle Component",
+     ylab = "Cumulative Proportion of Variance Explained",
+     type = "b"
+     )
+
+
 fviz_pca_var(env_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -1923,22 +1939,9 @@ fviz_famd_var(env_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-
 eigval_env <- get_eigenvalue(env_pca)
 eigval_env
 
-
-ggmaplot(eigval_env,
-   fdr = 0.05, fc = 2, size = 0.4,
-   palette = c("#B31B21", "#1465AC", "darkgray"),
-   genenames = as.vector("discrim", "religios", "env_mh", "residenc", "ther_vis",
-                                                       "activ_yn", "divers", "school2_type", "satisfied_overall", "ther_vis", 
-                                                       "talk", "military", "international"),
-   legend = "top", top = 20,
-   font.label = c("bold", 11), label.rectangle = TRUE,
-   font.legend = "bold",
-   font.main = "bold",
-   ggtheme = ggplot2::theme_minimal())
 ```
 
 
@@ -1957,22 +1960,25 @@ results_env2 <- dummy_cols(data_env2, select_columns = c("si_type", "discrim", "
                                                        "activ_yn", "divers", "school2_type", "satisfied_overall", 
                                                        "ther_vis", "talk", "military", "international"),
                           remove_first_dummy = TRUE)
+clm_env <- NA_preproc(results_env2)
+clm_env <- as.data.frame(results_env2)
 
-# t-SNE
-Labels <- results_env2
-results_env2 <- as.factor(results_env2)
+randomForest(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
+                ther_vis + divers + + military + school2_type + residenc + env_mh, data = clm_env)
 
 ## for plotting
 colors = rainbow(length(unique(results_env2)))
 names(colors) = unique(results_env2)
 
+data(results_env2, na.action = na.roughfix)
+
 ## Executing the algorithm on curated data
-tsne <- Rtsne(results_env2, dims = 5, perplexity=30, verbose=TRUE, max_iter=500)
+tsne <- Rtsne(results_env2, dims = 3, perplexity=30, verbose=TRUE, max_iter=500)
 exeTimeTsne<- system.time(Rtsne(results_env2, dims = 2, perplexity=30, verbose=TRUE, max_iter=500))
 
 ## Plotting
 plot(tsne$Y, t='n', main="tsne")
-text(tsne$Y, labels=results_env2$si_type, col=colors[results_env2$si_type])
+text(tsne$Y, labels=results_env2, col=colors[results_env2])
 
 ## Generate the t_SNE plot
 par(mfrow=c(1,2)) # To plot two images side-by-side
@@ -3048,6 +3054,12 @@ dim(testdf.v29)
 # SEM ANALYSIS
 
 
+```{r Multivariate skewness and kurtosis}
+mardiaSkew(results_sem, use = "everything")
+mardiaKurtosis(results_sem, use = "everything")
+```
+
+
 ## SEM specification
 ```{r SEM}
 traindf.v29 <- NA_preproc(traindf.v29)
@@ -3122,6 +3134,7 @@ colorlist <- list(man = cols[2], lat = cols[3])
 semPaths(fit_train, what = "col", whatLabels = "std", style = "mx",  
          color = colorlist, rotation =1 , layout = "spring",  nCharNodes = 7, 
          shapeMan = "rectangle", sizeMan = 8, sizeMan2 = 5)
+
 ```
 
 
@@ -3137,6 +3150,7 @@ resid(fit_train)
 fitMeasures(fit_train, c("cfi","rmsea","srmr"))
 lavInspect(fit_train, what = "start")
 lavInspect(fit_train, what = "list")
+findRMSEApower(rmsea0, rmseaA, fit_train, n, alpha = 0.05, group = 1)
 
 # test
 parameterEstimates(fit_test)
