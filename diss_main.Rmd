@@ -1511,7 +1511,9 @@ results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender_
                                                        "meds_anx", "meds_mood", "meds_sle", "meds_count"), 
                           remove_first_dummy = TRUE)
 
+# factoextra -- https://rpkgs.datanovia.com/factoextra/
 dia_pca <- PCA(results_dia, graph=FALSE)  # apply PCA
+fviz_screeplot(dia_pca, addlabels = TRUE, ylim = c(0, 50))
 fviz_pca_var(dia_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -1522,9 +1524,9 @@ fviz_famd_var(dia_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-
 eigval_dia <- get_eigenvalue(dia_pca)
 eigval_dia
+
 
 ```
 
@@ -1905,6 +1907,7 @@ results_env <- dummy_cols(data_env, select_columns = c("discrim", "religios", "e
                           remove_first_dummy = TRUE)
 
 env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
+fviz_screeplot(env_pca, addlabels = TRUE, ylim = c(0, 50))
 fviz_pca_var(env_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2134,6 +2137,7 @@ le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
 le_pca$eig   # output matrix with eigenvalues
 
 # Visualize PCA, FAMD results
+fviz_screeplot(le_pca, addlabels = TRUE, ylim = c(0, 50))
 fviz_pca_var(le_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2146,16 +2150,6 @@ fviz_famd_var(le_pca,
              )
 eigval_le <- get_eigenvalue(le_pca)
 eigval_le
-
-screeplot(eigval_le, type = "l", npcs = 15, main = "Screeplot of the first 10 PCs")
-abline(h = 1, col="red", lty=5)
-legend("topright", legend=c("Eigenvalue = 1"),
-       col=c("red"), lty=5, cex=0.6)
-
-
-listclass=c("")
-vardep=data.v19$sui_idea
-result<-famdcontour(data=data.v19, results_le, listclass, vardep,title="FAMD Plots",selec=1)
 ```
 
 ## CLM Life event regression
@@ -2309,6 +2303,7 @@ def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
 def_pca$eig   # output matrix with eigenvalues
 
 #Visualize PCA, FAMD results
+fviz_screeplot(def_pca, addlabels = TRUE, ylim = c(0, 50))  # scree plot
 fviz_pca_var(def_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2472,6 +2467,7 @@ results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_mild", "a
 tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
 
 # Visualize PCA, FAMD results
+fviz_screeplot(tsm_pca, addlabels = TRUE, ylim = c(0, 50))
 fviz_pca_var(tsm_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2579,6 +2575,7 @@ entrap_pca <- PCA(results_entrap, graph=FALSE)  # apply PCA
 entrap_pca$eig   # output matrix with eigenvalues
 
 # Visualize PCA, FAMD results
+fviz_screeplot(entrap_pca, addlabels = TRUE, ylim = c(0, 50))
 fviz_pca_var(entrap_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2750,14 +2747,13 @@ data_mm <- data_mm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 data_mm   # check output
-
 results_mm <- dummy_cols(data_mm, select_columns = c("inf", "flourish", "belong1", "belong2", "belong8",
                                                      "belong9", "stig_pcv_2", "stig_pcv_3", "brs_tot"),
                          remove_first_dummy = TRUE)
-
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 
 # Visualize PCA, FAMD
+fviz_screeplot(mm_pca, addlabels = TRUE, ylim = c(0, 50))
 fviz_pca_var(mm_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
