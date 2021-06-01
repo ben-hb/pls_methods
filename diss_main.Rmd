@@ -403,14 +403,14 @@ data.v2 <- data.v1 %>%
                         labels=c("No SI", "passive SI", "active SI", "SA")))
   
 # tabulate and check output
-table(data.v2$si_type, useNA = "always")
+table(data.v2$si_type)
 table(data.v2$sui_idea)
 data.v2 = subset(data.v2, select= -c(suic_plan, sui_plan, suic_att, sui_att)) # clean up vars/columns
 
 # select if SI variable is missing -- then rowwise deletion
 data.v2 <- data.v2 %>%
   filter(!is.na(si_type)) 
-table(data.v2$si_type, useNA = "always") # ensuring that all NAs are now clean
+table(data.v2$si_type) # ensuring that all NAs are now clean
 
 # Define starting sample (n = 51137)
 length(unique(data.v2$responseid))
@@ -542,7 +542,7 @@ data.v3$gender[data.v3$gender_text %in% c("I am me. A human.", "I'm not yet sure
                                           "I don't have one because it's not a legitimate concept.", 
                                           "Gender is a construct which serves no purpose.")] <- "non-answers"
 
-table(data.v3$gender_noncis, useNA = "always")   # check output
+table(data.v3$gender_noncis)   # check output
 
 ```
 
@@ -568,7 +568,7 @@ data.v4 <- data.v3 %>%
                          labels=c("Heterosexual", "Gay", "Lesbian", "Bisexual", "Queer", "Questioning",
                                   "Other", "Non-answers", "Pansexual", "Asexual/Demi")))
 
-table(data.v4$sexual, useNA = "always") # tabulate and check outputs
+table(data.v4$sexual) # tabulate and check outputs
 
 ```
 
@@ -690,7 +690,7 @@ data.v4$sexual[data.v4$sexual_text %in% c("I'm straight but I like girls too sex
                                           "I'm like halfway to bisexual. Never had a crush on another girl but I'm still interested. Idk.",
                                           "No boundaries in place - though probably bisexual")] <- "Bisexual"
 
-table(data.v4$sexual, useNA = "always")   # tabulate and check outputs
+table(data.v4$sexual)   # tabulate and check outputs
 ```
 
 ### 'Sexual' transformed 
@@ -980,7 +980,7 @@ data.v7 <- data.v6 %>%
                               sib_freq == 6 ~ 6)) %>%
   mutate(sib_freq = factor(sib_freq, levels=0:6,
                     labels=c("No SIBs", "1-2 tot", "<1 mo", "2-3x mo", "1-2x wk", "3-5 d/wk", "every")))
-table(data.v7$sib_freq, useNA = "always")  # tabulate and check output
+table(data.v7$sib_freq)  # tabulate and check output
 data.v7 = subset(data.v7, select= -c(sib_none:sib_oth)) # clean up vars/columns
 ```
 
@@ -1087,7 +1087,7 @@ data.v9 <- data.v9 %>%
   filter(!is.na(religios)) %>% 
   mutate(religios = factor(religios, levels=1:5,
                     labels=c("Very Important", "Important", "Neutral", "Unimportant", "Very unimportant")))
-table(data.v9$religios, useNA = "always")       # Check output
+table(data.v9$religios)       # Check output
 ```
 
 ## AUDIT  
@@ -1905,23 +1905,23 @@ data.v16 <- data.v14
 data.v16 <- data.v16 %>% 
   mutate(ins_cover = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 0,
                                (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 1))
-table(data.v16$ins_cover, useNA = "always")   # check output
-#data.v15 = subset(data.v15, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
+table(data.v16$ins_cover)   # check output
+data.v15 = subset(data.v15, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
 ```
 
 ## Illicit drug use
 Creates illicit drug use var (limitation -- 30 days reflection)
 ```{r drug_type}
 ## add summary of each
-table(data.v16$drug_none, useNA="always")
-table(data.v16$drug_mar, useNA="always")  
-table(data.v16$drug_coc, useNA="always")
-table(data.v16$drug_her, useNA="always")  # too small
-table(data.v16$drug_met, useNA="always")  # too small
-table(data.v16$drug_stim, useNA="always")
-table(data.v16$drug_ect, useNA="always")  # too small
-table(data.v16$drug_opi, useNA="always")   # too small
-table(data.v16$drug_other, useNA="always")  # too vague, small
+table(data.v16$drug_none)
+table(data.v16$drug_mar)  
+table(data.v16$drug_coc)
+table(data.v16$drug_her)  # too small
+table(data.v16$drug_met)  # too small
+table(data.v16$drug_stim)
+table(data.v16$drug_ect)  # too small
+table(data.v16$drug_opi)   # too small
+table(data.v16$drug_other)  # too vague, small
 
 # Sample is too small to analyze individual drugs, except for marijuana. Transform to illicit drug y/n
 data.v16 <- data.v16 %>%
@@ -1934,8 +1934,8 @@ data.v16 <- data.v16 %>%
                               drug_opi == 1 ~ 1,
                               drug_other == 1 ~ 1))
 
-table(data.v16$drugs_yn, useNA="always")
-table(data.v16$drug_mar, useNA="always")
+table(data.v16$drugs_yn)
+table(data.v16$drug_mar)
 
 ```
 
@@ -2000,7 +2000,7 @@ data.v18 <- data.v17 %>%
   mutate(binge_fr = as.numeric(binge_fr_f) + as.numeric(binge_fr_m) + as.numeric(binge_fr_o)) %>%
   mutate(binge_fr = as.character(binge_fr))
 
-table(data.v18$binge_fr, useNA = "always") # check output
+table(data.v18$binge_fr) # check output
 data.v18 = subset(data.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)) # clean up var
 
 ```
@@ -2012,14 +2012,14 @@ data.v18 <- data.v18 %>%
   mutate(psyhx = case_when((prov_pes == 1 | prov_inp == 1 | prov_par == 1) ~ 1, 
                            (prov_pes == 0 & prov_inp == 0 & prov_par == 0) ~ 0,
                            ther_ever == 0 ~ 0))
-table(data.v18$psyhx, useNA = "always")   # check output
+table(data.v18$psyhx)   # check output
 data.v18 = subset(data.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up var
 
 ```
 
 ## Current GPA
 ```{r gpa_sr}
- table(data.v18$gpa_sr, useNA = "always")
+ table(data.v18$gpa_sr)
 ```
  
 ```{r LE data analysis}
@@ -2117,7 +2117,7 @@ data.v20 <- data.v18
 
 ## PHQ risk/severity
 ```{r deprawsc}
-table(data.v20$deprawsc, useNA = "always")
+table(data.v20$deprawsc)
 
 data.v20 <- data.v20 %>%
   mutate(dep_none = case_when(deprawsc < 5 ~ 1,
@@ -2132,22 +2132,22 @@ data.v20 <- data.v20 %>%
                              deprawsc < 20 ~ 0))
 
 # Check outputs
-table(data.v20$dep_none, useNA = "always")
-table(data.v20$dep_mild, useNA = "always")
-table(data.v20$dep_mod, useNA = "always")
-table(data.v20$dep_modsev, useNA = "always")
-table(data.v20$dep_sev, useNA = "always")
+table(data.v20$dep_none)
+table(data.v20$dep_mild)
+table(data.v20$dep_mod)
+table(data.v20$dep_modsev)
+table(data.v20$dep_sev)
 
 ```
 
 ## Academic impact
-```{r aca_imp}
-table(data.v20$aca_impa, useNA = "always")
+```{r aca_impa}
+table(data.v20$aca_impa)
 ```
 
 ## Academic failure
 ```{r failed}
-table(data.v20$failed, useNA = "always")
+table(data.v20$failed)
 
 # sample too small in the elective, remove
 data.v20 = subset(data.v20, select= -c(failed)) # clean up var
@@ -2157,7 +2157,7 @@ data.v20 = subset(data.v20, select= -c(failed)) # clean up var
 ## Ashamed
 n= 8916 ** too small
 ```{r men_ill_ash}
-table(data.v20$men_ill_ash, useNA = "always")
+table(data.v20$men_ill_ash)
 
 # sample too small in the elective, remove
 data.v20 = subset(data.v20, select= -c(men_ill_ash)) # clean up var
@@ -2282,7 +2282,7 @@ data.v22 <- data.v20
 
 ## GAD7 total
 ```{r anx_score}
-table(data.v22$anx_score, useNA = "always")
+table(data.v22$anx_score)
 
 data.v22 <- data.v22 %>%
   mutate(anx_none = case_when(anx_score < 6 ~ 1,
@@ -2294,16 +2294,16 @@ data.v22 <- data.v22 %>%
   mutate(anx_sev = case_when(anx_score > 15 ~ 1,
                              anx_score < 16 ~ 0))
 # Check outputs
-table(data.v22$anx_none, useNA = "always")
-table(data.v22$anx_mild, useNA = "always")
-table(data.v22$anx_mod, useNA = "always")
-table(data.v22$anx_sev, useNA = "always")
+table(data.v22$anx_none)
+table(data.v22$anx_mild)
+table(data.v22$anx_mod)
+table(data.v22$anx_sev)
 
 ```
 
 ## Secretive MH
 ```{r dep_secret}
-table(data.v22$dep_secret, useNA = "always")
+table(data.v22$dep_secret)
 ```
 
 ## AAQ total (elective module)
@@ -2314,7 +2314,7 @@ data.v22 <- data.v22 %>%
            as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7)) %>%
   mutate(aaq_yn = case_when(AAQ_tot > 24 ~ 1,
                             AAQ_tot < 25 ~ 0))
-table(data.v22$aaq_yn, useNA = "always")
+table(data.v22$aaq_yn)
 
 #  for loop for predictive cutoff point needed
 
@@ -2324,12 +2324,12 @@ table(data.v22$aaq_yn, useNA = "always")
 ## Achievement
 n = 594  ** too small
 ```{r achieve4}
-table(data.v22$achieve4, useNA = "always")
+table(data.v22$achieve4)
 ```
 
 ## Persist
 ```{r persist}
-table(data.v22$persist, useNA = "always")
+table(data.v22$persist)
 ```
 
 
@@ -2444,17 +2444,17 @@ data.v24 <- data.v22
 
 ## Depression impact
 ```{r dep_impac}
-table(data.v24$dep_impa, useNA = "always")
+table(data.v24$dep_impa)
 ```
 
 ## Anxiety impact
 ```{r gad7_impa}
-table(data.v24$gad7_impa, useNA = "always")
+table(data.v24$gad7_impa)
 ```
 
 ## Current needs
 ```{r perneed_cur}
-table(data.v24$percneed_cur, useNA = "always")
+table(data.v24$percneed_cur)
 ```
 
 ## ENTRAPMENT ANALYSES
@@ -2552,9 +2552,9 @@ table(data.v26$belong9)
 ## Achievement
 ** too small for inclusion in model
 ```{r achieve_1_14_18}
-table(data.v26$achieve1, useNA = "always")
-table(data.v26$achieve14, useNA = "always")
-table(data.v26$achieve18, useNA = "always")
+table(data.v26$achieve1)
+table(data.v26$achieve14)
+table(data.v26$achieve18)
 
 # sample too small in the elective, remove
 data.v22 = subset(data.v22, select= -c(achieve1, achieve14, achieve18)) # clean up var
@@ -2562,7 +2562,7 @@ data.v22 = subset(data.v22, select= -c(achieve1, achieve14, achieve18)) # clean 
 
 ## Flourishing Scale
 ```{r flourish}
-table(data.v26$flourish, useNA = "always")
+table(data.v26$flourish)
 ```
 
 ## Informal Mental Health Support
@@ -2607,7 +2607,7 @@ table(data.v26$brs_tot)
 
 ## Friendship development
 ```{r friend_devel}
-table(data.v26$friend_devel, useNA = "always")
+table(data.v26$friend_devel)
 
 # sample too small in the elective, remove
 data.v26 = subset(data.v26, select= -c(friend_devel)) # clean up var
@@ -2615,12 +2615,12 @@ data.v26 = subset(data.v26, select= -c(friend_devel)) # clean up var
 
 ## Perceived MH as failure
 ```{r stig_pcv_2}
-table(data.v26$stig_pcv_2, useNA = "always")
+table(data.v26$stig_pcv_2)
 ```
 
 ## Perceived MH tx as negative
 ```{r stig_pcv_3}
-table(data.v26$stig_pcv_3, useNA = "always")
+table(data.v26$stig_pcv_3)
 ```
 
 ```{r MM var analyses}
@@ -2636,14 +2636,14 @@ data_mm <- data.v27 %>% select(inf, flourish, belong1, belong2, belong8, belong9
 data <- data_mm
 sig <- 0.6
 
- # convert data to numeric in order to run correlations (i.e., convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA_
+ # convert data to numeric in order to run correlations
 data_mm <- data_mm %>% mutate_if(is.character, as.factor)
 data_mm <-  data_mm %>% mutate_if(is.factor, as.numeric)
 
 # run a correlation and drop the insignificant ones
 corr <- cor(data_mm, use = "pairwise.complete.obs")                               
 corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                                   # drop perfect correlations
+corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
 corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
 corr <- na.omit(corr)                                   #remove the NA values from above 
 corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
@@ -2702,8 +2702,6 @@ clm_mm <- clm(si_type ~ inf + flourish + belong1 + belong2 + belong8 + belong9 +
 
 summary(clm_mm)
 coef(clm_mm)
-vcov(clm_mm)
-
 ```
 
 
@@ -2723,6 +2721,7 @@ var_names <- c(
   "military", "international",
   # life events
   "ins_cover", "gpa_sr", "assault_phys", "binge_fr", "assault_sex", "assault_emo", "psyhx", "fincur", "drugs_yn", "abuse_year",
+  "drug_mar",
   # defeat
   "aca_impa", "dep_mod", "dep_sev",
   # threats to self-moderation
@@ -2853,7 +2852,7 @@ data_sem <- data.v28 %>% select(
   # defeat
   aca_impa, dep_mod, dep_sev,
   # threats to self-moderation
-  persist, anx_mod, anx_sev, dep_secret, AAQ_yn,
+  persist, anx_mod, anx_sev, dep_secret, aaq_yn,
   # entrapment
   dep_impa, gad7_impa, percneed_cur,
   # motivational moderators
@@ -2916,7 +2915,7 @@ traindf.v29 <- as.data.frame(traindf.v29)
 SI_model_tr <- '# measurement model
                   dia_sem =~ age + sexual + gender_noncis + finpast + sib_freq + 
                              race + body_sr + ed_any + audit_tot + dx_dep + dx_bi + 
-                             dx_tr + dx_adhd + dx_pers + meds_sti + meds_dep + 
+                             dx_tr + dx_adhd + dx_pers + meds_sti + meds_dep +
                              meds_anx + meds_mood + meds_sle + meds_count
                   env_sem =~ env_mh + ther_vis + divers + satisfied_overall +
                              residenc + talk + religios + discrim + school2_type + 
@@ -2924,7 +2923,7 @@ SI_model_tr <- '# measurement model
                   le_sem =~  ins_cover + gpa_sr + assault_phys + binge_fr +
                              assault_sex + assault_emo + psyhx + fincur + drugs_yn + abuse_year
                   def_sem =~ aca_impa + dep_mod + dep_sev
-                  tsm_sem =~ persist + anx_mod + anx_sev + dep_secret + AAQ_yn
+                  tsm_sem =~ persist + anx_mod + anx_sev + dep_secret + aaq_yn
                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
                   mm_sem =~  inf + flourish + belong1 + belong2 + belong8 + belong9 + 
                              stig_pcv_2 + stig_pcv_3 + BRS_tot
@@ -2936,12 +2935,10 @@ SI_model_tr <- '# measurement model
                   si_sem =~ def_sem + entrap_sem  
 
                 # residual covariances
-                  dep_imp~~gad7_impa
+                  dep_impa~~gad7_impa
                   dx_bi~~meds_mood
                   meds_count~~dx_dep
-                  meds_count~~dx_mood
-                  meds_count~~dx_anx
-                  meds_count~~dx_sle
+                  meds_count~~meds_mood
                   assault_phys~~abuse_year   '
 
 # Model estimation
