@@ -17,7 +17,6 @@ library(caTools)
 library(clipr)
 library(corrplot)
 library(cowplot)
-library(fastDummies)
 library(effsize)
 library(effectsize)
 library(emulator)
@@ -25,6 +24,7 @@ library(esc)
 library(expss)
 library(FactoMineR)
 library(factoextra)
+library(fastDummies)
 library(finalfit)
 library(haven)
 library(Hmisc)
@@ -63,6 +63,7 @@ library(stringr)
 library(sure)
 library(tidyverse)
 library(validate)
+library(visualpred)
 library(VIM)
 library(writexl)
 
@@ -73,10 +74,11 @@ library(writexl)
 Notes: LEADING VARIABLE FOR SEM SELECTION
 
 Premotivational variables
-  - Diathesis: age, sexual, gender, finpast, sib_freq, race, body_sr, ed_scoff, audit_tot, dx_dep, dx_bi, dx_psy, dx_ea, dx_tr,  wcs_tot
-    dx_sa, dx_adhd, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle, meds_oth, meds_none, meds_count, disab_1, alc_tx
+  - Diathesis: age, sexual, gender, finpast, sib_freq, race, body_sr, ed_scoff, audit_tot, dx_dep, dx_bi, 
+    dx_psy, dx_ea, dx_tr,  wcs_tot, dx_sa, dx_adhd, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx,
+    meds_mood, meds_sle, meds_oth, meds_none, meds_count, disab_1, alc_tx
   - Environment: env_mh, fam_support_aca, ther_vis, divers, satisfied_overall, residenc, talk, activ_yn, religios, discrim
-  - Life Events: ins_cover, gpa_sr, abuse_year, assault_phys, binge_fr, assault_sex, assault_emo, psyhx, isi_tot, fincur, drug_poly,
+  - Life Events: ins_cover, gpa_sr, abuse_year, assault_phys, binge_fr, assault_sex, assault_emo, psyhx, isi_tot, fincur,
     drug_mar, drug_coc, drug_her, drug_met, drug_stim, drug_ect, drug_opi, drug_other, drug_none
 
 Motivational variables
@@ -129,15 +131,16 @@ data.v1 <- data.raw %>%
     phq2_1, phq2_2,
     #  sex abuse/assault:
     ##  type
-    assault_sex_stranger:assault_sex_dontknow, abuse_recent_perpet, sa_exp_touch:sa_exp_pen, sa_suc_phyforc_1, sa_att_phyforc, 
-    sa_drunk_1, sa_suc_phyforc_2_1:sa_suc_phyforc_2_6, sa_suc_phyforc_2_6_text, aca_phys_assault_1:aca_phys_assault_7, 
-    aca_sex_assault_1:aca_sex_assault_7,
+    assault_sex_stranger:assault_sex_dontknow, abuse_recent_perpet, sa_exp_touch:sa_exp_pen, 
+    sa_suc_phyforc_1, sa_att_phyforc, sa_drunk_1, sa_suc_phyforc_2_1:sa_suc_phyforc_2_6, 
+    sa_suc_phyforc_2_6_text, aca_phys_assault_1:aca_phys_assault_7, aca_sex_assault_1:aca_sex_assault_7,
     ##  reporting
     sa_tell_1:sa_tell_12, sa_tell_12_text, sa_nodiscl_1:sa_nodiscl_24, sa_nodiscl_24_text,
     ##  person
     sa_who_1:sa_who_12, sa_who_12_text, sa_who_stud, sa_who_employ, sa_who_gender, sa_who_gender_text,
     ##  location/context
-    sa_loc_on, sa_op_substance_1:sa_op_substance_5, sa_frighten, sa_loc_off, sa_perc_1:sa_perc_12, sa_train_pol, sa_train_prev,
+    sa_loc_on, sa_op_substance_1:sa_op_substance_5, sa_frighten, sa_loc_off, sa_perc_1:sa_perc_12, 
+    sa_train_pol, sa_train_prev,
     #  sleep variables
     sleep_wk1, sleep_wd1, sleep_wk2, sleep_wd2, sleep_np1, sleep_np2,
     #  stress variables
@@ -152,8 +155,8 @@ data.v1 <- data.raw %>%
     ##  trauma
     dx_trauma_1:dx_trauma_4, dx_trauma_4_text, dx_trauma_ptsd:dx_trauma_oth,
     ##  eating disorder
-    dx_ea_1:dx_ea_4_text, ed_thin, weight_ideal, diet, ea_fast, purge_1:purge_4, ed_peer, body_con_change, fresh15, weigh_freq, 
-    weight_ideal_text, dx_ea_an:dx_ea_av,
+    dx_ea_1:dx_ea_4_text, ed_thin, weight_ideal, diet, ea_fast, purge_1:purge_4, ed_peer, 
+    body_con_change, fresh15, weigh_freq, weight_ideal_text, dx_ea_an:dx_ea_av,
     ##  psychosis
     dx_psy_1:dx_psy_8, dx_psy_7_text, dx_psy_sa:dx_psy_sp,
     ##  substance-related
@@ -176,26 +179,31 @@ data.v1 <- data.raw %>%
     #  CCAPS
     CCAPS_1:CCAPS_34,
     #  CCMH:  
-    sib_ccmh_1:suic_ccmh_6, cons_viol_ccmh_number, caus_viol_ccmh_number, exp_har_ccmh_number, exp_trauma_ccmh_number, 
-    cons_viol_ccmh_recent, caus_viol_ccmh_recent, exp_har_ccmh_recent, exp_trauma_ccmh_recent, trauma_ccmh_text, traumevent_ccmh_1, 
-    traumevent_ccmh_2, traumevent_ccmh_3, traumevent_ccmh_4, traumevent_ccmh_5, traumevent_ccmh_6, traumevent_ccmh_7, traumevent_ccmh_8, 
+    sib_ccmh_1:suic_ccmh_6, cons_viol_ccmh_number, caus_viol_ccmh_number, exp_har_ccmh_number, 
+    exp_trauma_ccmh_number, cons_viol_ccmh_recent, caus_viol_ccmh_recent, exp_har_ccmh_recent, 
+    exp_trauma_ccmh_recent, trauma_ccmh_text, traumevent_ccmh_1, traumevent_ccmh_2, traumevent_ccmh_3, 
+    traumevent_ccmh_4, traumevent_ccmh_5, traumevent_ccmh_6, traumevent_ccmh_7, traumevent_ccmh_8, 
     traumevent_ccmh_9, traumevent_ccmh_10, traumevent_ccmh_11, traumevent_ccmh_12, traumevent_ccmh_13, traumevent_ccmh_14, 
     traumevent_ccmh_15, traumevent_ccmh_16, traumevent_ccmh_15_text, binge_fr_ccmh,
     #  HMS-CCMH
-    dep_CCMH_score_temp, dep_CCMH_score, dep_CCMH_elevated, dep_CCMH_mild, dep_CCMH_none, genanx_CCMH_score_temp, genanx_CCMH_score, 
-    genanx_CCMH_elevated, genanx_CCMH_mild, genanx_CCMH_none, socanx_CCMH_score_temp, socanx_CCMH_score, socanx_CCMH_elevated, 
-    socanx_CCMH_mild, socanx_CCMH_none, eatconcerns_CCMH_score_temp, eatconcerns_CCMH_score, eatconcerns_CCMH_elevated, 
-    eatconcerns_CCMH_mild, eatconcerns_CCMH_none, dep_or_anx_CCMH, sib_ccmh_11:sib_ccmh_15, sib_ccmh_lifetime_any, sib_ccmh_pastyear,
+    dep_CCMH_score_temp, dep_CCMH_score, dep_CCMH_elevated, dep_CCMH_mild, dep_CCMH_none, genanx_CCMH_score_temp,
+    genanx_CCMH_score, genanx_CCMH_elevated, genanx_CCMH_mild, genanx_CCMH_none, socanx_CCMH_score_temp, 
+    socanx_CCMH_score, socanx_CCMH_elevated, socanx_CCMH_mild, socanx_CCMH_none, eatconcerns_CCMH_score_temp,
+    eatconcerns_CCMH_score, eatconcerns_CCMH_elevated, eatconcerns_CCMH_mild, eatconcerns_CCMH_none, dep_or_anx_CCMH,
+    sib_ccmh_11:sib_ccmh_15, sib_ccmh_lifetime_any, sib_ccmh_pastyear,
     #  Qnum:  
-    Q2_11, Q2_12, Q3_8, Q3_9, Q3_10_2, Q3_10_1, Q3_11_1, Q3_12_1:Q3_12_5, Q2_10_152:Q2_10_155, Q4_21_11, Q9_19, Q9_20,
+    Q2_11, Q2_12, Q3_8, Q3_9, Q3_10_2, Q3_10_1, Q3_11_1, Q3_12_1:Q3_12_5, Q2_10_152:Q2_10_155, Q4_21_11, 
+    Q9_19, Q9_20,
     #  health knowledge: 
-    know_sp, dep_tx_know_1:dep_tx_know_4, dep_sx_know_1:dep_sx_know_4, anx_help_know_1:anx_help_know_4, ea_sx_know_1:ea_sx_know_6,
+    know_sp, dep_tx_know_1:dep_tx_know_4, dep_sx_know_1:dep_sx_know_4, anx_help_know_1:anx_help_know_4,
+    ea_sx_know_1:ea_sx_know_6,
     #  therapy-related
-    why_tx_1:why_tx_9_text, ther_lifetime, ther_lifetime2, ther_any, talk1_any, talk1_8_text, ther_any2, knowwher1:knowwher6, 
-    bar_any:bar_plan, ther_help_me1:ther_help_me4, meds_help_me1:meds_help_me4, talksup1:talksup4, talk2pro:talk2noo,
+    why_tx_1:why_tx_9_text, ther_lifetime, ther_lifetime2, ther_any, talk1_any, talk1_8_text, ther_any2, 
+    knowwher1:knowwher6, bar_any:bar_plan, ther_help_me1:ther_help_me4, meds_help_me1:meds_help_me4, 
+    talksup1:talksup4, talk2pro:talk2noo,
     #  school climate
-    cli_disab:cli_sh_oth_TEXT, excl_env:exp_community, val_faculty:excl_pers_oth, group_TEXT:group_active, friend_re:friend_religid, 
-    social_re:social_religid, re_find:time_activ,
+    cli_disab:cli_sh_oth_TEXT, excl_env:exp_community, val_faculty:excl_pers_oth, group_TEXT:group_active,
+    friend_re:friend_religid, social_re:social_religid, re_find:time_activ,
     #  SAT-related
     sat_hours_1, sat_loc_1, sat_qual_1, sat_priv_1, sat_sched_1, sat_hours_2, sat_loc_2, sat_qual_2, sat_priv_2, sat_sched_2, 
     sat_hours_3, sat_loc_3, sat_qual_3, sat_priv_3, sat_sched_3, sat_hours_4, sat_loc_4, sat_qual_4, sat_priv_4, sat_sched_4, 
@@ -212,25 +220,28 @@ data.v1 <- data.raw %>%
     peer_alc_1, peer_alc_3, peer_alc_4, peer_mar_est, peer_alc_est, peer_cig_est, inf_7_text, risk_cig:risk_presc,
     #  pregnancy-related
     sex_partner, sex_partner_f, sex_partner_m, sex_partner_t, sex_30, sex_30_oral, sex_30_vag, sex_30_anal, 
-    birthcontrol_1:birthcontrol_12, birthcontrol_10_text, birthcontrol_always, preg_no, preg_yes_u,preg_yes_in, preg_dk, preg_cur,
+    birthcontrol_1:birthcontrol_12, birthcontrol_10_text, birthcontrol_always, preg_no, preg_yes_u,preg_yes_in, 
+    preg_dk, preg_cur,
     #  medication details
     meds_reason_1:meds_reason_5, meds_reason_5_text, meds_dis, meds_w_1:meds_w_5, meds_w_3_text, meds_cur_1:meds_cur_9, 
     meds_cur_7_text, meds_time_1:meds_time_7, med_help, meds_helped_me, meds_w_g:meds_di5,
     #  campus or community
-    heard, camp_supp, outreach_aware, gk_1, gk_2, gkt_any, txfrf, cli_look, cli_resp_fr, 
+    heard, camp_supp, outreach_aware, gk_1, gk_2, gkt_any, txfrf, cli_look, cli_resp_fr, timestud_1:timestud_7,
     cli_resp_cl, cli_free, st_promote, admin_listen, env_body, safe_on_day, safe_on_night, safe_off_day, 
-    safe_off_night, choose_sch, persist_challenge_1:persist_challenge_11, persist_challenge_11_text, highestdeg, highestdeg_text,
-    doubt_school_1, doubt_school_2, prof_support_aca, different_maj, late_assign, sleep_class, aca_support_serv, office_hrs, faculty_out,
-    advisor_interact, gradstud_interact, time_manage, grade_curv, timestud_1:timestud_7,
+    safe_off_night, choose_sch, persist_challenge_1:persist_challenge_11, persist_challenge_11_text, highestdeg,
+    highestdeg_text, doubt_school_1, doubt_school_2, prof_support_aca, different_maj, late_assign, sleep_class,
+    aca_support_serv, office_hrs, faculty_out, advisor_interact, gradstud_interact, time_manage, grade_curv,
     #  up/bystanding:
-    inter_hy_dr, inter_hy_sa, inter_hy_hl, inter_y_1:inter_y_7, inter_y_6_text, inter_help, inter_n_1:inter_n_7, inter_n_6_text, 
-    inter_n_why_1:inter_n_why_9, inter_n_why_9_text, witness_1:witness_7, witness_6_text, inf_any:inf_oth,
+    inter_hy_dr, inter_hy_sa, inter_hy_hl, inter_y_1:inter_y_7, inter_y_6_text, inter_help, inter_n_1:inter_n_7, 
+    inter_n_6_text, inter_n_why_1:inter_n_why_9, inter_n_why_9_text, witness_1:witness_7, witness_6_text, 
+    inf_any:inf_oth,
     #  hypothetical:
     ther_help, talk2_1:talk2_7, talk2_7_text, talksup, percneed1:percneed_cur6, stig_t_I:stig_t_I6,
     #  misc:  
-    bar_hs_1:bar_ns_8_text, smok_freq, sib_other_text, activ_other_text, knowwher_temp, exerc_changed, exerc_changed_how, 
-    exerc_changed_how_text, height_ft, height_in, wgt_lbs, prov_A, prov_B, prov_C,  prov_loc, prov_olo, prov_oth, prov_dk, adjust_aca_1, 
-    adjust_aca_2, aca_imp1:aca_imp4, s_c_1_1:s_c_5_6, s_n_1_1:s_n_5_6))
+    bar_hs_1:bar_ns_8_text, smok_freq, sib_other_text, activ_other_text, knowwher_temp, exerc_changed, 
+    exerc_changed_how, exerc_changed_how_text, height_ft, height_in, wgt_lbs, prov_A, prov_B, prov_C,  
+    prov_loc, prov_olo, prov_oth, prov_dk, adjust_aca_1, adjust_aca_2, aca_imp1:aca_imp4, s_c_1_1:s_c_5_6, 
+    s_n_1_1:s_n_5_6))
 ```
 
 # Call functions
@@ -376,6 +387,18 @@ corr_simple <- function(data=corr_vars,sig=0.5){
   corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 }
 
+
+
+
+# get or see fx
+get.or.se <- function(model) {
+  broom::tidy(model) %>%
+    mutate(or = exp(estimate),
+           var.diag = diag(vcov(model)),
+           or.se = sqrt(or^2 * var.diag)) %>%
+    select(or.se) %>% unlist %>% unname
+}
+
 ```
 
 
@@ -505,28 +528,28 @@ data.v3$gender[str_detect(data.v3$gender_text, "[I|i]dk")] <- 1
 data.v3$gender[str_detect(data.v3$gender_text, "Hermaphrodite")] <- 1
 data.v3$gender[str_detect(data.v3$gender_text, "Questioning")] <- 1
 data.v3$gender[str_detect(data.v3$gender_text, "Undecided")] <- 1
-data.v3$gender[data.v3$gender_text %in% c("Literally no clue as of late", "Kynigender", "Adrogynous", "Hermaphrodite", "idk yet", 
-                                          "Questioning", "Questioning; female", "Still questioning", "not female/questioning", 
-                                          "Questioning (unsure)", "Girl ? Idk", "not sure", "Not Sure???", "Not sure", 
-                                          "I don't know, still trying to purse it out", "Undecided")] <- 1
+data.v3$gender[data.v3$gender_text %in% c("Literally no clue as of late", "Kynigender", "Adrogynous", "Hermaphrodite", 
+                                          "idk yet", "Questioning", "Questioning; female", "Still questioning", "Not sure",
+                                          "not female/questioning", "Questioning (unsure)", "Girl ? Idk", "not sure", 
+                                          "Not Sure???", "I don't know, still trying to purse it out", "Undecided")] <- 1
 
   # non-answers jokesters
 data.v3$gender[str_detect(data.v3$gender_text, "[H|h]elicopter")] <- "non-answers"
 data.v3$gender[str_detect(data.v3$gender_text, "[C|c]hinook")] <- "non-answers" 
 data.v3$gender[str_detect(data.v3$gender_text, "[A|a]pache")] <- "non-answers"
 data.v3$gender[str_detect(data.v3$gender_text, "[U|u]nicorn")] <- "non-answers"
-data.v3$gender[data.v3$gender_text %in% c("Albino stingray", "Karate Chop Action", "Flying Spaghetti Monster", "Pio Nono", "God", 
-                                          "None", "Baseball bat", "Mountain lion", "Oil Platform", "Chair", "M1A1 Main Battle Tank",
+data.v3$gender[data.v3$gender_text %in% c("Albino stingray", "Karate Chop Action", "Flying Spaghetti Monster", "Pio Nono",
+                                          "God", "None", "Baseball bat", "Mountain lion", "Oil Platform", "Chair", "Pizza", 
+                                          "M1A1 Main Battle Tank", "Deppressed", "Fire hydrant/hockey puck", "Microwave",
                                           "This doesn't matter and you're an idiot for thinking it does.","REZZBIAN",
                                           "Baguette", "fairy", "a 5 year old girl", "tree", "unicorn", "His Majesty", 
                                           "Call of Duty: Modern Warfare 2", "Attack hellcopter", "Meme God", "AH-64D", 
                                           "Stainless Steel Toaster", "God himself", "baseball bat", "Mountain","Trans Former", 
                                           "Potato", "I will literally give you $100 to h*ck off", "Indian tape worm", 
-                                          "Metallic Hyper-Entity", "2X4 treated lumber", "pizza", "sPecIaL SNowFlAkE", "Deppressed",
-                                          "eh", "George Michael", "Metaknight Main", "Microwave", "Pizza", "Sea turtle", 
-                                          "1941 Nihon Giagun Yamato-Class Battleship", "penguin wearing a sombrero and sunglasses", 
-                                          "Fire hydrant/hockey puck", "Attack Hellicopter", "The Senate", 
-                                          "I identify as a fruit cup")] <- "non-answers"
+                                          "Metallic Hyper-Entity", "2X4 treated lumber", "pizza", "sPecIaL SNowFlAkE", 
+                                          "eh", "George Michael", "Metaknight Main", "Sea turtle", "I identify as a fruit cup",
+                                          "The Senate", "1941 Nihon Giagun Yamato-Class Battleship", "Attack Hellicopter", 
+                                          "penguin wearing a sombrero and sunglasses")] <- "non-answers"
 
   # non-answers, decline to answer
 data.v3$gender[str_detect(data.v3$gender_text, "[D|d]ecline")] <- "non-answers"
@@ -580,11 +603,12 @@ table(data.v4$sexual) # tabulate and check outputs
 data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]elicopter")] <- "Non-answers"
 data.v4$sexual[data.v4$sexual_text %in% c("Yes", "i identify as a lamp", "I only like baseballs", "helisexual", "Autosexual",
                                           "now", "Miguel Garcia", "toasteroven", "must have gills", "Potsexual", "Bobcats",
-                                          "Tailpipes turn me on", "Tyrannosaurus rex", "Traps are not gay", "Toaster sexual", 
-                                          "Crooked", "Pantsexual", "FREE", "Frozen Foods", "Giraffe", "I'm sexually attracted to fire",
-                                          "Attracted to other self-identifying flying spaghetti monsters", "sPecIaL SNowFlAkE", 
-                                          "Demiqueer quasiflux asexual foxkin", "Attracted to Vehicles", "Elitistual. I'm into elitists",
-                                          "I sleep around. Also into bestiality",  "Sexually attracted to kitchen appliances",
+                                          "Tailpipes turn me on", "Tyrannosaurus rex", "Traps are not gay", "Toaster sexual",
+                                          "Crooked", "Pantsexual", "FREE", "Frozen Foods", "Giraffe", 
+                                          "I'm sexually attracted to fire",  "Attracted to Vehicles", "sPecIaL SNowFlAkE",
+                                          "Attracted to other self-identifying flying spaghetti monsters",  
+                                          "Demiqueer quasiflux asexual foxkin", "I sleep around. Also into bestiality",  
+                                          "Sexually attracted to kitchen appliances", "Elitistual. I'm into elitists",
                                           "sexually attracted to fictional characters and men twice my age")] <- "Non-answers"
   ## declined to answer
   data.v4$sexual[str_detect(data.v4$sexual_text, "identi[t|f]y")] <- "Non-answers"
@@ -599,38 +623,43 @@ data.v4$sexual[data.v4$sexual_text %in% c("Yes", "i identify as a lamp", "I only
   data.v4$sexual[str_detect(data.v4$sexual_text, "[U|u]nknown")]  <- "Non-answers"
   data.v4$sexual[str_detect(data.v4$sexual_text, "[N|n]/[A|a]")]  <- "Non-answers"
   data.v4$sexual[str_detect(data.v4$sexual_text, "[I|i] like")]  <- "Non-answers"
-  data.v4$sexual[data.v4$sexual_text %in% c("dating a trans male", "Attracted to personalities, not genders", "non", "irrelevant",
-                                            "i like people", "Fuck sexuality", "personality based", "Don't think about it too much",
-                                            "Anyone that I like", "leave me alone", "define", "This is more bullshit", "No", "Me",
-                                            "I am who I am", "Just there", "Don't care", "no label", "No Label", "No labels",
-                                            "Questions like this are the reason we are even having this debate.", "i like who i like", 
-                                            "prefer not", "I do not understand why this is necessary", "Just there", "non", "Normal",
-                                            "Human Being", "It doesn't matter my question is why is this an actual question", 
-                                            "I hate this PC bs", "FUCK YOU BIG TIME", "No", "Me", "human being", "Closeted at home", 
-                                            "Polyamorous", "Sexuality shouldn't matter", "No preference", "i like boys.", 
-                                            "gay leaning bi", "other", "Prefer not to specify", "i fall in love with a human being",
-                                            "everyone's a little gay", "I prefer men, but have had women before", "Traps are not gay",
-                                            "Unknown", "#love", "Whatever I feel like at the time", "Situational",  "No one right now", 
-                                            "sometimes i dabble", "People", "Prefer not", "I am", "Whatever Happens", "Crooked", 
-                                            "love is love", "Open", "Autistic", "Human", "No one right now", "Situational", "I don't",
-                                            "The universe conscious of itself", "Aromantic", "Not dealing with men or women at the moment",
-                                            "Repressed", "?", "Undefined", "Never had sex", "None?", "neutral", "not sure", "Not sure",
-                                            "no sexual orientation", "No idea, but I'm not straight", "Unlabeled", "Curious",  
-                                            "Anyone that I like", "Disinterested", "Do not define", "Fake Gay", "irrelevant", "People", 
-                                            "No preference", "love is love", "no particular sexual identity", "there is no such thing", 
+  data.v4$sexual[data.v4$sexual_text %in% c("dating a trans male", "Attracted to personalities, not genders", "non",
+                                            "irrelevant", "i like people", "Fuck sexuality", "personality based", 
+                                            "Don't think about it too much", "Anyone that I like", "leave me alone",
+                                            "define", "This is more bullshit", "No", "Me", "I am who I am", "Just there",
+                                            "Don't care", "no label", "No Label", "No labels", "No", "Me",
+                                            "Questions like this are the reason we are even having this debate.", 
+                                            "i like who i like", "prefer not", "I do not understand why this is necessary",
+                                            "Just there", "non", "Normal", "Human Being", "human being", "Closeted at home", 
+                                            "It doesn't matter my question is why is this an actual question", 
+                                            "I hate this PC bs", "FUCK YOU BIG TIME", "Polyamorous", "gay leaning bi",
+                                            "Sexuality shouldn't matter", "No preference", "i like boys.", 
+                                            "other", "Prefer not to specify", "i fall in love with a human being",
+                                            "everyone's a little gay", "I prefer men, but have had women before", 
+                                            "Traps are not gay", "Unknown", "#love", "Whatever I feel like at the time",
+                                            "Situational",  "No one right now", "sometimes i dabble", "People", "Prefer not",
+                                            "I am", "Whatever Happens", "Crooked", "love is love", "Open", "Autistic",
+                                            "Human", "No one right now", "Situational", "I don't", "?", "Undefined", 
+                                            "The universe conscious of itself", "Aromantic", "Repressed", "Never had sex",
+                                            "Not dealing with men or women at the moment", "not sure", "Not sure",
+                                            "None?", "neutral",  "no sexual orientation", "No idea, but I'm not straight",
+                                            "Unlabeled", "Curious", "Anyone that I like", "Disinterested", "Do not define",
+                                            "Fake Gay", "irrelevant", "People", "no particular sexual identity", 
+                                            "No preference", "love is love", "there is no such thing", 
                                             "Sometimes gender doesn't matter and I don't have time to learn about these things life gets too busy",
                                             "Prefer not to answer", "just sexual (need no prefix!)", "It's complicated", 
-                                            "Sexuality shouldn't matter", "I'm just me and I love who I love. I don't like these labels.",
+                                            "Sexuality shouldn't matter", 
+                                            "I'm just me and I love who I love. I don't like these labels.",
                                             "I'm not a fucking part of lgbtqrstuxyz bullshit association")]  <- "Non-answers"
   
     # identifying queer  individuals:
 data.v4$sexual[str_detect(data.v4$sexual_text, "[Q|q]ueer")] <- "Queer"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[F|f]luid")] <- "Queer"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[O|o]pen")] <- "Queer"
-data.v4$sexual[data.v4$sexual_text %in% c("potentially interested", "somewhere between", "homoflexible", "heteroflexible", "fluid",
-                                          "Only other trans people", "non-binary", "so I guess I could check queer", 
-                                          "Only other trans people", "Androsexual", "Not straight", "Polysexual", "Joto",
-                                          "Attracted to masculinity and androgony", "Androsexual", "Non-binary", "nonbinary")] <- "Queer"
+data.v4$sexual[data.v4$sexual_text %in% c("potentially interested", "somewhere between", "homoflexible", "heteroflexible",
+                                          "fluid", "Only other trans people", "non-binary", "so I guess I could check queer",
+                                          "Androsexual", "Not straight", "Polysexual", "Joto", "Non-binary", "nonbinary",
+                                          "Attracted to masculinity and androgony", "Androsexual")] <- "Queer"
 
   # identifying questioning
 data.v4$sexual[str_detect(data.v4$sexual_text, "[Q|q]uestion")] <- "Questioning"
@@ -657,21 +686,21 @@ data.v4$sexual[str_detect(data.v4$sexual_text, "[A|a]sex")] <- "Asexual/Demi"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[C|c]elibate")] <- "Asexual/Demi"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[A|a]ce")] <- "Asexual/Demi"
 data.v4$sexual[data.v4$sexual_text %in% c("Mostly asexual", "Most likely asexual", "Masexual", "Tridium Vykon Jace 8000", 
-                                          "Demi-romantic", "asexual lesbian", "Ase", "Bi-demisexual",  "Hetroromantic Asexual",
-                                          "Demiqueer quasiflux asexual foxkin", "DemiAsexual", "a-sexual", "no sexual attraction", 
-                                          "Gay-ish, I am Demi-sexual which means I don't pay attention to sex/gender", "a sexual",
-                                          "Pan-Quoiromantic Asexual", "demiromantic asexual", "Homoromantic Demisexual",
+                                          "Demi-romantic", "asexual lesbian", "Ase", "Bi-demisexual", "A sexual",
+                                          "Hetroromantic Asexual", "Demiqueer quasiflux asexual foxkin", "DemiAsexual",
+                                          "a-sexual", "no sexual attraction", "a sexual", "Homoromantic Demisexual",
+                                          "Gay-ish, I am Demi-sexual which means I don't pay attention to sex/gender", 
                                           "experience no sexual attraction but do experience a small amount of romantic attraction", 
-                                          "lithromantic", "A sexual")] <- "Asexual/Demi"
+                                          "lithromantic", "Pan-Quoiromantic Asexual", "demiromantic asexual")] <- "Asexual/Demi"
 
   # identifying heterosexual individuals
 data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]etero")] <- "Heterosexual"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[S|s]traight")] <- "Heterosexual"
 data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]etrosex")] <- "Heterosexual"
 data.v4$sexual[data.v4$sexual_text %in% c("Kinsey scale 1", "I would put myself as a 1-1.5 on the kinsey scale", "Staight", 
-                                          "Stragiht", "strait", "Str8!!!!", "Changing from gay to heterosexual", "Gynophilic",
-                                          "Into females", "I fuck bitches.", "1 on the Kinsey Scale", "Gynophilic", "gynosexual",
-                                          "Changing from gay to heterosexual", "100% Hetro")] <- "Heterosexual"
+                                          "Stragiht", "strait", "Str8!!!!", "Changing from gay to heterosexual",
+                                          "Gynophilic", "Into females", "I fuck bitches.", "1 on the Kinsey Scale",
+                                          "Gynophilic", "gynosexual", "Changing from gay to heterosexual", "100% Hetro")] <- "Heterosexual"
 
   # identified as gay or lesbian
 data.v4$sexual[str_detect(data.v4$sexual_text, "[G|g]ay")] <- "Gay"
@@ -709,7 +738,8 @@ data.v5 <- data.v4 %>%
     sexual == "Other" ~ 4,                                                      # other
     sexual == "Non-answers" ~ 6)) %>%                                           # non-answers
   mutate(sexual = factor(sexual, levels=1:6,
-                       labels=c("Heterosexual", "Gay/Lesbian", "Bisexual", "Queer/non-binary", "Questioning", "Non-answers")))
+                       labels=c("Heterosexual", "Gay/Lesbian", "Bisexual", "Queer/non-binary", 
+                                "Questioning", "Non-answers")))
 table(data.v5$sexual) # tabulate and check outputs
 
 ```
@@ -774,20 +804,21 @@ data.v6$race[str_detect(data.v6$race_other_text, "[N|n]one")] <- "Non-answers"
 data.v6$race[str_detect(data.v6$race_other_text, "[P|p]erson")] <- "Non-answers"
 data.v6$race[data.v6$race_other_text %in% c("prefer not to say", "Prefer not to answer.", "Prefer not to specify", 
                                             "Prefer not to answer :)", "FUCK YOU", "Caramel American", "Why", "irrelevant",
-                                            "Prefer not to state", "Prefer no to say", "Race is a problematic social construct",
-                                            "Transcendent", "Texan", "Race is a socual construct", "Race/ethnicity should not matter",
-                                            "why is this a thing", "Brown", "No thx", "White passing, ethnically other",
+                                            "Prefer not to state", "Prefer no to say", "Brown", "No thx", "Texan", 
+                                            "Race is a problematic social construct", "Race is a socual construct", 
+                                            "Transcendent", "Race/ethnicity should not matter", "Prefer not to answer", 
+                                            "why is this a thing", "White passing, ethnically other", "unfortunately", 
                                             "While I understand the socio-economic conditions that surround race, race also is a construct which serves no purpose.",
-                                            "Wakanda Forever", "unfortunately", "Prefer not to answer", 
-                                            "whatever I can use to be a victim in the given situation", 
+                                            "Wakanda Forever", "whatever I can use to be a victim in the given situation", 
                                             "We need to get rid of these color things",  "Me", "I do Not identify racially", 
                                             "Why is there always a race question? Can't we all just be one race? The Human Race.",  
                                             "Will not disclose",  "Race/ethnicity should not matter", "N/a", "N/A", 
-                                            "There is only one human race: Homo sapien", "don't know due to uncertainity of lineage",
+                                            "There is only one human race: Homo sapien", "Citizen of the World",
+                                            "don't know due to uncertainity of lineage", "I choose not to answer",
                                             "This doesn't matter and you're an idiot for thinking it does.",  
-                                            "POC because now my opinion will matter in the US", "I choose not to answer",
+                                            "POC because now my opinion will matter in the US", 
                                             "Color doesn't mean anything right? Why do so many surveys ask it",
-                                            "Citizen of the World", "My skin is lighter than others, and darker than some", 
+                                             "My skin is lighter than others, and darker than some", 
                                             "I am not a racial identifying person. I am American. My DNA says something about Korean heritage.",
                                              "I do not identify as a race in order to promote social equality for all races",
                                             "I don't think race is all that important.", 
@@ -798,9 +829,9 @@ data.v6$race[data.v6$race_other_text %in% c("prefer not to say", "Prefer not to 
   # Jokesters
 data.v6$race[data.v6$race_other_text %in% c("Volvo", "Vulcan", "Snowman", "tree", "General Electric", "Cat", "Earthling", 
                                             "I have rainbow skin.", "jedi", "Light skinned potato", "I'm stainless steel.", 
-                                            "7-foot tall Chinese woman", "A little tan.", "Apache helicopter", "Aptenodytes", 
-                                            "Wood", "moon man", "Black hawk", "Aviation Heritage", "Ewok", "Desert Camoflauge",
-                                            "Aptenodytes", "Attack helicopter", "Ethnic Kekistani")] <- "Non-answers"
+                                            "7-foot tall Chinese woman", "A little tan.", "Apache helicopter", "Aptenodytes",
+                                            "Wood", "moon man", "Black hawk", "Aviation Heritage", "Ewok", "Aptenodytes",
+                                            "Desert Camoflauge",  "Attack helicopter", "Ethnic Kekistani")] <- "Non-answers"
 
   # white
 data.v6$race[str_detect(data.v6$race_other_text, "[J|j]ew")] <- "White"  # if Israeli, could be White, Asian, or ME (e.g. Palestine)
@@ -853,8 +884,8 @@ data.v6$race[str_detect(data.v6$race_other_text, "[P|p]unjabi")] <- "Asian"
 data.v6$race[str_detect(data.v6$race_other_text, "[S|s]iberia")] <- "Asian"
 data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndonesia")] <- "Asian"
 data.v6$race[str_detect(data.v6$race_other_text, "[W|w]est [I|i]ndian")] <- "Asian"
-data.v6$race[data.v6$race_other_text %in% c("Sri Lankan", "Sri-Lankan", "third culture kid, born and raised in asia until 18yo",
-                                            "Central Asian", "Malays", "Chinese Ethinicy-Nuosu", "Austronesian", 
+data.v6$race[data.v6$race_other_text %in% c("Sri Lankan", "Sri-Lankan", "Malays", "Chinese Ethinicy-Nuosu", "Austronesian",
+                                            "third culture kid, born and raised in asia until 18yo", "Central Asian",  
                                             "Indian, UAE native", "Indian/Subcontinental", "Indians arent on the list.....", 
                                             "American Texan of Indian (South asia) Descent", "Okinawan", "Asian/Chinese",
                                             "Japanese American and Native Hawaiian Culture", "Asian. International.", 
@@ -919,28 +950,32 @@ data.v6$race[str_detect(data.v6$race_other_text, "[O|o]ther")] <- "Other/Mixed"
 data.v6$race[str_detect(data.v6$race_other_text, "[U|u]nkown")] <- "Other/Mixed"
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]mbiguous")] <- "Other/Mixed"
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]mbiguous")] <- "Other/Mixed"
-data.v6$race[data.v6$race_other_text %in% c("Sub Asian/East African", "two or more races", "Moroccan Mexican", "Transracial", "Adopted",
-                                             "Part Thetan", "Taiwanese-Greek-Cypriot American", "East Indian, Caribbean", "50/50",
-                                            "Korean Ecuadorian", "Brazilian, Luso, Native American", "Central American/ Caribbean", 
-                                            "Mut (more than 3)",  "mexican,filipino, italian", "Middle Eastern, Filipino and Spanish",
-                                            "Indo-Portugesse (Fijian/Portugesse) Canadian Born", "White and American Indian (Choctaw)",
-                                            "White, black, Native American", "White, Black, and Hispanic", "French Lebanese", 
-                                            "Lebanese, German, French", "Asian/Indian", "Black Hispanic", "Black/Asian", 
-                                            "An American Mutt- a bit of everything somewhere in there", "Black and native", 
-                                            "Black/cuban",  "East Indian, Caribbean", "Filipino and Portuguese", "mixed race",
-                                            "Eastern Indian/white", "white middle eastern", "Transracial", "Portuguese/Thai", 
-                                            "German, Chinese, Arabic, Melanesian", "Hispanic and Middle Eastern", "mulatto", 
-                                            "mixed & south american", "Multiple", "international", "Mixed Race", 
-                                            "Biracial", "Multiracial", "Mixed", "Korean Ecuadorian", "Central American/ Caribbean",
+data.v6$race[data.v6$race_other_text %in% c("Sub Asian/East African", "two or more races", "Moroccan Mexican",
+                                            "Transracial", "Adopted", "Part Thetan", "Taiwanese-Greek-Cypriot American",
+                                            "East Indian, Caribbean", "50/50", "Korean Ecuadorian", "Brazilian, Luso,
+                                            Native American", "Central American/ Caribbean", "Asian/Indian",
+                                            "Mut (more than 3)",  "mexican,filipino, italian", "Black Hispanic",
+                                            "Middle Eastern, Filipino and Spanish",  "East Indian, Caribbean",
+                                            "Indo-Portugesse (Fijian/Portugesse) Canadian Born", "Multiple",
+                                            "White and American Indian (Choctaw)", "White, Black, and Hispanic",
+                                            "White, black, Native American",  "French Lebanese", "Mixed Race", 
+                                            "Lebanese, German, French", "Black/Asian", "Mixed", "Portuguese/Thai", 
+                                            "An American Mutt- a bit of everything somewhere in there", 
+                                            "Black and native", "Black/cuban",  "Filipino and Portuguese", "mixed race",
+                                            "Eastern Indian/white", "white middle eastern", "Transracial",
+                                            "German, Chinese, Arabic, Melanesian", "Hispanic and Middle Eastern",
+                                            "mulatto", "mixed & south american",  "international", "Biracial",
+                                            "Multiracial",  "Korean Ecuadorian", "Central American/ Caribbean",
                                             "An American Mutt- a bit of everything somewhere in there")] <- "Other/Mixed" 
   # Identifies as black and white as 'Other/Mixed'
 data.v6$race[data.v6$race_other_text %in% c("Black/White","White/African American", "White/African American")] <- "Other/Mixed"
   # Identifies as Asian and White as 'Other/Mixed'
 data.v6$race[str_detect(data.v6$race_other_text, "[E|e]urasian")] <- "Other/Mixed"
-data.v6$race[data.v6$race_other_text %in% c("Japanese, Chinese, French, British, Greek", "Asian/White", "Asian/European", 
-                                            "Asian and White", "asian and white",  "White (Caucasian) and Indian (S. Asia)", 
+data.v6$race[data.v6$race_other_text %in% c("Japanese, Chinese, French, British, Greek", "Asian/White",
+                                            "Asian/European", "Asian and White", "asian and white",  
+                                            "White (Caucasian) and Indian (S. Asia)", "Chinese/White",
                                             "American/Asian African/American White", "3/4 White, 1/4 Japanese", 
-                                            "White & Asian",  "Chinese and White", "Chinese/White")] <- "Other/Mixed"
+                                            "White & Asian", "Chinese and White")] <- "Other/Mixed"
   # Identifies as Hispanic and White as 'Other/Mixed'
 data.v6$race[data.v6$race_other_text %in% c("I am 1/4th Hispanic 3/4 German",  "Honduran, Irish", "White hispanic",
                                             "White, and Hispanic", "Hispanic/Jewish", "White and Hispanic", "White Hispanic",
@@ -1213,13 +1248,14 @@ data.v11 <- data.v11 %>%
       data.v11$meds_dep[str_detect(data.v11$meds_7_text, "[R|r][e|i]meron")] <- 1
       data.v11$meds_dep[str_detect(data.v11$meds_7_text, "[T|t]raz[a|o|i]done")] <- 1
       data.v11$meds_dep[str_detect(data.v11$meds_7_text, "[N|n]ortriptyline")] <- 1
-      data.v11$meds_dep[data.v11$meds_7_text %in% c("CYMBALTA", "Cymbolta", "Lexipro", "Lexxapro", "Sertaline", "remiron",
-                                                    "Mirtazepene", "bupropin", "Lexapro, Wellbutrin", "Lexapro and Paxil", "Fuoxetine", 
-                                                    "Forgot the name, anti depressant for anxiety, daily med", "Duluxotine", 
-                                                    "Atomoxitine (nonstimulant ADHD)", "Fluvoximine (luvox)", "Anafranil", 
-                                                    "amatryptaline for migraines", "amnitryptaline", 
-                                                    "Buproprion (may or may not count as a psychostim?)", "amatryptaline for migraines",
-                                                    "Minipress")] <- 1
+      data.v11$meds_dep[data.v11$meds_7_text %in% c("CYMBALTA", "Cymbolta", "Lexipro", "Lexxapro", "Sertaline",
+                                                    "remiron", "Mirtazepene", "bupropin", "Lexapro, Wellbutrin",
+                                                    "Lexapro and Paxil", "Fuoxetine", "Duluxotine", 
+                                                    "Forgot the name, anti depressant for anxiety, daily med", 
+                                                    "Atomoxitine (nonstimulant ADHD)", "Fluvoximine (luvox)",
+                                                    "Anafranil", "amatryptaline for migraines", "amnitryptaline", 
+                                                    "Buproprion (may or may not count as a psychostim?)", 
+                                                    "amatryptaline for migraines", "Minipress")] <- 1
       
 # Create antipsychotic
 data.v11 <- data.v11 %>%
@@ -1322,16 +1358,19 @@ data.v11 <- data.v11 %>%
       data.v11$meds_oth[str_detect(data.v11$meds_7_text, "[O|o]xycodone")] <- 1
       data.v11$meds_oth[str_detect(data.v11$meds_7_text, "[C|c]annabic")] <- 1
       data.v11$meds_oth[str_detect(data.v11$meds_7_text, "[B|b]eta")] <- 1
-      data.v11$meds_oth[data.v11$meds_7_text %in% c("Canabis", "Vistiril", "Vistral", "Thyroxine", "The Reefer", "Topimitrate",
-                                                    "topiramate", "Estradiol, Spironactone", "muscle relaxants to help me sleep",
-                                                    "Sumatriptan for migraines", "Ondansetron" ,"Psilocybin Mushrooms", "clonodine",
-                                                    "Muscle Relaxers", "anti-siezure medication", "Codeine", "Androgen Blockers",
-                                                    "Anti-seizure to control racing thoughts", "Anti seizure",
-                                                    "Buprenorphine (Suboxone) for opiate dependence", "Hydroxine", "Hydroxcyzine",
-                                                    "Alyacen", "Mirapex", "hypothyroid medication", "Epilepsy drugs", "Birth control",
-                                                    "Methadone", "Vimpat", "Contrave", "Benztropine", "Intuniv", "Medicinal marijuana",
-                                                    "Pantaloc, for psychogenic vomiting", "medicinal Cannabis",
-                                                    "Testosterone Enanthate", "testosterone", "Cannabis", "Medical marijuana")] <- 1
+      data.v11$meds_oth[data.v11$meds_7_text %in% c("Canabis", "Vistiril", "Vistral", "Thyroxine", "The Reefer",
+                                                    "Topimitrate", "topiramate", "Estradiol, Spironactone", 
+                                                    "muscle relaxants to help me sleep", "Ondansetron" ,
+                                                    "Sumatriptan for migraines", "Psilocybin Mushrooms", "clonodine",
+                                                    "Muscle Relaxers", "anti-siezure medication", "Codeine", 
+                                                    "Androgen Blockers", "Anti-seizure to control racing thoughts",
+                                                    "Anti seizure", "Buprenorphine (Suboxone) for opiate dependence",
+                                                    "Hydroxine", "Hydroxcyzine", "Alyacen", "Mirapex", 
+                                                    "hypothyroid medication", "Epilepsy drugs", "Birth control",
+                                                    "Methadone", "Vimpat", "Contrave", "Benztropine", "Intuniv",
+                                                    "Medicinal marijuana", "Pantaloc, for psychogenic vomiting",
+                                                    "medicinal Cannabis", "Testosterone Enanthate", "testosterone",
+                                                    "Cannabis", "Medical marijuana")] <- 1
       
 # Create a group for students who do not take any psychotropic meds
 data.v11 <- data.v11 %>%
@@ -1433,7 +1472,7 @@ corr_simple <- function(data=data_dia, sig=0.6){
   data_dia <-  data_dia %>% mutate_if(is.factor, as.numeric)
   # run a correlation and drop the insignificant ones
   corr <- cor(data_dia, use = "pairwise.complete.obs")                               
-  corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
+  corr[lower.tri(corr,diag=TRUE)] <- NA                   # prep to drop duplicates and correlations of 1    
   corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
   corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
   corr <- na.omit(corr)                                   # remove the NA values from above 
@@ -1466,10 +1505,10 @@ data_dia <- data_dia %>%
   data.matrix()
 data_dia   # check output
 
-results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender_noncis", "finpast", "sib_freq", "race",
-                                                       "body_sr", "dx_dep", "dx_bi", "dx_adhd", "dx_tr",
-                                                       "ed_any", "dx_pers", "meds_dep","meds_anx", "meds_mood",
-                                                       "meds_sle", "meds_count"), 
+results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender_noncis", "finpast", 
+                                                       "sib_freq", "race", "body_sr", "dx_dep", "dx_bi",
+                                                       "dx_adhd", "dx_tr", "ed_any", "dx_pers", "meds_dep",
+                                                       "meds_anx", "meds_mood", "meds_sle", "meds_count"), 
                           remove_first_dummy = TRUE)
 
 dia_pca <- PCA(results_dia, graph=FALSE)  # apply PCA
@@ -1492,9 +1531,9 @@ eigval_dia
 ### CLM diathesis regression
 ```{r clm_dia}
 
-clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
-                                dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, meds_dep, ed_any,
-                                meds_anx, meds_mood, meds_sle, meds_count)
+clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib_freq, race, 
+                               body_sr, dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, meds_dep, ed_any,
+                               meds_anx, meds_mood, meds_sle, meds_count)
 
 clm_dia <- NA_preproc(clm_dia)
 clm_dia <- as.data.frame(clm_dia)
@@ -1506,12 +1545,20 @@ coef(clm_dia)
 
 ## NOT WORKING: race + meds_dep + ed_any + meds_anx + meds_mood + meds_sle + dx_pers + dx_tr
 
+model.dia <- tidy(clm_dia)  # Convert model to dataframe for easy manipulation
+model.dia 
+
+model.dia  %>% 
+  mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_dia)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
+
 ```
 
 
 # ENVIRONMENT VARIABLES
-Candidate variables: res_status, military, activ_yn, residenc, discrim, env_mh, ther_vis, school2, medtherc, medther, talk, 
-religios, residenc, satisfied_overall, firstgen
+Candidate variables: res_status, military, activ_yn, residenc, discrim, env_mh, 
+ther_vis, school2, medtherc, medther, talk, religios, residenc, satisfied_overall, firstgen
 
 
 ```{r Env frame}
@@ -1573,11 +1620,11 @@ data.v14$talk1_8[is.na(data.v14$talk1_8)] <- 0
 # change talk_ var to numeric
 data.v14 <- data.v14 %>% 
   # aggregate all talk vars under 3 'talk' categories -- none, informal help, formal help, formal+informal help
-  mutate(talk = case_when(((talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) &                      # combined
+  mutate(talk = case_when(((talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) &      # combined
                              (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1)) ~ 4,
-                          (talk1_9 == 1 | talk1no == 1) ~ 1,                                                  # no support
-                          (talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) ~ 2,                    # formal support
-                          (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1) ~ 3)) %>%               # informal support
+                          (talk1_9 == 1 | talk1no == 1) ~ 1,                                  # no support
+                          (talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) ~ 2,    # formal support
+                          (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1) ~ 3)) %>%    # informal support
     mutate(talk = factor(talk, levels=1:4,
                                labels=c("No support", "Formal", "Informal", "Combined")))
 table(data.v14$talk)  # check output
@@ -1649,11 +1696,13 @@ data.v14$activ_rel <- as.numeric(data.v14$activ_rel)
 data.v14$activ_art <- as.numeric(data.v14$activ_art)
 data.v14$activ_other <- as.numeric(data.v14$activ_other)
 
-# Create one activity variable (dichotomous) based on involment in campus activities (org, sports, etc) or not involved
+# Create one activity variable (dichotomous) based on involment in campus activities
 data.v14 <- data.v14 %>% 
   mutate(activ_yn = case_when(activ_none == 1 ~ 0,
-                              (activ_ac == 1 | activ_athc == 1 | activ_athv == 1 | activ_athi == 1 | activ_cs == 1 | activ_cu |
-                              activ_da == 1 | activ_fs == 1 | activ_gs == 1 | activ_gov == 1 | activ_mp == 1 | activ_md == 1 |
+                              (activ_ac == 1 | activ_athc == 1 | activ_athv == 1 | activ_athi == 1 | 
+                                 activ_cs == 1 | activ_cu |
+                              activ_da == 1 | activ_fs == 1 | activ_gs == 1 | activ_gov == 1 | 
+                                activ_mp == 1 | activ_md == 1 |
                               activ_rel == 1 | activ_soc == 1 | activ_art == 1 | activ_other == 1) ~ 1))
 
 table(data.v14$activ_yn)     # tabulate and check output
@@ -1764,13 +1813,13 @@ data.v14 <- data.v14 %>%
                                ifelse(var_OaklandCC + var_OklahomaCityCC + var_PaloAltoCollege + var_RedlandsCC == 0, FALSE, NA))) %>%
     
   # Art, design, culinary
-    mutate(school2_ad = ifelse(var_AlbertaCAD + var_CIA + var_ColumbusCAD + var_MDInstituteCollegeArt + var_MassArt +
-                                 var_MinnesotaCAD + var_NHInstituteArt + var_Pratt + var_Ringling + var_SAIC + 
-                                 var_UNCSchoolArt + var_Watkins == 1, TRUE, 
+    mutate(school2_ad = ifelse(var_AlbertaCAD + var_CIA + var_ColumbusCAD + var_MDInstituteCollegeArt + 
+                                 var_MassArt + var_MinnesotaCAD + var_NHInstituteArt + var_Pratt + var_Ringling +
+                                 var_SAIC + var_UNCSchoolArt + var_Watkins == 1, TRUE, 
                                ifelse(
-                                 var_AlbertaCAD + var_CIA + var_ColumbusCAD + var_MDInstituteCollegeArt + var_MassArt +
-                                   var_MinnesotaCAD + var_NHInstituteArt + var_Pratt + var_Ringling + var_SAIC +
-                                   var_UNCSchoolArt + var_Watkins == 0, FALSE, NA)))
+                                 var_AlbertaCAD + var_CIA + var_ColumbusCAD + var_MDInstituteCollegeArt +
+                                   var_MassArt + var_MinnesotaCAD + var_NHInstituteArt + var_Pratt + 
+                                   var_Ringling + var_SAIC + var_UNCSchoolArt + var_Watkins == 0, FALSE, NA)))
 
 # Binary variable for school type
 table(data.v14$school2_4yr)
@@ -1788,18 +1837,21 @@ table(data.v14$school2_type)
       
 
 # Clean-up school2 var
-data.v14 = subset(data.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain, var_Delaware,
-                                       var_DetroitMercy, var_Emerson, var_GeorgeMason, var_GeorgiaTech, var_Kalamazoo,
-                                       var_Kansas, var_Merrimack, var_MichiganState, var_MontclairState, var_NevadaReno,
+data.v14 = subset(data.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain,
+                                       var_Delaware, var_DetroitMercy, var_Emerson, var_GeorgeMason,
+                                       var_GeorgiaTech, var_Kalamazoo, var_Kansas, var_Merrimack, 
+                                       var_MichiganState, var_MontclairState, var_NevadaReno,
                                        var_PennCollegeTech, var_RhodeIsland, var_Rollins, var_Sewanee, var_Smith,
-                                       var_SouthernNazarene, var_SouthwesternOklahomaState, var_StJohns, var_StMarys,
-                                       var_StRose, var_TrumanState, var_TuftsHealthSciences, var_TuftsMainCampus, var_UChicago,
-                                       var_UFlorida, var_UMDearborn, var_UMich, var_UTKnoxville, 
-                                       var_UniversityofSouthernCalifornia, var_Utah, var_VATech, var_VirginiaCommonwealth,
-                                       var_WakeForest, var_WestVirginia, var_WesternCarolina, var_WesternMichigan,
-                                       var_WesternWA, var_Xavier, var_OaklandCC, var_OklahomaCityCC, var_PaloAltoCollege,
-                                       var_RedlandsCC, var_AlbertaCAD, var_CIA, var_ColumbusCAD, var_MDInstituteCollegeArt,
-                                       var_MassArt, var_MinnesotaCAD, var_NHInstituteArt, var_Pratt, var_Ringling, var_SAIC,
+                                       var_SouthernNazarene, var_SouthwesternOklahomaState, var_StJohns,
+                                       var_StMarys, var_StRose, var_TrumanState, var_TuftsHealthSciences,
+                                       var_TuftsMainCampus, var_UChicago, var_UFlorida, var_UMDearborn, var_UMich,
+                                       var_UTKnoxville, var_UniversityofSouthernCalifornia, var_Utah, var_VATech,
+                                       var_VirginiaCommonwealth, var_WakeForest, var_WestVirginia,
+                                       var_WesternCarolina, var_WesternMichigan, var_WesternWA, var_Xavier,
+                                       var_OaklandCC, var_OklahomaCityCC, var_PaloAltoCollege,
+                                       var_RedlandsCC, var_AlbertaCAD, var_CIA, var_ColumbusCAD, 
+                                       var_MDInstituteCollegeArt, var_MassArt, var_MinnesotaCAD, 
+                                       var_NHInstituteArt, var_Pratt, var_Ringling, var_SAIC,
                                        var_UNCSchoolArt, var_Watkins))
 
 ```
@@ -1813,8 +1865,8 @@ data.v15 <- data.v14  # new dataframe for analysis
 ### Environmental correlation
 ```{r}
 # Define environment vars for correlation matrix
-data_env <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type,
-                                satisfied_overall, ther_vis, talk, military, international)
+data_env <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
+                                school2_type, satisfied_overall, ther_vis, talk, military, international)
 
  # Convert data to numeric in order to run correlations
 data_env <- data_env %>% mutate_if(is.character, as.factor)
@@ -1870,11 +1922,12 @@ eigval_env
 ```
 
 ### CLM environmental regression
-Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
+Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + 
+school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
 ```{r CLM environment}
 
-clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, school2_type, 
-                   satisfied_overall, ther_vis, talk, military, international)
+clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, 
+                               divers, school2_type, satisfied_overall, ther_vis, talk, military, international)
 
 clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
@@ -1882,11 +1935,16 @@ clm_env <- as.data.frame(clm_env)
 clm_env <- clm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
                 ther_vis + divers + + military + school2_type + residenc + env_mh, data = clm_env)
 summary(clm_env)
-
+coef(clm_env)
 #  NOT WORKING: + religios ... need to figure out why
 
-coef(clm_env)
+model.env <- tidy(clm_env)                 # Convert model to dataframe for easy manipulation
+model.env 
 
+model.env  %>% 
+  mutate(or = exp(estimate),               # Odds ratio/gradient
+         var.diag = diag(vcov(clm_env)),   # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))    # Odds-ratio adjusted 
 ```
 
 
@@ -2055,8 +2113,8 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 ## EFA LE
 ```{r le_pca}
-data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, drug_mar,
-                               binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
+data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys,
+                               drug_mar, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
 
 # create corr matrix, with dummy vars
 data_le <- data_le %>% 
@@ -2065,9 +2123,11 @@ data_le <- data_le %>%
   data.matrix()
 data_le   # check output
 
-results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", "gpa_sr", "aca_impa", "drug_mar",
-                                                     "fincur", "assault_phys", "binge_fr", "assault_sex", 
-                                                     "assault_emo", "deprawsc", "psyhx", "drugs_yn"),
+results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", "gpa_sr",
+                                                     "aca_impa", "drug_mar", "fincur",
+                                                     "assault_phys", "binge_fr", "assault_sex", 
+                                                     "assault_emo", "deprawsc", "psyhx",
+                                                     "drugs_yn"),
                          remove_first_dummy = TRUE)
 
 le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
@@ -2087,23 +2147,40 @@ fviz_famd_var(le_pca,
 eigval_le <- get_eigenvalue(le_pca)
 eigval_le
 
+screeplot(eigval_le, type = "l", npcs = 15, main = "Screeplot of the first 10 PCs")
+abline(h = 1, col="red", lty=5)
+legend("topright", legend=c("Eigenvalue = 1"),
+       col=c("red"), lty=5, cex=0.6)
+
+
+listclass=c("")
+vardep=data.v19$sui_idea
+result<-famdcontour(data=data.v19, results_le, listclass, vardep,title="FAMD Plots",selec=1)
 ```
 
 ## CLM Life event regression
 ```{r clm_LE}
 
-clm_le <- data.v19 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, drug_mar,
-                              binge_fr, assault_sex, assault_emo, psyhx, drugs_yn)
+clm_le <- data.v19 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur,
+                              assault_phys, drug_mar, binge_fr, assault_sex, assault_emo, 
+                              psyhx, drugs_yn)
 
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
 
-clm_le <- clm(si_type ~ ins_cover + abuse_year + gpa_sr + aca_impa + fincur + assault_phys + binge_fr + drug_mar +
-               assault_sex + assault_emo + + psyhx + drugs_yn, data = clm_le)
+clm_le <- clm(si_type ~ ins_cover + abuse_year + gpa_sr + aca_impa + fincur + assault_phys + 
+                binge_fr + drug_mar + assault_sex + assault_emo + + psyhx + drugs_yn, 
+              data = clm_le)
 summary(clm_le)
 coef(clm_le)
 
+model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
+model.le 
 
+model.le  %>% 
+  mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
 ```
 
 
@@ -2260,14 +2337,13 @@ summary(clm_def)
 coef(clm_def)
 vcov(clm_def)
 
-# # Find p-values, CI, OR
-# ctable_def <- coef(summary(clm_def))
-# p <- pnorm(abs(ctable_def[, "t value"]), lower.tail = FALSE) * 2    # p-value computation
-# ctable_def <- cbind(ctable_def, "p value" = p)
-# ctable_def                                                          # display p-value
-# ci_def <- confint(clm_def)                           # find CIs
-# exp(cbind(OR = coef(clm_def), ci_def))     # display odds ratio and CI outputs
+model.def <- tidy(clm_def)  # Convert model to dataframe for easy manipulation
+model.def 
 
+model.def  %>% 
+  mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_def)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
 
 ```
 
@@ -2298,7 +2374,6 @@ table(data.v22$anx_none)
 table(data.v22$anx_mild)
 table(data.v22$anx_mod)
 table(data.v22$anx_sev)
-
 ```
 
 ## Secretive MH
@@ -2317,6 +2392,9 @@ data.v22 <- data.v22 %>%
 table(data.v22$aaq_yn)
 
 #  for loop for predictive cutoff point needed
+
+
+g
 
 
 ```
@@ -2357,10 +2435,6 @@ corr <- na.omit(corr)                                   #remove the NA values fr
 corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
 print(corr)
   
-#turn corr back into matrix in order to plot with corrplot
-mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-  
 # Re-run corr with non-overlapping vars
 data_tsm <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, aaq_yn)
 
@@ -2376,11 +2450,6 @@ corr <- as.data.frame(as.table(corr))                   #turn into a 3-column ta
 corr <- na.omit(corr)                                   #remove the NA values from above 
 corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
 print(corr)
-  
-#turn corr back into matrix in order to plot with corrplot
-mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-
 ```
 
 ##EFA TSM
@@ -2417,6 +2486,7 @@ fviz_famd_var(tsm_pca,
 eigval_tsm <- get_eigenvalue(tsm_pca)
 eigval_tsm
 
+ggbiplot(tsm_pca, labels=rownames(tsm_pca))
 ```
 
 ## CLM TSM
@@ -2430,9 +2500,14 @@ clm_tsm <- clm(si_type ~ persist + anx_mod + anx_sev + dep_secret + aaq_yn, data
 
 summary(clm_tsm)
 coef(clm_tsm)
-# ci_tsm <- confint(clm_tsm)                 # find CIs
-# exp(cbind(OR = coef(clm_tsm), ci_tsm))     # display odds ratio and CI outputs
 
+model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
+model.tsm 
+
+model.tsm  %>% 
+  mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
 ```
 
 
@@ -2961,7 +3036,9 @@ SI_model_tr <- '# measurement model
 
 # Model estimation
 fit_train <- sem(SI_model_tr, data=traindf.v29)
-summary(fit_train, fit.measures=TRUE, standardized = TRUE)
+summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
+list(summary_train$coefficient, 
+      round(1-(summary_train$deviance/summary_train$null.deviance), 2))
 
 ```
 
@@ -2969,7 +3046,20 @@ summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 ```{r SEM test model}
 
 fit_test <- sem(SI_model_test, data=testdf.v29)
-summary(fit_test, fit.measures=TRUE)
+summary_test <- summary(fit_test, fit.measures=TRUE)
+list(summary_test$coefficient, 
+      round(1-(summary_test$deviance/summary_test$null.deviance), 2))
+
+# model prediction
+fit_train$prediction <- predict(SI_model_test, newdata = traindf.v29, type = "response" )
+fit_test$prediction  <- predict(SI_model_test, newdata = testdf.v29 , type = "response" )
+
+# distribution of the prediction score grouped by outcome
+ggplot(traindf.v29, aes( prediction, color = as.factor(left) ) ) + 
+geom_density( size = 1 ) +
+ggtitle( "Training Set's Predicted Score" ) + 
+scale_color_economist( name = "data", labels = c( "negative", "positive" ) ) + 
+theme_economist()
 
 ```
 
