@@ -26,6 +26,7 @@ library(FactoMineR)
 library(factoextra)
 library(fastDummies)
 library(finalfit)
+library(ggpubr)
 library(haven)
 library(Hmisc)
 library(ISLR)
@@ -57,6 +58,7 @@ library(rococo)
 library(rpart)
 library(rpart.plot)
 library(rstatix)
+library(Rtsne)
 library(semPlot)
 library(stats)
 library(stringr)
@@ -1527,6 +1529,9 @@ fviz_famd_var(dia_pca,
 eigval_dia <- get_eigenvalue(dia_pca)
 eigval_dia
 
+options(ggrepel.max.overlaps = Inf)
+
+ggmaplot(dia_pca, main = expression("WT vs DBR"), fdr = 0.05, fc = 2, size = 0.4, palette = c("#B31B21", "#1465AC", "darkgray"), genenames = as.vector(dia_pca$MiRTS), legend = "top", top = 20, font.label = c("bold", 11), label.rectangle = TRUE, font.legend = "bold", font.main = "bold", ggtheme = ggplot2::theme_minimal())
 
 ```
 
@@ -1540,21 +1545,21 @@ clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib
 clm_dia <- NA_preproc(clm_dia)
 clm_dia <- as.data.frame(clm_dia)
 
-clm_dia <- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr +
-                       dx_dep + dx_bi + dx_adhd + meds_count, data = clm_dia)
+clm_dia <- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr +
+                         race + meds_dep + ed_any + meds_anx + meds_mood + meds_sle + dx_pers +
+                         dx_dep + dx_bi + dx_adhd + meds_count, data = clm_dia)
 summary(clm_dia)
 coef(clm_dia)
 
-## NOT WORKING: race + meds_dep + ed_any + meds_anx + meds_mood + meds_sle + dx_pers + dx_tr
+## NOT WORKING: 
 
 model.dia <- tidy(clm_dia)  # Convert model to dataframe for easy manipulation
 model.dia 
 
-# model.dia  %>% 
-#   mutate(or = exp(estimate),  # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_dia)),  # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
-
+model.dia  %>%
+  mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_dia)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -1902,8 +1907,8 @@ data_env <- data_env %>%
 
 # PCA map with eigenvalues
 results_env <- dummy_cols(data_env, select_columns = c("discrim", "religios", "env_mh", "residenc", "ther_vis",
-                                                       "activ_yn", "divers", "school2_type", "satisfied_overall", "ther_vis", 
-                                                       "talk", "military", "international"),
+                                                       "activ_yn", "divers", "school2_type", "satisfied_overall", 
+                                                       "ther_vis", "talk", "military", "international"),
                           remove_first_dummy = TRUE)
 
 env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
@@ -1922,6 +1927,57 @@ fviz_famd_var(env_pca,
 eigval_env <- get_eigenvalue(env_pca)
 eigval_env
 
+
+ggmaplot(eigval_env,
+   fdr = 0.05, fc = 2, size = 0.4,
+   palette = c("#B31B21", "#1465AC", "darkgray"),
+   genenames = as.vector("discrim", "religios", "env_mh", "residenc", "ther_vis",
+                                                       "activ_yn", "divers", "school2_type", "satisfied_overall", "ther_vis", 
+                                                       "talk", "military", "international"),
+   legend = "top", top = 20,
+   font.label = c("bold", 11), label.rectangle = TRUE,
+   font.legend = "bold",
+   font.main = "bold",
+   ggtheme = ggplot2::theme_minimal())
+```
+
+
+```{r T-SNE ENV}
+data_env2 <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
+                                school2_type, satisfied_overall, ther_vis, talk, military, international)
+
+# create corr matrix, with dummy vars
+data_env2 <- data_env2 %>% 
+  mutate_if(is.numeric, as.factor) %>% 
+  dummy_cols(remove_first_dummy = TRUE) %>% 
+  data.matrix()
+
+# PCA map with eigenvalues
+results_env2 <- dummy_cols(data_env2, select_columns = c("si_type", "discrim", "religios", "env_mh", "residenc", "ther_vis",
+                                                       "activ_yn", "divers", "school2_type", "satisfied_overall", 
+                                                       "ther_vis", "talk", "military", "international"),
+                          remove_first_dummy = TRUE)
+
+# t-SNE
+Labels <- results_env2
+results_env2 <- as.factor(results_env2)
+
+## for plotting
+colors = rainbow(length(unique(results_env2)))
+names(colors) = unique(results_env2)
+
+## Executing the algorithm on curated data
+tsne <- Rtsne(results_env2, dims = 5, perplexity=30, verbose=TRUE, max_iter=500)
+exeTimeTsne<- system.time(Rtsne(results_env2, dims = 2, perplexity=30, verbose=TRUE, max_iter=500))
+
+## Plotting
+plot(tsne$Y, t='n', main="tsne")
+text(tsne$Y, labels=results_env2$si_type, col=colors[results_env2$si_type])
+
+## Generate the t_SNE plot
+par(mfrow=c(1,2)) # To plot two images side-by-side
+plot(tsne_results$Y, col = "blue", pch = 19, cex = 1.5) # Plotting the first image
+plot(tsne_results$Y, col = "black", bg= IR_species, pch = 21, cex = 1.5)
 ```
 
 ### CLM environmental regression
@@ -1948,6 +2004,7 @@ model.env  %>%
   mutate(or = exp(estimate),               # Odds ratio/gradient
          var.diag = diag(vcov(clm_env)),   # Variance of each coefficient
          or.se = sqrt(or^2 * var.diag))    # Odds-ratio adjusted 
+
 ```
 
 
