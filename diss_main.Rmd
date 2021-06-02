@@ -1914,21 +1914,25 @@ results_env <- dummy_cols(data_env, select_columns = c("discrim", "religios", "e
 env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
 names(env_pca)
 summary(env_pca)
-
-std_dev <- prin_comp$sdev
-
-fviz_screeplot(env_pca, addlabels = TRUE, ylim = c(0, 50))
-
-plot((env_pca), xlab = "Principle Component",
-     ylab = "Cumulative Proportion of Variance Explained",
-     type = "b"
-     )
-plot(cumsum(env_pca), xlab = "Principle Component",
-     ylab = "Cumulative Proportion of Variance Explained",
-     type = "b"
-     )
+eigval_env <- get_eigenvalue(env_pca)
+eigval_env
 
 
+
+# fviz_screeplot(env_pca, addlabels = TRUE, ylim = c(0, 50))
+# plot((env_pca), xlab = "Principle Component",
+#      ylab = "Cumulative Proportion of Variance Explained",
+#      type = "b"
+#      )
+# plot(cumsum(env_pca), xlab = "Principle Component",
+#      ylab = "Cumulative Proportion of Variance Explained",
+#      type = "b"
+#      )
+
+fviz_contrib(env_pca, choice = "var", axes = 1, top = 10)
+fviz_contrib(env_pca, choice = "var", axes = 2, top = 10)
+fviz_contrib(env_pca, choice = "var", axes = 3, top = 10)
+fviz_contrib(env_pca, choice = "var", axes = 4, top = 10)
 fviz_pca_var(env_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -1939,9 +1943,18 @@ fviz_famd_var(env_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-eigval_env <- get_eigenvalue(env_pca)
-eigval_env
 
+
+# Compute hierarchical clustering and cut into 4 clusters
+res <- hcut(data_env, k = 4, stand = TRUE)
+
+# Visualize
+fviz_dend(res, rect = TRUE, cex = 0.5,
+          k_colors = c("#00AFBB","#2E9FDF", "#E7B800", "#FC4E07"))
+
+# Optimal number of clusters for k-means
+my_data <- scale(data_env)
+fviz_nbclust(my_data, kmeans, method = "gap_stat")
 ```
 
 
@@ -1960,15 +1973,12 @@ results_env2 <- dummy_cols(data_env2, select_columns = c("si_type", "discrim", "
                                                        "activ_yn", "divers", "school2_type", "satisfied_overall", 
                                                        "ther_vis", "talk", "military", "international"),
                           remove_first_dummy = TRUE)
-clm_env <- NA_preproc(results_env2)
-clm_env <- as.data.frame(results_env2)
-
-randomForest(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
-                ther_vis + divers + + military + school2_type + residenc + env_mh, data = clm_env)
+clm_env <- randomForest(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
+                ther_vis + divers +  military + school2_type + residenc + env_mh, data = results_env2)
 
 ## for plotting
-colors = rainbow(length(unique(results_env2)))
-names(colors) = unique(results_env2)
+colors = rainbow(length(unique(clm_env)))
+names(colors) = unique(clm_env)
 
 data(results_env2, na.action = na.roughfix)
 
