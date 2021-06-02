@@ -65,6 +65,7 @@ library(stats)
 library(stringr)
 library(sure)
 library(tidyverse)
+library(tsne)
 library(validate)
 library(visualpred)
 library(VIM)
@@ -1436,7 +1437,7 @@ data.v12 <- data.v11 # create new dataframe for summary stats. Will jump to v13 
 data_dia <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, ed_scoff, body_sr,
                                 dx_dep, dx_any, dx_bi, dx_adhd, dx_ea, dx_tr, meds_count, ed_any,
                                 dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
-                                meds_none, )
+                                meds_none)
 
 # Corr_simple function
 corr_simple <- function(data=data_dia, sig=0.6){
@@ -1546,7 +1547,13 @@ clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib
                                meds_anx, meds_mood, meds_sle, meds_count)
 
 clm_dia <- NA_preproc(clm_dia)
+
 clm_dia <- as.data.frame(clm_dia)
+
+diagnostic <- clm_dia %>% 
+  summarize(
+    anx_count = sum(!is.na(meds_anx))
+  )
 
 clm_mod<- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr +
                          race + meds_dep + ed_any + meds_anx + meds_mood + meds_sle + dx_pers +
@@ -1554,15 +1561,14 @@ clm_mod<- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body
 summary(clm_mod)
 coef(clm_mod)
 
-## NOT WORKING:
-
-model.dia <- tidy(clm_mod)  # Convert model to dataframe for easy manipulation
-model.dia
-
-model.dia  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-        var.diag = diag(vcov(clm_mod)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# model.dia <- tidy(clm_mod)  # Convert model to dataframe for easy manipulation
+# model.dia
+# 
+# model.dia$var.diag <- diag(vcov(clm_mod))
+# model.dia  %>%
+#    mutate(or = exp(estimate),  # Odds ratio/gradient
+#         # var.diag = diag(vcov(clm_mod)),  # Variance of each coefficient
+#           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -1968,41 +1974,27 @@ fviz_contrib(env_pca, choice = "var", axes = 4, top = 20)
 
 
 ```{r T-SNE ENV}
-data_env2 <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
-                                school2_type, satisfied_overall, ther_vis, talk, military, international)
-
-# create corr matrix, with dummy vars
-data_env2 <- data_env2 %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
-  data.matrix()
-
 # PCA map with eigenvalues
-results_env2 <- dummy_cols(data_env2, select_columns = c("si_type", "discrim", "religios", "env_mh", "residenc", "ther_vis",
+results_env2 <- dummy_cols(data.v15, select_columns = c("si_type", "discrim", "religios", "env_mh", "residenc", "ther_vis",
                                                        "activ_yn", "divers", "school2_type", "satisfied_overall", 
                                                        "ther_vis", "talk", "military", "international"),
                           remove_first_dummy = TRUE)
-# clm_env <- randomForest(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
-#                 ther_vis + divers +  military + school2_type + residenc + env_mh, data = results_env2)
 
-# ## for plotting
-# colors = rainbow(length(unique(clm_env)))
-# names(colors) = unique(clm_env)
-# 
-# data(results_env2, na.action = na.roughfix)
-# 
-# ## Executing the algorithm on curated data
-# tsne <- Rtsne(results_env2, dims = 3, perplexity=30, verbose=TRUE, max_iter=500)
-# exeTimeTsne<- system.time(Rtsne(results_env2, dims = 2, perplexity=30, verbose=TRUE, max_iter=500))
-# 
-# ## Plotting
-# plot(tsne$Y, t='n', main="tsne")
-# text(tsne$Y, labels=results_env2, col=colors[results_env2])
-# 
-# ## Generate the t_SNE plot
-# par(mfrow=c(1,2)) # To plot two images side-by-side
-# plot(tsne_results$Y, col = "blue", pch = 19, cex = 1.5) # Plotting the first image
-# plot(tsne_results$Y, col = "black", bg= IR_species, pch = 21, cex = 1.5)
+# create corr matrix, with dummy vars
+results_env2 <- results_env2 %>%
+  mutate_if(is.numeric, as.factor) %>%
+  data.matrix()
+
+# t-SNE
+colors = rainbow(length(unique(results_env2)))
+names(colors) = unique(results_env2)
+
+ecb = function(x,y){ 
+  plot(x,t='n'); text(x,labels=results_env2, col=colors[results_env2]) 
+  }
+
+tsne_env <- tsne(results_env2, epoch_callback = ecb, perplexity=50)
+
 ```
 
 ### CLM environmental regression
@@ -2022,7 +2014,7 @@ summary(clm_env)
 coef(clm_env)
 #  NOT WORKING: + religios ... need to figure out why
 
-model.env <- tidy(clm_env)                 # Convert model to dataframe for easy manipulation
+model.env <- tidy(clm_env)                 # Convert model to dataframe
 model.env 
 
 model.env  %>% 
@@ -2243,6 +2235,30 @@ fviz_contrib(le_pca, choice = "var", axes = 3, top = 20)
 fviz_contrib(le_pca, choice = "var", axes = 4, top = 20)
 ```
 
+```{r tsne_le}
+# PCA map with eigenvalues
+data_le2 <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, drug_mar, fincur, assault_phys, binge_fr, assault_sex,
+                                 assault_emo, deprawsc, psyhx, drugs_yn)
+results_le2 <- dummy_cols(data_le2, remove_first_dummy = TRUE)
+
+# create corr matrix, with dummy vars
+results_le2 <- results_le2 %>%
+  mutate_if(is.numeric, as.factor) %>%
+  NA_preproc() %>%
+  data.matrix()
+
+# t-SNE
+colors = rainbow(length(unique(results_le2)))
+names(colors) = unique(results_le2)
+
+ecb = function(x,y){ 
+  plot(x,t='n'); text(x,labels=results_le2, col=colors[results_le2]) 
+  }
+
+tsne_le2 <- tsne(results_le2, epoch_callback = ecb, perplexity=50)
+```
+
+
 ## CLM Life event regression
 ```{r clm_LE}
 
@@ -2335,7 +2351,7 @@ data.v21 <- data.v20
 ```{r Defeat cor}
 
 # Define defeat variable candidates for correlation matrix
-data_def <- data.v21 %>% select(aca_impa, dep_mild, dep_mod, dep_modsev, dep_sev, dep_none)
+data_def <- data.v21 %>% select(aca_impa, deprawsc)
 
  # convert data to numeric in order to run correlations
 data_def <- data_def %>% mutate_if(is.character, as.factor)
@@ -2351,15 +2367,15 @@ corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
 print(corr)
 
 # Redefining defeat variable to account for significant overlaps
-data.v21 <- data.v21 %>%
-  mutate(dep_mod = case_when(dep_mod == 1 ~ 1,
-                             dep_modsev == 1 ~ 1,
-                             dep_sev == 1 ~ 0,
-                             dep_mild == 1 ~ 0,
-                             dep_none == 1 ~ 0))
-table(data.v21$dep_mod)
+# data.v21 <- data.v21 %>%
+#   mutate(dep_mod = case_when(dep_mod == 1 ~ 1,
+#                              dep_modsev == 1 ~ 1,
+#                              dep_sev == 1 ~ 0,
+#                              dep_mild == 1 ~ 0,
+#                              dep_none == 1 ~ 0))
+# table(data.v21$dep_mod)
 
-data_def <- data.v21 %>% select(aca_impa, dep_mild, dep_mod, dep_sev)
+data_def <- data.v21 %>% select(aca_impa, deprawsc)
 
 # convert data to numeric in order to run correlations
 data_def <- data_def %>% mutate_if(is.character, as.factor)
@@ -2378,7 +2394,7 @@ print(corr)
 
 ## EFA defeat
 ```{r EFA_def}
-data_def <- data.v21 %>% select(aca_impa, dep_mild, dep_mod, dep_sev)
+data_def <- data.v21 %>% select(aca_impa, deprawsc)
 
 # create corr matrix, with dummy vars 
 data_def <- data_def %>% 
@@ -2387,7 +2403,7 @@ data_def <- data_def %>%
   data.matrix()
 data_def   # check output
 
-results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "dep_mild", "dep_mod", "dep_sev"),
+results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "deprawsc"),
                          remove_first_dummy = TRUE)
 
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
@@ -2418,6 +2434,30 @@ fviz_contrib(def_pca, choice = "var", axes = 2, top = 20)
 fviz_contrib(def_pca, choice = "var", axes = 3, top = 20)
 fviz_contrib(def_pca, choice = "var", axes = 4, top = 20)
 ```
+### T-SNE DEFEAT
+```{r tsne_def}
+# PCA map with eigenvalues
+data_def2 <- data.v21 %>% select(aca_impa, deprawsc)
+results_def2 <- dummy_cols(data_def2, remove_first_dummy = TRUE)
+
+# create corr matrix, with dummy vars
+results_def2 <- results_def2 %>%
+  mutate_if(is.numeric, as.factor) %>%
+  NA_preproc() %>%
+  data.matrix()
+
+# t-SNE
+colors = rainbow(length(unique(results_def2)))
+names(colors) = unique(results_def2)
+
+ecb = function(x,y){ 
+  plot(x,t='n'); text(x,labels=results_def2, col=colors[results_def2]) 
+  }
+
+tsne_def2 <- tsne(results_def2, epoch_callback = ecb, perplexity=50)
+```
+
+
 
 ## CLM defeat
 ```{r CLM defeat}
@@ -3025,19 +3065,6 @@ load("missing_dfs.RData")
 write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
-## Missingness regression
-```{r correlation and missingness rates}
-
-# missing_mods <- list()
-# for (i in 1:length(missing_dfs)) {
-#   for (j in 1:(ncol(missing_dfs[[1]]) - 2)) {
-#     mod <- glm(missing_dfs[[i]][,j + 2] ~ missing_dfs[[i]][,1])
-#     missing_mods[[i]] <- coef(mod)
-#   }
-# }
-# names(missing_mods) <- names(missing_dfs)
-```
-
 
 # DATA PREP
 
@@ -3120,11 +3147,6 @@ summary(data.v28) %>% view()
 
 # SEM ANALYSIS
 
-
-```{r Multivariate skewness and kurtosis}
-mardiaSkew(results_sem, use = "everything")
-mardiaKurtosis(results_sem, use = "everything")
-```
 
 ## SEM specification
 ```{r SEM}
