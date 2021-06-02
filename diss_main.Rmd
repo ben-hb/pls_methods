@@ -1995,35 +1995,24 @@ fviz_contrib(env_pca, choice = "var", axes = 4, top = 20)
 # fviz_nbclust(my_data, kmeans, method = "gap_stat")
 ```
 
-
+### T-SNE ENVIRONMENT
 ```{r T-SNE ENV}
 # PCA map with eigenvalues
-results_env2 <- dummy_cols(data.v15, select_columns = c("si_type", "discrim", "religios", "env_mh", "residenc", "ther_vis",
-                                                       "activ_yn", "divers", "school2_type", "satisfied_overall", 
-                                                       "ther_vis", "talk", "military", "international"),
-                          remove_first_dummy = TRUE)
+data_env2 <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, ther_vis, talk,
+                                 activ_yn, divers, school2_type, satisfied_overall,  military, international)
+results_env2 <- dummy_cols(data_env2, remove_first_dummy = TRUE)
 
 # create corr matrix, with dummy vars
 results_env2 <- results_env2 %>%
-  mutate_if(is.numeric, as.factor) %>%
-  data.matrix()
-
-data_dia2 <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
-                                dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, meds_dep, ed_any,
-                                meds_anx, meds_mood, meds_sle, meds_count)
-results_dia2 <- dummy_cols(data_dia2, remove_first_dummy = TRUE)
-
-# create corr matrix, with dummy vars
-results_dia2 <- na.omit(results_dia2) %>%
   mutate_if(is.numeric, as.factor) %>%
   NA_preproc() %>%
   data.matrix()
 
 # t-SNE
-colors = rainbow(length(unique(results_dia2)))
-names(colors) = unique(results_dia2)
+colors = rainbow(length(unique(results_env2)))
+names(colors) = unique(results_env2)
 
-tsne<-Rtsne(results_dia2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
+tsne<-Rtsne(results_env2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
 
 ```
 
@@ -2650,6 +2639,25 @@ fviz_contrib(tsm_pca, choice = "var", axes = 2, top = 20)
 fviz_contrib(tsm_pca, choice = "var", axes = 3, top = 20)
 fviz_contrib(tsm_pca, choice = "var", axes = 4, top = 20)
 ```
+```{r T-SNE TSM}
+# set up df for t-sne
+data_tsm2 <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, aaq_yn)
+results_tsm2 <- dummy_cols(data_tsm2, remove_first_dummy = TRUE)
+
+# create corr matrix, with dummy vars
+results_tsm2 <- na.omit(results_tsm2) %>%
+  mutate_if(is.numeric, as.factor) %>%
+  NA_preproc() %>%
+  data.matrix()
+
+# t-SNE
+colors = rainbow(length(unique(results_tsm2)))
+names(colors) = unique(results_tsm2)
+
+tsne<-Rtsne(results_tsm2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
+```
+
+
 
 ## CLM TSM
 ```{r CLM TSM}
@@ -2765,6 +2773,25 @@ fviz_contrib(entrap_pca, choice = "var", axes = 2, top = 20)
 fviz_contrib(entrap_pca, choice = "var", axes = 3, top = 20)
 fviz_contrib(entrap_pca, choice = "var", axes = 4, top = 20)
 ```
+### t-SNE Entrapment
+```{r T-SNE Entrapment}
+# set up df for t-sne
+data_entrap2 <- data.v23 %>% select(dep_impa, gad7_impa, percneed_cur)
+results_entrap2 <- dummy_cols(data_entrap2, remove_first_dummy = TRUE)
+
+# create corr matrix, with dummy vars
+results_entrap2 <- na.omit(results_entrap2) %>%
+  mutate_if(is.numeric, as.factor) %>%
+  NA_preproc() %>%
+  data.matrix()
+
+# t-SNE
+colors = rainbow(length(unique(results_entrap2)))
+names(colors) = unique(results_entrap2)
+
+tsne<-Rtsne(results_entrap2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
+```
+
 
 ###  CLM Entrapment regression
 ```{r clm_entrap}
@@ -2949,6 +2976,26 @@ fviz_contrib(mm_pca, choice = "var", axes = 2, top = 20)
 fviz_contrib(mm_pca, choice = "var", axes = 3, top = 20)
 fviz_contrib(mm_pca, choice = "var", axes = 4, top = 20)
 ```
+### t-SNE Entrapment
+```{r tsne_entrap}
+# set up df for t-sne
+data_mm2 <- data.v27 %>% select(inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
+results_mm2 <- dummy_cols(data_mm2, remove_first_dummy = TRUE)
+
+# create corr matrix, with dummy vars
+results_mm2 <- na.omit(results_mm2) %>%
+  mutate_if(is.numeric, as.factor) %>%
+  NA_preproc() %>%
+  data.matrix()
+
+# t-SNE
+colors = rainbow(length(unique(results_mm2)))
+names(colors) = unique(results_mm2)
+
+tsne<-Rtsne(results_mm2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
+```
+
+
 
 ## CLM Motivational moderators regression
 Variables for consideration:  inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot
