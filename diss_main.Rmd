@@ -1548,21 +1548,21 @@ clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib
 clm_dia <- NA_preproc(clm_dia)
 clm_dia <- as.data.frame(clm_dia)
 
-clm_dia <- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr +
+clm_mod<- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr +
                          race + meds_dep + ed_any + meds_anx + meds_mood + meds_sle + dx_pers +
                          dx_dep + dx_bi + dx_adhd + meds_count, data = clm_dia)
-summary(clm_dia)
-coef(clm_dia)
+summary(clm_mod)
+coef(clm_mod)
 
-## NOT WORKING: 
+## NOT WORKING:
 
-# model.dia <- tidy(clm_dia)  # Convert model to dataframe for easy manipulation
-# model.dia 
-# 
-# model.dia  %>%
-#   mutate(or = exp(estimate),  # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_dia)),  # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+model.dia <- tidy(clm_mod)  # Convert model to dataframe for easy manipulation
+model.dia
+
+model.dia  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+        var.diag = diag(vcov(clm_mod)),  # Variance of each coefficient
+          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2281,24 +2281,25 @@ data.v20 <- data.v18
 ```{r deprawsc}
 table(data.v20$deprawsc)
 
-data.v20 <- data.v20 %>%
-  mutate(dep_none = case_when(deprawsc < 5 ~ 1,
-                              deprawsc > 4 ~ 0)) %>%
-  mutate(dep_mild = case_when((deprawsc > 4 & deprawsc < 10) ~ 1,
-                              (deprawsc < 5 | deprawsc > 9) ~ 0)) %>%
-  mutate(dep_mod = case_when((deprawsc > 9 & deprawsc < 15) ~ 1,
-                             (deprawsc > 14 | deprawsc < 10) ~ 0)) %>%
-  mutate(dep_modsev = case_when((deprawsc > 14 & deprawsc < 20) ~ 1,
-                               (deprawsc > 19 | deprawsc < 15) ~ 0)) %>%
-  mutate(dep_sev = case_when(deprawsc > 19 ~ 1,
-                             deprawsc < 20 ~ 0))
-
-# Check outputs
-table(data.v20$dep_none)
-table(data.v20$dep_mild)
-table(data.v20$dep_mod)
-table(data.v20$dep_modsev)
-table(data.v20$dep_sev)
+# If deciding to cartegorize --
+# data.v20 <- data.v20 %>%
+#   mutate(dep_none = case_when(deprawsc < 5 ~ 1,
+#                               deprawsc > 4 ~ 0)) %>%
+#   mutate(dep_mild = case_when((deprawsc > 4 & deprawsc < 10) ~ 1,
+#                               (deprawsc < 5 | deprawsc > 9) ~ 0)) %>%
+#   mutate(dep_mod = case_when((deprawsc > 9 & deprawsc < 15) ~ 1,
+#                              (deprawsc > 14 | deprawsc < 10) ~ 0)) %>%
+#   mutate(dep_modsev = case_when((deprawsc > 14 & deprawsc < 20) ~ 1,
+#                                (deprawsc > 19 | deprawsc < 15) ~ 0)) %>%
+#   mutate(dep_sev = case_when(deprawsc > 19 ~ 1,
+#                              deprawsc < 20 ~ 0))
+# 
+# # Check outputs
+# table(data.v20$dep_none)
+# table(data.v20$dep_mild)
+# table(data.v20$dep_mod)
+# table(data.v20$dep_modsev)
+# table(data.v20$dep_sev)
 
 ```
 
@@ -3109,6 +3110,14 @@ dim(testdf.v29)
 ```
 
 
+# SUMMARY STATISTICS
+
+
+```{r Var_sum}
+summary(data.v28) %>% view()
+```
+
+
 # SEM ANALYSIS
 
 
@@ -3116,7 +3125,6 @@ dim(testdf.v29)
 mardiaSkew(results_sem, use = "everything")
 mardiaKurtosis(results_sem, use = "everything")
 ```
-
 
 ## SEM specification
 ```{r SEM}
