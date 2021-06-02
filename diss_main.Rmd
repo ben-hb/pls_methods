@@ -92,11 +92,6 @@ Motivational variables
   
 * Will show demographics from original datasets with descriptive stats.
 demographic tables... show up on the survey - acknowledge diversity
-  didnt want to erase or collapse, but for the purpose of the analysis
-  look at college literature -- categories higher risk
-  
-run correlation matrix for each  
-  
 
 ```{r Filter sample, cache = TRUE}
 
@@ -1516,12 +1511,10 @@ results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender_
 
 # factoextra -- https://rpkgs.datanovia.com/factoextra/
 dia_pca <- PCA(results_dia, graph=FALSE)  # apply PCA
-fviz_screeplot(dia_pca, addlabels = TRUE, ylim = c(0, 50))
+eigval_dia <- get_eigenvalue(dia_pca)
+eigval_dia
 
-fviz_contrib(dia_pca, choice = "var", axes = 1, top = 10)
-fviz_contrib(dia_pca, choice = "var", axes = 2, top = 10)
-fviz_contrib(dia_pca, choice = "var", axes = 3, top = 10)
-fviz_contrib(dia_pca, choice = "var", axes = 4, top = 10)
+fviz_screeplot(dia_pca, addlabels = TRUE, ylim = c(0, 50))
 
 fviz_pca_var(dia_pca,
              col.var = "contrib", # Color by contributions to the PC
@@ -1533,12 +1526,15 @@ fviz_famd_var(dia_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-eigval_dia <- get_eigenvalue(dia_pca)
-eigval_dia
-
-options(ggrepel.max.overlaps = Inf)
-
-ggmaplot(dia_pca, main = expression("WT vs DBR"), fdr = 0.05, fc = 2, size = 0.4, palette = c("#B31B21", "#1465AC", "darkgray"), genenames = as.vector(dia_pca$MiRTS), legend = "top", top = 20, font.label = c("bold", 11), label.rectangle = TRUE, font.legend = "bold", font.main = "bold", ggtheme = ggplot2::theme_minimal())
+fviz_cos2(dia_pca, choice = "var", axes = 1, 
+          fill = "steelblue", color = "steelblue",
+          sort.val = c("desc", "asc", "none"),
+          top = 40,
+          xtickslab.rt = 45,
+          ggtheme = theme_minimal())
+fviz_contrib(dia_pca, choice = "var", axes = 2, top = 20)
+fviz_contrib(dia_pca, choice = "var", axes = 3, top = 20)
+fviz_contrib(dia_pca, choice = "var", axes = 4, top = 20)
 
 ```
 
@@ -1901,7 +1897,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 
 ##EFA Environment
-```{r}
+```{r EFA Environment}
 data_env <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
                                 school2_type, satisfied_overall, ther_vis, talk, military, international)
 
@@ -1920,8 +1916,11 @@ results_env <- dummy_cols(data_env, select_columns = c("discrim", "religios", "e
 env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
 names(env_pca)
 summary(env_pca)
+
 eigval_env <- get_eigenvalue(env_pca)
 eigval_env
+
+
 
 # fviz_screeplot(env_pca, addlabels = TRUE, ylim = c(0, 50))
 # plot((env_pca), xlab = "Principle Component",
@@ -1933,11 +1932,7 @@ eigval_env
 #      type = "b"
 #      )
 
-fviz_contrib(env_pca, choice = "var", axes = 1, top = 10)
-fviz_contrib(env_pca, choice = "var", axes = 2, top = 10)
-fviz_contrib(env_pca, choice = "var", axes = 3, top = 10)
-fviz_contrib(env_pca, choice = "var", axes = 4, top = 10)
-
+fviz_screeplot(env_pca, addlabels = TRUE, ylim = c(0, 50))
 fviz_pca_var(env_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -1948,18 +1943,27 @@ fviz_famd_var(env_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
+fviz_cos2(env_pca, choice = "var", axes = 1, 
+          fill = "steelblue", color = "steelblue",
+          sort.val = c("desc", "asc", "none"),
+          top = 40,
+          xtickslab.rt = 45,
+          ggtheme = theme_minimal())
+fviz_contrib(env_pca, choice = "var", axes = 2, top = 20)
+fviz_contrib(env_pca, choice = "var", axes = 3, top = 20)
+fviz_contrib(env_pca, choice = "var", axes = 4, top = 20)
 
 
-# Compute hierarchical clustering and cut into 4 clusters
-res <- hcut(data_env, k = 4, stand = TRUE)
-
-# Visualize
-fviz_dend(res, rect = TRUE, cex = 0.5,
-          k_colors = c("#00AFBB","#2E9FDF", "#E7B800", "#FC4E07"))
-
-# Optimal number of clusters for k-means
-my_data <- scale(data_env)
-fviz_nbclust(my_data, kmeans, method = "gap_stat")
+# # Compute hierarchical clustering and cut into 4 clusters
+# res <- hcut(data_env, k = 4, stand = TRUE)
+# 
+# # Visualize
+# fviz_dend(res, rect = TRUE, cex = 0.5,
+#           k_colors = c("#00AFBB","#2E9FDF", "#E7B800", "#FC4E07"))
+# 
+# # Optimal number of clusters for k-means
+# my_data <- scale(data_env)
+# fviz_nbclust(my_data, kmeans, method = "gap_stat")
 ```
 
 
@@ -2214,14 +2218,11 @@ results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", 
 le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
 le_pca$eig   # output matrix with eigenvalues
 
-# Visualize PCA, FAMD results
+eigval_le <- get_eigenvalue(le_pca)
+eigval_le
+
+# visualization for PCA, FAMD
 fviz_screeplot(le_pca, addlabels = TRUE, ylim = c(0, 50))
-
-fviz_contrib(le_pca, choice = "var", axes = 1, top = 10)
-fviz_contrib(le_pca, choice = "var", axes = 2, top = 10)
-fviz_contrib(le_pca, choice = "var", axes = 3, top = 10)
-fviz_contrib(le_pca, choice = "var", axes = 4, top = 10)
-
 fviz_pca_var(le_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2232,8 +2233,15 @@ fviz_famd_var(le_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-eigval_le <- get_eigenvalue(le_pca)
-eigval_le
+fviz_cos2(le_pca, choice = "var", axes = 1, 
+          fill = "steelblue", color = "steelblue",
+          sort.val = c("desc", "asc", "none"),
+          top = 40,
+          xtickslab.rt = 45,
+          ggtheme = theme_minimal())
+fviz_contrib(le_pca, choice = "var", axes = 2, top = 20)
+fviz_contrib(le_pca, choice = "var", axes = 3, top = 20)
+fviz_contrib(le_pca, choice = "var", axes = 4, top = 20)
 ```
 
 ## CLM Life event regression
@@ -2385,14 +2393,11 @@ results_def <- dummy_cols(data_def, select_columns = c("aca_impa", "dep_mild", "
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
 def_pca$eig   # output matrix with eigenvalues
 
-#Visualize PCA, FAMD results
-fviz_screeplot(def_pca, addlabels = TRUE, ylim = c(0, 50))  # scree plot
+eigval_def <- get_eigenvalue(def_pca)
+eigval_def
 
-fviz_contrib(def_pca, choice = "var", axes = 1, top = 10)
-fviz_contrib(def_pca, choice = "var", axes = 2, top = 10)
-fviz_contrib(def_pca, choice = "var", axes = 3, top = 10)
-fviz_contrib(def_pca, choice = "var", axes = 4, top = 10)
-
+# visualization for PCA, FAMD
+fviz_screeplot(def_pca, addlabels = TRUE, ylim = c(0, 50))
 fviz_pca_var(def_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2403,9 +2408,15 @@ fviz_famd_var(def_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-
-eigval_def <- get_eigenvalue(def_pca)
-eigval_def
+fviz_cos2(def_pca, choice = "var", axes = 1, 
+          fill = "steelblue", color = "steelblue",
+          sort.val = c("desc", "asc", "none"),
+          top = 40,
+          xtickslab.rt = 45,
+          ggtheme = theme_minimal())
+fviz_contrib(def_pca, choice = "var", axes = 2, top = 20)
+fviz_contrib(def_pca, choice = "var", axes = 3, top = 20)
+fviz_contrib(def_pca, choice = "var", axes = 4, top = 20)
 ```
 
 ## CLM defeat
@@ -2551,15 +2562,11 @@ results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_mild", "a
                          remove_first_dummy = TRUE)
 
 tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
+eigval_tsm <- get_eigenvalue(tsm_pca)
+eigval_tsm
 
-# Visualize PCA, FAMD results
+# Visualization of PCA, FAMD
 fviz_screeplot(tsm_pca, addlabels = TRUE, ylim = c(0, 50))
-
-fviz_contrib(tsm_pca, choice = "var", axes = 1, top = 10)
-fviz_contrib(tsm_pca, choice = "var", axes = 2, top = 10)
-fviz_contrib(tsm_pca, choice = "var", axes = 3, top = 10)
-fviz_contrib(tsm_pca, choice = "var", axes = 4, top = 10)
-
 fviz_pca_var(tsm_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2570,9 +2577,15 @@ fviz_famd_var(tsm_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-
-eigval_tsm <- get_eigenvalue(tsm_pca)
-eigval_tsm
+fviz_cos2(tsm_pca, choice = "var", axes = 1, 
+          fill = "steelblue", color = "steelblue",
+          sort.val = c("desc", "asc", "none"),
+          top = 40,
+          xtickslab.rt = 45,
+          ggtheme = theme_minimal())
+fviz_contrib(tsm_pca, choice = "var", axes = 2, top = 20)
+fviz_contrib(tsm_pca, choice = "var", axes = 3, top = 20)
+fviz_contrib(tsm_pca, choice = "var", axes = 4, top = 20)
 ```
 
 ## CLM TSM
@@ -2664,14 +2677,11 @@ results_entrap <- dummy_cols(data_entrap, select_columns = c("dep_impa", "gad7_i
 entrap_pca <- PCA(results_entrap, graph=FALSE)  # apply PCA
 entrap_pca$eig   # output matrix with eigenvalues
 
-# Visualize PCA, FAMD results
+eigval_entrap <- get_eigenvalue(entrap_pca)
+eigval_entrap
+
+# Visualization of PCA, FAMD
 fviz_screeplot(entrap_pca, addlabels = TRUE, ylim = c(0, 50))
-
-fviz_contrib(entrap_pca, choice = "var", axes = 1, top = 10)
-fviz_contrib(entrap_pca, choice = "var", axes = 2, top = 10)
-fviz_contrib(entrap_pca, choice = "var", axes = 3, top = 10)
-fviz_contrib(entrap_pca, choice = "var", axes = 4, top = 10)
-
 fviz_pca_var(entrap_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2682,11 +2692,15 @@ fviz_famd_var(entrap_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-
-eigval_entrap <- get_eigenvalue(entrap_pca)
-eigval_entrap
-
-
+fviz_cos2(entrap_pca, choice = "var", axes = 1, 
+          fill = "steelblue", color = "steelblue",
+          sort.val = c("desc", "asc", "none"),
+          top = 40,
+          xtickslab.rt = 45,
+          ggtheme = theme_minimal())
+fviz_contrib(entrap_pca, choice = "var", axes = 2, top = 20)
+fviz_contrib(entrap_pca, choice = "var", axes = 3, top = 20)
+fviz_contrib(entrap_pca, choice = "var", axes = 4, top = 20)
 ```
 
 ###  CLM Entrapment regression
@@ -2847,16 +2861,12 @@ results_mm <- dummy_cols(data_mm, select_columns = c("inf", "flourish", "belong1
                                                      "belong9", "stig_pcv_2", "stig_pcv_3", "brs_tot"),
                          remove_first_dummy = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
+eigval_mm <- get_eigenvalue(mm_pca)
+eigval_mm
 
-# Visualize PCA, FAMD
+# Visualization of PCA, FAMD
 fviz_screeplot(mm_pca, addlabels = TRUE, ylim = c(0, 50))
-
-fviz_contrib(mm_pca, choice = "var", axes = 1, top = 10)
-fviz_contrib(mm_pca, choice = "var", axes = 2, top = 10)
-fviz_contrib(mm_pca, choice = "var", axes = 3, top = 10)
-fviz_contrib(mm_pca, choice = "var", axes = 4, top = 10)
-
-fviz_pca_var(mm_pca,
+fviz_pca_var(entrap_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
@@ -2866,10 +2876,15 @@ fviz_famd_var(mm_pca,
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-
-eigval_mm <- get_eigenvalue(mm_pca)
-eigval_mm
-
+fviz_cos2(mm_pca, choice = "var", axes = 1, 
+          fill = "steelblue", color = "steelblue",
+          sort.val = c("desc", "asc", "none"),
+          top = 40,
+          xtickslab.rt = 45,
+          ggtheme = theme_minimal())
+fviz_contrib(mm_pca, choice = "var", axes = 2, top = 20)
+fviz_contrib(mm_pca, choice = "var", axes = 3, top = 20)
+fviz_contrib(mm_pca, choice = "var", axes = 4, top = 20)
 ```
 
 ## CLM Motivational moderators regression
