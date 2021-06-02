@@ -1517,6 +1517,12 @@ results_dia <- dummy_cols(data_dia, select_columns = c("age", "sexual", "gender_
 # factoextra -- https://rpkgs.datanovia.com/factoextra/
 dia_pca <- PCA(results_dia, graph=FALSE)  # apply PCA
 fviz_screeplot(dia_pca, addlabels = TRUE, ylim = c(0, 50))
+
+fviz_contrib(dia_pca, choice = "var", axes = 1, top = 10)
+fviz_contrib(dia_pca, choice = "var", axes = 2, top = 10)
+fviz_contrib(dia_pca, choice = "var", axes = 3, top = 10)
+fviz_contrib(dia_pca, choice = "var", axes = 4, top = 10)
+
 fviz_pca_var(dia_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -1917,8 +1923,6 @@ summary(env_pca)
 eigval_env <- get_eigenvalue(env_pca)
 eigval_env
 
-
-
 # fviz_screeplot(env_pca, addlabels = TRUE, ylim = c(0, 50))
 # plot((env_pca), xlab = "Principle Component",
 #      ylab = "Cumulative Proportion of Variance Explained",
@@ -1933,6 +1937,7 @@ fviz_contrib(env_pca, choice = "var", axes = 1, top = 10)
 fviz_contrib(env_pca, choice = "var", axes = 2, top = 10)
 fviz_contrib(env_pca, choice = "var", axes = 3, top = 10)
 fviz_contrib(env_pca, choice = "var", axes = 4, top = 10)
+
 fviz_pca_var(env_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2211,6 +2216,12 @@ le_pca$eig   # output matrix with eigenvalues
 
 # Visualize PCA, FAMD results
 fviz_screeplot(le_pca, addlabels = TRUE, ylim = c(0, 50))
+
+fviz_contrib(le_pca, choice = "var", axes = 1, top = 10)
+fviz_contrib(le_pca, choice = "var", axes = 2, top = 10)
+fviz_contrib(le_pca, choice = "var", axes = 3, top = 10)
+fviz_contrib(le_pca, choice = "var", axes = 4, top = 10)
+
 fviz_pca_var(le_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2312,7 +2323,6 @@ data.v20 = subset(data.v20, select= -c(men_ill_ash)) # clean up var
 data.v21 <- data.v20
 ```
 
-
 ## Defeat correlation
 ```{r Defeat cor}
 
@@ -2377,6 +2387,12 @@ def_pca$eig   # output matrix with eigenvalues
 
 #Visualize PCA, FAMD results
 fviz_screeplot(def_pca, addlabels = TRUE, ylim = c(0, 50))  # scree plot
+
+fviz_contrib(def_pca, choice = "var", axes = 1, top = 10)
+fviz_contrib(def_pca, choice = "var", axes = 2, top = 10)
+fviz_contrib(def_pca, choice = "var", axes = 3, top = 10)
+fviz_contrib(def_pca, choice = "var", axes = 4, top = 10)
+
 fviz_pca_var(def_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2517,7 +2533,7 @@ corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correla
 print(corr)
 ```
 
-##EFA TSM
+## EFA TSM
 ```{r EFA TSM}
 data_tsm <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, aaq_yn)
 
@@ -2538,6 +2554,12 @@ tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
 
 # Visualize PCA, FAMD results
 fviz_screeplot(tsm_pca, addlabels = TRUE, ylim = c(0, 50))
+
+fviz_contrib(tsm_pca, choice = "var", axes = 1, top = 10)
+fviz_contrib(tsm_pca, choice = "var", axes = 2, top = 10)
+fviz_contrib(tsm_pca, choice = "var", axes = 3, top = 10)
+fviz_contrib(tsm_pca, choice = "var", axes = 4, top = 10)
+
 fviz_pca_var(tsm_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2644,6 +2666,12 @@ entrap_pca$eig   # output matrix with eigenvalues
 
 # Visualize PCA, FAMD results
 fviz_screeplot(entrap_pca, addlabels = TRUE, ylim = c(0, 50))
+
+fviz_contrib(entrap_pca, choice = "var", axes = 1, top = 10)
+fviz_contrib(entrap_pca, choice = "var", axes = 2, top = 10)
+fviz_contrib(entrap_pca, choice = "var", axes = 3, top = 10)
+fviz_contrib(entrap_pca, choice = "var", axes = 4, top = 10)
+
 fviz_pca_var(entrap_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
@@ -2822,6 +2850,12 @@ mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 
 # Visualize PCA, FAMD
 fviz_screeplot(mm_pca, addlabels = TRUE, ylim = c(0, 50))
+
+fviz_contrib(mm_pca, choice = "var", axes = 1, top = 10)
+fviz_contrib(mm_pca, choice = "var", axes = 2, top = 10)
+fviz_contrib(mm_pca, choice = "var", axes = 3, top = 10)
+fviz_contrib(mm_pca, choice = "var", axes = 4, top = 10)
+
 fviz_pca_var(mm_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
