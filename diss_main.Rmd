@@ -1556,13 +1556,13 @@ coef(clm_dia)
 
 ## NOT WORKING: 
 
-model.dia <- tidy(clm_dia)  # Convert model to dataframe for easy manipulation
-model.dia 
-
-model.dia  %>%
-  mutate(or = exp(estimate),  # Odds ratio/gradient
-         var.diag = diag(vcov(clm_dia)),  # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# model.dia <- tidy(clm_dia)  # Convert model to dataframe for easy manipulation
+# model.dia 
+# 
+# model.dia  %>%
+#   mutate(or = exp(estimate),  # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_dia)),  # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -1982,27 +1982,27 @@ results_env2 <- dummy_cols(data_env2, select_columns = c("si_type", "discrim", "
                                                        "activ_yn", "divers", "school2_type", "satisfied_overall", 
                                                        "ther_vis", "talk", "military", "international"),
                           remove_first_dummy = TRUE)
-clm_env <- randomForest(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
-                ther_vis + divers +  military + school2_type + residenc + env_mh, data = results_env2)
+# clm_env <- randomForest(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
+#                 ther_vis + divers +  military + school2_type + residenc + env_mh, data = results_env2)
 
-## for plotting
-colors = rainbow(length(unique(clm_env)))
-names(colors) = unique(clm_env)
-
-data(results_env2, na.action = na.roughfix)
-
-## Executing the algorithm on curated data
-tsne <- Rtsne(results_env2, dims = 3, perplexity=30, verbose=TRUE, max_iter=500)
-exeTimeTsne<- system.time(Rtsne(results_env2, dims = 2, perplexity=30, verbose=TRUE, max_iter=500))
-
-## Plotting
-plot(tsne$Y, t='n', main="tsne")
-text(tsne$Y, labels=results_env2, col=colors[results_env2])
-
-## Generate the t_SNE plot
-par(mfrow=c(1,2)) # To plot two images side-by-side
-plot(tsne_results$Y, col = "blue", pch = 19, cex = 1.5) # Plotting the first image
-plot(tsne_results$Y, col = "black", bg= IR_species, pch = 21, cex = 1.5)
+# ## for plotting
+# colors = rainbow(length(unique(clm_env)))
+# names(colors) = unique(clm_env)
+# 
+# data(results_env2, na.action = na.roughfix)
+# 
+# ## Executing the algorithm on curated data
+# tsne <- Rtsne(results_env2, dims = 3, perplexity=30, verbose=TRUE, max_iter=500)
+# exeTimeTsne<- system.time(Rtsne(results_env2, dims = 2, perplexity=30, verbose=TRUE, max_iter=500))
+# 
+# ## Plotting
+# plot(tsne$Y, t='n', main="tsne")
+# text(tsne$Y, labels=results_env2, col=colors[results_env2])
+# 
+# ## Generate the t_SNE plot
+# par(mfrow=c(1,2)) # To plot two images side-by-side
+# plot(tsne_results$Y, col = "blue", pch = 19, cex = 1.5) # Plotting the first image
+# plot(tsne_results$Y, col = "black", bg= IR_species, pch = 21, cex = 1.5)
 ```
 
 ### CLM environmental regression
@@ -2034,7 +2034,7 @@ model.env  %>%
 
 
 # LIFE EVENTS
-Candidate variables: ins_cover, gpa_sr, abuse_year, psyhx, isi_risk, binge_fr, fincur, drug_mar, drug_poly, drug_coc, drug_other, drug_met, drug_none, drug_opi, drug_her, drug_stim, drug_ect, assault_sex, assault_phys, assault_emo, isi_tot
+Candidate variables: ins_cover, gpa_sr, abuse_year, psyhx, isi_risk, binge_fr, fincur, drug_mar, drug_coc, drug_other, drug_met, drug_none, drug_opi, drug_her, drug_stim, drug_ect, assault_sex, assault_phys, assault_emo, isi_tot
 
 
 ```{r LE frame}
@@ -2169,7 +2169,6 @@ data.v18 = subset(data.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up
 data.v19 <- data.v18
 ```
  
- 
 ## LE correlation
 ```{r LE correlation}
 
@@ -2263,10 +2262,10 @@ coef(clm_le)
 model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
 model.le 
 
-model.le  %>% 
-  mutate(or = exp(estimate),  # Odds ratio/gradient
-         var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
+# model.le  %>% 
+#   mutate(or = exp(estimate),  # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
 ```
 
 
