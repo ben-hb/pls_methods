@@ -1539,6 +1539,29 @@ fviz_contrib(dia_pca, choice = "var", axes = 4, top = 20)
 
 ```
 
+### t-SNE diathesis
+```{r tsne_dia}
+# set up df for t-sne
+data_dia2 <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
+                                dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, meds_dep, ed_any,
+                                meds_anx, meds_mood, meds_sle, meds_count)
+results_dia2 <- dummy_cols(data_dia2, remove_first_dummy = TRUE)
+
+# create corr matrix, with dummy vars
+results_dia2 <- na.omit(results_dia2) %>%
+  mutate_if(is.numeric, as.factor) %>%
+  NA_preproc() %>%
+  data.matrix()
+
+# t-SNE
+colors = rainbow(length(unique(results_dia2)))
+names(colors) = unique(results_dia2)
+
+tsne<-Rtsne(results_dia2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
+```
+
+
+
 ### CLM diathesis regression
 ```{r clm_dia}
 
@@ -1985,15 +2008,22 @@ results_env2 <- results_env2 %>%
   mutate_if(is.numeric, as.factor) %>%
   data.matrix()
 
+data_dia2 <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
+                                dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, meds_dep, ed_any,
+                                meds_anx, meds_mood, meds_sle, meds_count)
+results_dia2 <- dummy_cols(data_dia2, remove_first_dummy = TRUE)
+
+# create corr matrix, with dummy vars
+results_dia2 <- na.omit(results_dia2) %>%
+  mutate_if(is.numeric, as.factor) %>%
+  NA_preproc() %>%
+  data.matrix()
+
 # t-SNE
-colors = rainbow(length(unique(results_env2)))
-names(colors) = unique(results_env2)
+colors = rainbow(length(unique(results_dia2)))
+names(colors) = unique(results_dia2)
 
-ecb = function(x,y){ 
-  plot(x,t='n'); text(x,labels=results_env2, col=colors[results_env2]) 
-  }
-
-tsne_env <- tsne(results_env2, epoch_callback = ecb, perplexity=50)
+tsne<-Rtsne(results_dia2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
 
 ```
 
@@ -2251,11 +2281,7 @@ results_le2 <- results_le2 %>%
 colors = rainbow(length(unique(results_le2)))
 names(colors) = unique(results_le2)
 
-ecb = function(x,y){ 
-  plot(x,t='n'); text(x,labels=results_le2, col=colors[results_le2]) 
-  }
-
-tsne_le2 <- tsne(results_le2, epoch_callback = ecb, perplexity=50)
+tsne<-Rtsne(results_le2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
 ```
 
 
@@ -2436,12 +2462,12 @@ fviz_contrib(def_pca, choice = "var", axes = 4, top = 20)
 ```
 ### T-SNE DEFEAT
 ```{r tsne_def}
-# PCA map with eigenvalues
+# set up df for t-sne
 data_def2 <- data.v21 %>% select(aca_impa, deprawsc)
 results_def2 <- dummy_cols(data_def2, remove_first_dummy = TRUE)
 
 # create corr matrix, with dummy vars
-results_def2 <- results_def2 %>%
+results_def2 <- na.omit(results_def2) %>%
   mutate_if(is.numeric, as.factor) %>%
   NA_preproc() %>%
   data.matrix()
@@ -2450,11 +2476,8 @@ results_def2 <- results_def2 %>%
 colors = rainbow(length(unique(results_def2)))
 names(colors) = unique(results_def2)
 
-ecb = function(x,y){ 
-  plot(x,t='n'); text(x,labels=results_def2, col=colors[results_def2]) 
-  }
+tsne<-Rtsne(results_def2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
 
-tsne_def2 <- tsne(results_def2, epoch_callback = ecb, perplexity=50)
 ```
 
 
@@ -2462,12 +2485,12 @@ tsne_def2 <- tsne(results_def2, epoch_callback = ecb, perplexity=50)
 ## CLM defeat
 ```{r CLM defeat}
 
-results2_def <- data.v21 %>% select(si_type, aca_impa, dep_mod, dep_sev)
+results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
 
 clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
 
-clm_def <- clm(si_type ~ aca_impa + dep_mod + dep_sev, data = clm_def)
+clm_def <- clm(si_type ~ aca_impa + deprawsc, data = clm_def)
 summary(clm_def)
 coef(clm_def)
 vcov(clm_def)
