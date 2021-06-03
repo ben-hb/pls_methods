@@ -45,6 +45,7 @@ library(ordinal)
 library(ordinalForest)
 library(ordinalgmifs)
 library(ordinalNet)
+library(pastecs)
 library(PerformanceAnalytics)
 library(psych)
 library(purrr)
@@ -3036,7 +3037,7 @@ var_names <- c(
   "ins_cover", "gpa_sr", "assault_phys", "binge_fr", "assault_sex", "assault_emo", "psyhx", "fincur", "drugs_yn", "abuse_year",
   "drug_mar",
   # defeat
-  "aca_impa", "dep_mod", "dep_sev",
+  "aca_impa", "deprawsc",
   # threats to self-moderation
   "persist", "anx_mod", "anx_sev", "dep_secret", "aaq_yn",
   # entrapment
@@ -3150,7 +3151,7 @@ data_sem <- data.v28 %>% select(
   # life events
   ins_cover, gpa_sr, assault_phys, binge_fr, assault_sex, assault_emo, psyhx, fincur, drugs_yn, abuse_year,
   # defeat
-  aca_impa, dep_mod, dep_sev,
+  aca_impa, deprawsc,
   # threats to self-moderation
   persist, anx_mod, anx_sev, dep_secret, aaq_yn,
   # entrapment
@@ -3177,7 +3178,7 @@ results_sem <- dummy_cols(data_sem, select_columns = c(
     # life events
     "ins_cover", "gpa_sr", "assault_phys", "binge_fr", "assault_sex", "assault_emo", "psyhx", "fincur", "drugs_yn", "abuse_year",
     # defeat
-    "aca_impa", "dep_mod", "dep_sev",
+    "aca_impa", "deprawsc",
     # threats to self-moderation
     "persist", "anx_mod", "anx_sev", "dep_secret", "aaq_yn",
     # entrapment
@@ -3208,7 +3209,9 @@ dim(testdf.v29)
 
 
 ```{r Var_sum}
-summary(data.v28) %>% view()
+describe(results_sem) %>% view()
+describe(traindf.v29) %>% view()
+describe(testdf.v29) %>% view()
 ```
 
 
