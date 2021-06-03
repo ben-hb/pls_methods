@@ -2016,7 +2016,7 @@ tsne<-Rtsne(results_env2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_dupl
 # display the results of t-SNE
 cols <- rainbow(length(unique(results_env2)))
 plot(tsne$Y, t='n')
-text(tsne$Y, labels=as.numeric(trn[,1]), col=cols[trn[,1]])
+text(tsne$Y, labels=as.numeric(results_env2[,1]), col=cols[results_env2[,1]])
 
 ```
 
@@ -2803,6 +2803,11 @@ colors = rainbow(length(unique(results_entrap2)))
 names(colors) = unique(results_entrap2)
 
 tsne<-Rtsne(results_entrap2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
+
+# display the results of t-SNE
+cols <- rainbow(length(unique(results_entrap2)))
+plot(tsne, t='n')
+text(tsne, labels=as.numeric(results_entrap2[,1]), col=cols[results_entrap2[,1]])
 ```
 
 
