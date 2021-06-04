@@ -27,6 +27,7 @@ library(factoextra)
 library(fastDummies)
 library(finalfit)
 library(ggpubr)
+library(gridExtra)
 library(haven)
 library(Hmisc)
 library(ISLR)
@@ -1599,13 +1600,10 @@ plot_cluster=function(data, var_cluster, palette)
     scale_colour_brewer(palette = palette) 
 }
 
-
-plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+# Create plots next to each other
+plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")   # is this where i add labels?
 plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-
-## and finally: putting the plots side by side with gridExtra lib...
-library(gridExtra)  
-grid.arrange(plot_k, plot_h,  ncol=2)  
+grid.arrange(plot_k, plot_h, ncol=2) 
 
 ```
 
@@ -2077,12 +2075,9 @@ plot_cluster=function(data, var_cluster, palette)
     scale_colour_brewer(palette = palette) 
 }
 
-
+# plot t-sne clusters next to each other
 plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
 plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-
-## and finally: putting the plots side by side with gridExtra lib...
-library(gridExtra)  
 grid.arrange(plot_k, plot_h,  ncol=2)    
 ```
 
@@ -2157,7 +2152,6 @@ data.v16 <- data.v16 %>%
                               drug_ect == 1 ~ 1,
                               drug_opi == 1 ~ 1,
                               drug_other == 1 ~ 1))
-
 table(data.v16$drugs_yn)
 table(data.v16$drug_mar)
 
@@ -2226,7 +2220,6 @@ data.v18 <- data.v17 %>%
 
 table(data.v18$binge_fr) # check output
 data.v18 = subset(data.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)) # clean up var
-
 ```
 
 ## Recent Psychiatric Hospitalization, last 12 months
@@ -2238,7 +2231,6 @@ data.v18 <- data.v18 %>%
                            ther_ever == 0 ~ 0))
 table(data.v18$psyhx)   # check output
 data.v18 = subset(data.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up var
-
 ```
 
 ## Current GPA
@@ -2621,16 +2613,10 @@ plot_cluster=function(data, var_cluster, palette)
     scale_colour_brewer(palette = palette) 
 }
 
-
-plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  # where do i add in labels? do i need them?
 plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-
-## and finally: putting the plots side by side with gridExtra lib...
-library(gridExtra)  
 grid.arrange(plot_k, plot_h,  ncol=2) 
 ```
-
-
 
 ## CLM defeat
 ```{r CLM defeat}
@@ -2641,6 +2627,7 @@ clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
 
 clm_def <- clm(si_type ~ aca_impa + deprawsc, data = clm_def)
+
 summary(clm_def)
 coef(clm_def)
 vcov(clm_def)
@@ -2668,20 +2655,20 @@ data.v22 <- data.v20
 ```{r anx_score}
 table(data.v22$anx_score)
 
-data.v22 <- data.v22 %>%
-  mutate(anx_none = case_when(anx_score < 6 ~ 1,
-                              anx_score > 5 ~ 0)) %>%
-  mutate(anx_mild = case_when((anx_score > 5 & anx_score < 11) ~ 1,
-                              (anx_score < 6 | anx_score > 10) ~ 0)) %>%
-  mutate(anx_mod = case_when((anx_score > 10 & anx_score < 16) ~ 1,
-                             (anx_score > 15 | anx_score < 11) ~ 0)) %>%
-  mutate(anx_sev = case_when(anx_score > 15 ~ 1,
-                             anx_score < 16 ~ 0))
-# Check outputs
-table(data.v22$anx_none)
-table(data.v22$anx_mild)
-table(data.v22$anx_mod)
-table(data.v22$anx_sev)
+# data.v22 <- data.v22 %>%
+#   mutate(anx_none = case_when(anx_score < 6 ~ 1,
+#                               anx_score > 5 ~ 0)) %>%
+#   mutate(anx_mild = case_when((anx_score > 5 & anx_score < 11) ~ 1,
+#                               (anx_score < 6 | anx_score > 10) ~ 0)) %>%
+#   mutate(anx_mod = case_when((anx_score > 10 & anx_score < 16) ~ 1,
+#                              (anx_score > 15 | anx_score < 11) ~ 0)) %>%
+#   mutate(anx_sev = case_when(anx_score > 15 ~ 1,
+#                              anx_score < 16 ~ 0))
+# # Check outputs
+# table(data.v22$anx_none)
+# table(data.v22$anx_mild)
+# table(data.v22$anx_mod)
+# table(data.v22$anx_sev)
 ```
 
 ## Secretive MH
@@ -2690,16 +2677,17 @@ table(data.v22$dep_secret)
 ```
 
 ## AAQ total (elective module)
-```{r aaq_yn}
+```{r AAQ_tot}
 # create AAQ_tot variable to sum up imputed AAQ questions
 data.v22 <- data.v22 %>%
   mutate(AAQ_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
-           as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7)) %>%
-  mutate(aaq_yn = case_when(AAQ_tot > 24 ~ 1,
-                            AAQ_tot < 25 ~ 0))
-table(data.v22$aaq_yn)
+           as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7))
+table(data.v22$AAQ_tot)
 
 #  for loop for predictive cutoff point needed
+
+
+
 
 
 ```
@@ -2725,7 +2713,7 @@ data.v23 <- data.v22
 ```{r CORR TSM}
 
 # Define TSM variable candidates for correlation matrix
-data_tsm <- data.v23 %>% select(persist, anx_none, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, aaq_yn)
+data_tsm <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
 
 # convert data to numeric in order to run correlations 
 data_tsm <- data_tsm %>% mutate_if(is.character, as.factor)
@@ -2741,7 +2729,7 @@ corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correla
 print(corr)
   
 # Re-run corr with non-overlapping vars
-data_tsm <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, aaq_yn)
+data_tsm <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
 
 # convert data to numeric in order to run correlations 
 data_tsm <- data_tsm %>% mutate_if(is.character, as.factor)
@@ -2759,19 +2747,19 @@ print(corr)
 
 ## EFA TSM
 ```{r EFA TSM}
-data_tsm <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, aaq_yn)
+data_tsm <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
 
 # create corr matrix, with dummy vars 
 data_tsm <- data_tsm %>% 
   mutate_if(is.numeric, as.factor) %>% 
     mutate(
-    aaq_yn = as.numeric(aaq_yn),
+    AAQ_tot = as.numeric(AAQ_tot),
   ) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 data_tsm   # check output
 
-results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_mild", "anx_mod", "anx_sev", "dep_secret", "achieve4", "aaq_yn"),
+results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_score", "dep_secret", "achieve4", "AAQ_tot"),
                          remove_first_dummy = TRUE)
 
 tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
@@ -2802,7 +2790,7 @@ fviz_contrib(tsm_pca, choice = "var", axes = 4, top = 20)
 ```
 ```{r T-SNE TSM}
 # set up df for t-sne
-data_tsm2 <- data.v23 %>% select(persist, anx_mild, anx_mod, anx_sev, dep_secret, achieve4, aaq_yn)
+data_tsm2 <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
 results_tsm2 <- dummy_cols(data_tsm2, remove_first_dummy = TRUE)
 
 # create corr matrix, with dummy vars
@@ -2856,12 +2844,9 @@ plot_cluster=function(data, var_cluster, palette)
     scale_colour_brewer(palette = palette) 
 }
 
-
+# plot
 plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
 plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-
-## and finally: putting the plots side by side with gridExtra lib...
-library(gridExtra)  
 grid.arrange(plot_k, plot_h,  ncol=2) 
 ```
 
@@ -3040,9 +3025,6 @@ plot_cluster=function(data, var_cluster, palette)
 
 plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
 plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-
-## and finally: putting the plots side by side with gridExtra lib...
-library(gridExtra)  
 grid.arrange(plot_k, plot_h,  ncol=2) 
 ```
 
@@ -3285,12 +3267,9 @@ plot_cluster=function(data, var_cluster, palette)
     scale_colour_brewer(palette = palette) 
 }
 
-
+# plot
 plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
 plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-
-## and finally: putting the plots side by side with gridExtra lib...
-library(gridExtra)  
 grid.arrange(plot_k, plot_h,  ncol=2) 
 ```
 
