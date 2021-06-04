@@ -2034,11 +2034,11 @@ results_env2 <- results_env2 %>%
 
 # create corr matrix, with dummy vars
 set.seed(10)
-tsne_model_env = Rtsne(as.matrix(results_env2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_env = as.data.frame(tsne_model_env$Y)  
+tsne_model_1 = Rtsne(as.matrix(results_env2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+d_tsne_1 = as.data.frame(tsne_model_1$Y)  
 
 ## plotting the results without clustering
-ggplot(d_tsne_env, aes(x=V1, y=V2)) +  
+ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
   geom_point(size=0.25) +
   guides(colour=guide_legend(override.aes=list(size=6))) +
   xlab("") + ylab("") +
@@ -2049,17 +2049,17 @@ ggplot(d_tsne_env, aes(x=V1, y=V2)) +
   scale_colour_brewer(palette = "Set2")
 
 ## keeping original data
-d_tsne_env_original=d_tsne_env
+d_tsne_1_original=d_tsne_1
 
 ## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_env), 3)  
-d_tsne_env_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
 
 ## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_env)))
+fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
 
 ## setting 3 clusters as output
-d_tsne_env_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
 
 plot_cluster=function(data, var_cluster, palette)  
 {
@@ -2077,12 +2077,13 @@ plot_cluster=function(data, var_cluster, palette)
     scale_colour_brewer(palette = palette) 
 }
 
-plot_k=plot_cluster(d_tsne_env_original, "cl_kmeans", "Accent")  
-plot_h=plot_cluster(d_tsne_env_original, "cl_hierarchical", "Set1")
+
+plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
 
 ## and finally: putting the plots side by side with gridExtra lib...
 library(gridExtra)  
-grid.arrange(plot_k, plot_h,  ncol=2)  
+grid.arrange(plot_k, plot_h,  ncol=2)    
 ```
 
 ### CLM environmental regression
@@ -2351,11 +2352,11 @@ text(tsne$Y, labels=as.numeric(results_le2[,1]), col=cols[results_le2[,1]])
 
 # create corr matrix, with dummy vars
 set.seed(10)
-tsne_model_le = Rtsne(as.matrix(results_le2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_le = as.data.frame(tsne_model_le$Y)  
+tsne_model_1 = Rtsne(as.matrix(results_le2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+d_tsne_1 = as.data.frame(tsne_model_1$Y)  
 
 ## plotting the results without clustering
-ggplot(d_tsne_le, aes(x=V1, y=V2)) +  
+ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
   geom_point(size=0.25) +
   guides(colour=guide_legend(override.aes=list(size=6))) +
   xlab("") + ylab("") +
@@ -2366,17 +2367,17 @@ ggplot(d_tsne_le, aes(x=V1, y=V2)) +
   scale_colour_brewer(palette = "Set2")
 
 ## keeping original data
-d_tsne_le_original=d_tsne_le
+d_tsne_1_original=d_tsne_1
 
 ## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_le), 3)  
-d_tsne_le_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
 
 ## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_le)))
+fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
 
 ## setting 3 clusters as output
-d_tsne_le_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
 
 plot_cluster=function(data, var_cluster, palette)  
 {
@@ -2394,8 +2395,9 @@ plot_cluster=function(data, var_cluster, palette)
     scale_colour_brewer(palette = palette) 
 }
 
-plot_k=plot_cluster(d_tsne_le_original, "cl_kmeans", "Accent")  
-plot_h=plot_cluster(d_tsne_le_original, "cl_hierarchical", "Set1")
+
+plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
 
 ## and finally: putting the plots side by side with gridExtra lib...
 library(gridExtra)  
@@ -2591,11 +2593,11 @@ results_def2 <- na.omit(results_def2) %>%
 
 # create corr matrix, with dummy vars
 set.seed(10)
-tsne_model_def = Rtsne(as.matrix(results_def2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_def = as.data.frame(tsne_model_def$Y)  
+tsne_model_1 = Rtsne(as.matrix(results_def2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+d_tsne_1 = as.data.frame(tsne_model_1$Y)  
 
 ## plotting the results without clustering
-ggplot(d_tsne_def, aes(x=V1, y=V2)) +  
+ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
   geom_point(size=0.25) +
   guides(colour=guide_legend(override.aes=list(size=6))) +
   xlab("") + ylab("") +
@@ -2606,17 +2608,17 @@ ggplot(d_tsne_def, aes(x=V1, y=V2)) +
   scale_colour_brewer(palette = "Set2")
 
 ## keeping original data
-d_tsne_def_original=d_tsne_def
+d_tsne_1_original=d_tsne_1
 
 ## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_def), 3)  
-d_tsne_def_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
 
 ## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_def)))
+fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
 
 ## setting 3 clusters as output
-d_tsne_def_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
 
 plot_cluster=function(data, var_cluster, palette)  
 {
@@ -2634,8 +2636,9 @@ plot_cluster=function(data, var_cluster, palette)
     scale_colour_brewer(palette = palette) 
 }
 
-plot_k=plot_cluster(d_tsne_le_original, "cl_kmeans", "Accent")  
-plot_h=plot_cluster(d_tsne_le_original, "cl_hierarchical", "Set1")
+
+plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
 
 ## and finally: putting the plots side by side with gridExtra lib...
 library(gridExtra)  
@@ -2823,14 +2826,59 @@ results_tsm2 <- na.omit(results_tsm2) %>%
   NA_preproc() %>%
   data.matrix()
 
-# t-SNE
-colors = rainbow(length(unique(results_tsm2)))
-names(colors) = unique(results_tsm2)
+# create corr matrix, with dummy vars
+set.seed(10)
+tsne_model_1 = Rtsne(as.matrix(results_tsm2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+d_tsne_1 = as.data.frame(tsne_model_1$Y)  
 
-tsne<-Rtsne(results_tsm2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
+## plotting the results without clustering
+ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+  geom_point(size=0.25) +
+  guides(colour=guide_legend(override.aes=list(size=6))) +
+  xlab("") + ylab("") +
+  ggtitle("t-SNE") +
+  theme_light(base_size=20) +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank()) +
+  scale_colour_brewer(palette = "Set2")
+
+## keeping original data
+d_tsne_1_original=d_tsne_1
+
+## Creating k-means clustering model, and assigning the result to the data used to create the tsne
+fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+
+## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
+fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
+
+## setting 3 clusters as output
+d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+
+plot_cluster=function(data, var_cluster, palette)  
+{
+  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
+  geom_point(size=0.25) +
+  guides(colour=guide_legend(override.aes=list(size=6))) +
+  xlab("") + ylab("") +
+  ggtitle("") +
+  theme_light(base_size=20) +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        legend.direction = "horizontal", 
+        legend.position = "bottom",
+        legend.box = "horizontal") + 
+    scale_colour_brewer(palette = palette) 
+}
+
+
+plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
+
+## and finally: putting the plots side by side with gridExtra lib...
+library(gridExtra)  
+grid.arrange(plot_k, plot_h,  ncol=2) 
 ```
-
-
 
 ## CLM TSM
 ```{r CLM TSM}
@@ -2959,11 +3007,7 @@ results_entrap2 <- na.omit(results_entrap2) %>%
   data.matrix()
 
 # t-SNE
-
-results_entrap2 <- unique(results_entrap2) # Remove duplicates
-
-# colors = rainbow(length(unique(results_entrap2)))
-# names(colors) = unique(results_entrap2)
+# create corr matrix, with dummy vars
 set.seed(10)
 tsne_model_1 = Rtsne(as.matrix(results_entrap2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
 d_tsne_1 = as.data.frame(tsne_model_1$Y)  
@@ -2979,22 +3023,42 @@ ggplot(d_tsne_1, aes(x=V1, y=V2)) +
         axis.text.y=element_blank()) +
   scale_colour_brewer(palette = "Set2")
 
+## keeping original data
+d_tsne_1_original=d_tsne_1
+
+## Creating k-means clustering model, and assigning the result to the data used to create the tsne
+fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+
+## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
+fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
+
+## setting 3 clusters as output
+d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+
+plot_cluster=function(data, var_cluster, palette)  
+{
+  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
+  geom_point(size=0.25) +
+  guides(colour=guide_legend(override.aes=list(size=6))) +
+  xlab("") + ylab("") +
+  ggtitle("") +
+  theme_light(base_size=20) +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        legend.direction = "horizontal", 
+        legend.position = "bottom",
+        legend.box = "horizontal") + 
+    scale_colour_brewer(palette = palette) 
+}
 
 
-# tsne<-Rtsne(results_entrap2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
-plot(tsne_out$Y, col=tsne_out$Y, asp=1)
+plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
 
-# display the results of t-SNE
-cols <- rainbow(length(unique(results_entrap2)))
-plot(tsne$Y, t='n')
-text(tsne$Y, labels=as.numeric(results_entrap2[,1]), col=cols[results_entrap2[,1]])
-
-plot(tsne$Y, t='n', main="BarnesHutSNE")
-text(tsne$Y, labels=rownames(results_entrap2))
-
-
-## getting the two dimension matrix
-
+## and finally: putting the plots side by side with gridExtra lib...
+library(gridExtra)  
+grid.arrange(plot_k, plot_h,  ncol=2) 
 ```
 
 ###  CLM Entrapment regression
@@ -3116,7 +3180,6 @@ data.v27 <- data.v26
 
 ## Motivational Moderator correlation
 ```{r MM_corr}
-
 # Define MM variable candidates for correlation matrix
 data_mm <- data.v27 %>% select(inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
 data <- data_mm
@@ -3202,6 +3265,61 @@ tsne<-Rtsne(results_mm2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_dupli
 cols <- rainbow(length(unique(results_mm2)))
 plot(tsne$Y, t='n')
 text(tsne$Y, labels=as.numeric(results_mm2[,1]), col=cols[results_mm2[,1]])
+
+
+# second tsne trial
+# create corr matrix, with dummy vars
+set.seed(10)
+tsne_model_1 = Rtsne(as.matrix(results_mm2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+d_tsne_1 = as.data.frame(tsne_model_1$Y)  
+
+## plotting the results without clustering
+ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+  geom_point(size=0.25) +
+  guides(colour=guide_legend(override.aes=list(size=6))) +
+  xlab("") + ylab("") +
+  ggtitle("t-SNE") +
+  theme_light(base_size=20) +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank()) +
+  scale_colour_brewer(palette = "Set2")
+
+## keeping original data
+d_tsne_1_original=d_tsne_1
+
+## Creating k-means clustering model, and assigning the result to the data used to create the tsne
+fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+
+## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
+fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
+
+## setting 3 clusters as output
+d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+
+plot_cluster=function(data, var_cluster, palette)  
+{
+  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
+  geom_point(size=0.25) +
+  guides(colour=guide_legend(override.aes=list(size=6))) +
+  xlab("") + ylab("") +
+  ggtitle("") +
+  theme_light(base_size=20) +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        legend.direction = "horizontal", 
+        legend.position = "bottom",
+        legend.box = "horizontal") + 
+    scale_colour_brewer(palette = palette) 
+}
+
+
+plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
+
+## and finally: putting the plots side by side with gridExtra lib...
+library(gridExtra)  
+grid.arrange(plot_k, plot_h,  ncol=2) 
 ```
 
 
