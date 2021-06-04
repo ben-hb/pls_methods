@@ -1604,12 +1604,10 @@ plot_cluster=function(data, var_cluster, palette)
 plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")   # is this where i add labels?
 plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
 grid.arrange(plot_k, plot_h, ncol=2) 
-
 ```
 
 ### CLM diathesis regression
 ```{r clm_dia}
-
 clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib_freq, race, 
                                body_sr, dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, meds_dep, ed_any,
                                meds_anx, meds_mood, meds_sle, meds_count)
@@ -1743,8 +1741,7 @@ table(data.v14$satisfied_overall)
 
 ## Activity Involvement
 ```{r Activities}
-
-  # set all NAs in acitvities equal to 0
+# set all NAs in acitvities equal to 0
 data.v14$activ_ac[is.na(data.v14$activ_ac)] <- 0
 data.v14$activ_athc[is.na(data.v14$activ_athc)] <- 0
 data.v14$activ_athv[is.na(data.v14$activ_athv)] <- 0
@@ -1795,8 +1792,7 @@ data.v14 = subset(data.v14, select= -c(activ_none, activ_ac:activ_other))    # c
 
 ## School variable
 ```{r school2}
-
-#insert each school as a dichotomous var
+# insert each school as a dichotomous var
 data.v14 <- data.v14 %>%
   mutate(var_AlbertaCAD = ifelse((school2 == "AlbertaCAD"), 1, 0)) %>%
   mutate(var_Boston = ifelse((school2 == "Boston"), 1, 0)) %>%
@@ -1857,7 +1853,6 @@ data.v14 <- data.v14 %>%
   mutate(var_WesternMichigan = ifelse((school2 == "WesternMichigan"), 1, 0)) %>%
   mutate(var_WesternWA = ifelse((school2 == "WesternWA"), 1, 0)) %>%
   mutate(var_Xavier = ifelse((school2 == "Xavier"), 1, 0))
-
 ```
 
 ### School type levels
@@ -1937,7 +1932,6 @@ data.v14 = subset(data.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoColl
                                        var_MDInstituteCollegeArt, var_MassArt, var_MinnesotaCAD, 
                                        var_NHInstituteArt, var_Pratt, var_Ringling, var_SAIC,
                                        var_UNCSchoolArt, var_Watkins))
-
 ```
 
 ## ENVIRONMENT ANALYSES
@@ -1967,7 +1961,6 @@ print(corr)
 # turn corr back into matrix in order to plot with corrplot
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-
 ```
 
 ##EFA Environment
@@ -2085,7 +2078,6 @@ grid.arrange(plot_k, plot_h,  ncol=2)
 Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + 
 school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
 ```{r CLM environment}
-
 clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, 
                                divers, school2_type, satisfied_overall, ther_vis, talk, military, international)
 
@@ -2105,7 +2097,6 @@ model.env  %>%
   mutate(or = exp(estimate),               # Odds ratio/gradient
          var.diag = diag(vcov(clm_env)),   # Variance of each coefficient
          or.se = sqrt(or^2 * var.diag))    # Odds-ratio adjusted 
-
 ```
 
 
@@ -2119,7 +2110,6 @@ data.v16 <- data.v14
 
 ## Insurance coverage
 ```{r ins_cover}
-
 # create one insurance var from related questions in 'ins_' module
 data.v16 <- data.v16 %>% 
   mutate(ins_cover = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 0,
@@ -2154,7 +2144,6 @@ data.v16 <- data.v16 %>%
                               drug_other == 1 ~ 1))
 table(data.v16$drugs_yn)
 table(data.v16$drug_mar)
-
 ```
 
 ## Current financial stressors
@@ -2190,7 +2179,6 @@ data.v17 = subset(data.v17, select= -c(abuse_life, abuse_recent)) # clean up var
 
 ## Recent assault history
 ```{r assault_[type]}
-
 # set all assault NAs equal to 0
 data.v17$assault_sex[is.na(data.v17$assault_sex)] <- 0
 data.v17$assault_emo[is.na(data.v17$assault_emo)] <- 0
@@ -2203,7 +2191,6 @@ data.v17 <- data.v17 %>%
 table(data.v17$assault_sex) # tabulate and check output
 table(data.v17$assault_emo)
 table(data.v17$assault_phys)
-
 ```
 
 ## Binging frequency
@@ -2244,13 +2231,11 @@ data.v19 <- data.v18
  
 ## LE correlation
 ```{r LE correlation}
-
 # Define life event var candidates for correlation matrix
 data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, drug_mar,
                                binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
 
- # convert data to numeric in order to run correlations (i.e., convert to factor first to keep 
- # the integrity of the data - each value will become a number rather than turn into NA_
+# convert data to numeric in order to run correlations
 data_le <- data_le %>% mutate_if(is.character, as.factor)
 data_le <-  data_le %>% mutate_if(is.factor, as.numeric)
 
@@ -2266,7 +2251,6 @@ print(corr)
 #turn corr back into matrix in order to plot with corrplot
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-
 ```
 ## EFA LE
 ```{r le_pca}
@@ -2375,15 +2359,11 @@ plot_cluster=function(data, var_cluster, palette)
 
 plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
 plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-
-## and finally: putting the plots side by side with gridExtra lib...
-library(gridExtra)  
 grid.arrange(plot_k, plot_h,  ncol=2) 
 ```
 
 ## CLM Life event regression
 ```{r clm_LE}
-
 clm_le <- data.v19 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur,
                               assault_phys, drug_mar, binge_fr, assault_sex, assault_emo, 
                               psyhx, drugs_yn)
@@ -2452,7 +2432,6 @@ table(data.v20$failed)
 
 # sample too small in the elective, remove
 data.v20 = subset(data.v20, select= -c(failed)) # clean up var
-
 ```
 
 ## Ashamed
@@ -2471,7 +2450,6 @@ data.v21 <- data.v20
 
 ## Defeat correlation
 ```{r Defeat cor}
-
 # Define defeat variable candidates for correlation matrix
 data_def <- data.v21 %>% select(aca_impa, deprawsc)
 
@@ -2511,7 +2489,6 @@ corr <- as.data.frame(as.table(corr))         # turn into a 3-column table
 corr <- na.omit(corr)                         # remove the NA values from above 
 corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
 print(corr)
-
 ```
 
 ## EFA defeat
@@ -2620,7 +2597,6 @@ grid.arrange(plot_k, plot_h,  ncol=2)
 
 ## CLM defeat
 ```{r CLM defeat}
-
 results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
 
 clm_def <- NA_preproc(results2_def)
@@ -2639,7 +2615,6 @@ model.def  %>%
   mutate(or = exp(estimate),  # Odds ratio/gradient
          var.diag = diag(vcov(clm_def)),  # Variance of each coefficient
          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
-
 ```
 
 
@@ -2685,11 +2660,17 @@ data.v22 <- data.v22 %>%
 table(data.v22$AAQ_tot)
 
 #  for loop for predictive cutoff point needed
+rs_df <- data.frame("cutoff" = c(), "rs" = c())
+for (i in 8:48) {
+  aaq_bin <- ifelse(data.v22$AAQ_tot >= i, TRUE, FALSE)
+  model = lm(data.v22$sui_idea ~ aaq_bin)
+  rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
 
-
-
-
-
+}
+names(rs_df) <- c("cutoff", "rs")
+rs_df %>% 
+  arrange(desc(rs)) %>% 
+  view()
 ```
 
 ## Achievement
