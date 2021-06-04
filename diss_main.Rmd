@@ -2668,9 +2668,14 @@ for (i in 8:48) {
 
 }
 names(rs_df) <- c("cutoff", "rs")
-rs_df %>% 
-  arrange(desc(rs)) %>% 
-  view()
+rs_df_arranged <- rs_df %>% 
+  arrange(desc(rs)) 
+rs_df_arranged[1,1]
+
+# deem 'rs_df_arranged[1,1]' as SI cutoff
+data.v22 <- data.v22 %>%
+  mutate(AAQ_dum = ifelse(AAQ_tot > rs_df_arranged[1,1], TRUE, FALSE))
+table(data.v22$AAQ_dum)
 ```
 
 ## Achievement
@@ -3061,6 +3066,28 @@ data.v22 = subset(data.v22, select= -c(achieve1, achieve14, achieve18)) # clean 
 ## Flourishing Scale
 ```{r flourish}
 table(data.v26$flourish)
+
+#  for loop for predictive cutoff point needed
+rs_df <- data.frame("cutoff" = c(), "rs" = c())
+for (i in 9:55) {
+  flourish_bin <- ifelse(data.v26$flourish >= i, TRUE, FALSE)
+  model = lm(data.v26$sui_idea ~ flourish_bin)
+  rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
+
+}
+names(rs_df) <- c("cutoff", "rs")
+rs_df_arranged <- rs_df %>% 
+  arrange(desc(rs)) 
+rs_df_arranged[1,1]
+
+# deem 'rs_df_arranged[1,1]' as SI cutoff
+data.v26 <- data.v26 %>%
+  mutate(flourish_dum = ifelse(flourish > rs_df_arranged[1,1], TRUE, FALSE))
+
+# Output
+rs_df_arranged[1,1]
+table(data.v26$flourish_dum)
+
 ```
 
 ## Informal Mental Health Support
