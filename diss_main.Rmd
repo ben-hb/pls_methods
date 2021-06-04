@@ -2652,7 +2652,7 @@ table(data.v22$dep_secret)
 ```
 
 ## AAQ total (elective module)
-```{r AAQ_tot}
+```{r aa_dum}
 # create AAQ_tot variable to sum up imputed AAQ questions
 data.v22 <- data.v22 %>%
   mutate(AAQ_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
@@ -2674,8 +2674,8 @@ rs_df_arranged[1,1]
 
 # deem 'rs_df_arranged[1,1]' as SI cutoff
 data.v22 <- data.v22 %>%
-  mutate(AAQ_dum = ifelse(AAQ_tot > rs_df_arranged[1,1], TRUE, FALSE))
-table(data.v22$AAQ_dum)
+  mutate(aaq_dum = ifelse(AAQ_tot > rs_df_arranged[1,1], TRUE, FALSE))
+table(data.v22$aaq_dum)
 ```
 
 ## Achievement
@@ -2699,7 +2699,7 @@ data.v23 <- data.v22
 ```{r CORR TSM}
 
 # Define TSM variable candidates for correlation matrix
-data_tsm <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
+data_tsm <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_dum)
 
 # convert data to numeric in order to run correlations 
 data_tsm <- data_tsm %>% mutate_if(is.character, as.factor)
@@ -2733,19 +2733,16 @@ print(corr)
 
 ## EFA TSM
 ```{r EFA TSM}
-data_tsm <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
+data_tsm <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_dum)
 
 # create corr matrix, with dummy vars 
 data_tsm <- data_tsm %>% 
   mutate_if(is.numeric, as.factor) %>% 
-    mutate(
-    AAQ_tot = as.numeric(AAQ_tot),
-  ) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 data_tsm   # check output
 
-results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_score", "dep_secret", "achieve4", "AAQ_tot"),
+results_tsm <- dummy_cols(data_tsm, select_columns = c("persist", "anx_score", "dep_secret", "achieve4", "aaq_dum"),
                          remove_first_dummy = TRUE)
 
 tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
@@ -2776,7 +2773,7 @@ fviz_contrib(tsm_pca, choice = "var", axes = 4, top = 20)
 ```
 ```{r T-SNE TSM}
 # set up df for t-sne
-data_tsm2 <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
+data_tsm2 <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_dum)
 results_tsm2 <- dummy_cols(data_tsm2, remove_first_dummy = TRUE)
 
 # create corr matrix, with dummy vars
@@ -2838,12 +2835,12 @@ grid.arrange(plot_k, plot_h,  ncol=2)
 
 ## CLM TSM
 ```{r CLM TSM}
-clm_tsm <- data.v23 %>% select(si_type, persist, anx_mod, anx_sev, dep_secret, aaq_yn)
+clm_tsm <- data.v23 %>% select(si_type, persist, anx_mod, anx_sev, dep_secret, aaq_dum)
 
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
 
-clm_tsm <- clm(si_type ~ persist + anx_mod + anx_sev + dep_secret + aaq_yn, data = clm_tsm)
+clm_tsm <- clm(si_type ~ persist + anx_mod + anx_sev + dep_secret + aaq_dum, data = clm_tsm)
 
 summary(clm_tsm)
 coef(clm_tsm)
@@ -3126,8 +3123,28 @@ data.v26 = subset(data.v26, select= -c(inf_1:inf_help, inf_sum))
 ```{r BRS_tot}
 data.v26 <- data.v26 %>%
   mutate(brs_tot = as.integer(BRS_1) + as.integer(BRS_2) + as.integer(BRS_3) + as.integer(BRS_4) + as.integer(BRS_5))
-
 table(data.v26$brs_tot)
+
+#  for loop for predictive cutoff point needed
+rs_df <- data.frame("cutoff" = c(), "rs" = c())
+for (i in 6:24) {
+  brs_bin <- ifelse(data.v26$brs_tot >= i, TRUE, FALSE)
+  model = lm(data.v26$sui_idea ~ brs_bin)
+  rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
+}
+
+names(rs_df) <- c("cutoff", "rs")
+rs_df_arranged <- rs_df %>% 
+  arrange(desc(rs)) 
+
+# deem 'rs_df_arranged[1,1]' as SI cutoff
+data.v26 <- data.v26 %>%
+  mutate(brs_dum = ifelse(brs_tot > rs_df_arranged[1,1], TRUE, FALSE))
+
+# output
+rs_df_arranged[1,1]
+table(data.v26$brs_dum)
+
 ```
 
 ## Friendship development
@@ -3156,7 +3173,7 @@ data.v27 <- data.v26
 ## Motivational Moderator correlation
 ```{r MM_corr}
 # Define MM variable candidates for correlation matrix
-data_mm <- data.v27 %>% select(inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
+data_mm <- data.v27 %>% select(inf, flourish_dum, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_dum)
 data <- data_mm
 sig <- 0.6
 
@@ -3181,7 +3198,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ## EFA MM
 ```{r EFA MM}
-data_mm <- data.v27 %>% select(inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
+data_mm <- data.v27 %>% select(inf, flourish_dum, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_dum)
 
 # create corr matrix, with dummy vars 
 data_mm <- data_mm %>% 
@@ -3189,8 +3206,8 @@ data_mm <- data_mm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 data_mm   # check output
-results_mm <- dummy_cols(data_mm, select_columns = c("inf", "flourish", "belong1", "belong2", "belong8",
-                                                     "belong9", "stig_pcv_2", "stig_pcv_3", "brs_tot"),
+results_mm <- dummy_cols(data_mm, select_columns = c("inf", "flourish_dum", "belong1", "belong2", "belong8",
+                                                     "belong9", "stig_pcv_2", "stig_pcv_3", "brs_dum"),
                          remove_first_dummy = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 eigval_mm <- get_eigenvalue(mm_pca)
@@ -3221,7 +3238,7 @@ fviz_contrib(mm_pca, choice = "var", axes = 4, top = 20)
 ### t-SNE MM
 ```{r tsne_mm}
 # set up df for t-sne
-data_mm2 <- data.v27 %>% select(inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
+data_mm2 <- data.v27 %>% select(inf, flourish_dum, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_dum)
 results_mm2 <- dummy_cols(data_mm2, remove_first_dummy = TRUE)
 
 # create corr matrix, with dummy vars
@@ -3281,18 +3298,18 @@ plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
 grid.arrange(plot_k, plot_h,  ncol=2) 
 ```
 
-
-
 ## CLM Motivational moderators regression
-Variables for consideration:  inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot
+Variables for consideration:  inf, flourish_dum, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_dum
 ```{r CLM mm}
 
-clm_mm <- data.v27 %>% select(si_type, inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_tot)
+clm_mm <- data.v27 %>% select(si_type, inf, flourish_dum, belong1, belong2, belong8, belong9, 
+                              stig_pcv_2, stig_pcv_3, brs_dum)
 
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
 
-clm_mm <- clm(si_type ~ inf + flourish + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + stig_pcv_3 + brs_tot, data = clm_mm)
+clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + 
+                stig_pcv_3 + brs_dum, data = clm_mm)
 
 summary(clm_mm)
 coef(clm_mm)
@@ -3327,11 +3344,11 @@ var_names <- c(
   # defeat
   "aca_impa", "deprawsc",
   # threats to self-moderation
-  "persist", "anx_mod", "anx_sev", "dep_secret", "aaq_yn",
+  "persist", "anx_score", "dep_secret", "aaq_dum",
   # entrapment
   "dep_impa", "gad7_impa", "percneed_cur",
   # motivational moderators
-  "inf", "flourish", "belong1", "belong2", "belong8", "belong9", "stig_pcv_2", "stig_pcv_3", "BRS_tot")  
+  "inf", "flourish_dum", "belong1", "belong2", "belong8", "belong9", "stig_pcv_2", "stig_pcv_3", "brs_dum")  
 var_names <- sort(var_names)
 
 # build table for absolute missingness based on school2
@@ -3389,7 +3406,6 @@ write_xlsx(missing_rates, path = "overall_missing.xlsx", col_names = TRUE, forma
 missing_dfs <- list()
 for (k in 1:length(var_names)) {
 
-#build table for absolute missingness based on school2
 #create skeleton of missingness matrix
 var <- count(data.v28, data.v28[var_names[k]])
 var_ncol <- ncol(var)
@@ -3441,11 +3457,11 @@ data_sem <- data.v28 %>% select(
   # defeat
   aca_impa, deprawsc,
   # threats to self-moderation
-  persist, anx_mod, anx_sev, dep_secret, aaq_yn,
+  persist, anx_score, aaq_dum,
   # entrapment
   dep_impa, gad7_impa, percneed_cur,
   # motivational moderators
-  inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, BRS_tot)
+  inf, flourish_dum, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_dum)
 
 # create corr matrix, with dummy vars 
 data_sem <- data_sem %>% 
@@ -3468,48 +3484,26 @@ results_sem <- dummy_cols(data_sem, select_columns = c(
     # defeat
     "aca_impa", "deprawsc",
     # threats to self-moderation
-    "persist", "anx_mod", "anx_sev", "dep_secret", "aaq_yn",
+    "persist", "anx_score", "dep_secret", "aaq_dum",
     # entrapment
     "dep_impa", "gad7_impa", "percneed_cur",
     # motivational moderators
-    "inf", "flourish", "belong1", "belong2", "belong8", "belong9", "stig_pcv_2", "stig_pcv_3", "BRS_tot"), 
+    "inf", "flourish_dum", "belong1", "belong2", "belong8", "belong9", "stig_pcv_2", "stig_pcv_3", "brs_dum"), 
                          remove_first_dummy = TRUE)
 ```
 
 
-```{r tSNE overall}
+# SUMMARY STATISTICS
 
-tsne_sem <- results_sem
-# create corr matrix, with dummy vars
-tsne_sem <- na.omit(tsne_sem) %>%
-  mutate_if(is.numeric, as.factor) %>%
-  NA_preproc() %>%
-  data.matrix()
 
-# t-SNE
-
-tsne_sem <- unique(tsne_sem) # Remove duplicates
-
-set.seed(10)
-tsne_model_1 = Rtsne(as.matrix(tsne_sem), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_1 = as.data.frame(tsne_model_1$Y)  
-
-## plotting the results without clustering
-ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("t-SNE") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank()) +
-  scale_colour_brewer(palette = "Set2")
-
+```{r Var_sum}
+describe(results_sem) %>% view()
 ```
 
 
+# DATA DIVISION
 
-## Data Division
+
 ```{r Data division}
 
 set.seed(1000) 
@@ -3525,13 +3519,128 @@ dim(traindf.v29)
 dim(testdf.v29)
 ```
 
+## t-SNE for train
+```{r}
+tsne_train <- traindf.v29
+# create corr matrix, with dummy vars
+tsne_train <- na.omit(tsne_train) %>%
+  mutate_if(is.numeric, as.factor) %>%
+  NA_preproc() %>%
+  data.matrix()
 
-# SUMMARY STATISTICS
+# create corr matrix, with dummy vars
+set.seed(10)
+tsne_model_1 = Rtsne(as.matrix(tsne_train), check_duplicates=FALSE, pca=TRUE, perplexity=50, theta=0.5, dims=2)
+d_tsne_1 = as.data.frame(tsne_model_1$Y)  
 
+## plotting the results without clustering
+ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+  geom_point(size=0.25) +
+  guides(colour=guide_legend(override.aes=list(size=6))) +
+  xlab("") + ylab("") +
+  ggtitle("t-SNE") +
+  theme_light(base_size=20) +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank()) +
+  scale_colour_brewer(palette = "Set2")
 
-```{r Var_sum}
-describe(results_sem) %>% view()
+## keeping original data
+d_tsne_1_original=d_tsne_1
+
+## Creating k-means clustering model, and assigning the result to the data used to create the tsne
+fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+
+## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
+fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
+
+## setting 3 clusters as output
+d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+
+plot_cluster=function(data, var_cluster, palette)  
+{
+  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
+  geom_point(size=0.25) +
+  guides(colour=guide_legend(override.aes=list(size=6))) +
+  xlab("") + ylab("") +
+  ggtitle("") +
+  theme_light(base_size=20) +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        legend.direction = "horizontal", 
+        legend.position = "bottom",
+        legend.box = "horizontal") + 
+    scale_colour_brewer(palette = palette) 
+}
+
+# plot
+plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
+grid.arrange(plot_k, plot_h, ncol=2) 
+
 ```
+
+
+## t-SNE for test data
+```{r}
+tsne_test <- testdf.v29
+# create corr matrix, with dummy vars
+tsne_test <- na.omit(tsne_test) %>%
+  mutate_if(is.numeric, as.factor) %>%
+  NA_preproc() %>%
+  data.matrix()
+
+# create corr matrix, with dummy vars
+set.seed(10)
+tsne_model_1 = Rtsne(as.matrix(tsne_train), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+d_tsne_1 = as.data.frame(tsne_model_1$Y)  
+
+## plotting the results without clustering
+ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+  geom_point(size=0.25) +
+  guides(colour=guide_legend(override.aes=list(size=6))) +
+  xlab("") + ylab("") +
+  ggtitle("t-SNE") +
+  theme_light(base_size=20) +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank()) +
+  scale_colour_brewer(palette = "Set2")
+
+## keeping original data
+d_tsne_1_original=d_tsne_1
+
+## Creating k-means clustering model, and assigning the result to the data used to create the tsne
+fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+
+## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
+fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
+
+## setting 3 clusters as output
+d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+
+plot_cluster=function(data, var_cluster, palette)  
+{
+  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
+  geom_point(size=0.25) +
+  guides(colour=guide_legend(override.aes=list(size=6))) +
+  xlab("") + ylab("") +
+  ggtitle("") +
+  theme_light(base_size=20) +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        legend.direction = "horizontal", 
+        legend.position = "bottom",
+        legend.box = "horizontal") + 
+    scale_colour_brewer(palette = palette) 
+}
+
+# plot
+plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
+grid.arrange(plot_k, plot_h, ncol=2) 
+```
+
 
 
 # SEM ANALYSIS
@@ -3553,10 +3662,10 @@ SI_model_tr <- '# measurement model
                   le_sem =~  ins_cover + gpa_sr + assault_phys + binge_fr +
                              assault_sex + assault_emo + psyhx + fincur + drugs_yn + abuse_year
                   def_sem =~ aca_impa + deprawsc
-                  tsm_sem =~ persist + anx_mod + anx_sev + dep_secret + aaq_yn
+                  tsm_sem =~ persist + anx_score + dep_secret + aaq_dum
                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
-                  mm_sem =~  inf + flourish + belong1 + belong2 + belong8 + belong9 + 
-                             stig_pcv_2 + stig_pcv_3 + BRS_tot
+                  mm_sem =~  inf + flourish_dum + belong1 + belong2 + belong8 + belong9 + 
+                             stig_pcv_2 + stig_pcv_3 + brs_dum
                   si_sem =~  si_type
                     
                 # structural model - regressions
