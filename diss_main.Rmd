@@ -2336,20 +2336,6 @@ results_le2 <- results_le2 %>%
   NA_preproc() %>%
   data.matrix()
 
-# t-SNE
-colors = rainbow(length(unique(results_le2)))
-names(colors) = unique(results_le2)
-
-tsne<-Rtsne(results_le2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
-
-# display the results of t-SNE
-cols <- rainbow(5)
-plot(tsne$Y, t='n')
-text(tsne$Y, labels=as.numeric(results_le2[,1]), col=cols[results_le2[,1]])
-
-
-# second tsne
-
 # create corr matrix, with dummy vars
 set.seed(10)
 tsne_model_1 = Rtsne(as.matrix(results_le2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
