@@ -2774,17 +2774,43 @@ results_entrap2 <- na.omit(results_entrap2) %>%
   data.matrix()
 
 # t-SNE
-colors = rainbow(length(unique(results_entrap2)))
-names(colors) = unique(results_entrap2)
 
-tsne<-Rtsne(results_entrap2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
+results_entrap2 <- unique(results_entrap2) # Remove duplicates
+
+# colors = rainbow(length(unique(results_entrap2)))
+# names(colors) = unique(results_entrap2)
+set.seed(10)
+tsne_model_1 = Rtsne(as.matrix(results_entrap2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+d_tsne_1 = as.data.frame(tsne_model_1$Y)  
+
+## plotting the results without clustering
+ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+  geom_point(size=0.25) +
+  guides(colour=guide_legend(override.aes=list(size=6))) +
+  xlab("") + ylab("") +
+  ggtitle("t-SNE") +
+  theme_light(base_size=20) +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank()) +
+  scale_colour_brewer(palette = "Set2")
+
+
+
+# tsne<-Rtsne(results_entrap2,dims=2,perplexity=30,verbose=T,max_iter=1500,check_duplicates=F)
+plot(tsne_out$Y, col=tsne_out$Y, asp=1)
 
 # display the results of t-SNE
 cols <- rainbow(length(unique(results_entrap2)))
 plot(tsne$Y, t='n')
 text(tsne$Y, labels=as.numeric(results_entrap2[,1]), col=cols[results_entrap2[,1]])
-```
 
+plot(tsne$Y, t='n', main="BarnesHutSNE")
+text(tsne$Y, labels=rownames(results_entrap2))
+
+
+## getting the two dimension matrix
+
+```
 
 ###  CLM Entrapment regression
 ```{r clm_entrap}
@@ -3188,6 +3214,39 @@ results_sem <- dummy_cols(data_sem, select_columns = c(
                          remove_first_dummy = TRUE)
 ```
 
+
+```{r tSNE overall}
+
+tsne_sem <- results_sem
+# create corr matrix, with dummy vars
+tsne_sem <- na.omit(tsne_sem) %>%
+  mutate_if(is.numeric, as.factor) %>%
+  NA_preproc() %>%
+  data.matrix()
+
+# t-SNE
+
+tsne_sem <- unique(tsne_sem) # Remove duplicates
+
+set.seed(10)
+tsne_model_1 = Rtsne(as.matrix(tsne_sem), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+d_tsne_1 = as.data.frame(tsne_model_1$Y)  
+
+## plotting the results without clustering
+ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+  geom_point(size=0.25) +
+  guides(colour=guide_legend(override.aes=list(size=6))) +
+  xlab("") + ylab("") +
+  ggtitle("t-SNE") +
+  theme_light(base_size=20) +
+  theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank()) +
+  scale_colour_brewer(palette = "Set2")
+
+```
+
+
+
 ## Data Division
 ```{r Data division}
 
@@ -3210,8 +3269,6 @@ dim(testdf.v29)
 
 ```{r Var_sum}
 describe(results_sem) %>% view()
-describe(traindf.v29) %>% view()
-describe(testdf.v29) %>% view()
 ```
 
 
@@ -3233,7 +3290,7 @@ SI_model_tr <- '# measurement model
                              activ_yn + military + international
                   le_sem =~  ins_cover + gpa_sr + assault_phys + binge_fr +
                              assault_sex + assault_emo + psyhx + fincur + drugs_yn + abuse_year
-                  def_sem =~ aca_impa + dep_mod + dep_sev
+                  def_sem =~ aca_impa + deprawsc
                   tsm_sem =~ persist + anx_mod + anx_sev + dep_secret + aaq_yn
                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
                   mm_sem =~  inf + flourish + belong1 + belong2 + belong8 + belong9 + 
@@ -3256,10 +3313,14 @@ SI_model_tr <- '# measurement model
 ## Model estimation
 ```{r SEM model estimation}
 # Model estimation
+
 fit_train <- sem(SI_model_tr, data=traindf.v29)
+
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 list(summary_train$coefficient, 
       round(1-(summary_train$deviance/summary_train$null.deviance), 2))
+
+semPaths(SI_model_tr, "par", edge.label.cex = 1.2, fade = FALSE) 
 
 ```
 
