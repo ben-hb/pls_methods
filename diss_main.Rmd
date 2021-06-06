@@ -2645,7 +2645,7 @@ table(data.v22$dep_secret)
 ```
 
 ## AAQ total (elective module)
-```{r aa_dum}
+```{r aaq_dum}
 # create AAQ_tot variable to sum up imputed AAQ questions
 data.v22 <- data.v22 %>%
   mutate(AAQ_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
@@ -2890,7 +2890,7 @@ data_entrap <-  data_entrap %>% mutate_if(is.factor, as.numeric)
 # run a correlation and drop the insignificant ones
 corr <- cor(data_entrap, use = "pairwise.complete.obs")                               
 corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                                   # drop perfect correlations
+corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
 corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
 corr <- na.omit(corr)                                   #remove the NA values from above 
 corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
