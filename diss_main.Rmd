@@ -3513,128 +3513,6 @@ write_xlsx(results_sem, path = "data_sem.xls", col_names = TRUE, format_headers 
 
 ```
 
-## t-SNE for train
-```{r}
-tsne_train <- traindf.v29
-# create corr matrix, with dummy vars
-tsne_train <- na.omit(tsne_train) %>%
-  mutate_if(is.numeric, as.factor) %>%
-  NA_preproc() %>%
-  data.matrix()
-
-# create corr matrix, with dummy vars
-set.seed(10)
-tsne_model_1 = Rtsne(as.matrix(tsne_train), check_duplicates=FALSE, pca=TRUE, perplexity=50, theta=0.5, dims=2)
-d_tsne_1 = as.data.frame(tsne_model_1$Y)  
-
-## plotting the results without clustering
-ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("t-SNE") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank()) +
-  scale_colour_brewer(palette = "Set2")
-
-## keeping original data
-d_tsne_1_original=d_tsne_1
-
-## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
-d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
-
-## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
-
-## setting 3 clusters as output
-d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
-
-plot_cluster=function(data, var_cluster, palette)  
-{
-  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
-        legend.direction = "horizontal", 
-        legend.position = "bottom",
-        legend.box = "horizontal") + 
-    scale_colour_brewer(palette = palette) 
-}
-
-# plot
-plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
-plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-grid.arrange(plot_k, plot_h, ncol=2) 
-
-```
-
-
-## t-SNE for test data
-```{r}
-tsne_test <- testdf.v29
-# create corr matrix, with dummy vars
-tsne_test <- na.omit(tsne_test) %>%
-  mutate_if(is.numeric, as.factor) %>%
-  NA_preproc() %>%
-  data.matrix()
-
-# create corr matrix, with dummy vars
-set.seed(10)
-tsne_model_1 = Rtsne(as.matrix(tsne_train), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_1 = as.data.frame(tsne_model_1$Y)  
-
-## plotting the results without clustering
-ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("t-SNE") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank()) +
-  scale_colour_brewer(palette = "Set2")
-
-## keeping original data
-d_tsne_1_original=d_tsne_1
-
-## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
-d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
-
-## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
-
-## setting 3 clusters as output
-d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
-
-plot_cluster=function(data, var_cluster, palette)  
-{
-  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
-        legend.direction = "horizontal", 
-        legend.position = "bottom",
-        legend.box = "horizontal") + 
-    scale_colour_brewer(palette = palette) 
-}
-
-# plot
-plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
-plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-grid.arrange(plot_k, plot_h, ncol=2) 
-```
-
 
 
 # SEM ANALYSIS
@@ -3642,24 +3520,19 @@ grid.arrange(plot_k, plot_h, ncol=2)
 
 ## SEM specification
 ```{r SEM}
-traindf.v29 <- NA_preproc(traindf.v29)
-traindf.v29 <- as.data.frame(traindf.v29)
+results_sem <- NA_preproc(results_sem)
+results_sem <- as.data.frame(results_sem)
 
 SI_model_tr <- '# measurement model
-                  dia_sem =~ age + sexual + gender_noncis + finpast + sib_freq + 
-                             race + body_sr + ed_any + dx_dep + dx_bi + 
-                             dx_tr + dx_adhd + dx_pers + meds_sti + meds_dep +
-                             meds_anx + meds_mood + meds_sle + meds_count
-                  env_sem =~ env_mh + ther_vis + divers + satisfied_overall +
-                             residenc + talk + religios + discrim + school2_type + 
-                             activ_yn + military + international
-                  le_sem =~  ins_cover + gpa_sr + assault_phys + binge_fr +
-                             assault_sex + assault_emo + psyhx + fincur + drugs_yn + abuse_year
+                  dia_sem =~ age + sexual + gender_noncis + sib_freq + race + ed_any + dx_dep +
+                             dx_bi + dx_anx + dx_tr + dx_adhd + dx_pers + meds_count
+                  env_sem =~ divers + satisfied_overall + talk + religios + discrim + 
+                             school2_type + activ_yn + military
+                  le_sem =~  ins_cover + gpa_sr + binge_fr + psyhx + fincur + drugs_yn + trauma_year
                   def_sem =~ aca_impa + deprawsc
                   tsm_sem =~ persist + anx_score + dep_secret + aaq_dum
                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
-                  mm_sem =~  inf + flourish_dum + belong1 + belong2 + belong8 + belong9 + 
-                             stig_pcv_2 + stig_pcv_3 + brs_dum
+                  mm_sem =~  inf + flourish_dum + belong1 + stig_pcv_2 + stig_pcv_3 + brs_dum
                   si_sem =~  si_type
                     
                 # structural model - regressions
@@ -3680,7 +3553,7 @@ SI_model_tr <- '# measurement model
 ```{r SEM model estimation}
 # Model estimation
 
-fit_train <- sem(SI_model_tr, data=traindf.v29)
+fit_train <- sem(SI_model_tr, data=results_sem)
 
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 list(summary_train$coefficient, 
@@ -3693,7 +3566,7 @@ semPaths(SI_model_tr, "par", edge.label.cex = 1.2, fade = FALSE)
 ## Model prediction
 ```{r SEM test model}
 
-fit_test <- sem(SI_model_test, data=testdf.v29)
+fit_test <- sem(SI_model_test, data=)
 summary_test <- summary(fit_test, fit.measures=TRUE)
 list(summary_test$coefficient, 
       round(1-(summary_test$deviance/summary_test$null.deviance), 2))
