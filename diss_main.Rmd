@@ -3584,11 +3584,20 @@ SI_model_tr <- '# measurement model
                    dep_impa~~gad7_impa
                    meds_count~~dx_dep   '
 
+SI_tr_fit <- cfa(SI_model_tr, data = results_sem, estimator = "MLM", orthogonal = FALSE, std.lv = FALSE)
+summary(SI_tr_fit, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
+
+SI_tr_fitau <- cfa(SI_tr_fit, data = results_sem, estimator = "MLM", orthogonal = FALSE, std.lv = FALSE)
+summary(SI_tr_fitau, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
 ```
 
 ## Model estimation
 ```{r SEM model estimation}
 # Model estimation
+
+cov2cor(results_sem)
+
+S <- getCov(lower, names=c("dia_sem","env_sem","le_sem","def_sem","entrap_sem", "mm_sem", "si_sem"))
 
 fit_train <- sem(SI_model_tr, data=traindf.v29)
 
@@ -3614,7 +3623,7 @@ fit_train$prediction <- predict(SI_model_test, newdata = traindf.v29, type = "re
 fit_test$prediction  <- predict(SI_model_test, newdata = testdf.v29 , type = "response")
 
 # distribution of the prediction score grouped by outcome
-ggplot(traindf.v29, aes( prediction, color = as.factor(left) ) ) + 
+ggplot(traindf.v29, aes(prediction, color = as.factor(left) ) ) + 
 geom_density( size = 1 ) +
 ggtitle( "Training Set's Predicted Score" ) + 
 scale_color_economist( name = "data", labels = c( "negative", "positive" ) ) + 
