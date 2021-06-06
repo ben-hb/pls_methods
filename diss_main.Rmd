@@ -77,7 +77,7 @@ library(writexl)
 
 # PREPARING FILES
 
-Notes: LEADING VARIABLE FOR SEM SELECTION
+Notes: Preliminary variables for consideration
 
 Premotivational variables
   - Diathesis: age, sexual, gender, finpast, sib_freq, race, body_sr, ed_scoff, audit_tot, dx_dep, dx_bi, 
@@ -99,10 +99,10 @@ demographic tables... show up on the survey - acknowledge diversity
 ```{r Filter sample, cache = TRUE}
 
 #IMPORT file
- # data.raw <- read_excel("~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.xlsx",
- #                        range=cell_cols(1:1820), col_types = "text")
- # 
- # save("data.raw", file="~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
+ data.raw <- read_excel("~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.xlsx",
+                        range=cell_cols(1:1820), col_types = "text")
+
+ save("data.raw", file="~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
  load("~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
  # source("dissertation_fx.R")
    
