@@ -591,7 +591,6 @@ data.v4 <- data.v3 %>%
   mutate(sexual = factor(sexual, levels=1:10,
                          labels=c("Heterosexual", "Gay", "Lesbian", "Bisexual", "Queer", "Questioning",
                                   "Other", "Non-answers", "Pansexual", "Asexual/Demi")))
-
 table(data.v4$sexual) # tabulate and check outputs
 
 ```
@@ -1543,7 +1542,7 @@ fviz_contrib(dia_pca, choice = "var", axes = 4, top = 20)
 ### t-SNE diathesis
 ```{r tsne_dia}
 # set up df for t-sne
-data_dia2 <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
+data_dia2 <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr, dx_anx,
                                 dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, meds_dep, ed_any, meds_count)
 results_dia2 <- dummy_cols(data_dia2, remove_first_dummy = TRUE)
 
@@ -1606,7 +1605,7 @@ grid.arrange(plot_k, plot_h, ncol=2)
 
 ### CLM diathesis regression
 ```{r clm_dia}
-clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
+clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib_freq, race, body_sr, dx_anx,
                                 dx_anx, dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, ed_any, meds_count)
 
 clm_dia <- NA_preproc(clm_dia)
@@ -1618,7 +1617,7 @@ clm_dia <- as.data.frame(clm_dia)
 #     anx_count = sum(!is.na(meds_anx))
 #   )
 
-clm_mod<- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race +
+clm_mod<- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
                         ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count, data = clm_dia)
 summary(clm_mod)
 coef(clm_mod)
@@ -2081,7 +2080,7 @@ clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
 
 clm_env <- clm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
-                ther_vis + divers + + military + school2_type + residenc + env_mh, data = clm_env)
+                ther_vis + divers + military + school2_type + residenc + env_mh, data = clm_env)
 summary(clm_env)
 coef(clm_env)
 
@@ -3443,7 +3442,7 @@ data_sem <- data.v28 %>% select(
   # diathesis
   age, sexual, gender_noncis, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, dx_pers, meds_count,
   # environment
-  divers, satisfied_overall, residenc, talk, religios, discrim, school2_type, activ_yn, military,
+  divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn, military,
   # life events
   ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, trauma_year,
   # defeat
@@ -3466,13 +3465,12 @@ results_sem <- dummy_cols(data_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_noncis", "finpast", "sib_freq", "race", "body_sr", "ed_any", "audit_tot", "dx_dep", "dx_bi",
-    "dx_tr", "dx_adhd", "dx_pers", "meds_sti", "meds_dep", "meds_anx", "meds_mood", "meds_sle", "meds_count",
+    "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "audit_tot", "dx_dep", "dx_bi", "dx_anx",
+    "dx_tr", "dx_adhd", "dx_pers",  "meds_count",
     # environment
-    "env_mh", "ther_vis", "divers", "satisfied_overall", "residenc", "talk", "religios", "discrim", "school2_type", "activ_yn",
-   "military", "international",
+    "divers", "satisfied_overall", "residenc", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
     # life events
-    "ins_cover", "gpa_sr", "assault_phys", "binge_fr", "assault_sex", "assault_emo", "psyhx", "fincur", "drugs_yn", "abuse_year",
+    "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "trauma_year",
     # defeat
     "aca_impa", "deprawsc",
     # threats to self-moderation
