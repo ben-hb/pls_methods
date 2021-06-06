@@ -2399,7 +2399,7 @@ data.v20 <- data.v18
 ```{r deprawsc}
 table(data.v20$deprawsc)
 
-# If deciding to cartegorize --
+# If deciding to categorize --
 # data.v20 <- data.v20 %>%
 #   mutate(dep_none = case_when(deprawsc < 5 ~ 1,
 #                               deprawsc > 4 ~ 0)) %>%
@@ -2845,13 +2845,13 @@ clm_tsm <- clm(si_type ~ persist + anx_mod + anx_sev + dep_secret + aaq_dum, dat
 summary(clm_tsm)
 coef(clm_tsm)
 
-model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
-model.tsm 
-
-model.tsm  %>% 
-  mutate(or = exp(estimate),  # Odds ratio/gradient
-         var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
+# model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
+# model.tsm 
+# 
+# model.tsm  %>% 
+#   mutate(or = exp(estimate),  # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
 ```
 
 
