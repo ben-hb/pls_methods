@@ -3150,28 +3150,39 @@ data.v26 = subset(data.v26, select= -c(friend_devel)) # clean up var
 
 ## Perceived MH as failure, stigma
 ```{r stig_pcv_2}
-
 # original likert
 table(data.v26$stig_pcv_2)
 table(data.v26$stig_pcv_3)
 table(data.v26$stig_per_2)
 table(data.v26$stig_per_3)
 
-t# transform into y/n 
+# transform into y/n 
 data.v26 <- data.v26 %>%
-  mutate(stig_pcv_2 = case_when((stig_pcv_2 == 1 | stig_pcv_2 == 2 | stig_pcv_2 == 3) ~ 1,
+  mutate(stig_pcv_2b = case_when((stig_pcv_2 == 1 | stig_pcv_2 == 2 | stig_pcv_2 == 3) ~ 1,
                                 (stig_pcv_2 == 4 | stig_pcv_2 == 5 | stig_pcv_2 == 6) ~ 0)) %>%
-  mutate(stig_pcv_3 = case_when((stig_pcv_3 == 1 | stig_pcv_3 == 2 | stig_pcv_3 == 3) ~ 1,
+  mutate(stig_pcv_3b = case_when((stig_pcv_3 == 1 | stig_pcv_3 == 2 | stig_pcv_3 == 3) ~ 1,
                                 (stig_pcv_3 == 4 | stig_pcv_3 == 5 | stig_pcv_3 == 6) ~ 0)) %>%  
-  mutate(stig_per_2 = case_when((stig_per_2 == 1 | stig_per_2 == 2 | stig_per_2 == 3) ~ 1,
+  mutate(stig_per_2b = case_when((stig_per_2 == 1 | stig_per_2 == 2 | stig_per_2 == 3) ~ 1,
                                 (stig_per_2 == 4 | stig_per_2 == 5 | stig_per_2 == 6) ~ 0)) %>%
-  mutate(stig_per_3 = case_when((stig_per_3 == 1 | stig_per_3 == 2 | stig_per_3 == 3) ~ 1,
+  mutate(stig_per_3b = case_when((stig_per_3 == 1 | stig_per_3 == 2 | stig_per_3 == 3) ~ 1,
                                 (stig_per_3 == 4 | stig_per_3 == 5 | stig_per_3 == 6) ~ 0))  
 
-table(data.v26$stig_pcv_2)  # Most people feel that MH tx is a sign of personal failure.
-table(data.v26$stig_pcv_3)  # Most people think less of a person who has received MH tx.
-table(data.v26$stig_per_2)  # I feel that receiving MH tx is a sign of personal failure.
-table(data.v26$stig_per_3)  # I would think less of a person who has received MH tx..
+table(data.v26$stig_pcv_2b)  # Most people feel that MH tx is a sign of personal failure.
+table(data.v26$stig_pcv_3b)  # Most people think less of a person who has received MH tx.
+table(data.v26$stig_per_2b)  # I feel that receiving MH tx is a sign of personal failure.
+table(data.v26$stig_per_3b)  # I would think less of a person who has received MH tx.
+
+
+# tcombine scales?
+data.v26 <- data.v26 %>%
+  mutate(mh_stigma= case_when((stig_pcv_2 == 1 | stig_pcv_3 == 1 | stig_per_2 == 1 | stig_per_3 == 1) ~ 1,
+                              (stig_pcv_2 == 2 | stig_pcv_3 == 2 | stig_per_2 == 2 | stig_per_3 == 2) ~ 0,
+                              (stig_pcv_2 == 3 | stig_pcv_3 == 3 | stig_per_2 == 3 | stig_per_3 == 3) ~ 0,
+                              (stig_pcv_2 == 4 | stig_pcv_3 == 4 | stig_per_2 == 4 | stig_per_3 == 4) ~ 0,
+                              (stig_pcv_2 == 5 | stig_pcv_3 == 5 | stig_per_2 == 5 | stig_per_3 == 5) ~ 0,
+                              (stig_pcv_2 == 6 | stig_pcv_3 == 6 | stig_per_2 == 6 | stig_per_3 == 6) ~ 0))
+table(data.v26$mh_stigma)
+
 ```
 
 ```{r MM var analyses}
@@ -3182,7 +3193,7 @@ data.v27 <- data.v26
 ## Motivational Moderator correlation
 ```{r MM_corr}
 # Define MM variable candidates for correlation matrix
-data_mm <- data.v27 %>% select(inf, flourish_dum, belong2, stig_pcv_2, stig_pcv_3, brs_dum)
+data_mm <- data.v27 %>% select(inf, flourish_dum, belong2, mh_stigma, brs_dum)
 
  # convert data to numeric in order to run correlations
 data_mm <- data_mm %>% mutate_if(is.character, as.factor)
@@ -3192,20 +3203,16 @@ data_mm <-  data_mm %>% mutate_if(is.factor, as.numeric)
 corr <- cor(data_mm, use = "pairwise.complete.obs")                               
 corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
 corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
-corr <- na.omit(corr)                                   #remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
+corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
+corr <- na.omit(corr)                                   # remove the NA values from above 
+corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
 print(corr)
-  
-#turn corr back into matrix in order to plot with corrplot
-mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ```
 
 ## EFA MM
 ```{r EFA MM}
-data_mm <- data.v27 %>% select(inf, flourish_dum, belong2, stig_pcv_2, stig_pcv_3, brs_dum)
+data_mm <- data.v27 %>% select(inf, flourish_dum, belong2, mh_stigma, brs_dum)
 
 # create corr matrix, with dummy vars 
 data_mm <- data_mm %>% 
@@ -3213,7 +3220,7 @@ data_mm <- data_mm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 data_mm   # check output
-results_mm <- dummy_cols(data_mm, select_columns = c("inf", "flourish_dum", "belong2", "stig_pcv_2", "stig_pcv_3", "brs_dum"),
+results_mm <- dummy_cols(data_mm, select_columns = c("inf", "flourish_dum", "belong2", "mh_stigma", "brs_dum"),
                          remove_first_dummy = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 eigval_mm <- get_eigenvalue(mm_pca)
@@ -3305,15 +3312,15 @@ fviz_contrib(mm_pca, choice = "var", axes = 4, top = 20)
 ```
 
 ## CLM Motivational moderators regression
-Variables for consideration:  inf, flourish_dum, belong1, belong2, stig_pcv_2, stig_pcv_3, brs_dum
+Variables for consideration:  inf, flourish_dum, belong2, stig_pcv_2, stig_pcv_3, brs_dum
 ```{r CLM mm}
 
-clm_mm <- data.v27 %>% select(si_type, inf, flourish_dum, belong1, stig_pcv_2, stig_pcv_3, brs_dum)
+clm_mm <- data.v27 %>% select(si_type, inf, flourish_dum, belong2, mh_stigma, brs_dum)
 
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
 
-clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + stig_pcv_2 + stig_pcv_3 + brs_dum, data = clm_mm)
+clm_mm <- clm(si_type ~ inf + flourish_dum + belong2 + mh_stigma + brs_dum, data = clm_mm)
 
 summary(clm_mm)
 coef(clm_mm)
@@ -3337,14 +3344,12 @@ data.v28 <- data.v26
 # school structural analysis
 var_names <- c(
   # diathesis
-  "age", "sexual", "gender_noncis", "finpast", "sib_freq", "race", "body_sr", "ed_any", "audit_tot", "dx_dep", "dx_bi",
-  "dx_tr", "dx_adhd", "dx_pers", "meds_sti", "meds_dep", "meds_anx", "meds_mood", "meds_sle", "meds_count",
+  "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", 
+  "dx_anx, dx_adhd", "dx_pers", "meds_sti", "meds_count",
   # environment
-  "env_mh", "ther_vis", "divers", "satisfied_overall", "residenc", "talk", "religios", "discrim", "school2_type", "activ_yn",
-  "military", "international",
+  "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
   # life events
-  "ins_cover", "gpa_sr", "assault_phys", "binge_fr", "assault_sex", "assault_emo", "psyhx", "fincur", "drugs_yn", "abuse_year",
-  "drug_mar",
+  "ins_cover", "gpa_sr", "binge_fr", "assault_sex", "psyhx", "fincur", "drugs_yn", "trauma_year", "drug_mar",
   # defeat
   "aca_impa", "deprawsc",
   # threats to self-moderation
@@ -3352,7 +3357,7 @@ var_names <- c(
   # entrapment
   "dep_impa", "gad7_impa", "percneed_cur",
   # motivational moderators
-  "inf", "flourish_dum", "belong1", "belong2", "belong8", "belong9", "stig_pcv_2", "stig_pcv_3", "brs_dum")  
+  "inf", "flourish_dum", "belong2", "mh_stigma", "brs_dum")  
 var_names <- sort(var_names)
 
 # build table for absolute missingness based on school2
@@ -3463,7 +3468,7 @@ data_sem <- data.v28 %>% select(
   # entrapment
   dep_impa, gad7_impa, percneed_cur,
   # motivational moderators
-  inf, flourish_dum, belong1, stig_pcv_2, stig_pcv_3, brs_dum)
+  inf, flourish_dum, belong2, mh_stigma, brs_dum)
 
 # create corr matrix, with dummy vars 
 data_sem2 <- data_sem %>% 
@@ -3490,7 +3495,7 @@ results_sem <- dummy_cols(data_sem2, select_columns = c(
     # entrapment
     "dep_impa", "gad7_impa", "percneed_cur",
     # motivational moderators
-    "inf", "flourish_dum", "belong1", "stig_pcv_2", "stig_pcv_3", "brs_dum"), 
+    "inf", "flourish_dum", "belong2", "mh_stigma", "brs_dum"), 
                          remove_first_dummy = TRUE)
 ```
 
