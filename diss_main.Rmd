@@ -3510,7 +3510,6 @@ dim(testdf.v29)
 save(results_sem, file = "data_sem.RData")
 load("data_sem.RData")
 write_xlsx(results_sem, path = "data_sem.xls", col_names = TRUE, format_headers = TRUE)
-
 ```
 
 
