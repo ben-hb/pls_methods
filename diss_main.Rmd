@@ -2265,11 +2265,8 @@ data_le <- data_le %>%
   data.matrix()
 data_le   # check output
 
-results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "abuse_year", "gpa_sr",
-                                                     "aca_impa", "drug_mar", "fincur",
-                                                     "assault_phys", "binge_fr", "assault_sex", 
-                                                     "assault_emo", "deprawsc", "psyhx",
-                                                     "drugs_yn"),
+results_le <- dummy_cols(data_le, select_columns = c("ins_cover", "trauma_year", "gpa_sr", "psyhx",
+                                                     "aca_impa", "drug_mar", "fincur", "binge_fr", "drugs_yn"),
                          remove_first_dummy = TRUE)
 
 le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
@@ -2303,8 +2300,7 @@ fviz_contrib(le_pca, choice = "var", axes = 4, top = 20)
 
 ```{r tsne_le}
 # PCA map with eigenvalues
-data_le2 <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, drug_mar, fincur, assault_phys, binge_fr, assault_sex,
-                                 assault_emo, deprawsc, psyhx, drugs_yn)
+data_le2 <- data.v19 %>% select(ins_cover, trauma_year, gpa_sr, aca_impa, drug_mar, fincur, binge_fr, psyhx, drugs_yn)
 results_le2 <- dummy_cols(data_le2, remove_first_dummy = TRUE)
 
 # create corr matrix, with dummy vars
@@ -2365,15 +2361,12 @@ grid.arrange(plot_k, plot_h,  ncol=2)
 
 ## CLM Life event regression
 ```{r clm_LE}
-clm_le <- data.v19 %>% select(si_type, ins_cover, abuse_year, gpa_sr, aca_impa, fincur,
-                              assault_phys, drug_mar, binge_fr, assault_sex, assault_emo, 
-                              psyhx, drugs_yn)
+clm_le <- data.v19 %>% select(si_type, ins_cover, trauma_year, gpa_sr, aca_impa, fincur, drug_mar, binge_fr, psyhx, drugs_yn)
 
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
 
-clm_le <- clm(si_type ~ ins_cover + abuse_year + gpa_sr + aca_impa + fincur + assault_phys + 
-                binge_fr + drug_mar + assault_sex + assault_emo + + psyhx + drugs_yn, 
+clm_le <- clm(si_type ~ ins_cover + trauma_year + gpa_sr + aca_impa + fincur + binge_fr + drug_mar + psyhx + drugs_yn, 
               data = clm_le)
 summary(clm_le)
 coef(clm_le)
