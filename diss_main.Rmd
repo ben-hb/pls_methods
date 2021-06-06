@@ -3148,14 +3148,30 @@ table(data.v26$friend_devel)
 data.v26 = subset(data.v26, select= -c(friend_devel)) # clean up var
 ```
 
-## Perceived MH as failure
+## Perceived MH as failure, stigma
 ```{r stig_pcv_2}
-table(data.v26$stig_pcv_2)
-```
 
-## Perceived MH tx as negative
-```{r stig_pcv_3}
+# original likert
+table(data.v26$stig_pcv_2)
 table(data.v26$stig_pcv_3)
+table(data.v26$stig_per_2)
+table(data.v26$stig_per_3)
+
+t# transform into y/n 
+data.v26 <- data.v26 %>%
+  mutate(stig_pcv_2 = case_when((stig_pcv_2 == 1 | stig_pcv_2 == 2 | stig_pcv_2 == 3) ~ 1,
+                                (stig_pcv_2 == 4 | stig_pcv_2 == 5 | stig_pcv_2 == 6) ~ 0)) %>%
+  mutate(stig_pcv_3 = case_when((stig_pcv_3 == 1 | stig_pcv_3 == 2 | stig_pcv_3 == 3) ~ 1,
+                                (stig_pcv_3 == 4 | stig_pcv_3 == 5 | stig_pcv_3 == 6) ~ 0)) %>%  
+  mutate(stig_per_2 = case_when((stig_per_2 == 1 | stig_per_2 == 2 | stig_per_2 == 3) ~ 1,
+                                (stig_per_2 == 4 | stig_per_2 == 5 | stig_per_2 == 6) ~ 0)) %>%
+  mutate(stig_per_3 = case_when((stig_per_3 == 1 | stig_per_3 == 2 | stig_per_3 == 3) ~ 1,
+                                (stig_per_3 == 4 | stig_per_3 == 5 | stig_per_3 == 6) ~ 0))  
+
+table(data.v26$stig_pcv_2)  # Most people feel that MH tx is a sign of personal failure.
+table(data.v26$stig_pcv_3)  # Most people think less of a person who has received MH tx.
+table(data.v26$stig_per_2)  # I feel that receiving MH tx is a sign of personal failure.
+table(data.v26$stig_per_3)  # I would think less of a person who has received MH tx..
 ```
 
 ```{r MM var analyses}
@@ -3520,7 +3536,7 @@ write_xlsx(results_sem, path = "data_sem.xls", col_names = TRUE, format_headers 
 ## Model correlations
 ```{r model_corr}
 # run a correlation and drop the insignificant ones
-sig <- 0.6
+sig <- 0.8
 corr <- cor(data_sem2, use = "pairwise.complete.obs")                               
 corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
 corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
