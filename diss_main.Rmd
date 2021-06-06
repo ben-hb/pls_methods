@@ -3670,7 +3670,7 @@ SI_model_tr <- '# measurement model
                     
                 # structural model - regressions
                   def_sem =~ dia_sem + env_sem + le_sem
-                  entrap_sem ~ def_sem + tsm_sem
+                  entrap_sem =~ def_sem + tsm_sem
                   si_sem =~ def_sem + entrap_sem  '
 
                 # # residual covariances
@@ -3679,6 +3679,145 @@ SI_model_tr <- '# measurement model
                 #   meds_count~~dx_dep
                 #   meds_count~~meds_mood
                 #   assault_phys~~abuse_year   '
+
+model.dhp <- specifyModel(text="
+
+age -> dia_sem, , NA
+sexual -> dia_sem, , NA
+gender_noncis -> dia_sem, , NA
+finpast -> dia_sem, , NA
+sib_freq -> dia_sem, , NA
+race -> dia_sem, , NA
+body_sr -> dia_sem, , NA
+ed_any -> dia_sem, , NA
+dx_dep -> dia_sem, , NA
+dx_bi -> dia_sem, , NA
+dx_tr -> dia_sem, , NA
+dx_adhd -> dia_sem, , NA
+meds_sti -> dia_sem, ,NA
+meds_dep -> dia_sem, , NA
+meds_anx -> dia_sem, , NA
+meds_mood -> dia_sem, , NA
+meds_sle -> dia_sem, , NA
+meds_count -> dia_sem, , NA
+
+env_mh -> env_sem, , NA
+ther_vis -> env_sem, , NA
+divers -> env_sem, , NA
+satisfied_overall -> env_sem, , NA
+residenc, -> env_sem, , NA
+talk -> env_sem, , NA
+religios -> env_sem, , NA
+discrim -> env_sem, , NA
+school2_type -> env_sem, , NA
+ctiv_yn -> env_sem, , NA
+military -> env_sem, , NA
+international -> env_sem, , NA
+
+ins_cover -> le_sem, , NA
+gpa_sr  -> le_sem, , NA
+assault_phys -> le_sem, , NA
+binge_fr -> le_sem, , NA
+assault_sex -> le_sem, , NA
+assault_emo -> le_sem, , NA
+psyhx -> le_sem, , NA
+fincur -> le_sem, , NA
+drugs_yn -> le_sem, , NA
+abuse_year -> le_sem, , NA
+
+aca_impa -> def_sem, , NA
+deprawsc -> def_sem, , NA
+
+persist  -> tsm_sem, , NA
+anx_score -> tsm_sem, , NA
+dep_secret -> tsm_sem, , NA
+aaq_dum -> tsm_sem, , NA
+
+dep_impa -> entrap_sem, , NA
+gad7_impa -> entrap_sem, , NA
+percneed_cur -> entrap_sem, , NA
+
+inf -> mm_sem, , NA
+flourish_dum -> mm_sem, , NA
+belong1 -> mm_sem, , NA
+belong2 -> mm_sem, , NA
+belong8 -> mm_sem, , NA
+belong9 -> mm_sem, , NA
+stig_pcv_2 -> mm_sem, , NA
+tig_pcv_3 -> mm_sem, , NA
+brs_dum -> mm_sem, , NA   
+
+
+def_sem <- dia_sem + env_sem + le_sem
+entrap_sem <- def_sem + tsm_sem
+si_sem <- def_sem + entrap_sem
+                  
+")
+model.dhp
+
+
+
+
+
+RParAsp -> RGenAsp, gam11, NA
+RIQ -> RGenAsp, gam12, NA
+RSES -> RGenAsp, gam13, NA
+FSES -> RGenAsp, gam14, NA
+RSES -> FGenAsp, gam23, NA
+FSES -> FGenAsp, gam24, NA
+FIQ -> FGenAsp, gam25, NA
+FParAsp -> FGenAsp, gam26, NA
+FGenAsp -> RGenAsp, beta12, NA
+RGenAsp -> FGenAsp, beta21, NA
+RGenAsp -> ROccAsp, NA, 1
+RGenAsp -> REdAsp, lam21, NA
+FGenAsp -> FOccAsp, NA, 1
+FGenAsp -> FEdAsp, lam42, NA
+RGenAsp <-> RGenAsp, ps11, NA
+FGenAsp <-> FGenAsp, ps22, NA
+68 specifyModel
+RGenAsp <-> FGenAsp, ps12, NA
+ROccAsp <-> ROccAsp, theta1, NA
+REdAsp <-> REdAsp, theta2, NA
+FOccAsp <-> FOccAsp, theta3, NA
+FEdAsp <-> FEdAsp, theta4, NA
+")
+model.dhp
+
+
+mod.hs <- cfa()
+  dia_sem: age, sexual, gender_noncis, finpast, sib_freq, race, body_sr, ed_any, audit_tot, dx_dep, 
+           dx_bi, dx_tr, dx_adhd, dx_pers, meds_sti, meds_dep, meds_anx, meds_mood, meds_sle, meds_count
+  env_sem: env_mh, ther_vis, divers, satisfied_overall + residenc, talk, religios, discrim, school2_type, 
+                             activ_yn, military, international
+  le_sem: ins_cover, gpa_sr, assault_phys, binge_fr + assault_sex, assault_emo, psyhx, fincur, drugs_yn, abuse_year
+  def_sem: aca_impa, deprawsc
+  tsm_sem: persist, anx_score, dep_secret, aaq_dum
+  entrap_sem: dep_impa, gad7_impa, percneed_cur
+  mm_sem: inf, flourish_dum, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_dum
+  si_sem: si_type
+                    
+                # structural model - regressions
+                  def_sem =~ dia_sem + env_sem + le_sem
+                  entrap_sem ~ def_sem + tsm_sem
+                  si_sem =~ def_sem + entrap_sem
+                  
+sem.mg <- sem(mod.mg, data=HS.data, group="Gender",
+formula = ~ visual + cubes + paper + flags +
+general + paragrap + sentence + wordc + wordm +
+wordr + numberr + figurer + object + numberf + figurew +
+deduct + numeric + problemr + series + arithmet
+)
+summary(sem.mg)
+# with cross-group equality constraints:
+mod.mg.eq <- multigroupModel(mod.hs, groups=c("Female", "Male"), allEqual=TRUE)
+sem.mg.eq <- sem(mod.mg.eq, data=HS.data, group="Gender",
+formula = ~ visual + cubes + paper + flags +
+general + paragrap + sentence + wordc + wordm +
+wordr + numberr + figurer + object + numberf + figurew +
+deduct + numeric + problemr + series + arithmet
+)
+summary(sem.mg.eq)
 ```
 
 ## Model estimation
@@ -3704,8 +3843,8 @@ list(summary_test$coefficient,
       round(1-(summary_test$deviance/summary_test$null.deviance), 2))
 
 # model prediction
-fit_train$prediction <- predict(SI_model_test, newdata = traindf.v29, type = "response" )
-fit_test$prediction  <- predict(SI_model_test, newdata = testdf.v29 , type = "response" )
+fit_train$prediction <- predict(SI_model_test, newdata = traindf.v29, type = "response")
+fit_test$prediction  <- predict(SI_model_test, newdata = testdf.v29 , type = "response")
 
 # distribution of the prediction score grouped by outcome
 ggplot(traindf.v29, aes( prediction, color = as.factor(left) ) ) + 
