@@ -3533,7 +3533,7 @@ SI_model_tr <- '# measurement model
                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
                   mm_sem =~  inf + flourish_dum + belong1 + stig_pcv_2 + stig_pcv_3 + brs_dum
                   si_sem =~  si_type
-                    s
+                  
                 # structural model - regressions
                   def_sem =~ dia_sem + env_sem + le_sem
                   entrap_sem =~ def_sem + tsm_sem
