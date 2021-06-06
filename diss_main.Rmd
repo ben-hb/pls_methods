@@ -1541,66 +1541,66 @@ fviz_contrib(dia_pca, choice = "var", axes = 4, top = 20)
 
 ### t-SNE diathesis
 ```{r tsne_dia}
-# set up df for t-sne
-data_dia2 <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr, dx_anx,
-                                dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, meds_dep, ed_any, meds_count)
-results_dia2 <- dummy_cols(data_dia2, remove_first_dummy = TRUE)
-
-# create corr matrix, with dummy vars
-results_dia2 <- na.omit(results_dia2) %>%
-  mutate_if(is.numeric, as.factor) %>%
-  NA_preproc() %>%
-  data.matrix()
-
-# create corr matrix, with dummy vars
-set.seed(10)
-tsne_model_1 = Rtsne(as.matrix(results_dia2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_1 = as.data.frame(tsne_model_1$Y)  
-
-## plotting the results without clustering
-ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("t-SNE") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank()) +
-  scale_colour_brewer(palette = "Set2")
-
-## keeping original data
-d_tsne_1_original=d_tsne_1
-
-## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
-d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
-
-## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
-
-## setting 3 clusters as output
-d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
-
-plot_cluster=function(data, var_cluster, palette)  
-{
-  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
-        legend.direction = "horizontal", 
-        legend.position = "bottom",
-        legend.box = "horizontal") + 
-    scale_colour_brewer(palette = palette) 
-}
-
-# Create plots next to each other
-plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")   # is this where i add labels?
-plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-grid.arrange(plot_k, plot_h, ncol=2) 
+# # set up df for t-sne
+# data_dia2 <- data.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr, dx_anx,
+#                                 dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, meds_dep, ed_any, meds_count)
+# results_dia2 <- dummy_cols(data_dia2, remove_first_dummy = TRUE)
+# 
+# # create corr matrix, with dummy vars
+# results_dia2 <- na.omit(results_dia2) %>%
+#   mutate_if(is.numeric, as.factor) %>%
+#   NA_preproc() %>%
+#   data.matrix()
+# 
+# # create corr matrix, with dummy vars
+# set.seed(10)
+# tsne_model_1 = Rtsne(as.matrix(results_dia2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+# d_tsne_1 = as.data.frame(tsne_model_1$Y)  
+# 
+# ## plotting the results without clustering
+# ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("t-SNE") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank()) +
+#   scale_colour_brewer(palette = "Set2")
+# 
+# ## keeping original data
+# d_tsne_1_original=d_tsne_1
+# 
+# ## Creating k-means clustering model, and assigning the result to the data used to create the tsne
+# fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+# d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+# 
+# ## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
+# fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
+# 
+# ## setting 3 clusters as output
+# d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+# 
+# plot_cluster=function(data, var_cluster, palette)  
+# {
+#   ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank(),
+#         legend.direction = "horizontal", 
+#         legend.position = "bottom",
+#         legend.box = "horizontal") + 
+#     scale_colour_brewer(palette = palette) 
+# }
+# 
+# # Create plots next to each other
+# plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")   # is this where i add labels?
+# plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
+# grid.arrange(plot_k, plot_h, ncol=2) 
 ```
 
 ### CLM diathesis regression
@@ -2007,66 +2007,66 @@ fviz_contrib(env_pca, choice = "var", axes = 4, top = 20)
 
 ### T-SNE ENVIRONMENT
 ```{r T-SNE ENV}
-# PCA map with eigenvalues
-data_env2 <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, ther_vis, talk,
-                                 activ_yn, divers, school2_type, satisfied_overall,  military, international)
-results_env2 <- dummy_cols(data_env2, remove_first_dummy = TRUE)
-
-# create corr matrix, with dummy vars
-results_env2 <- results_env2 %>%
-  mutate_if(is.numeric, as.factor) %>%
-  NA_preproc() %>%
-  data.matrix()
-
-# create corr matrix, with dummy vars
-set.seed(10)
-tsne_model_1 = Rtsne(as.matrix(results_env2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_1 = as.data.frame(tsne_model_1$Y)  
-
-## plotting the results without clustering
-ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("t-SNE") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank()) +
-  scale_colour_brewer(palette = "Set2")
-
-## keeping original data
-d_tsne_1_original=d_tsne_1
-
-## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
-d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
-
-## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
-
-## setting 3 clusters as output
-d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
-
-plot_cluster=function(data, var_cluster, palette)  
-{
-  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
-        legend.direction = "horizontal", 
-        legend.position = "bottom",
-        legend.box = "horizontal") + 
-    scale_colour_brewer(palette = palette) 
-}
-
-# plot t-sne clusters next to each other
-plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
-plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-grid.arrange(plot_k, plot_h,  ncol=2)    
+# # PCA map with eigenvalues
+# data_env2 <- data.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, ther_vis, talk,
+#                                  activ_yn, divers, school2_type, satisfied_overall,  military, international)
+# results_env2 <- dummy_cols(data_env2, remove_first_dummy = TRUE)
+# 
+# # create corr matrix, with dummy vars
+# results_env2 <- results_env2 %>%
+#   mutate_if(is.numeric, as.factor) %>%
+#   NA_preproc() %>%
+#   data.matrix()
+# 
+# # create corr matrix, with dummy vars
+# set.seed(10)
+# tsne_model_1 = Rtsne(as.matrix(results_env2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+# d_tsne_1 = as.data.frame(tsne_model_1$Y)  
+# 
+# ## plotting the results without clustering
+# ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("t-SNE") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank()) +
+#   scale_colour_brewer(palette = "Set2")
+# 
+# ## keeping original data
+# d_tsne_1_original=d_tsne_1
+# 
+# ## Creating k-means clustering model, and assigning the result to the data used to create the tsne
+# fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+# d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+# 
+# ## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
+# fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
+# 
+# ## setting 3 clusters as output
+# d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+# 
+# plot_cluster=function(data, var_cluster, palette)  
+# {
+#   ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank(),
+#         legend.direction = "horizontal", 
+#         legend.position = "bottom",
+#         legend.box = "horizontal") + 
+#     scale_colour_brewer(palette = palette) 
+# }
+# 
+# # plot t-sne clusters next to each other
+# plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+# plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
+# grid.arrange(plot_k, plot_h,  ncol=2)    
 ```
 
 ### CLM environmental regression
@@ -2298,64 +2298,64 @@ fviz_contrib(le_pca, choice = "var", axes = 4, top = 20)
 ```
 
 ```{r tsne_le}
-# PCA map with eigenvalues
-data_le2 <- data.v19 %>% select(ins_cover, trauma_year, gpa_sr, aca_impa, drug_mar, fincur, binge_fr, psyhx, drugs_yn)
-results_le2 <- dummy_cols(data_le2, remove_first_dummy = TRUE)
-
-# create corr matrix, with dummy vars
-results_le2 <- results_le2 %>%
-  mutate_if(is.numeric, as.factor) %>%
-  NA_preproc() %>%
-  data.matrix()
-
-# create corr matrix, with dummy vars
-set.seed(10)
-tsne_model_1 = Rtsne(as.matrix(results_le2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_1 = as.data.frame(tsne_model_1$Y)  
-
-## plotting the results without clustering
-ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("t-SNE") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank()) +
-  scale_colour_brewer(palette = "Set2")
-
-## keeping original data
-d_tsne_1_original=d_tsne_1
-
-## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
-d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
-
-## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
-
-## setting 3 clusters as output
-d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
-
-plot_cluster=function(data, var_cluster, palette)  
-{
-  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
-        legend.direction = "horizontal", 
-        legend.position = "bottom",
-        legend.box = "horizontal") + 
-    scale_colour_brewer(palette = palette) 
-}
-
-plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
-plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-grid.arrange(plot_k, plot_h,  ncol=2) 
+# # PCA map with eigenvalues
+# data_le2 <- data.v19 %>% select(ins_cover, trauma_year, gpa_sr, aca_impa, drug_mar, fincur, binge_fr, psyhx, drugs_yn)
+# results_le2 <- dummy_cols(data_le2, remove_first_dummy = TRUE)
+# 
+# # create corr matrix, with dummy vars
+# results_le2 <- results_le2 %>%
+#   mutate_if(is.numeric, as.factor) %>%
+#   NA_preproc() %>%
+#   data.matrix()
+# 
+# # create corr matrix, with dummy vars
+# set.seed(10)
+# tsne_model_1 = Rtsne(as.matrix(results_le2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+# d_tsne_1 = as.data.frame(tsne_model_1$Y)  
+# 
+# ## plotting the results without clustering
+# ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("t-SNE") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank()) +
+#   scale_colour_brewer(palette = "Set2")
+# 
+# ## keeping original data
+# d_tsne_1_original=d_tsne_1
+# 
+# ## Creating k-means clustering model, and assigning the result to the data used to create the tsne
+# fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+# d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+# 
+# ## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
+# fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
+# 
+# ## setting 3 clusters as output
+# d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+# 
+# plot_cluster=function(data, var_cluster, palette)  
+# {
+#   ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank(),
+#         legend.direction = "horizontal", 
+#         legend.position = "bottom",
+#         legend.box = "horizontal") + 
+#     scale_colour_brewer(palette = palette) 
+# }
+# 
+# plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+# plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
+# grid.arrange(plot_k, plot_h,  ncol=2) 
 ```
 
 ## CLM Life event regression
@@ -2528,86 +2528,86 @@ fviz_contrib(def_pca, choice = "var", axes = 4, top = 20)
 ```
 ### T-SNE DEFEAT
 ```{r tsne_def}
-# set up df for t-sne
-data_def2 <- data.v21 %>% select(aca_impa, deprawsc)
-results_def2 <- dummy_cols(data_def2, remove_first_dummy = TRUE)
-
-# create corr matrix, with dummy vars
-results_def2 <- na.omit(results_def2) %>%
-  mutate_if(is.numeric, as.factor) %>%
-  NA_preproc() %>%
-  data.matrix()
-
-# create corr matrix, with dummy vars
-set.seed(10)
-tsne_model_1 = Rtsne(as.matrix(results_def2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_1 = as.data.frame(tsne_model_1$Y)  
-
-## plotting the results without clustering
-ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("t-SNE") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank()) +
-  scale_colour_brewer(palette = "Set2")
-
-## keeping original data
-d_tsne_1_original=d_tsne_1
-
-## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
-d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
-
-## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
-
-## setting 3 clusters as output
-d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
-
-plot_cluster=function(data, var_cluster, palette)  
-{
-  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
-        legend.direction = "horizontal", 
-        legend.position = "bottom",
-        legend.box = "horizontal") + 
-    scale_colour_brewer(palette = palette) 
-}
-
-plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  # where do i add in labels? do i need them?
-plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-grid.arrange(plot_k, plot_h,  ncol=2) 
-```
-
-## CLM defeat
-```{r CLM defeat}
-results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
-
-clm_def <- NA_preproc(results2_def)
-clm_def <- as.data.frame(clm_def)
-
-clm_def <- clm(si_type ~ aca_impa + deprawsc, data = clm_def)
-
-summary(clm_def)
-coef(clm_def)
-vcov(clm_def)
-
-model.def <- tidy(clm_def)  # Convert model to dataframe for easy manipulation
-model.def 
-
-model.def  %>% 
-  mutate(or = exp(estimate),  # Odds ratio/gradient
-         var.diag = diag(vcov(clm_def)),  # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
+# # set up df for t-sne
+# data_def2 <- data.v21 %>% select(aca_impa, deprawsc)
+# results_def2 <- dummy_cols(data_def2, remove_first_dummy = TRUE)
+# 
+# # create corr matrix, with dummy vars
+# results_def2 <- na.omit(results_def2) %>%
+#   mutate_if(is.numeric, as.factor) %>%
+#   NA_preproc() %>%
+#   data.matrix()
+# 
+# # create corr matrix, with dummy vars
+# set.seed(10)
+# tsne_model_1 = Rtsne(as.matrix(results_def2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+# d_tsne_1 = as.data.frame(tsne_model_1$Y)  
+# 
+# ## plotting the results without clustering
+# ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("t-SNE") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank()) +
+#   scale_colour_brewer(palette = "Set2")
+# 
+# ## keeping original data
+# d_tsne_1_original=d_tsne_1
+# 
+# ## Creating k-means clustering model, and assigning the result to the data used to create the tsne
+# fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+# d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+# 
+# ## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
+# fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
+# 
+# ## setting 3 clusters as output
+# d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+# 
+# plot_cluster=function(data, var_cluster, palette)  
+# {
+#   ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank(),
+#         legend.direction = "horizontal", 
+#         legend.position = "bottom",
+#         legend.box = "horizontal") + 
+#     scale_colour_brewer(palette = palette) 
+# }
+# 
+# plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  # where do i add in labels? do i need them?
+# plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
+# grid.arrange(plot_k, plot_h,  ncol=2) 
+# ```
+# 
+# ## CLM defeat
+# ```{r CLM defeat}
+# results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
+# 
+# clm_def <- NA_preproc(results2_def)
+# clm_def <- as.data.frame(clm_def)
+# 
+# clm_def <- clm(si_type ~ aca_impa + deprawsc, data = clm_def)
+# 
+# summary(clm_def)
+# coef(clm_def)
+# vcov(clm_def)
+# 
+# model.def <- tidy(clm_def)  # Convert model to dataframe for easy manipulation
+# model.def 
+# 
+# model.def  %>% 
+#   mutate(or = exp(estimate),  # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_def)),  # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
 ```
 
 
@@ -2765,86 +2765,86 @@ fviz_contrib(tsm_pca, choice = "var", axes = 3, top = 20)
 fviz_contrib(tsm_pca, choice = "var", axes = 4, top = 20)
 ```
 ```{r T-SNE TSM}
-# set up df for t-sne
-data_tsm2 <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_dum)
-results_tsm2 <- dummy_cols(data_tsm2, remove_first_dummy = TRUE)
-
-# create corr matrix, with dummy vars
-results_tsm2 <- na.omit(results_tsm2) %>%
-  mutate_if(is.numeric, as.factor) %>%
-  NA_preproc() %>%
-  data.matrix()
-
-# create corr matrix, with dummy vars
-set.seed(10)
-tsne_model_1 = Rtsne(as.matrix(results_tsm2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_1 = as.data.frame(tsne_model_1$Y)  
-
-## plotting the results without clustering
-ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("t-SNE") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank()) +
-  scale_colour_brewer(palette = "Set2")
-
-## keeping original data
-d_tsne_1_original=d_tsne_1
-
-## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
-d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
-
-## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
-
-## setting 3 clusters as output
-d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
-
-plot_cluster=function(data, var_cluster, palette)  
-{
-  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
-        legend.direction = "horizontal", 
-        legend.position = "bottom",
-        legend.box = "horizontal") + 
-    scale_colour_brewer(palette = palette) 
-}
-
-# plot
-plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
-plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-grid.arrange(plot_k, plot_h,  ncol=2) 
-```
-
-## CLM TSM
-```{r CLM TSM}
-clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_dum)
-
-clm_tsm <- NA_preproc(clm_tsm)
-clm_tsm <- as.data.frame(clm_tsm)
-
-clm_tsm <- clm(si_type ~ persist + anx_score + dep_secret + aaq_dum, data = clm_tsm)
-
-summary(clm_tsm)
-coef(clm_tsm)
-
-model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
-model.tsm
-
-model.tsm  %>%
-  mutate(or = exp(estimate),  # Odds ratio/gradient
-         var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# # set up df for t-sne
+# data_tsm2 <- data.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_dum)
+# results_tsm2 <- dummy_cols(data_tsm2, remove_first_dummy = TRUE)
+# 
+# # create corr matrix, with dummy vars
+# results_tsm2 <- na.omit(results_tsm2) %>%
+#   mutate_if(is.numeric, as.factor) %>%
+#   NA_preproc() %>%
+#   data.matrix()
+# 
+# # create corr matrix, with dummy vars
+# set.seed(10)
+# tsne_model_1 = Rtsne(as.matrix(results_tsm2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+# d_tsne_1 = as.data.frame(tsne_model_1$Y)  
+# 
+# ## plotting the results without clustering
+# ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("t-SNE") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank()) +
+#   scale_colour_brewer(palette = "Set2")
+# 
+# ## keeping original data
+# d_tsne_1_original=d_tsne_1
+# 
+# ## Creating k-means clustering model, and assigning the result to the data used to create the tsne
+# fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+# d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+# 
+# ## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
+# fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
+# 
+# ## setting 3 clusters as output
+# d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+# 
+# plot_cluster=function(data, var_cluster, palette)  
+# {
+#   ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank(),
+#         legend.direction = "horizontal", 
+#         legend.position = "bottom",
+#         legend.box = "horizontal") + 
+#     scale_colour_brewer(palette = palette) 
+# }
+# 
+# # plot
+# plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+# plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
+# grid.arrange(plot_k, plot_h,  ncol=2) 
+# ```
+# 
+# ## CLM TSM
+# ```{r CLM TSM}
+# clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_dum)
+# 
+# clm_tsm <- NA_preproc(clm_tsm)
+# clm_tsm <- as.data.frame(clm_tsm)
+# 
+# clm_tsm <- clm(si_type ~ persist + anx_score + dep_secret + aaq_dum, data = clm_tsm)
+# 
+# summary(clm_tsm)
+# coef(clm_tsm)
+# 
+# model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
+# model.tsm
+# 
+# model.tsm  %>%
+#   mutate(or = exp(estimate),  # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2942,87 +2942,87 @@ fviz_contrib(entrap_pca, choice = "var", axes = 4, top = 20)
 ```
 ### t-SNE Entrapment
 ```{r T-SNE Entrapment}
-# set up df for t-sne
-data_entrap2 <- data.v23 %>% select(dep_impa, gad7_impa, percneed_cur)
-results_entrap2 <- dummy_cols(data_entrap2, remove_first_dummy = TRUE)
-
-# create corr matrix, with dummy vars
-results_entrap2 <- na.omit(results_entrap2) %>%
-  mutate_if(is.numeric, as.factor) %>%
-  NA_preproc() %>%
-  data.matrix()
-
-# t-SNE
-# create corr matrix, with dummy vars
-set.seed(10)
-tsne_model_1 = Rtsne(as.matrix(results_entrap2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_1 = as.data.frame(tsne_model_1$Y)  
-
-## plotting the results without clustering
-ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("t-SNE") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank()) +
-  scale_colour_brewer(palette = "Set2")
-
-## keeping original data
-d_tsne_1_original=d_tsne_1
-
-## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
-d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
-
-## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
-
-## setting 3 clusters as output
-d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
-
-plot_cluster=function(data, var_cluster, palette)  
-{
-  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
-        legend.direction = "horizontal", 
-        legend.position = "bottom",
-        legend.box = "horizontal") + 
-    scale_colour_brewer(palette = palette) 
-}
-
-
-plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
-plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-grid.arrange(plot_k, plot_h,  ncol=2) 
-```
-
-###  CLM Entrapment regression
-```{r clm_entrap}
-clm_entrap <- data.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
-
-clm_entrap <- NA_preproc(clm_entrap)
-clm_entrap <- as.data.frame(clm_entrap)
-
-clm_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_entrap)
-
-summary(clm_entrap)
-coef(clm_entrap)
-
-model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
-model.entrap 
-
-model.entrap  %>% 
-  mutate(or = exp(estimate),  # Odds ratio/gradient
-         var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
+# # set up df for t-sne
+# data_entrap2 <- data.v23 %>% select(dep_impa, gad7_impa, percneed_cur)
+# results_entrap2 <- dummy_cols(data_entrap2, remove_first_dummy = TRUE)
+# 
+# # create corr matrix, with dummy vars
+# results_entrap2 <- na.omit(results_entrap2) %>%
+#   mutate_if(is.numeric, as.factor) %>%
+#   NA_preproc() %>%
+#   data.matrix()
+# 
+# # t-SNE
+# # create corr matrix, with dummy vars
+# set.seed(10)
+# tsne_model_1 = Rtsne(as.matrix(results_entrap2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+# d_tsne_1 = as.data.frame(tsne_model_1$Y)  
+# 
+# ## plotting the results without clustering
+# ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("t-SNE") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank()) +
+#   scale_colour_brewer(palette = "Set2")
+# 
+# ## keeping original data
+# d_tsne_1_original=d_tsne_1
+# 
+# ## Creating k-means clustering model, and assigning the result to the data used to create the tsne
+# fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+# d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+# 
+# ## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
+# fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
+# 
+# ## setting 3 clusters as output
+# d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+# 
+# plot_cluster=function(data, var_cluster, palette)  
+# {
+#   ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank(),
+#         legend.direction = "horizontal", 
+#         legend.position = "bottom",
+#         legend.box = "horizontal") + 
+#     scale_colour_brewer(palette = palette) 
+# }
+# 
+# 
+# plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+# plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
+# grid.arrange(plot_k, plot_h,  ncol=2) 
+# ```
+# 
+# ###  CLM Entrapment regression
+# ```{r clm_entrap}
+# clm_entrap <- data.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
+# 
+# clm_entrap <- NA_preproc(clm_entrap)
+# clm_entrap <- as.data.frame(clm_entrap)
+# 
+# clm_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_entrap)
+# 
+# summary(clm_entrap)
+# coef(clm_entrap)
+# 
+# model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
+# model.entrap 
+# 
+# model.entrap  %>% 
+#   mutate(or = exp(estimate),  # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
 ```
 
 
@@ -3227,65 +3227,65 @@ fviz_contrib(mm_pca, choice = "var", axes = 4, top = 20)
 ```
 ### t-SNE MM
 ```{r tsne_mm}
-# set up df for t-sne
-data_mm2 <- data.v27 %>% select(inf, flourish_dum, belong2, stig_pcv_2, stig_pcv_3, brs_dum)
-results_mm2 <- dummy_cols(data_mm2, remove_first_dummy = TRUE)
-
-# create corr matrix, with dummy vars
-results_mm2 <- na.omit(results_mm2) %>%
-  mutate_if(is.numeric, as.factor) %>%
-  NA_preproc() %>%
-  data.matrix()
-
-# create corr matrix, with dummy vars
-set.seed(10)
-tsne_model_1 = Rtsne(as.matrix(results_mm2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_1 = as.data.frame(tsne_model_1$Y)  
-
-## plotting the results without clustering
-ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("t-SNE") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank()) +
-  scale_colour_brewer(palette = "Set2")
-
-## keeping original data
-d_tsne_1_original=d_tsne_1
-
-## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
-d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
-
-## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
-
-## setting 3 clusters as output
-d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
-
-plot_cluster=function(data, var_cluster, palette)  
-{
-  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
-        legend.direction = "horizontal", 
-        legend.position = "bottom",
-        legend.box = "horizontal") + 
-    scale_colour_brewer(palette = palette) 
-}
-
-# plot
-plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
-plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-grid.arrange(plot_k, plot_h,  ncol=2) 
+# # set up df for t-sne
+# data_mm2 <- data.v27 %>% select(inf, flourish_dum, belong2, stig_pcv_2, stig_pcv_3, brs_dum)
+# results_mm2 <- dummy_cols(data_mm2, remove_first_dummy = TRUE)
+# 
+# # create corr matrix, with dummy vars
+# results_mm2 <- na.omit(results_mm2) %>%
+#   mutate_if(is.numeric, as.factor) %>%
+#   NA_preproc() %>%
+#   data.matrix()
+# 
+# # create corr matrix, with dummy vars
+# set.seed(10)
+# tsne_model_1 = Rtsne(as.matrix(results_mm2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
+# d_tsne_1 = as.data.frame(tsne_model_1$Y)  
+# 
+# ## plotting the results without clustering
+# ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("t-SNE") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank()) +
+#   scale_colour_brewer(palette = "Set2")
+# 
+# ## keeping original data
+# d_tsne_1_original=d_tsne_1
+# 
+# ## Creating k-means clustering model, and assigning the result to the data used to create the tsne
+# fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+# d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
+# 
+# ## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
+# fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
+# 
+# ## setting 3 clusters as output
+# d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+# 
+# plot_cluster=function(data, var_cluster, palette)  
+# {
+#   ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
+#   geom_point(size=0.25) +
+#   guides(colour=guide_legend(override.aes=list(size=6))) +
+#   xlab("") + ylab("") +
+#   ggtitle("") +
+#   theme_light(base_size=20) +
+#   theme(axis.text.x=element_blank(),
+#         axis.text.y=element_blank(),
+#         legend.direction = "horizontal", 
+#         legend.position = "bottom",
+#         legend.box = "horizontal") + 
+#     scale_colour_brewer(palette = palette) 
+# }
+# 
+# # plot
+# plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+# plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
+# grid.arrange(plot_k, plot_h,  ncol=2) 
 ```
 
 ## CLM Motivational moderators regression
