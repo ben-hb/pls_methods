@@ -3519,6 +3519,15 @@ dim(traindf.v29)
 dim(testdf.v29)
 ```
 
+```{r save dataset}
+
+save(traindf.v29, file = "traindf.v29.dat")
+load("traindf.v29.dat")
+write_xlsx(traindf.v29, path = "sem.xls", col_names = TRUE, format_headers = TRUE)
+
+```
+
+
 ## t-SNE for train
 ```{r}
 tsne_train <- traindf.v29
