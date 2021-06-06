@@ -3441,13 +3441,11 @@ data_sem <- data.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_noncis, finpast, sib_freq, race, body_sr, ed_any, audit_tot, dx_dep, dx_bi,
-  dx_tr, dx_adhd, dx_pers, meds_sti, meds_dep, meds_anx, meds_mood, meds_sle, meds_count,
+  age, sexual, gender_noncis, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, dx_pers, meds_count,
   # environment
-  env_mh, ther_vis, divers, satisfied_overall, residenc, talk, religios, discrim, school2_type, activ_yn,
-  military, international,
+  divers, satisfied_overall, residenc, talk, religios, discrim, school2_type, activ_yn, military,
   # life events
-  ins_cover, gpa_sr, assault_phys, binge_fr, assault_sex, assault_emo, psyhx, fincur, drugs_yn, abuse_year,
+  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, trauma_year,
   # defeat
   aca_impa, deprawsc,
   # threats to self-moderation
