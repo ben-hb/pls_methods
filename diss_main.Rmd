@@ -99,10 +99,10 @@ demographic tables... show up on the survey - acknowledge diversity
 ```{r Filter sample, cache = TRUE}
 
 #IMPORT file
- data.raw <- read_excel("~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.xlsx",
-                        range=cell_cols(1:1820), col_types = "text")
-
- save("data.raw", file="~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
+ # data.raw <- read_excel("~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.xlsx",
+ #                        range=cell_cols(1:1820), col_types = "text")
+ # 
+ # save("data.raw", file="~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
  load("~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
  # source("dissertation_fx.R")
    
@@ -3450,13 +3450,14 @@ data_sem <- data.v28 %>% select(
   inf, flourish_dum, belong1, stig_pcv_2, stig_pcv_3, brs_dum)
 
 # create corr matrix, with dummy vars 
-data_sem <- data_sem %>% 
+data_sem2 <- data_sem %>% 
   mutate_if(is.numeric, as.factor) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
-data_sem   # check output
+data_sem2   # check output
 
-results_sem <- dummy_cols(data_sem, select_columns = c(
+#  dummy_cols(remove_first_dummy = TRUE) %>% 
+
+results_sem <- dummy_cols(data_sem2, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
@@ -3513,9 +3514,27 @@ write_xlsx(results_sem, path = "data_sem.xls", col_names = TRUE, format_headers 
 ```
 
 
-
 # SEM ANALYSIS
 
+
+## Model correlations
+```{r model_corr}
+# run a correlation and drop the insignificant ones
+sig <- 0.6
+corr <- cor(data_sem2, use = "pairwise.complete.obs")                               
+corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
+corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
+corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
+corr <- na.omit(corr)                                   #remove the NA values from above 
+corr <- subset(corr, abs(Freq) > sig)                   #select significant values  
+corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
+print(corr)
+  
+#turn corr back into matrix in order to plot with corrplot
+mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
+corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+
+```
 
 ## SEM specification
 ```{r SEM}
@@ -3537,14 +3556,11 @@ SI_model_tr <- '# measurement model
                 # structural model - regressions
                   def_sem =~ dia_sem + env_sem + le_sem
                   entrap_sem =~ def_sem + tsm_sem
-                  si_sem =~ def_sem + entrap_sem  '
+                  si_sem =~ def_sem + entrap_sem
 
-                # # residual covariances
-                #   dep_impa~~gad7_impa
-                #   dx_bi~~meds_mood
-                #   meds_count~~dx_dep
-                #   meds_count~~meds_mood
-                #   assault_phys~~abuse_year   '
+                # residual covariances
+                   dep_impa~~gad7_impa
+                   meds_count~~dx_dep   '
 
 ```
 
