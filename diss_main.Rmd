@@ -3038,8 +3038,8 @@ data.v26 <- data.v24
 ```{r belong}
 table(data.v26$belong1)
 table(data.v26$belong2)
-table(data.v26$belong8)
-table(data.v26$belong9)
+table(data.v26$belong8)  # nested
+table(data.v26$belong9)  # not as good of a proxy
 ```
 
 ## Achievement
@@ -3166,7 +3166,7 @@ data.v27 <- data.v26
 ## Motivational Moderator correlation
 ```{r MM_corr}
 # Define MM variable candidates for correlation matrix
-data_mm <- data.v27 %>% select(inf, flourish_dum, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_dum)
+data_mm <- data.v27 %>% select(inf, flourish_dum, belong1, belong2, stig_pcv_2, stig_pcv_3, brs_dum)
 data <- data_mm
 sig <- 0.6
 
@@ -3191,7 +3191,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ## EFA MM
 ```{r EFA MM}
-data_mm <- data.v27 %>% select(inf, flourish_dum, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_dum)
+data_mm <- data.v27 %>% select(inf, flourish_dum, belong1, belong2, stig_pcv_2, stig_pcv_3, brs_dum)
 
 # create corr matrix, with dummy vars 
 data_mm <- data_mm %>% 
@@ -3199,8 +3199,8 @@ data_mm <- data_mm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 data_mm   # check output
-results_mm <- dummy_cols(data_mm, select_columns = c("inf", "flourish_dum", "belong1", "belong2", "belong8",
-                                                     "belong9", "stig_pcv_2", "stig_pcv_3", "brs_dum"),
+results_mm <- dummy_cols(data_mm, select_columns = c("inf", "flourish_dum", "belong1", "belong2",
+                                                     "stig_pcv_2", "stig_pcv_3", "brs_dum"),
                          remove_first_dummy = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 eigval_mm <- get_eigenvalue(mm_pca)
@@ -3231,7 +3231,7 @@ fviz_contrib(mm_pca, choice = "var", axes = 4, top = 20)
 ### t-SNE MM
 ```{r tsne_mm}
 # set up df for t-sne
-data_mm2 <- data.v27 %>% select(inf, flourish_dum, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_dum)
+data_mm2 <- data.v27 %>% select(inf, flourish_dum, belong1, belong2, stig_pcv_2, stig_pcv_3, brs_dum)
 results_mm2 <- dummy_cols(data_mm2, remove_first_dummy = TRUE)
 
 # create corr matrix, with dummy vars
@@ -3292,16 +3292,15 @@ grid.arrange(plot_k, plot_h,  ncol=2)
 ```
 
 ## CLM Motivational moderators regression
-Variables for consideration:  inf, flourish_dum, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, brs_dum
+Variables for consideration:  inf, flourish_dum, belong1, belong2, stig_pcv_2, stig_pcv_3, brs_dum
 ```{r CLM mm}
 
-clm_mm <- data.v27 %>% select(si_type, inf, flourish_dum, belong1, belong2, belong8, belong9, 
-                              stig_pcv_2, stig_pcv_3, brs_dum)
+clm_mm <- data.v27 %>% select(si_type, inf, flourish_dum, belong1, belong2, stig_pcv_2, stig_pcv_3, brs_dum)
 
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
 
-clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + belong2 + belong8 + belong9 + stig_pcv_2 + 
+clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + belong2 + stig_pcv_2 + 
                 stig_pcv_3 + brs_dum, data = clm_mm)
 
 summary(clm_mm)
