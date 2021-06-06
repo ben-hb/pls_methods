@@ -2188,6 +2188,14 @@ table(data.v17$assault_emo)
 table(data.v17$assault_phys)
 ```
 
+## Trauma last year
+```{r trauma_year}
+data.v17 <- data.v17 %>%
+  mutate(trauma_year = case_when((abuse_year == 1 | assault_emo == 1 | assault_phys == 1 | assault_sex == 1) ~ 1,
+                                 (abuse_year == 0 & assault_emo == 0 & assault_phys == 0 & assault_sex == 0) ~ 0))
+table(data.v17$trauma_year)
+```
+
 ## Binging frequency
 ```{r binge_fr}
 # set all binge_fr values equal to 0
@@ -2227,8 +2235,7 @@ data.v19 <- data.v18
 ## LE correlation
 ```{r LE correlation}
 # Define life event var candidates for correlation matrix
-data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys, drug_mar,
-                               binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
+data_le <- data.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, drug_mar, binge_fr, trauma_year, psyhx, drugs_yn)
 
 # convert data to numeric in order to run correlations
 data_le <- data_le %>% mutate_if(is.character, as.factor)
@@ -2249,8 +2256,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 ## EFA LE
 ```{r le_pca}
-data_le <- data.v19 %>% select(ins_cover, abuse_year, gpa_sr, aca_impa, fincur, assault_phys,
-                               drug_mar, binge_fr, assault_sex, assault_emo, deprawsc, psyhx, drugs_yn)
+data_le <- data.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, drug_mar, binge_fr, trauma_year, psyhx, drugs_yn)
 
 # create corr matrix, with dummy vars
 data_le <- data_le %>% 
