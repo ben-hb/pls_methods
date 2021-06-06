@@ -2078,17 +2078,16 @@ grid.arrange(plot_k, plot_h,  ncol=2)
 Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + 
 school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
 ```{r CLM environment}
-clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, 
+clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, religios,
                                divers, school2_type, satisfied_overall, ther_vis, talk, military, international)
 
 clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
 
-clm_env <- clm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + 
+clm_env <- clm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
                 ther_vis + divers + + military + school2_type + residenc + env_mh, data = clm_env)
 summary(clm_env)
 coef(clm_env)
-#  NOT WORKING: + religios ... need to figure out why
 
 model.env <- tidy(clm_env)                 # Convert model to dataframe
 model.env 
@@ -2380,10 +2379,10 @@ coef(clm_le)
 model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
 model.le 
 
-# model.le  %>% 
-#   mutate(or = exp(estimate),  # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
+model.le  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
 ```
 
 
@@ -2835,23 +2834,23 @@ grid.arrange(plot_k, plot_h,  ncol=2)
 
 ## CLM TSM
 ```{r CLM TSM}
-clm_tsm <- data.v23 %>% select(si_type, persist, anx_mod, anx_sev, dep_secret, aaq_dum)
+clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_dum)
 
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
 
-clm_tsm <- clm(si_type ~ persist + anx_mod + anx_sev + dep_secret + aaq_dum, data = clm_tsm)
+clm_tsm <- clm(si_type ~ persist + anx_score + dep_secret + aaq_dum, data = clm_tsm)
 
 summary(clm_tsm)
 coef(clm_tsm)
 
-# model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
-# model.tsm 
-# 
-# model.tsm  %>% 
-#   mutate(or = exp(estimate),  # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
+model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
+model.tsm
+
+model.tsm  %>%
+  mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -3519,14 +3518,14 @@ dim(traindf.v29)
 dim(testdf.v29)
 ```
 
+## Save for Mplus
 ```{r save dataset}
 
-save(traindf.v29, file = "traindf.v29.dat")
-load("traindf.v29.dat")
-write_xlsx(traindf.v29, path = "sem.xls", col_names = TRUE, format_headers = TRUE)
+save(results_sem, file = "data_sem.RData")
+load("data_sem.RData")
+write_xlsx(results_sem, path = "data_sem.xls", col_names = TRUE, format_headers = TRUE)
 
 ```
-
 
 ## t-SNE for train
 ```{r}
