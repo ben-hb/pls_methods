@@ -1,7 +1,7 @@
 *
 
-!.rmd
-!.r
+!.Rmd
+!.R
 !.gitignore
 !.gitattributes
 .Rproj.user
