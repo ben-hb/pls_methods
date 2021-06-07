@@ -3,3 +3,5 @@
 !.rmd
 !.r
 !.gitignore
+!.gitattributes
+.Rproj.user
