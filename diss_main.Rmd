@@ -1,9 +1,9 @@
 ---
 title: "Sisler Initial Analysis"
 output:
-  word_document: default
-  html_document: default
   pdf_document: default
+  html_document: default
+  word_document: default
 ---
 
 # LOAD PACKAGES
@@ -1609,7 +1609,6 @@ clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib
                                 dx_anx, dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, ed_any, meds_count)
 
 clm_dia <- NA_preproc(clm_dia)
-
 clm_dia <- as.data.frame(clm_dia)
 
 # diagnostic <- clm_dia %>% 
@@ -1617,19 +1616,21 @@ clm_dia <- as.data.frame(clm_dia)
 #     anx_count = sum(!is.na(meds_anx))
 #   )
 
-clm_mod<- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
+clm_mod <- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
                         ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count, data = clm_dia)
 summary(clm_mod)
 coef(clm_mod)
+ci_dia <- confint(clm_mod)
+ci_dia
 
-# model.dia <- tidy(clm_mod)  # Convert model to dataframe for easy manipulation
-# model.dia
-# 
-# model.dia$var.diag <- diag(vcov(clm_mod))
-# model.dia  %>%
-#    mutate(or = exp(estimate),  # Odds ratio/gradient
-#         # var.diag = diag(vcov(clm_mod)),  # Variance of each coefficient
-#           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+model.dia <- tidy(clm_mod)  # Convert model to dataframe for easy manipulation
+model.dia
+
+model.dia$var.diag <- diag(vcov(clm_mod))
+model.dia  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+          var.diag = diag(vcov(clm_mod)),  # Variance of each coefficient
+          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2021,10 +2022,10 @@ fviz_contrib(env_pca, choice = "var", axes = 4, top = 20)
 # # create corr matrix, with dummy vars
 # set.seed(10)
 # tsne_model_1 = Rtsne(as.matrix(results_env2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-# d_tsne_1 = as.data.frame(tsne_model_1$Y)  
+# d_tsne_1 = as.data.frame(tsne_model_1$Y)
 # 
 # ## plotting the results without clustering
-# ggplot(d_tsne_1, aes(x=V1, y=V2)) +  
+# ggplot(d_tsne_1, aes(x=V1, y=V2)) +
 #   geom_point(size=0.25) +
 #   guides(colour=guide_legend(override.aes=list(size=6))) +
 #   xlab("") + ylab("") +
@@ -2038,16 +2039,16 @@ fviz_contrib(env_pca, choice = "var", axes = 4, top = 20)
 # d_tsne_1_original=d_tsne_1
 # 
 # ## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-# fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)  
+# fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)
 # d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
 # 
 # ## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
 # fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
 # 
 # ## setting 3 clusters as output
-# d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))  
+# d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))
 # 
-# plot_cluster=function(data, var_cluster, palette)  
+# plot_cluster=function(data, var_cluster, palette)
 # {
 #   ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
 #   geom_point(size=0.25) +
@@ -2057,16 +2058,16 @@ fviz_contrib(env_pca, choice = "var", axes = 4, top = 20)
 #   theme_light(base_size=20) +
 #   theme(axis.text.x=element_blank(),
 #         axis.text.y=element_blank(),
-#         legend.direction = "horizontal", 
+#         legend.direction = "horizontal",
 #         legend.position = "bottom",
-#         legend.box = "horizontal") + 
-#     scale_colour_brewer(palette = palette) 
+#         legend.box = "horizontal") +
+#     scale_colour_brewer(palette = palette)
 # }
 # 
 # # plot t-sne clusters next to each other
-# plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
+# plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")
 # plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-# grid.arrange(plot_k, plot_h,  ncol=2)    
+# grid.arrange(plot_k, plot_h,  ncol=2)
 ```
 
 ### CLM environmental regression
@@ -2083,6 +2084,8 @@ clm_env <- clm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_y
                 ther_vis + divers + military + school2_type + residenc + env_mh, data = clm_env)
 summary(clm_env)
 coef(clm_env)
+ci_env <- confint(clm_env)
+ci_env
 
 model.env <- tidy(clm_env)                 # Convert model to dataframe
 model.env 
@@ -2369,6 +2372,8 @@ clm_le <- clm(si_type ~ ins_cover + trauma_year + gpa_sr + aca_impa + fincur + b
               data = clm_le)
 summary(clm_le)
 coef(clm_le)
+ci_le <- confint(clm_le)
+ci_le
 
 model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
 model.le 
@@ -2586,28 +2591,29 @@ fviz_contrib(def_pca, choice = "var", axes = 4, top = 20)
 # plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  # where do i add in labels? do i need them?
 # plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
 # grid.arrange(plot_k, plot_h,  ncol=2) 
-# ```
-# 
-# ## CLM defeat
-# ```{r CLM defeat}
-# results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
-# 
-# clm_def <- NA_preproc(results2_def)
-# clm_def <- as.data.frame(clm_def)
-# 
-# clm_def <- clm(si_type ~ aca_impa + deprawsc, data = clm_def)
-# 
-# summary(clm_def)
-# coef(clm_def)
-# vcov(clm_def)
-# 
-# model.def <- tidy(clm_def)  # Convert model to dataframe for easy manipulation
-# model.def 
-# 
-# model.def  %>% 
-#   mutate(or = exp(estimate),  # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_def)),  # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
+```
+
+## CLM defeat
+```{r CLM defeat}
+results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
+
+clm_def <- NA_preproc(results2_def)
+clm_def <- as.data.frame(clm_def)
+
+clm_def <- clm(si_type ~ aca_impa + deprawsc, data = clm_def)
+
+summary(clm_def)
+coef(clm_def)
+ci_def <- confint(clm_def)
+ci_def
+
+model.def <- tidy(clm_def)  # Convert model to dataframe for easy manipulation
+model.def
+
+model.def  %>%
+  mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_def)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2824,27 +2830,29 @@ fviz_contrib(tsm_pca, choice = "var", axes = 4, top = 20)
 # plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
 # plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
 # grid.arrange(plot_k, plot_h,  ncol=2) 
-# ```
-# 
-# ## CLM TSM
-# ```{r CLM TSM}
-# clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_dum)
-# 
-# clm_tsm <- NA_preproc(clm_tsm)
-# clm_tsm <- as.data.frame(clm_tsm)
-# 
-# clm_tsm <- clm(si_type ~ persist + anx_score + dep_secret + aaq_dum, data = clm_tsm)
-# 
-# summary(clm_tsm)
-# coef(clm_tsm)
-# 
-# model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
-# model.tsm
-# 
-# model.tsm  %>%
-#   mutate(or = exp(estimate),  # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+```
+
+## CLM TSM
+```{r CLM TSM}
+clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_dum)
+ 
+clm_tsm <- NA_preproc(clm_tsm)
+clm_tsm <- as.data.frame(clm_tsm)
+ 
+clm_tsm <- clm(si_type ~ persist + anx_score + dep_secret + aaq_dum, data = clm_tsm)
+ 
+summary(clm_tsm)
+coef(clm_tsm)
+ci_tsm <- confint(clm_tsm)
+ci_tsm
+ 
+model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
+model.tsm
+ 
+model.tsm  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+          var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
+          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -3002,28 +3010,31 @@ fviz_contrib(entrap_pca, choice = "var", axes = 4, top = 20)
 # plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")  
 # plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
 # grid.arrange(plot_k, plot_h,  ncol=2) 
-# ```
-# 
-# ###  CLM Entrapment regression
-# ```{r clm_entrap}
-# clm_entrap <- data.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
-# 
-# clm_entrap <- NA_preproc(clm_entrap)
-# clm_entrap <- as.data.frame(clm_entrap)
-# 
-# clm_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_entrap)
-# 
-# summary(clm_entrap)
-# coef(clm_entrap)
-# 
-# model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
-# model.entrap 
-# 
-# model.entrap  %>% 
-#   mutate(or = exp(estimate),  # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
 ```
+
+###  CLM Entrapment regression
+```{r clm_entrap}
+clm_entrap <- data.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
+
+clm_entrap <- NA_preproc(clm_entrap)
+clm_entrap <- as.data.frame(clm_entrap)
+
+clm_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_entrap)
+
+summary(clm_entrap)
+coef(clm_entrap)
+ci_entrap <- confint(clm_entrap)
+ci_entrap
+
+model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
+model.entrap
+
+model.entrap  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+          var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
+          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+```
+
 
 
 # MOTIVATIONAL MODERATORS
@@ -3323,7 +3334,11 @@ clm_mm <- as.data.frame(clm_mm)
 clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + mh_stigma + brs_dum, data = clm_mm)
 
 summary(clm_mm)
-coef(clm_mm)
+coef_mm <- coef(summary(clm_mm))
+ci_mm <- confint(clm_mm)
+ci_mm
+
+
 
 model.mm <- tidy(clm_mm)  # Convert model to dataframe for easy manipulation
 model.mm 
@@ -3332,6 +3347,8 @@ model.mm  %>%
   mutate(or = exp(estimate),  # Odds ratio/gradient
          var.diag = diag(vcov(clm_mm)),  # Variance of each coefficient
          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
+
+
 ```
 
 
@@ -3345,11 +3362,11 @@ data.v28 <- data.v26
 var_names <- c(
   # diathesis
   "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
-  "dx_adhd", "dx_pers", "meds_sti", "meds_count",
+  "dx_adhd", "dx_pers", "meds_count",
   # environment
   "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
   # life events
-  "ins_cover", "gpa_sr", "binge_fr", "assault_sex", "psyhx", "fincur", "drugs_yn", "trauma_year", "drug_mar",
+  "ins_cover", "gpa_sr", "binge_fr" "psyhx", "fincur", "drugs_yn", "trauma_year", "drug_mar",
   # defeat
   "aca_impa", "deprawsc",
   # threats to self-moderation
