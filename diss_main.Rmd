@@ -2206,6 +2206,7 @@ print(corr)
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
+
 ## EFA LE
 ```{r le_pca}
 data_le <- data.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, drug_mar, binge_fr, trauma_year, psyhx, drugs_yn)
@@ -2318,20 +2319,20 @@ clm_le <- data.v19 %>% select(si_type, ins_cover, trauma_year, gpa_sr, aca_impa,
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
 
-clm_le <- clm(si_type ~ ins_cover + trauma_year + gpa_sr + aca_impa + fincur + binge_fr + drug_mar + psyhx + drugs_yn, 
+clm_le <- glm(si_type ~ ins_cover + trauma_year + gpa_sr + aca_impa + fincur + binge_fr + drug_mar + psyhx + drugs_yn, 
               data = clm_le)
 summary(clm_le)
 coef(clm_le)
-# ci_le <- confint(clm_le)
-# ci_le
-# 
-# model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
-# model.le 
-# 
-# model.le  %>%
-#    mutate(or = exp(estimate),  # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
+ci_le <- confint(clm_le)
+ci_le
+
+model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
+model.le
+
+model.le  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
