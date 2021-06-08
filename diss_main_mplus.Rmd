@@ -3521,7 +3521,10 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 # turn all NA/blank into -99
 
 # Turn all NAs/blanks into -99
-#results_mplus <- results_sem[is.na(results_sem)] <- "-99"
+# <- results_sem[is.na(results_sem)] <- "-99"
+
+impute(results_sem)
+
 
 set.seed(1000) 
 split = sample.split(results_sem, SplitRatio = 0.50)
@@ -3575,18 +3578,17 @@ SI_model_tr <- '# measurement model
 
                  # structural model - regressions
                    def_sem =~ dia_sem + env_sem + le_sem
-                   entrap_sem =~ def_sem + tsm_sem
-                   si_sem =~ def_sem + entrap_sem
+                   entrap_sem =~ def_sem + tsm_sem + def_sem*tsm_sem
+                   si_sem =~ entrap_sem + mm_sem + entrap_sem*mm_sem
 
                  # residual covariances
                     discrim~~divers
                     dep_secret~~mh_stigma
                     dep_impa~~gad7_impa
-                    meds_count~~dx_dep   '
-
- SI_tr_fit <- cfa(SI_model_tr, data = results_sem, estimator = "MLM", orthogonal = FALSE, std.lv = FALSE)
- summary(SI_tr_fit, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
-
+                    meds_count~~dx_dep
+                    aaq_dum ~~ brs_dum
+                    dx_pers ~~ dx_dep
+                    dx_pers ~~ dx_anx    '
 ```
 
 ## Model estimation
