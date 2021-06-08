@@ -1570,26 +1570,21 @@ clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib
 clm_dia <- NA_preproc(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
 
-# diagnostic <- clm_dia %>% 
-#   summarize(
-#     anx_count = sum(!is.na(meds_anx))
-#   )
-
-clm_mod <- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
+clm_mod <- glm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
                         ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count, data = dia_mod)
 summary(clm_mod)
 coef(clm_mod)
-# ci_dia <- confint(clm_mod)
-# ci_dia
-# 
-# model.dia <- tidy(clm_mod)  # Convert model to dataframe for easy manipulation
-# model.dia
-# 
-# model.dia$var.diag <- diag(vcov(clm_mod))
-# model.dia  %>%
-#    mutate(or = exp(estimate),  # Odds ratio/gradient
-#           var.diag = diag(vcov(clm_mod)),  # Variance of each coefficient
-#           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+ci_dia <- confint(clm_mod)
+ci_dia
+
+model.dia <- tidy(clm_mod)  # Convert model to dataframe for easy manipulation
+model.dia
+
+model.dia$var.diag <- diag(vcov(clm_mod))
+model.dia  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+          var.diag = diag(vcov(clm_mod)),  # Variance of each coefficient
+          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -1661,9 +1656,7 @@ data.v14 <- data.v14 %>%
                              (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1)) ~ 4,
                           (talk1_9 == 1 | talk1no == 1) ~ 1,                                  # no support
                           (talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) ~ 2,    # formal support
-                          (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1) ~ 3)) %>%    # informal support
-    mutate(talk = factor(talk, levels=1:4,
-                               labels=c("No support", "Formal", "Informal", "Combined")))
+                          (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1) ~ 3))    # informal support
 table(data.v14$talk)  # check output
 data.v14 = subset(data.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
 ```
@@ -1864,9 +1857,7 @@ table(data.v14$school2_ad)
 data.v14 <- data.v14 %>%
   mutate(school2_type = case_when(school2_4yr == TRUE ~ 1,
                                   school2_cc == TRUE ~ 2,
-                                  school2_ad == TRUE ~ 3)) %>%
-  mutate(school2_type = factor(school2_type, levels=1:3,
-                               labels=c("4-yr colleges", "commununity colleges", "art & design schools")))
+                                  school2_ad == TRUE ~ 3))
 table(data.v14$school2_type)
       
 
@@ -2039,20 +2030,20 @@ clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, the
 clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
 
-clm_env <- clm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
+clm_env <- glm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
                 ther_vis + divers + military + school2_type + residenc + env_mh, data = clm_env)
 summary(clm_env)
 coef(clm_env)
-# ci_env <- confint(clm_env)
-# ci_env
-# 
-# model.env <- tidy(clm_env)                 # Convert model to dataframe
-# model.env 
-# 
-# model.env  %>% 
-#   mutate(or = exp(estimate),               # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_env)),   # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))    # Odds-ratio adjusted 
+ci_env <- confint(clm_env)
+ci_env
+
+model.env <- tidy(clm_env)                 # Convert model to dataframe
+model.env
+
+model.env  %>%
+  mutate(or = exp(estimate),               # Odds ratio/gradient
+         var.diag = diag(vcov(clm_env)),   # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))    # Odds-ratio adjusted
 ```
 
 
