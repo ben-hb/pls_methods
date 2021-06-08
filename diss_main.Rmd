@@ -3478,7 +3478,7 @@ data_sem <- data.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_noncis, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, meds_count,
+  age, sexual, gender_noncis, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_pers, dx_adhd, meds_count,
   # environment
   divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn, military,
   # life events
@@ -3502,7 +3502,7 @@ results_sem <- dummy_cols(data_sem2, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_anx",
+    "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_anx", "dx_pers",
     "dx_tr", "dx_adhd", "meds_count",
     # environment
     "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
@@ -3525,7 +3525,12 @@ results_sem <- dummy_cols(data_sem2, select_columns = c(
 
 ## Descriptive stats
 ```{r Var_sum}
-describe(results_sem) %>% view()
+var_desc <- describe(results_sem) %>% view()
+
+# xlsx output
+save(var_desc, file = "var_desc.RData")
+load("var_desc.RData")
+write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Model correlations
@@ -3589,8 +3594,7 @@ write_xlsx(testdf.v29, path = "testdf_diss.xls", col_names = TRUE, format_header
 ```
 
 
-
-
+# SEM ANALYSIS
 
 
 ## SEM specification
@@ -3691,10 +3695,7 @@ write_xlsx(testdf.v29, path = "testdf_diss.xls", col_names = TRUE, format_header
 
 ```
 
-
-# PARAMETER ESTIMATES
-
-
+## Parameter estimates
 ```{r parameter_est}
 # 
 # #train
