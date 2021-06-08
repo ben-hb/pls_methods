@@ -3368,7 +3368,7 @@ var_names <- c(
   # environment
   "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
   # life events
-  "ins_cover", "gpa_sr", "binge_fr" "psyhx", "fincur", "drugs_yn", "trauma_year", "drug_mar",
+  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "trauma_year", "drug_mar",
   # defeat
   "aca_impa", "deprawsc",
   # threats to self-moderation
@@ -3603,78 +3603,78 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 #                    dep_impa~~gad7_impa
 #                    meds_count~~dx_dep   '
 
-
-SI_model_tr <- '# measurement model
-                  dia_sem =~ age + sexual + gender_noncis + sib_freq + race + ed_any + dx_dep +
-                             dx_bi + dx_anx + dx_tr + dx_adhd + dx_pers + meds_count
-                  env_sem =~ divers + satisfied_overall + talk + religios + discrim + 
-                             school2_type + activ_yn + military
-                  le_sem =~  ins_cover + gpa_sr + binge_fr + psyhx + fincur + drugs_yn + trauma_year
-                  def_sem =~ aca_impa + deprawsc
-                  tsm_sem =~ persist + anx_score + dep_secret + aaq_dum
-                  entrap_sem =~ dep_impa + gad7_impa + percneed_cur
-                  mm_sem =~  inf + flourish_dum + belong1 + mh_stigma + brs_dum
-                  
-                # structural model - regressions
-                  premotiv_sem =~ dia_sem + env_sem + le_sem
-                  motiv =~ def_sem + tsm_sem + entrap_sem + mm_sem
-
-                # residual covariances
-                   dep_impa~~gad7_impa
-                   meds_count~~dx_dep   '
-
-SI_tr_fit <- cfa(SI_model_tr, data = results_sem, estimator = "MLM", orthogonal = FALSE, std.lv = FALSE)
-summary(SI_tr_fit, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
-
-SI_tr_fitau <- cfa(SI_tr_fit, data = results_sem, estimator = "MLM", orthogonal = FALSE, std.lv = FALSE)
-summary(SI_tr_fitau, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
+# 
+# SI_model_tr <- '# measurement model
+#                   dia_sem =~ age + sexual + gender_noncis + sib_freq + race + ed_any + dx_dep +
+#                              dx_bi + dx_anx + dx_tr + dx_adhd + dx_pers + meds_count
+#                   env_sem =~ divers + satisfied_overall + talk + religios + discrim + 
+#                              school2_type + activ_yn + military
+#                   le_sem =~  ins_cover + gpa_sr + binge_fr + psyhx + fincur + drugs_yn + trauma_year
+#                   def_sem =~ aca_impa + deprawsc
+#                   tsm_sem =~ persist + anx_score + dep_secret + aaq_dum
+#                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
+#                   mm_sem =~  inf + flourish_dum + belong1 + mh_stigma + brs_dum
+#                   
+#                 # structural model - regressions
+#                   premotiv_sem =~ dia_sem + env_sem + le_sem
+#                   motiv =~ def_sem + tsm_sem + entrap_sem + mm_sem
+# 
+#                 # residual covariances
+#                    dep_impa~~gad7_impa
+#                    meds_count~~dx_dep   '
+# 
+# SI_tr_fit <- cfa(SI_model_tr, data = results_sem, estimator = "MLM", orthogonal = FALSE, std.lv = FALSE)
+# summary(SI_tr_fit, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
+# 
+# SI_tr_fitau <- cfa(SI_tr_fit, data = results_sem, estimator = "MLM", orthogonal = FALSE, std.lv = FALSE)
+# summary(SI_tr_fitau, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
 
 ```
 
 ## Model estimation
 ```{r SEM model estimation}
 # Model estimation
-
-fit_train <- sem(SI_model_tr, data=traindf.v29)
-
-summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
-
-list(summary_train$coefficient, 
-      round(1-(summary_train$deviance/summary_train$null.deviance), 2))
-
-semPaths(SI_model_tr, "par", edge.label.cex = 1.2, fade = FALSE) 
+# 
+# fit_train <- sem(SI_model_tr, data=traindf.v29)
+# 
+# summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
+# 
+# list(summary_train$coefficient, 
+#       round(1-(summary_train$deviance/summary_train$null.deviance), 2))
+# 
+# semPaths(SI_model_tr, "par", edge.label.cex = 1.2, fade = FALSE) 
 
 ```
 
 ## Model prediction
 ```{r SEM test model}
 
-fit_test <- sem(SI_model_test, data=testdf.v29)
-summary_test <- summary(fit_test, fit.measures=TRUE)
-list(summary_test$coefficient, 
-      round(1-(summary_test$deviance/summary_test$null.deviance), 2))
-
-# model prediction
-fit_train$prediction <- predict(SI_model_test, newdata = traindf.v29, type = "response")
-fit_test$prediction  <- predict(SI_model_test, newdata = testdf.v29 , type = "response")
-
-# distribution of the prediction score grouped by outcome
-ggplot(traindf.v29, aes(prediction, color = as.factor(left) ) ) + 
-geom_density( size = 1 ) +
-ggtitle( "Training Set's Predicted Score" ) + 
-scale_color_economist( name = "data", labels = c( "negative", "positive" ) ) + 
-theme_economist()
+# fit_test <- sem(SI_model_test, data=testdf.v29)
+# summary_test <- summary(fit_test, fit.measures=TRUE)
+# list(summary_test$coefficient, 
+#       round(1-(summary_test$deviance/summary_test$null.deviance), 2))
+# 
+# # model prediction
+# fit_train$prediction <- predict(SI_model_test, newdata = traindf.v29, type = "response")
+# fit_test$prediction  <- predict(SI_model_test, newdata = testdf.v29 , type = "response")
+# 
+# # distribution of the prediction score grouped by outcome
+# ggplot(traindf.v29, aes(prediction, color = as.factor(left) ) ) + 
+# geom_density( size = 1 ) +
+# ggtitle( "Training Set's Predicted Score" ) + 
+# scale_color_economist( name = "data", labels = c( "negative", "positive" ) ) + 
+# theme_economist()
 
 ```
 
 ## SEM Path diagram
 ```{r SEM path diagram}
-cols <- wes_palette(name = "SI Conceptualization in College Students", n = 4, type = "discrete")
-colorlist <- list(man = cols[2], lat = cols[3])
-
-semPaths(fit_train, what = "col", whatLabels = "std", style = "mx",  
-         color = colorlist, rotation =1 , layout = "spring",  nCharNodes = 7, 
-         shapeMan = "rectangle", sizeMan = 8, sizeMan2 = 5)
+# cols <- wes_palette(name = "SI Conceptualization in College Students", n = 4, type = "discrete")
+# colorlist <- list(man = cols[2], lat = cols[3])
+# 
+# semPaths(fit_train, what = "col", whatLabels = "std", style = "mx",  
+#          color = colorlist, rotation =1 , layout = "spring",  nCharNodes = 7, 
+#          shapeMan = "rectangle", sizeMan = 8, sizeMan2 = 5)
 
 ```
 
@@ -3683,22 +3683,22 @@ semPaths(fit_train, what = "col", whatLabels = "std", style = "mx",
 
 
 ```{r parameter_est}
-
-#train
-parameterEstimates(fit_train)
-fitted(fit_train)
-resid(fit_train)
-fitMeasures(fit_train, c("cfi","rmsea","srmr"))
-lavInspect(fit_train, what = "start")
-lavInspect(fit_train, what = "list")
-findRMSEApower(rmsea0, rmseaA, fit_train, n, alpha = 0.05, group = 1)
-
-# test
-parameterEstimates(fit_test)
-fitted(fit_test)
-resid(fit_test)
-fitMeasures(fit_test, c("cfi","rmsea","srmr"))
-lavInspect(fit_test, what = "start")
-lavInspect(fit_test, what = "list")
+# 
+# #train
+# parameterEstimates(fit_train)
+# fitted(fit_train)
+# resid(fit_train)
+# fitMeasures(fit_train, c("cfi","rmsea","srmr"))
+# lavInspect(fit_train, what = "start")
+# lavInspect(fit_train, what = "list")
+# findRMSEApower(rmsea0, rmseaA, fit_train, n, alpha = 0.05, group = 1)
+# 
+# # test
+# parameterEstimates(fit_test)
+# fitted(fit_test)
+# resid(fit_test)
+# fitMeasures(fit_test, c("cfi","rmsea","srmr"))
+# lavInspect(fit_test, what = "start")
+# lavInspect(fit_test, what = "list")
 
 ```
