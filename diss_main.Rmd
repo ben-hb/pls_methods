@@ -3478,7 +3478,7 @@ data_sem <- data.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_noncis, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, dx_pers, meds_count,
+  age, sexual, gender_noncis, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, meds_count,
   # environment
   divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn, military,
   # life events
@@ -3503,7 +3503,7 @@ results_sem <- dummy_cols(data_sem2, select_columns = c(
     "si_type",
     # diathesis
     "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_anx",
-    "dx_tr", "dx_adhd", "dx_pers", "meds_count",
+    "dx_tr", "dx_adhd", "meds_count",
     # environment
     "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
     # life events
@@ -3578,14 +3578,14 @@ load("data_sem.RData")
 write_xlsx(results_sem, path = "data_sem.xls", col_names = TRUE, format_headers = TRUE)
 
 # save training data
-save(rtaindf.v29, file = "traindf_diss.RData")
+save(traindf.v29, file = "traindf_diss.RData")
 load("traindf_diss.RData")
-write_xlsx(results_sem, path = "traindf_diss.xls", col_names = TRUE, format_headers = TRUE)
+write_xlsx(traindf.v29, path = "traindf_diss.xls", col_names = TRUE, format_headers = TRUE)
 
 # save test data
 save(testdf.v29, file = "testdf_diss.RData")
 load("testdf_diss.RData")
-write_xlsx(results_sem, path = "testdf_diss.xls", col_names = TRUE, format_headers = TRUE)
+write_xlsx(testdf.v29, path = "testdf_diss.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
