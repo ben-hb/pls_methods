@@ -3519,8 +3519,16 @@ dim(traindf.v29)
 dim(testdf.v29)
 ```
 
-## Save for Mplus
+## Create data matrix, save into files
 ```{r save dataset}
+
+
+# Turn all NAs/blanks into -99
+# results_sem2 <- results_sem[is.na(results_sem)] <- "-99"
+
+impute(results_sem2)
+
+
 # save full var set for SEM
 save(results_sem, file = "data_sem.RData")
 load("data_sem.RData")
@@ -3575,16 +3583,16 @@ summary(SI_tr_fitau, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
 
 ## Model estimation
 ```{r SEM model estimation}
-# Model estimation
-# 
-# fit_train <- sem(SI_model_tr, data=traindf.v29)
-# 
-# summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
-# 
-# list(summary_train$coefficient, 
-#       round(1-(summary_train$deviance/summary_train$null.deviance), 2))
-# 
-# semPaths(SI_model_tr, "par", edge.label.cex = 1.2, fade = FALSE) 
+Model estimation
+
+fit_train <- sem(SI_model_tr, data=traindf.v29)
+
+summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
+
+list(summary_train$coefficient,
+      round(1-(summary_train$deviance/summary_train$null.deviance), 2))
+
+semPaths(SI_model_tr, "par", edge.label.cex = 1.2, fade = FALSE)
 
 ```
 
