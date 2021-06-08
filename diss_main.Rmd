@@ -3543,52 +3543,33 @@ write_xlsx(testdf.v29, path = "testdf_diss.xls", col_names = TRUE, format_header
 
 ## SEM specification
 ```{r SEM specification}
-# SI_model_tr <- '# measurement model
-#                   dia_sem =~ age + sexual + gender_noncis + sib_freq + race + ed_any + dx_dep +
-#                              dx_bi + dx_anx + dx_tr + dx_adhd + dx_pers + meds_count
-#                   env_sem =~ divers + satisfied_overall + talk + religios + discrim + 
-#                              school2_type + activ_yn + military
-#                   le_sem =~  ins_cover + gpa_sr + binge_fr + psyhx + fincur + drugs_yn + trauma_year
-#                   def_sem =~ aca_impa + deprawsc
-#                   tsm_sem =~ persist + anx_score + dep_secret + aaq_dum
-#                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
-#                   mm_sem =~  inf + flourish_dum + belong1 + mh_stigma + brs_dum
-#                   si_sem =~  si_type
-#                   
-#                 # structural model - regressions
-#                   def_sem =~ dia_sem + env_sem + le_sem
-#                   entrap_sem =~ def_sem + tsm_sem
-#                   si_sem =~ def_sem + entrap_sem
-# 
-#                 # residual covariances
-#                    dep_impa~~gad7_impa
-#                    meds_count~~dx_dep   '
+SI_model_tr <- '
+                # measurement model
+                  dia_sem =~ age + sexual + gender_noncis + sib_freq + race + ed_any + dx_dep +
+                             dx_bi + dx_anx + dx_tr + dx_adhd + dx_pers + meds_count
+                  env_sem =~ divers + satisfied_overall + talk + religios + discrim +
+                             school2_type + activ_yn + military
+                  le_sem =~  ins_cover + gpa_sr + binge_fr + psyhx + fincur + drugs_yn + trauma_year
+                  def_sem =~ aca_impa + deprawsc
+                  tsm_sem =~ persist + anx_score + dep_secret + aaq_dum
+                  entrap_sem =~ dep_impa + gad7_impa + percneed_cur
+                  mm_sem =~  inf + flourish_dum + belong1 + mh_stigma + brs_dum
+                  si_sem =~  si_type
 
-# 
-# SI_model_tr <- '# measurement model
-#                   dia_sem =~ age + sexual + gender_noncis + sib_freq + race + ed_any + dx_dep +
-#                              dx_bi + dx_anx + dx_tr + dx_adhd + dx_pers + meds_count
-#                   env_sem =~ divers + satisfied_overall + talk + religios + discrim + 
-#                              school2_type + activ_yn + military
-#                   le_sem =~  ins_cover + gpa_sr + binge_fr + psyhx + fincur + drugs_yn + trauma_year
-#                   def_sem =~ aca_impa + deprawsc
-#                   tsm_sem =~ persist + anx_score + dep_secret + aaq_dum
-#                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
-#                   mm_sem =~  inf + flourish_dum + belong1 + mh_stigma + brs_dum
-#                   
-#                 # structural model - regressions
-#                   premotiv_sem =~ dia_sem + env_sem + le_sem
-#                   motiv =~ def_sem + tsm_sem + entrap_sem + mm_sem
-# 
-#                 # residual covariances
-#                    dep_impa~~gad7_impa
-#                    meds_count~~dx_dep   '
-# 
-# SI_tr_fit <- cfa(SI_model_tr, data = results_sem, estimator = "MLM", orthogonal = FALSE, std.lv = FALSE)
-# summary(SI_tr_fit, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
-# 
-# SI_tr_fitau <- cfa(SI_tr_fit, data = results_sem, estimator = "MLM", orthogonal = FALSE, std.lv = FALSE)
-# summary(SI_tr_fitau, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
+                # structural model - regressions
+                  def_sem =~ dia_sem + env_sem + le_sem
+                  entrap_sem =~ def_sem + tsm_sem
+                  si_sem =~ def_sem + entrap_sem
+
+                # residual covariances
+                   dep_impa~~gad7_impa
+                   meds_count~~dx_dep   '
+
+SI_tr_fit <- cfa(SI_model_tr, data = results_sem, estimator = "MLM", orthogonal = FALSE, std.lv = FALSE)
+summary(SI_tr_fit, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
+
+SI_tr_fitau <- cfa(SI_tr_fit, data = results_sem, estimator = "MLM", orthogonal = FALSE, std.lv = FALSE)
+summary(SI_tr_fitau, fit.measures = TRUE, standardized = TRUE, rsquare = TRUE)
 
 ```
 
