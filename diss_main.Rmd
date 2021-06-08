@@ -1570,8 +1570,9 @@ clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib
 clm_dia <- NA_preproc(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
 
-clm_mod <- glm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
-                        ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count, data = dia_mod)
+clm_mod <- glm(si_type ~ (age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
+                        ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count)^2, 
+               data = dia_mod)
 summary(clm_mod)
 coef(clm_mod)
 ci_dia <- confint(clm_mod)
@@ -2030,8 +2031,8 @@ clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, the
 clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
 
-clm_env <- glm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
-                ther_vis + divers + military + school2_type + residenc + env_mh, data = clm_env)
+clm_env <- glm(si_type ~ (discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
+                ther_vis + divers + military + school2_type + residenc + env_mh)^2, data = clm_env)
 summary(clm_env)
 coef(clm_env)
 ci_env <- confint(clm_env)
@@ -2319,7 +2320,7 @@ clm_le <- data.v19 %>% select(si_type, ins_cover, trauma_year, gpa_sr, aca_impa,
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
 
-clm_le <- glm(si_type ~ ins_cover + trauma_year + gpa_sr + aca_impa + fincur + binge_fr + drug_mar + psyhx + drugs_yn, 
+clm_le <- glm(si_type ~ (ins_cover + trauma_year + gpa_sr + aca_impa + fincur + binge_fr + drug_mar + psyhx + drugs_yn)^2, 
               data = clm_le)
 summary(clm_le)
 coef(clm_le)
@@ -2414,15 +2415,6 @@ corr <- as.data.frame(as.table(corr))         # turn into a 3-column table
 corr <- na.omit(corr)                         # remove the NA values from above 
 corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
 print(corr)
-
-# Redefining defeat variable to account for significant overlaps
-# data.v21 <- data.v21 %>%
-#   mutate(dep_mod = case_when(dep_mod == 1 ~ 1,
-#                              dep_modsev == 1 ~ 1,
-#                              dep_sev == 1 ~ 0,
-#                              dep_mild == 1 ~ 0,
-#                              dep_none == 1 ~ 0))
-# table(data.v21$dep_mod)
 
 data_def <- data.v21 %>% select(aca_impa, deprawsc)
 
@@ -2551,20 +2543,20 @@ results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
 clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
 
-clm_def <- clm(si_type ~ aca_impa + deprawsc, data = clm_def)
+clm_def <- glm(si_type ~ (aca_impa + deprawsc)^2, data = clm_def)
 
 summary(clm_def)
 coef(clm_def)
-# ci_def <- confint(clm_def)
-# ci_def
 
-# model.def <- tidy(clm_def)  # Convert model to dataframe for easy manipulation
-# model.def
-# 
-# model.def  %>%
-#   mutate(or = exp(estimate),  # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_def)),  # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+ci_def <- confint(clm_def)
+ci_def
+
+model.def <- tidy(clm_def)  # Convert model to dataframe for easy manipulation
+model.def
+model.def  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+          var.diag = diag(vcov(clm_def)),  # Variance of each coefficient
+          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2792,20 +2784,21 @@ clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_dum)
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
  
-clm_tsm <- clm(si_type ~ persist + anx_score + dep_secret + aaq_dum, data = clm_tsm)
+clm_tsm <- glm(si_type ~ (persist + anx_score + dep_secret + aaq_dum)^2, data = clm_tsm)
  
 summary(clm_tsm)
 coef(clm_tsm)
-# ci_tsm <- confint(clm_tsm)
-# ci_tsm
- 
-# model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
-# model.tsm
-#  
-# model.tsm  %>%
-#    mutate(or = exp(estimate),  # Odds ratio/gradient
-#           var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
-#           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+
+ci_tsm <- confint(clm_tsm)
+ci_tsm
+
+model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
+model.tsm
+
+model.tsm  %>%
+    mutate(or = exp(estimate),  # Odds ratio/gradient
+           var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
+           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2972,20 +2965,21 @@ clm_entrap <- data.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
 clm_entrap <- NA_preproc(clm_entrap)
 clm_entrap <- as.data.frame(clm_entrap)
 
-clm_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed_cur, data = clm_entrap)
+clm_entrap <- glm(si_type ~ (dep_impa + gad7_impa + percneed_cur)^2, data = clm_entrap)
 
 summary(clm_entrap)
 coef(clm_entrap)
-# ci_entrap <- confint(clm_entrap)
-# ci_entrap
 
-# model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
-# model.entrap
-# 
-# model.entrap  %>%
-#    mutate(or = exp(estimate),  # Odds ratio/gradient
-#           var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
-#           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+ci_entrap <- confint(clm_entrap)
+ci_entrap
+
+model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
+model.entrap
+
+model.entrap  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
