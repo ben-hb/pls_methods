@@ -9,6 +9,7 @@ output:
 # LOAD PACKAGES
 ```{r Call packages}
 # sample git change
+# git change #2 electric boogaloo
 library(assertive)
 library(bestglm)
 library(broom)
