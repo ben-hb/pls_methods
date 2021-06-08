@@ -1570,8 +1570,8 @@ clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib
 clm_dia <- NA_preproc(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
 
-clm_mod <- glm(si_type ~ (age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
-                        ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count)^2, 
+clm_mod <- glm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
+                        ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count^2, 
                data = dia_mod)
 summary(clm_mod)
 coef(clm_mod)
@@ -2031,8 +2031,8 @@ clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, the
 clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
 
-clm_env <- glm(si_type ~ (discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
-                ther_vis + divers + military + school2_type + residenc + env_mh)^2, data = clm_env)
+clm_env <- glm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
+                ther_vis + divers + military + school2_type + residenc + env_mh, data = clm_env)
 summary(clm_env)
 coef(clm_env)
 ci_env <- confint(clm_env)
@@ -2320,7 +2320,7 @@ clm_le <- data.v19 %>% select(si_type, ins_cover, trauma_year, gpa_sr, aca_impa,
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
 
-clm_le <- glm(si_type ~ (ins_cover + trauma_year + gpa_sr + aca_impa + fincur + binge_fr + drug_mar + psyhx + drugs_yn)^2, 
+clm_le <- glm(si_type ~ ins_cover + trauma_year + gpa_sr + aca_impa + fincur + binge_fr + drug_mar + psyhx + drugs_yn, 
               data = clm_le)
 summary(clm_le)
 coef(clm_le)
@@ -2543,7 +2543,7 @@ results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
 clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
 
-clm_def <- glm(si_type ~ (aca_impa + deprawsc)^2, data = clm_def)
+clm_def <- glm(si_type ~ aca_impa + deprawsc, data = clm_def)
 
 summary(clm_def)
 coef(clm_def)
@@ -2784,7 +2784,7 @@ clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_dum)
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
  
-clm_tsm <- glm(si_type ~ (persist + anx_score + dep_secret + aaq_dum)^2, data = clm_tsm)
+clm_tsm <- glm(si_type ~ persist + anx_score + dep_secret + aaq_dum, data = clm_tsm)
  
 summary(clm_tsm)
 coef(clm_tsm)
@@ -2965,7 +2965,8 @@ clm_entrap <- data.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
 clm_entrap <- NA_preproc(clm_entrap)
 clm_entrap <- as.data.frame(clm_entrap)
 
-clm_entrap <- glm(si_type ~ (dep_impa + gad7_impa + percneed_cur)^2, data = clm_entrap)
+clm_entrap <- glm(si_type ~ dep_impa + gad7_impa + percneed_cur, 
+                  data = clm_entrap)
 
 summary(clm_entrap)
 coef(clm_entrap)
@@ -2996,7 +2997,7 @@ data.v26 <- data.v24
 ```{r belong}
 table(data.v26$belong1)
 table(data.v26$belong2)  # elective question, but common
-table(data.v26$belong8)  # nested
+table(data.v26$belong8)  # nested x 2
 table(data.v26$belong9)  # not as good of a proxy
 ```
 
@@ -3282,20 +3283,20 @@ clm_mm <- data.v27 %>% select(si_type, inf, flourish_dum, belong1, mh_stigma, br
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
 
-clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + mh_stigma + brs_dum, data = clm_mm)
+clm_mm <- glm(si_type ~ inf + flourish_dum + belong1 + mh_stigma + brs_dum, data = clm_mm)
 
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))
-# ci_mm <- confint(clm_mm)
-# ci_mm
+ci_mm <- confint(clm_mm)
+ci_mm
 
-# model.mm <- tidy(clm_mm)  # Convert model to dataframe for easy manipulation
-# model.mm 
-# 
-# model.mm  %>% 
-#   mutate(or = exp(estimate),  # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_mm)),  # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted 
+model.mm <- tidy(clm_mm)  # Convert model to dataframe for easy manipulation
+model.mm
+
+model.mm  %>%
+  mutate(or = exp(estimate),  # Odds ratio/gradient
+        var.diag = diag(vcov(clm_mm)),  # Variance of each coefficient
+        or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
