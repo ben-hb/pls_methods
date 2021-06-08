@@ -3548,13 +3548,24 @@ dim(testdf.v29)
 ## Save for Mplus
 ```{r save dataset}
 
+# save full var set for SEM
 save(results_sem, file = "data_sem.RData")
 load("data_sem.RData")
 write_xlsx(results_sem, path = "data_sem.xls", col_names = TRUE, format_headers = TRUE)
+
+# save training data
+save(rtaindf.v29, file = "traindf_diss.RData")
+load("traindf_diss.RData")
+write_xlsx(results_sem, path = "traindf_diss.xls", col_names = TRUE, format_headers = TRUE)
+
+# save test data
+save(testdf.v29, file = "testdf_diss.RData")
+load("testdf_diss.RData")
+write_xlsx(results_sem, path = "testdf_diss.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
-# SEM ANALYSIS
+# SEM ANALYSIS PREPARATION
 
 
 ## Model correlations
