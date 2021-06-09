@@ -396,7 +396,6 @@ get.or.se <- function(model) {
            or.se = sqrt(or^2 * var.diag)) %>%
     select(or.se) %>% unlist %>% unname
 }
-
 ```
 
 
@@ -433,7 +432,6 @@ table(data.v2$si_type) # ensuring that all NAs are now clean
 
 # Define starting sample (n = 51137)
 length(unique(data.v2$responseid))
-
 ```
 
 
@@ -473,7 +471,6 @@ data.v3 <- data.v3 %>%
                                    gender == 3 ~ 1,
                                    gender == 1 ~ 0))
 table(data.v3$gender_noncis)
-
 ```
 
 ### Reconcile 'gender_text' 
@@ -1571,7 +1568,7 @@ clm_dia <- NA_preproc(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
 
 clm_mod <- glm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
-                        ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count^2, 
+                        ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count, 
                data = dia_mod)
 summary(clm_mod)
 coef(clm_mod)
@@ -2784,7 +2781,8 @@ clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_dum)
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
  
-clm_tsm <- glm(si_type ~ persist + anx_score + dep_secret + aaq_dum, data = clm_tsm)
+clm_tsm <- glm(si_type ~ persist + anx_score + dep_secret + aaq_dum, 
+               data = clm_tsm)
  
 summary(clm_tsm)
 coef(clm_tsm)
@@ -3283,7 +3281,8 @@ clm_mm <- data.v27 %>% select(si_type, inf, flourish_dum, belong1, mh_stigma, br
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
 
-clm_mm <- glm(si_type ~ inf + flourish_dum + belong1 + mh_stigma + brs_dum, data = clm_mm)
+clm_mm <- glm(si_type ~ inf + flourish_dum + belong1 + mh_stigma + brs_dum, 
+              data = clm_mm)
 
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))
@@ -3522,24 +3521,20 @@ dim(testdf.v29)
 ## Create data matrix, save into files
 ```{r save dataset}
 
-# Turn all NAs/blanks into -99
-results_sem2 <- results_sem[is.na(results_sem)] <- "-99"
-
-
-# save full var set for SEM
-save(results_sem, file = "data_sem.RData")
-load("data_sem.RData")
-write_xlsx(results_sem, path = "data_sem.xls", col_names = TRUE, format_headers = TRUE)
-
-# save training data
-save(traindf.v29, file = "traindf_diss.RData")
-load("traindf_diss.RData")
-write_xlsx(traindf.v29, path = "traindf_diss.xls", col_names = TRUE, format_headers = TRUE)
-
-# save test data
-save(testdf.v29, file = "testdf_diss.RData")
-load("testdf_diss.RData")
-write_xlsx(testdf.v29, path = "testdf_diss.xls", col_names = TRUE, format_headers = TRUE)
+# # save full var set for SEM
+# save(results_sem, file = "data_sem.RData")
+# load("data_sem.RData")
+# write_xlsx(results_sem, path = "data_sem.xls", col_names = TRUE, format_headers = TRUE)
+# 
+# # save training data
+# save(traindf.v29, file = "traindf_diss.RData")
+# load("traindf_diss.RData")
+# write_xlsx(traindf.v29, path = "traindf_diss.xls", col_names = TRUE, format_headers = TRUE)
+# 
+# # save test data
+# save(testdf.v29, file = "testdf_diss.RData")
+# load("testdf_diss.RData")
+# write_xlsx(testdf.v29, path = "testdf_diss.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -3571,16 +3566,16 @@ SI_model_tr <- '
                     dep_secret~~mh_stigma
                     dep_impa~~gad7_impa
                     meds_count~~dx_dep
-                    aaq_dum ~~ brs_dum
-                    dx_pers ~~ dx_dep
-                    dx_pers ~~ dx_anx    '
+                    aaq_dum~~brs_dum
+                    dx_pers~~dx_dep
+                    dx_pers~~dx_anx    '
 ```
 
 ## Model estimation
 ```{r SEM model estimation}
 # Model estimation
 
-fit_train <- sem(SI_model_tr, data=traindf.v29)
+fit_train <- sem(SI_model_tr, data=results_sem)
 
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
