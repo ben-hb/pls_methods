@@ -8,7 +8,6 @@ output:
 
 # LOAD PACKAGES
 ```{r Call packages}
-# call packages
 library(assertive)
 library(bestglm)
 library(broom)
@@ -72,6 +71,7 @@ library(tsne)
 library(validate)
 library(visualpred)
 library(VIM)
+library(wesanderson)
 library(writexl)
 ```
 
@@ -423,11 +423,14 @@ data.v2 <- data.v1 %>%
 # tabulate and check output
 table(data.v2$si_type)
 table(data.v2$sui_idea)
+
+data.v2$si_type <- as.factor(data.v2$si_type)
+
 data.v2 = subset(data.v2, select= -c(suic_plan, sui_plan, suic_att, sui_att)) # clean up vars/columns
 
 # select if SI variable is missing -- then rowwise deletion
 data.v2 <- data.v2 %>%
-  filter(!is.na(si_type)) 
+  filter(!is.na(si_type))
 table(data.v2$si_type) # ensuring that all NAs are now clean
 
 # Define starting sample (n = 51137)
@@ -1561,28 +1564,29 @@ fviz_contrib(dia_pca, choice = "var", axes = 4, top = 20)
 
 ### CLM diathesis regression
 ```{r clm_dia}
-clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib_freq, race, body_sr, dx_anx,
-                                dx_anx, dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, ed_any, meds_count)
-
-clm_dia <- NA_preproc(clm_dia)
-dia_mod <- as.data.frame(clm_dia)
-
-clm_mod <- glm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
-                        ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count, 
-               data = dia_mod)
-summary(clm_mod)
-coef(clm_mod)
-ci_dia <- confint(clm_mod)
-ci_dia
-
-model.dia <- tidy(clm_mod)  # Convert model to dataframe for easy manipulation
-model.dia
-
-model.dia$var.diag <- diag(vcov(clm_mod))
-model.dia  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_mod)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# clm_dia <- data.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib_freq, race, body_sr, dx_anx,
+#                                 dx_anx, dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, ed_any, meds_count)
+# 
+# clm_dia <- NA_preproc(clm_dia)
+# dia_mod <- as.data.frame(clm_dia)
+# 
+# clm_mod <- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
+#                         ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count, 
+#                data = dia_mod)
+# summary(clm_mod)
+# coef(clm_mod)
+# 
+# ci_dia <- confint(clm_mod)
+# ci_dia
+# 
+# model.dia <- tidy(clm_mod)  # Convert model to dataframe for easy manipulation
+# model.dia
+# 
+# model.dia$var.diag <- diag(vcov(clm_mod))
+# model.dia  %>%
+#    mutate(or = exp(estimate),  # Odds ratio/gradient
+#           var.diag = diag(vcov(clm_mod)),  # Variance of each coefficient
+#           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2022,26 +2026,26 @@ fviz_contrib(env_pca, choice = "var", axes = 4, top = 20)
 Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + 
 school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
 ```{r CLM environment}
-clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, religios,
-                               divers, school2_type, satisfied_overall, ther_vis, talk, military, international)
-
-clm_env <- NA_preproc(clm_env)
-clm_env <- as.data.frame(clm_env)
-
-clm_env <- glm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
-                ther_vis + divers + military + school2_type + residenc + env_mh, data = clm_env)
-summary(clm_env)
-coef(clm_env)
-ci_env <- confint(clm_env)
-ci_env
-
-model.env <- tidy(clm_env)                 # Convert model to dataframe
-model.env
-
-model.env  %>%
-  mutate(or = exp(estimate),               # Odds ratio/gradient
-         var.diag = diag(vcov(clm_env)),   # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))    # Odds-ratio adjusted
+# clm_env <- data.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, religios,
+#                                divers, school2_type, satisfied_overall, ther_vis, talk, military, international)
+# 
+# clm_env <- NA_preproc(clm_env)
+# clm_env <- as.data.frame(clm_env)
+# 
+# clm_env <- glm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
+#                 ther_vis + divers + military + school2_type + residenc + env_mh, data = clm_env)
+# summary(clm_env)
+# coef(clm_env)
+# ci_env <- confint(clm_env)
+# ci_env
+# 
+# model.env <- tidy(clm_env)                 # Convert model to dataframe
+# model.env
+# 
+# model.env  %>%
+#   mutate(or = exp(estimate),               # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_env)),   # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))    # Odds-ratio adjusted
 ```
 
 
@@ -2312,25 +2316,25 @@ fviz_contrib(le_pca, choice = "var", axes = 4, top = 20)
 
 ## CLM Life event regression
 ```{r clm_LE}
-clm_le <- data.v19 %>% select(si_type, ins_cover, trauma_year, gpa_sr, aca_impa, fincur, drug_mar, binge_fr, psyhx, drugs_yn)
-
-clm_le <- NA_preproc(clm_le)
-clm_le <- as.data.frame(clm_le)
-
-clm_le <- glm(si_type ~ ins_cover + trauma_year + gpa_sr + aca_impa + fincur + binge_fr + drug_mar + psyhx + drugs_yn, 
-              data = clm_le)
-summary(clm_le)
-coef(clm_le)
-ci_le <- confint(clm_le)
-ci_le
-
-model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
-model.le
-
-model.le  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-         var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# clm_le <- data.v19 %>% select(si_type, ins_cover, trauma_year, gpa_sr, aca_impa, fincur, drug_mar, binge_fr, psyhx, drugs_yn)
+# 
+# clm_le <- NA_preproc(clm_le)
+# clm_le <- as.data.frame(clm_le)
+# 
+# clm_le <- glm(si_type ~ ins_cover + trauma_year + gpa_sr + aca_impa + fincur + binge_fr + drug_mar + psyhx + drugs_yn, 
+#               data = clm_le)
+# summary(clm_le)
+# coef(clm_le)
+# ci_le <- confint(clm_le)
+# ci_le
+# 
+# model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
+# model.le
+# 
+# model.le  %>%
+#    mutate(or = exp(estimate),  # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2535,25 +2539,25 @@ fviz_contrib(def_pca, choice = "var", axes = 4, top = 20)
 
 ## CLM defeat
 ```{r CLM defeat}
-results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
-
-clm_def <- NA_preproc(results2_def)
-clm_def <- as.data.frame(clm_def)
-
-clm_def <- glm(si_type ~ aca_impa + deprawsc, data = clm_def)
-
-summary(clm_def)
-coef(clm_def)
-
-ci_def <- confint(clm_def)
-ci_def
-
-model.def <- tidy(clm_def)  # Convert model to dataframe for easy manipulation
-model.def
-model.def  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_def)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# results2_def <- data.v21 %>% select(si_type, aca_impa, deprawsc)
+# 
+# clm_def <- NA_preproc(results2_def)
+# clm_def <- as.data.frame(clm_def)
+# 
+# clm_def <- glm(si_type ~ aca_impa + deprawsc, data = clm_def)
+# 
+# summary(clm_def)
+# coef(clm_def)
+# 
+# ci_def <- confint(clm_def)
+# ci_def
+# 
+# model.def <- tidy(clm_def)  # Convert model to dataframe for easy manipulation
+# model.def
+# model.def  %>%
+#    mutate(or = exp(estimate),  # Odds ratio/gradient
+#           var.diag = diag(vcov(clm_def)),  # Variance of each coefficient
+#           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2776,27 +2780,27 @@ fviz_contrib(tsm_pca, choice = "var", axes = 4, top = 20)
 
 ## CLM TSM
 ```{r CLM TSM}
-clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_dum)
- 
-clm_tsm <- NA_preproc(clm_tsm)
-clm_tsm <- as.data.frame(clm_tsm)
- 
-clm_tsm <- glm(si_type ~ persist + anx_score + dep_secret + aaq_dum, 
-               data = clm_tsm)
- 
-summary(clm_tsm)
-coef(clm_tsm)
-
-ci_tsm <- confint(clm_tsm)
-ci_tsm
-
-model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
-model.tsm
-
-model.tsm  %>%
-    mutate(or = exp(estimate),  # Odds ratio/gradient
-           var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
-           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# clm_tsm <- data.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_dum)
+#  
+# clm_tsm <- NA_preproc(clm_tsm)
+# clm_tsm <- as.data.frame(clm_tsm)
+#  
+# clm_tsm <- glm(si_type ~ persist + anx_score + dep_secret + aaq_dum, 
+#                data = clm_tsm)
+#  
+# summary(clm_tsm)
+# coef(clm_tsm)
+# 
+# ci_tsm <- confint(clm_tsm)
+# ci_tsm
+# 
+# model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
+# model.tsm
+# 
+# model.tsm  %>%
+#     mutate(or = exp(estimate),  # Odds ratio/gradient
+#            var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
+#            or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2958,27 +2962,27 @@ fviz_contrib(entrap_pca, choice = "var", axes = 4, top = 20)
 
 ###  CLM Entrapment regression
 ```{r clm_entrap}
-clm_entrap <- data.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
-
-clm_entrap <- NA_preproc(clm_entrap)
-clm_entrap <- as.data.frame(clm_entrap)
-
-clm_entrap <- glm(si_type ~ dep_impa + gad7_impa + percneed_cur, 
-                  data = clm_entrap)
-
-summary(clm_entrap)
-coef(clm_entrap)
-
-ci_entrap <- confint(clm_entrap)
-ci_entrap
-
-model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
-model.entrap
-
-model.entrap  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-         var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# clm_entrap <- data.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
+# 
+# clm_entrap <- NA_preproc(clm_entrap)
+# clm_entrap <- as.data.frame(clm_entrap)
+# 
+# clm_entrap <- glm(si_type ~ dep_impa + gad7_impa + percneed_cur, 
+#                   data = clm_entrap)
+# 
+# summary(clm_entrap)
+# coef(clm_entrap)
+# 
+# ci_entrap <- confint(clm_entrap)
+# ci_entrap
+# 
+# model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
+# model.entrap
+# 
+# model.entrap  %>%
+#    mutate(or = exp(estimate),  # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -3276,26 +3280,26 @@ fviz_contrib(mm_pca, choice = "var", axes = 4, top = 20)
 Variables for consideration:  inf, flourish_dum, belong2, stig_pcv_2, stig_pcv_3, brs_dum
 ```{r CLM mm}
 
-clm_mm <- data.v27 %>% select(si_type, inf, flourish_dum, belong1, mh_stigma, brs_dum)
-
-clm_mm <- NA_preproc(clm_mm)
-clm_mm <- as.data.frame(clm_mm)
-
-clm_mm <- glm(si_type ~ inf + flourish_dum + belong1 + mh_stigma + brs_dum, 
-              data = clm_mm)
-
-summary(clm_mm)
-coef_mm <- coef(summary(clm_mm))
-ci_mm <- confint(clm_mm)
-ci_mm
-
-model.mm <- tidy(clm_mm)  # Convert model to dataframe for easy manipulation
-model.mm
-
-model.mm  %>%
-  mutate(or = exp(estimate),  # Odds ratio/gradient
-        var.diag = diag(vcov(clm_mm)),  # Variance of each coefficient
-        or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# clm_mm <- data.v27 %>% select(si_type, inf, flourish_dum, belong1, mh_stigma, brs_dum)
+# 
+# clm_mm <- NA_preproc(clm_mm)
+# clm_mm <- as.data.frame(clm_mm)
+# 
+# clm_mm <- glm(si_type ~ inf + flourish_dum + belong1 + mh_stigma + brs_dum, 
+#               data = clm_mm)
+# 
+# summary(clm_mm)
+# coef_mm <- coef(summary(clm_mm))
+# ci_mm <- confint(clm_mm)
+# ci_mm
+# 
+# model.mm <- tidy(clm_mm)  # Convert model to dataframe for easy manipulation
+# model.mm
+# 
+# model.mm  %>%
+#   mutate(or = exp(estimate),  # Odds ratio/gradient
+#         var.diag = diag(vcov(clm_mm)),  # Variance of each coefficient
+#         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -3459,7 +3463,8 @@ results_sem <- dummy_cols(data_sem2, select_columns = c(
     "dep_impa", "gad7_impa", "percneed_cur",
     # motivational moderators
     "inf", "flourish_dum", "belong1", "mh_stigma", "brs_dum"), 
-                         remove_first_dummy = TRUE)
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+view(results_sem)
 ```
 
 
@@ -3468,7 +3473,7 @@ results_sem <- dummy_cols(data_sem2, select_columns = c(
 
 ## Descriptive stats
 ```{r Var_sum}
-var_desc <- describe(results_sem) %>% view()
+var_desc <- describe(data_sem) %>% view()
 
 # xlsx output
 save(var_desc, file = "var_desc.RData")
@@ -3478,7 +3483,6 @@ write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = T
 
 ## Model correlations
 ```{r model_corr}
-
 results_sem <- NA_preproc(results_sem)
 results_sem <- as.data.frame(results_sem)
 
@@ -3503,8 +3507,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 # DATA DIVISION
 
 
-```{r Data division}
-
+```{r Data_div}
 set.seed(1000) 
 split = sample.split(results_sem, SplitRatio = 0.50)
  
@@ -3521,20 +3524,20 @@ dim(testdf.v29)
 ## Create data matrix, save into files
 ```{r save dataset}
 
-# # save full var set for SEM
-# save(results_sem, file = "data_sem.RData")
-# load("data_sem.RData")
-# write_xlsx(results_sem, path = "data_sem.xls", col_names = TRUE, format_headers = TRUE)
-# 
-# # save training data
-# save(traindf.v29, file = "traindf_diss.RData")
-# load("traindf_diss.RData")
-# write_xlsx(traindf.v29, path = "traindf_diss.xls", col_names = TRUE, format_headers = TRUE)
-# 
-# # save test data
-# save(testdf.v29, file = "testdf_diss.RData")
-# load("testdf_diss.RData")
-# write_xlsx(testdf.v29, path = "testdf_diss.xls", col_names = TRUE, format_headers = TRUE)
+# save full var set for SEM
+save(results_sem, file = "data_sem.RData")
+load("data_sem.RData")
+write_xlsx(results_sem, path = "data_sem.xls", col_names = TRUE, format_headers = TRUE)
+
+# save training data
+save(traindf.v29, file = "traindf_diss.RData")
+load("traindf_diss.RData")
+write_xlsx(traindf.v29, path = "traindf_diss.xls", col_names = TRUE, format_headers = TRUE)
+
+# save test data
+save(testdf.v29, file = "testdf_diss.RData")
+load("testdf_diss.RData")
+write_xlsx(testdf.v29, path = "testdf_diss.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -3582,19 +3585,15 @@ summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 list(summary_train$coefficient,
       round(1-(summary_train$deviance/summary_train$null.deviance), 2))
 
-semPaths(SI_model_tr, "par", edge.label.cex = 1.2, fade = FALSE)
-
 ```
 
 ## Model prediction
 ```{r SEM test model}
 
-fit_test <- sem(SI_model_test, data=testdf.v29)
-summary_test <- summary(fit_test, fit.measures=TRUE)
-list(summary_test$coefficient,
-      round(1-(summary_test$deviance/summary_test$null.deviance), 2))
+#semPaths(SI_model_tr, "par", edge.label.cex = 1.2, fade = FALSE)
 
 # model prediction
+fit_train$prediction <- predict(SI_model_test, newdata = results_sem, type = "response")
 fit_train$prediction <- predict(SI_model_test, newdata = traindf.v29, type = "response")
 fit_test$prediction  <- predict(SI_model_test, newdata = testdf.v29 , type = "response")
 
@@ -3609,7 +3608,7 @@ theme_economist()
 
 ## SEM Path diagram
 ```{r SEM path diagram}
-cols <- wes_palette(name = "SI Conceptualization in College Students", n = 4, type = "discrete")
+cols <- wes_palette(name = "Zissou1", n = 4, type = "discrete")
 colorlist <- list(man = cols[2], lat = cols[3])
 
 semPaths(fit_train, what = "col", whatLabels = "std", style = "mx",
