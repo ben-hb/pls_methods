@@ -395,6 +395,15 @@ get.or.se <- function(model) {
            var.diag = diag(vcov(model)),
            or.se = sqrt(or^2 * var.diag)) %>%
     select(or.se) %>% unlist %>% unname
+  
+
+  # SEM visualization
+plot_matrix <- function(matrix_toplot){
+corrplot::corrplot(matrix_toplot, is.corr = FALSE,
+               type = 'lower',
+               order = "original",
+               tl.col='black', tl.cex=.75)
+}
 }
 ```
 
@@ -423,8 +432,6 @@ data.v2 <- data.v1 %>%
 # tabulate and check output
 table(data.v2$si_type)
 table(data.v2$sui_idea)
-
-data.v2$si_type <- as.factor(data.v2$si_type)
 
 data.v2 = subset(data.v2, select= -c(suic_plan, sui_plan, suic_att, sui_att)) # clean up vars/columns
 
@@ -3473,7 +3480,7 @@ view(results_sem)
 
 ## Descriptive stats
 ```{r Var_sum}
-var_desc <- describe(data_sem) %>% view()
+var_desc <- describe(data_sem2) %>% view()
 
 # xlsx output
 save(var_desc, file = "var_desc.RData")
@@ -3590,7 +3597,21 @@ list(summary_train$coefficient,
 ## Model prediction
 ```{r SEM test model}
 
-#semPaths(SI_model_tr, "par", edge.label.cex = 1.2, fade = FALSE)
+
+fitmeasures(fit_train)
+
+# model diagnostics
+fitted(fit_train)
+inspect(fit_train, what="cor.all")
+
+# compare to observed
+lavCor(fit_train)
+
+# residuals in coef unit
+resid(fit_train, "cor")
+
+plot_matrix(residuals(fit_train, type="cor")$cor)
+
 
 # model prediction
 fit_train$prediction <- predict(SI_model_test, newdata = results_sem, type = "response")
@@ -3608,6 +3629,11 @@ theme_economist()
 
 ## SEM Path diagram
 ```{r SEM path diagram}
+
+# pathway output
+semPaths(fit_train, "par", edge.label.cex = 1.2, fade = FALSE)
+
+
 cols <- wes_palette(name = "Zissou1", n = 4, type = "discrete")
 colorlist <- list(man = cols[2], lat = cols[3])
 
