@@ -2076,7 +2076,7 @@ traindf.v18 = subset(traindf.v18, select= -c(prov_pes, prov_inp, prov_par)) # cl
 
 ## Current GPA
 ```{r gpa_sr}
- table(traindf.v18$gpa_sr)
+table(traindf.v18$gpa_sr)
 ```
  
 ```{r LE traindf analysis}
@@ -2363,6 +2363,7 @@ table(traindf.v22$anx_none)
 table(traindf.v22$anx_mild)
 table(traindf.v22$anx_mod)
 table(traindf.v22$anx_sev)
+table(traindf.v22$anx_score)
 ```
 
 ## Depression secret
@@ -2396,7 +2397,6 @@ rs_df_arranged[1,1]
 traindf.v22 <- traindf.v22 %>%
   mutate(aaq_dum = ifelse(AAQ_tot > rs_df_arranged[1,1], TRUE, FALSE))
 
-
 table(traindf.v22$aaq_dum)
 table(traindf.v22$aaq_tot)
 
@@ -2424,7 +2424,7 @@ traindf.v23 <- traindf.v22
 ```{r CORR TSM}
 
 # Define TSM variable candidates for correlation matrix
-traindf_tsm <- traindf.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_dum)
+traindf_tsm <- traindf.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_tot)
 
 # convert data to numeric in order to run correlations 
 traindf_tsm <- traindf_tsm %>% mutate_if(is.character, as.factor)
@@ -2440,7 +2440,7 @@ corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correla
 print(corr)
   
 # Re-run corr with non-overlapping vars
-traindf_tsm <- traindf.v23 %>% select(persist, anx_score, dep_secret, achieve4, AAQ_tot)
+traindf_tsm <- traindf.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_tot)
 
 # convert data to numeric in order to run correlations 
 traindf_tsm <- traindf_tsm %>% mutate_if(is.character, as.factor)
@@ -2458,7 +2458,7 @@ print(corr)
 
 ## EFA TSM
 ```{r EFA TSM}
-traindf_tsm <- traindf.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_dum)
+traindf_tsm <- traindf.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_tot)
 
 # create corr matrix, with dummy vars 
 traindf_tsm <- traindf_tsm %>% 
@@ -2467,7 +2467,7 @@ traindf_tsm <- traindf_tsm %>%
   data.matrix()
 traindf_tsm   # check output
 
-results_tsm <- dummy_cols(traindf_tsm, select_columns = c("persist", "anx_score", "dep_secret", "achieve4", "aaq_dum"),
+results_tsm <- dummy_cols(traindf_tsm, select_columns = c("persist", "anx_score", "dep_secret", "achieve4", "aaq_tot"),
                          remove_first_dummy = TRUE)
 
 tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
@@ -2492,19 +2492,16 @@ fviz_cos2(tsm_pca, choice = "var", axes = 1,
           top = 40,
           xtickslab.rt = 45,
           ggtheme = theme_minimal())
-fviz_contrib(tsm_pca, choice = "var", axes = 2, top = 20)
-fviz_contrib(tsm_pca, choice = "var", axes = 3, top = 20)
-fviz_contrib(tsm_pca, choice = "var", axes = 4, top = 20)
 ```
 
 ## CLM TSM
 ```{r CLM TSM}
-clm_tsm <- traindf.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_dum)
+clm_tsm <- traindf.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_tot)
 
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
 
-clm_tsm <- glm(si_type ~ persist + anx_score + dep_secret + aaq_dum,
+clm_tsm <- glm(si_type ~ persist + anx_score + dep_secret + aaq_tot,
                data = clm_tsm)
 
 summary(clm_tsm)
@@ -2578,11 +2575,11 @@ print(corr)
 traindf_entrap <- traindf.v25 %>% select(dep_impa, gad7_impa, percneed_cur)   # all continuous... treat
 
 # create corr matrix, with dummy vars 
-traindf_entrap <- traindf_entrap %>% 
+results_entrap <- traindf_entrap %>% 
   mutate_if(is.numeric, as.factor) %>% 
   mutate_if(is.character, as.factor) %>% 
   data.matrix()
-traindf_entrap   # check output
+results_entrap   # check output
 
 entrap_pca <- PCA(results_entrap, graph=FALSE)  # apply PCA
 entrap_pca$eig   # output matrix with eigenvalues
@@ -2608,10 +2605,6 @@ fviz_cos2(entrap_pca, choice = "var", axes = 1,
           top = 40,
           xtickslab.rt = 45,
           ggtheme = theme_minimal())
-
-fviz_contrib(entrap_pca, choice = "var", axes = 2, top = 20)
-fviz_contrib(entrap_pca, choice = "var", axes = 3, top = 20)
-fviz_contrib(entrap_pca, choice = "var", axes = 4, top = 20)
 ```
 
 ###  CLM Entrapment regression
@@ -2864,22 +2857,17 @@ fviz_cos2(mm_pca, choice = "var", axes = 1,
           top = 40,
           xtickslab.rt = 45,
           ggtheme = theme_minimal())
-fviz_contrib(mm_pca, choice = "var", axes = 2, top = 20)
-fviz_contrib(mm_pca, choice = "var", axes = 3, top = 20)
-fviz_contrib(mm_pca, choice = "var", axes = 4, top = 20)
 ```
-
 
 ### CLM Motivational moderators regression
 Variables for consideration:  inf, flourish_dum, belong2, stig_pcv_2, stig_pcv_3, brs_dum
 ```{r CLM mm}
-clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1, mh_stigma, brs_dum)
+clm_mm <- traindf.v27 %>% select(si_type, inf, flourish, belong1, mh_stigma, brs_tot)
 
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
 
-clm_mm <- glm(si_type ~ inf + flourish_dum + belong1 + mh_stigma + brs_dum,
-              data = clm_mm)
+clm_mm <- glm(si_type ~ inf + flourish + belong1 + mh_stigma + brs_tot, data = clm_mm)
 
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))
