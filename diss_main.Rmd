@@ -1557,7 +1557,7 @@ ther_vis, school2, medtherc, medther, talk, religios, residenc, satisfied_overal
 
 
 ```{r Env frame}
-data.v13 <- data.v11
+traindf.v13 <- traindf.v11
 ```
 
 ## US resident status
