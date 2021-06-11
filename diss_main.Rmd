@@ -2999,8 +2999,8 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 # DATA PREP
 
 
-## Create all dummy vars for SEM
-```{r dummy_cols SEM}
+## Select all vars for SEM
+```{r train_df_sem2}
 # Prep SEM data vars
 traindf_sem <- traindf.v28 %>% select(
   # outcome var
@@ -3025,7 +3025,10 @@ traindf_sem2 <- traindf_sem %>%
   mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
 traindf_sem2   # check output
+```
 
+## Create dummy vars
+```{r dummy_cols SEM}
 results_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # outcome var
     "si_type",
@@ -3064,12 +3067,12 @@ write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = T
 
 ## Model correlations
 ```{r model_corr}
-results_sem <- NA_preproc(results_sem)
-results_sem <- as.data.frame(results_sem)
+results_corr <- NA_preproc(results_sem)
+results_corr <- as.data.frame(results_corr)
 
 # run a correlation and drop the insignificant ones
 sig <- 0.8
-corr <- cor(results_sem, use = "pairwise.complete.obs")                               
+corr <- cor(results_corr, use = "pairwise.complete.obs")                               
 corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
 corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
 corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
@@ -3086,6 +3089,8 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ## Create data matrix, save into files
 ```{r save dataset}
+
+results_sem <- as.data.frame(results_sem)
 
 # save full var set for SEM
 save(results_sem, file = "traindf_sem.RData")
@@ -3119,11 +3124,9 @@ SI_model_tr <- '
                    si_sem =~ entrap_sem + mm_sem + entrap_sem*mm_sem
 
                  # residual covariances
-                    discrim~~divers
-                    dep_secret~~mh_stigma
-                    dep_impa~~gad7_impa
-                    meds_count~~dx_dep
-                    aaq_tot~~brs_tot  '
+                    dia_sem ~~ env_sem
+                    env_sem ~~ le_sem
+                    le_sem ~~ dia_sem  '
 ```
 
 ## Model estimation
@@ -3131,7 +3134,8 @@ SI_model_tr <- '
 # Model estimation
 
 results_tr_sem <- as.matrix(results_sem)
-fit_train <- sem(SI_model_tr, data=results_tr_sem)
+
+fit_train <- sem(SI_model_tr, data=results_sem)
 
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
