@@ -1089,28 +1089,27 @@ table(data.v9$dep_or_a_all)
 
 
 ```{r Data_div}
-set.seed(1000) 
-split = sample.split(results_sem, SplitRatio = 0.50)
+data.v10 <- as.data.frame(data.v9)
+
+set.seed(500) 
+split = sample.split(data.v10, SplitRatio = 0.50)
  
 # Create training and testing sets
-traindf.v9 <- subset(results_sem, split == TRUE)
-testdf.v9 <- subset(results_sem, split == FALSE)
+traindf.v10 <- subset(data.v10, split == TRUE)
+testdf.v10 <- subset(data.v10, split == FALSE)
  
 #Check output
-dim(results_sem)
-dim(traindf.v9)
-dim(testdf.v9)
+dim(data.v10)
+dim(traindf.v10)
+dim(testdf.v10)
 ```
-
-
-
 
 ## Religion
 ```{r religios}
 # Label levels of religious importance
-traindf.v10 <- traindf.v9 %>%
+traindf.v10 <- traindf.v10 %>%
   filter(!is.na(religios))
-table(data.v9$religios)       # Check output
+table(data.v10$religios)       # Check output
 ```
 
 ## AUDIT  
@@ -1162,23 +1161,23 @@ Combine wcs_1_f, wcs_1_m, wcs_1_o to create 'wcs_1'
 ** too small
 ```{r WCS data merge}
 
-table(traindf.v9$wcs_1_f)
-table(traindf.v9$wcs_1_m)
-table(traindf.v9$wcs_1_o)
+table(traindf.v10$wcs_1_f)
+table(traindf.v10$wcs_1_m)
+table(traindf.v10$wcs_1_o)
 
-table(traindf.v9$wcs_2)
-table(traindf.v9$wcs_3)
-table(traindf.v9$wcs_4)
-table(traindf.v9$wcs_5)
+table(traindf.v10$wcs_2)
+table(traindf.v10$wcs_3)
+table(traindf.v10$wcs_4)
+table(traindf.v10$wcs_5)
 
-traindf.v9 = subset(traindf.v9, select= -c(wcs_1_f, wcs_1_m, wcs_1_o, 
+traindf.v10 = subset(traindf.v10, select= -c(wcs_1_f, wcs_1_m, wcs_1_o, 
                                            wcs_2, wcs_3, wcs_4, wcs_5)) # clean up vars/columns
 ```
 
 ## Medication use
 ```{r meds}
 # Create stimulant
-traindf.v11 <- traindf.v9 %>%
+traindf.v11 <- traindf.v10 %>%
   mutate(meds_sti = case_when(meds_1 == 1 ~ 1,
                               meds_8 == 1 ~ 0,
                               meds_1 == 0 ~ 0))
@@ -1415,7 +1414,7 @@ traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/col
 
 ## DIATHESIS ANALYSES
 ```{r Diathesis analyses}
-data.v12 <- data.v11 # create new dataframe for summary stats. Will jump to v13 for environmental
+traindf.v12 <- traindf.v11 # create new dataframe for summary stats. Will jump to v13 for environmental
 ```
 
 ### Diathesis correlation matrix
@@ -1436,7 +1435,7 @@ corr_simple <- function(traindf=traindf_dia, sig=0.6){
   corr <- cor(traindf_dia, use = "pairwise.complete.obs")                               
   corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
   corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-  corr <- as.traindf.frame(as.table(corr))                   # turn into a 3-column table
+  corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
   corr <- na.omit(corr)                                   # remove the NA values from above 
   corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
   print(corr)
@@ -1487,7 +1486,7 @@ traindf_dia <- traindf_dia %>%
     meds_count = as.numeric(meds_count),
   ) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
-  traindf.matrix()
+  data.matrix()
 traindf_dia   # check output
 
 results_dia <- dummy_cols(traindf_dia, select_columns = c("age", "sexual", "gender_noncis", "finpast", 
@@ -3116,14 +3115,14 @@ write_xlsx(results_sem, path = "traindf_sem.xls", col_names = TRUE, format_heade
 SI_model_tr <- '
                 # measurement model
                   dia_sem =~ age + sexual + gender_noncis + sib_freq + race + ed_any + dx_dep +
-                             dx_bi + dx_anx + dx_tr + dx_adhd + dx_pers + meds_count
+                             dx_bi + dx_anx + dx_tr + dx_adhd + meds_count
                   env_sem =~ divers + satisfied_overall + talk + religios + discrim +
                              school2_type + activ_yn + military
                   le_sem =~  ins_cover + gpa_sr + binge_fr + psyhx + fincur + drugs_yn + trauma_year
                   def_sem =~ aca_impa + deprawsc
-                  tsm_sem =~ persist + anx_score + dep_secret + aaq_dum
+                  tsm_sem =~ persist + anx_score + dep_secret + aaq
                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
-                  mm_sem =~  inf + flourish_dum + belong1 + mh_stigma + brs_dum
+                  mm_sem =~  inf + flourish + belong1 + mh_stigma + brs_tot
                   si_sem =~  si_type
 
                  # structural model - regressions
@@ -3136,9 +3135,7 @@ SI_model_tr <- '
                     dep_secret~~mh_stigma
                     dep_impa~~gad7_impa
                     meds_count~~dx_dep
-                    aaq_dum~~brs_dum
-                    dx_pers~~dx_dep
-                    dx_pers~~dx_anx    '
+                    aaq_tot~~brs_tot  '
 ```
 
 ## Model estimation
