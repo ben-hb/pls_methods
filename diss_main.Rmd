@@ -2151,67 +2151,6 @@ fviz_contrib(le_pca, choice = "var", axes = 3, top = 20)
 fviz_contrib(le_pca, choice = "var", axes = 4, top = 20)
 ```
 
-```{r tsne_le}
-# PCA map with eigenvalues
-traindf_le2 <- traindf.v19 %>% select(ins_cover, trauma_year, gpa_sr, aca_impa, drug_mar, fincur, binge_fr, psyhx, drugs_yn)
-results_le2 <- dummy_cols(traindf_le2, remove_first_dummy = TRUE)
-
-# create corr matrix, with dummy vars
-results_le2 <- results_le2 %>%
-  mutate_if(is.numeric, as.factor) %>%
-  NA_preproc() %>%
-  data.matrix()
-
-# create corr matrix, with dummy vars
-set.seed(10)
-tsne_model_1 = Rtsne(as.matrix(results_le2), check_duplicates=FALSE, pca=TRUE, perplexity=30, theta=0.5, dims=2)
-d_tsne_1 = as.data.frame(tsne_model_1$Y)
-
-## plotting the results without clustering
-ggplot(d_tsne_1, aes(x=V1, y=V2)) +
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("t-SNE") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank()) +
-  scale_colour_brewer(palette = "Set2")
-
-## keeping original data
-d_tsne_1_original=d_tsne_1
-
-## Creating k-means clustering model, and assigning the result to the data used to create the tsne
-fit_cluster_kmeans=kmeans(scale(d_tsne_1), 3)
-d_tsne_1_original$cl_kmeans = factor(fit_cluster_kmeans$cluster)
-
-## Creating hierarchical cluster model, and assigning the result to the data used to create the tsne
-fit_cluster_hierarchical=hclust(dist(scale(d_tsne_1)))
-
-## setting 3 clusters as output
-d_tsne_1_original$cl_hierarchical = factor(cutree(fit_cluster_hierarchical, k=3))
-
-plot_cluster=function(data, var_cluster, palette)
-{
-  ggplot(data, aes_string(x="V1", y="V2", color=var_cluster)) +
-  geom_point(size=0.25) +
-  guides(colour=guide_legend(override.aes=list(size=6))) +
-  xlab("") + ylab("") +
-  ggtitle("") +
-  theme_light(base_size=20) +
-  theme(axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
-        legend.direction = "horizontal",
-        legend.position = "bottom",
-        legend.box = "horizontal") +
-    scale_colour_brewer(palette = palette)
-}
-
-plot_k=plot_cluster(d_tsne_1_original, "cl_kmeans", "Accent")
-plot_h=plot_cluster(d_tsne_1_original, "cl_hierarchical", "Set1")
-grid.arrange(plot_k, plot_h,  ncol=2)
-```
-
 ## CLM Life event regression
 ```{r clm_LE}
 clm_le <- traindf.v19 %>% select(si_type, ins_cover, trauma_year, gpa_sr, aca_impa, fincur, drug_mar, binge_fr, psyhx, drugs_yn)
@@ -2754,6 +2693,7 @@ traindf.v26 <- traindf.v26 %>%
 # Output
 rs_df_arranged[1,1]
 table(traindf.v26$flourish_dum)
+table(traindf.v26$flourish)
 
 ```
 
@@ -2814,6 +2754,7 @@ traindf.v26 <- traindf.v26 %>%
 # output
 rs_df_arranged[1,1]
 table(traindf.v26$brs_dum)
+table(traindf.v26$brs_tot)
 
 ```
 
@@ -2966,7 +2907,7 @@ traindf.v28 <- traindf.v26
 var_names <- c(
   # diathesis
   "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
-  "dx_adhd", "dx_pers", "meds_count",
+  "dx_adhd", "meds_count",
   # environment
   "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
   # life events
@@ -2974,11 +2915,11 @@ var_names <- c(
   # defeat
   "aca_impa", "deprawsc",
   # threats to self-moderation
-  "persist", "anx_score", "dep_secret", "aaq_dum",
+  "persist", "anx_score", "dep_secret", "aaq_tot",
   # entrapment
   "dep_impa", "gad7_impa", "percneed_cur",
   # motivational moderators
-  "inf", "flourish_dum", "belong1", "mh_stigma", "brs_dum")  
+  "inf", "flourish", "belong1", "mh_stigma", "brs_tot")  
 var_names <- sort(var_names)
 
 # build table for absolute missingness based on school2
@@ -3078,7 +3019,7 @@ traindf_sem <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_noncis, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_pers, dx_adhd, meds_count,
+  age, sexual, gender_noncis, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, meds_count,
   # environment
   divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn, military,
   # life events
@@ -3086,11 +3027,11 @@ traindf_sem <- traindf.v28 %>% select(
   # defeat
   aca_impa, deprawsc,
   # threats to self-moderation
-  persist, anx_score, aaq_dum, dep_secret,
+  persist, anx_score, aaq_tot, dep_secret,
   # entrapment
   dep_impa, gad7_impa, percneed_cur,
   # motivational moderators
-  inf, flourish_dum, belong1, mh_stigma, brs_dum)
+  inf, flourish, belong1, mh_stigma, brs_tot)
 
 # create corr matrix, with dummy vars 
 traindf_sem2 <- traindf_sem %>% 
@@ -3102,7 +3043,7 @@ results_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_anx", "dx_pers",
+    "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_anx",
     "dx_tr", "dx_adhd", "meds_count",
     # environment
     "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
@@ -3111,11 +3052,11 @@ results_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # defeat
     "aca_impa", "deprawsc",
     # threats to self-moderation
-    "persist", "anx_score", "dep_secret", "aaq_dum",
+    "persist", "anx_score", "dep_secret", "aaq_tot",
     # entrapment
     "dep_impa", "gad7_impa", "percneed_cur",
     # motivational moderators
-    "inf", "flourish_dum", "belong1", "mh_stigma", "brs_dum"), 
+    "inf", "flourish", "belong1", "mh_stigma", "brs_tot"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 view(results_sem)
 ```
