@@ -3521,10 +3521,8 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 # turn all NA/blank into -99
 
 # Turn all NAs/blanks into -99
-# <- results_sem[is.na(results_sem)] <- "-99"
-
-impute(results_sem)
-
+results_sem2 <- results_sem[is.na(results_sem)] <- "-99"
+results_sem2 <- as.data.frame(results_sem2)
 
 set.seed(1000) 
 split = sample.split(results_sem, SplitRatio = 0.50)
