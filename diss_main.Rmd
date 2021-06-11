@@ -3108,7 +3108,7 @@ SI_model_tr <- '
                              school2_type + activ_yn + military
                   le_sem =~  ins_cover + gpa_sr + binge_fr + psyhx + fincur + drugs_yn + trauma_year
                   def_sem =~ aca_impa + deprawsc
-                  tsm_sem =~ persist + anx_score + dep_secret + aaq
+                  tsm_sem =~ persist + anx_score + dep_secret + aaq_tot
                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
                   mm_sem =~  inf + flourish + belong1 + mh_stigma + brs_tot
                   si_sem =~  si_type
@@ -3130,7 +3130,8 @@ SI_model_tr <- '
 ```{r SEM model estimation}
 # Model estimation
 
-fit_train <- sem(SI_model_tr, data=results_sem)
+results_tr_sem <- as.matrix(results_sem)
+fit_train <- sem(SI_model_tr, data=results_tr_sem)
 
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
