@@ -29,6 +29,7 @@ library(finalfit)
 library(ggpubr)
 library(gridExtra)
 library(haven)
+library(hrbrthemes)
 library(Hmisc)
 library(ISLR)
 library(janitor)
@@ -38,19 +39,16 @@ library(leaps)
 library(lsr)
 library(magrittr)
 library(MASS)
-library(missForest)
 library(missMDA)
 library(MissMech)
 library(mvord)
 library(ordinal)
-library(ordinalForest)
 library(ordinalgmifs)
 library(ordinalNet)
 library(pastecs)
 library(PerformanceAnalytics)
 library(psych)
 library(purrr)
-library(randomForest)
 library(readr)
 library(repr)
 library(rcompanion)
@@ -67,11 +65,9 @@ library(stats)
 library(stringr)
 library(sure)
 library(tidyverse)
-library(tsne)
 library(validate)
 library(visualpred)
 library(VIM)
-library(wesanderson)
 library(writexl)
 ```
 
@@ -1871,6 +1867,7 @@ traindf_env <- traindf.v15 %>% select(discrim, religios, env_mh, residenc, ther_
  # Convert traindf to numeric in order to run correlations
 traindf_env <- traindf_env %>% mutate_if(is.character, as.factor)
 traindf_env <-  traindf_env %>% mutate_if(is.factor, as.numeric)
+traindf_env <-  traindf_env %>% mutate_if(is.logical, as.numeric)
 
 # run a correlation and drop the insignificant ones
 corr <- cor(traindf_env, use = "pairwise.complete.obs")                               
@@ -1894,6 +1891,7 @@ traindf_env <- traindf.v15 %>% select(discrim, religios, env_mh, residenc, ther_
 # create corr matrix, with dummy vars
 traindf_env <- traindf_env %>% 
   mutate_if(is.numeric, as.factor) %>% 
+  mutate_if(is.logical, as.factor) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 
@@ -1937,12 +1935,13 @@ school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + mi
 clm_env <- traindf.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, religios,
                                divers, school2_type, satisfied_overall, ther_vis, talk, military, international)
 
-clm_env <- NA_preproc(clm_env)
-clm_env <- as.data.frame(clm_env)
+clm_env <- clm_env %>% 
+  NA_preproc() %>%
+  as.data.frame()
 
-clm_env <- clm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
+clm_env2 <- glm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
                 ther_vis + divers + military + school2_type + residenc + env_mh, data = clm_env)
-summary(clm_env)
+summary(clm_env2)
 
 # coef(clm_env)
 # ci_env <- confint(clm_env)
@@ -2045,11 +2044,7 @@ traindf.v17 = subset(traindf.v17, select= -c(abuse_life, abuse_recent)) # clean 
 
 ## Recent assault history
 ```{r assault_[type]}
-# set all assault NAs equal to 0
-traindf.v17$assault_sex[is.na(traindf.v17$assault_sex)] <- 0
-traindf.v17$assault_emo[is.na(traindf.v17$assault_emo)] <- 0
-traindf.v17$assault_phys[is.na(traindf.v17$assault_phys)] <- 0
-
+# restructure sexual assault var
 traindf.v17 <- traindf.v17 %>%
   mutate(assault_sex = case_when(assault_sex == 2 ~ 0,
                                  assault_sex == 1 ~ 1))
@@ -2058,16 +2053,6 @@ traindf.v17 <- traindf.v17 %>%
 table(traindf.v17$assault_sex) 
 table(traindf.v17$assault_emo)
 table(traindf.v17$assault_phys)
-```
-
-## Trauma last year
-```{r trauma_year}
-traindf.v17 <- traindf.v17 %>%
-  mutate(trauma_year = case_when((abuse_year == 1 | assault_emo == 1 | assault_phys == 1 | assault_sex == 1) ~ 1,
-                                 (abuse_year == 0 & assault_emo == 0 & assault_phys == 0 & assault_sex == 0) ~ 0))
-
-table(traindf.v17$trauma_year)
-traindf.v17$trauma_year <- as.logical(traindf.v17$trauma_year)
 ```
 
 ## Binging frequency
@@ -2105,7 +2090,7 @@ traindf.v18 = subset(traindf.v18, select= -c(prov_pes, prov_inp, prov_par)) # cl
 ## Current GPA
 ```{r gpa_sr}
 table(traindf.v18$gpa_sr)
-traindf.v18$gpa_sr <- as.factor(traindf.v18$gpa_sr)
+traindf.v18$gpa_sr <- as.numeric(traindf.v18$gpa_sr)
 ```
  
 ```{r LE traindf analysis}
@@ -2115,7 +2100,8 @@ traindf.v19 <- traindf.v18
 ## LE correlation
 ```{r LE correlation}
 # Define life event var candidates for correlation matrix
-traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, drug_mar, binge_fr, trauma_year, psyhx, drugs_yn)
+traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, drug_mar, binge_fr,
+                                     assault_sex, assault_phys, assault_sex, psyhx, drugs_yn)
 
 # convert traindf to numeric in order to run correlations
 traindf_le <- traindf_le %>% mutate_if(is.character, as.factor)
@@ -2574,7 +2560,7 @@ traindf.v24$gad7_impa <- as.factor(traindf.v24$gad7_impa)
 ## Current needs
 ```{r perneed_cur}
 table(traindf.v24$percneed_cur)
-traindf.v24$percneed_cur <- as.factor(traindf.v24$percneed_curqa1`)
+traindf.v24$percneed_cur <- as.factor(traindf.v24$percneed_cur)
 ```
 
 ## ENTRAPMENT ANALYSES
@@ -2665,9 +2651,9 @@ model.entrap  %>%
 ```
 
 
-
 # MOTIVATIONAL MODERATORS
-Candidate variables: flourish, belong2, belong8, belong9, achieve1, achieve14, achieve18, stig_pcv_2, stig_pcv_3, friend_devel, inf, brs_tot
+Candidate variables: flourish, belong2, belong8, belong9, achieve1, achieve14, 
+achieve18, stig_pcv_2, stig_pcv_3, friend_devel, inf, brs_tot
 
 
 ```{r MM frame}
@@ -2726,8 +2712,6 @@ table(traindf.v26$flourish)
 
 ## Informal Mental Health Support
 ```{r inf}
-
-
 traindf.v26$inf_1[is.na(traindf.v26$inf_1)] <- 0
 traindf.v26$inf_2[is.na(traindf.v26$inf_2)] <- 0
 traindf.v26$inf_3[is.na(traindf.v26$inf_3)] <- 0
@@ -2764,8 +2748,8 @@ traindf.v26 = subset(traindf.v26, select= -c(inf_1:inf_help, inf_sum))
 ```{r BRS_tot}
 traindf.v26 <- traindf.v26 %>%
   mutate(brs_tot = as.integer(BRS_1) + as.integer(BRS_2) + as.integer(BRS_3) + as.integer(BRS_4) + as.integer(BRS_5))
-table(traindf.v26$brs_tot)
 
+table(traindf.v26$brs_tot)
 traindf.v26$brs_tot <- as.numeric(traindf.v26$brs_tot)
 
 #  for loop for predictive cutoff point needed
@@ -2908,10 +2892,11 @@ clm_mm <- traindf.v27 %>% select(si_type, inf, flourish, belong1, mh_stigma, brs
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
 
-clm_mm <- glm(si_type ~ inf + flourish + belong1 + mh_stigma + brs_tot, data = clm_mm)
+clm_mm <- clm(si_type ~ inf + flourish + belong1 + mh_stigma + brs_tot, data = clm_mm)
 
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))
+
 ci_mm <- confint(clm_mm)
 ci_mm
 
@@ -2982,7 +2967,6 @@ write_xlsx(school2, path = "sch2_missing.xlsx", col_names = TRUE, format_headers
 
 ## Missingness of each overall variable
 ```{r Missingness of each overall var}
-
 # Create dataframe to store data 
 missing_rates <- data.frame("variable" = var_names,
            "total" = rep(999, length(var_names)),
@@ -3051,7 +3035,7 @@ traindf_sem <- traindf.v28 %>% select(
   # environment
   divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn, military,
   # life events
-  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, trauma_year,
+  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn,
   # defeat
   aca_impa, deprawsc,
   # threats to self-moderation
@@ -3066,11 +3050,16 @@ traindf_sem2 <- traindf_sem %>%
   mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
 traindf_sem2   # check output
+
+# xlsx output
+traindf_sem3 <- as.data.frame(traindf_sem2)
+save(traindf_sem3 , file = "traindf_nondummy.RData")
+load("traindf_nondummy.RData")
+write_xlsx(traindf_sem3, path = "traindf_nondummy.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Create dummy vars
 ```{r dummy_cols SEM}
-
 results_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # outcome var
     "si_type",
@@ -3080,7 +3069,7 @@ results_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # environment
     "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
     # life events
-    "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "trauma_year",
+    "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn",
     # defeat
     "aca_impa", "deprawsc",
     # threats to self-moderation
@@ -3106,47 +3095,14 @@ var_desc <- describe(traindf_sem2) %>% view()
 save(var_desc, file = "var_desc.RData")
 load("var_desc.RData")
 write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = TRUE)
-
-# Run preliminary stats on sample pre-split
-var_names <- c(
-  # diathesis
-  "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
-  "dx_adhd", "meds_count",
-  # environment
-  "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
-  # life events
-  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "trauma_year", "drug_mar",
-  # defeat
-  "aca_impa", "deprawsc",
-  # threats to self-moderation
-  "persist", "anx_score", "dep_secret", "aaq_tot",
-  # entrapment
-  "dep_impa", "gad7_impa", "percneed_cur",
-  # motivational moderators
-  "inf", "flourish", "belong1", "mh_stigma", "brs_tot") 
-
-varall_desc <- describe(var_names) %>% view()
-
 ```
 
 ## Variable scatterplot
 ```{r var_scatter}
-var_names <- c(
-  # diathesis
-  "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
-  "dx_adhd", "meds_count",
-  # environment
-  "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
-  # life events
-  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "trauma_year", "drug_mar",
-  # defeat
-  "aca_impa", "deprawsc",
-  # threats to self-moderation
-  "persist", "anx_score", "dep_secret", "aaq_tot",
-  # entrapment
-  "dep_impa", "gad7_impa", "percneed_cur",
-  # motivational moderators
-  "inf", "flourish", "belong1", "mh_stigma", "brs_tot")  
+traindf_sem2 <- as.data.frame(data.v9)
+hist(data.v9$age)
+
+
 ```
 
 
@@ -3212,10 +3168,6 @@ SI_model_tr <- '
                   dia_sem ~~ env_sem
                   env_sem ~~ le_sem
                   le_sem ~~ dia_sem  '
-
-fit <- cfa(SI_model_tr, data = results_sem,
-            ordered = c("age","si_type", "sib_freq","meds_count", "binge_fr", "deprawsc",
-                        "anx_score", "aaq_tot", "dep_impa", "gad7_impa", "flourish", "brs_tot"))
 ```
 
 ## Model estimation
@@ -3223,6 +3175,10 @@ fit <- cfa(SI_model_tr, data = results_sem,
 # Model estimation
 
 results_tr_sem <- as.matrix(results_sem)
+
+fit <- cfa(SI_model_tr, data = results_sem,
+             ordered = c("age","si_type", "sib_freq","meds_count", "binge_fr", "deprawsc",
+                         "anx_score", "aaq_tot", "dep_impa", "gad7_impa", "flourish", "brs_tot"))
 
 fit_train <- sem(SI_model_tr, data=results_sem)
 
@@ -3281,10 +3237,6 @@ semPaths(fit_train2, what='std', nCharNodes=6, sizeMan=10,
 
 ## Parameter estimates
 ```{r parameter_est}
-
-
-
-
 #train
 parameterEstimates(fit_train)
 fitted(fit_train)
