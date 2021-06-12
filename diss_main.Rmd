@@ -439,6 +439,7 @@ data.v2 = subset(data.v2, select= -c(suic_plan, sui_plan, suic_att, sui_att)) # 
 data.v2 <- data.v2 %>%
   filter(!is.na(si_type))
 table(data.v2$si_type) # ensuring that all NAs are now clean
+data.v2$si_type <- as.factor(data.v2$si_type)
 
 # Define starting sample (n = 51137)
 length(unique(data.v2$responseid))
@@ -456,7 +457,8 @@ data.v3 <- data.v2
 
 ## Age
 ```{r age}
-table(data.v3$age)
+table(data.v3$age) 
+data.v3$age <- as.numeric(data.v3$age)
 ```
 
 ## Gender identity
@@ -481,6 +483,7 @@ data.v3 <- data.v3 %>%
                                    gender == 3 ~ 1,
                                    gender == 1 ~ 0))
 table(data.v3$gender_noncis)
+data.v3$gender_noncis <- as.factor(data.v3$gender_noncis)
 ```
 
 ### Reconcile 'gender_text' 
@@ -1084,10 +1087,9 @@ table(data.v9$dep_or_a_all)
 ```
 
 
-
 # DATA DIVISION for final sample
 
-
+## Data div and stats
 ```{r Data_div}
 data.v10 <- as.data.frame(data.v9)
 
@@ -1531,23 +1533,23 @@ clm_dia <- traindf.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, 
 clm_dia <- NA_preproc(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
 
-clm_mod <- glm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
+clm_mod <- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
                         ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count,
                data = dia_mod)
 summary(clm_mod)
 coef(clm_mod)
 
-ci_dia <- confint(clm_mod)
-ci_dia
-
-model.dia <- tidy(clm_mod)  # Convert model to dataframe for easy manipulation
-model.dia
-
-model.dia$var.diag <- diag(vcov(clm_mod))
-model.dia  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_mod)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# ci_dia <- confint(clm_mod)
+# ci_dia
+# 
+# model.dia <- tidy(clm_mod)  # Convert model to dataframe for easy manipulation
+# model.dia
+# 
+# model.dia$var.diag <- diag(vcov(clm_mod))
+# model.dia  %>%
+#    mutate(or = exp(estimate),  # Odds ratio/gradient
+#           var.diag = diag(vcov(clm_mod)),  # Variance of each coefficient
+#           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -1577,6 +1579,7 @@ data.v13 = subset(traindf.v12, select= -c(citizen, permanentres, visa, otherdoc,
 ## Discrimination
 ```{r discrim}
 table(traindf.v13$discrim)
+traindf.v13$discrim <- as.factor(traindf.v13$discrim)
 ```
 
 ## MH campus environment
@@ -1598,6 +1601,7 @@ traindf.v14 <- traindf.v13 %>%
                               ther_vis == 3 ~ 3,
                               ther_vis == 4 ~ 4))
 table(traindf.v14$ther_vis)   # check output
+traindf.v14$ther_vis <- as.factor(traindf.v14$ther_vis)
 ```
 
 ## Distress & social support
@@ -1621,12 +1625,16 @@ traindf.v14 <- traindf.v14 %>%
                           (talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) ~ 2,    # formal support
                           (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1) ~ 3))    # informal support
 table(traindf.v14$talk)  # check output
+traindf.v14$talk <- as.factor(traindf.v14$talk)
+
+
 traindf.v14 = subset(traindf.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
 ```
 
 ## Military status
 ```{r military}
 table(traindf.v14$military)
+traindf.v14$military <- as.logical(traindf.v14$military)
 ```
 
 ## International student
@@ -2348,6 +2356,8 @@ traindf.v22 <- traindf.v20
 ```{r anx_score}
 table(traindf.v22$anx_score)
 
+traindf.v22$anx_score <- as.numeric(traindf.v22$anx_score)
+
 # Convert to categories for later
 traindf.v22 <- traindf.v22 %>%
   mutate(anx_none = case_when(anx_score < 6 ~ 1,
@@ -2370,6 +2380,7 @@ table(traindf.v22$anx_score)
 ```{r dep_secret}
 ## Secretive MH
 table(traindf.v22$dep_secret)
+traindf.v22$dep_secret <- as.factor(traindf.v22$dep_secret)
 ```
 
 ## AAQ total (elective module)
@@ -2378,39 +2389,39 @@ table(traindf.v22$dep_secret)
 traindf.v22 <- traindf.v22 %>%
   mutate(aaq_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
            as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7))
-table(traindf.v22$AAQ_tot)
-
-#  for loop for predictive cutoff point needed
-rs_df <- data.frame("cutoff" = c(), "rs" = c())
-for (i in 8:48) {
-  aaq_bin <- ifelse(traindf.v22$AAQ_tot >= i, TRUE, FALSE)
-  model = lm(traindf.v22$sui_idea ~ aaq_bin)
-  rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
-
-}
-names(rs_df) <- c("cutoff", "rs")
-rs_df_arranged <- rs_df %>% 
-  arrange(desc(rs)) 
-rs_df_arranged[1,1]
-
-# deem 'rs_df_arranged[1,1]' as SI cutoff
-traindf.v22 <- traindf.v22 %>%
-  mutate(aaq_dum = ifelse(AAQ_tot > rs_df_arranged[1,1], TRUE, FALSE))
-
-table(traindf.v22$aaq_dum)
 table(traindf.v22$aaq_tot)
 
+traindf.v22$aaq_tot <- as.numeric(traindf.v22$aaq_tot)
+
+# #  for loop for predictive cutoff point needed
+# rs_df <- data.frame("cutoff" = c(), "rs" = c())
+# for (i in 8:48) {
+#   aaq_bin <- ifelse(traindf.v22$AAQ_tot >= i, TRUE, FALSE)
+#   model = lm(traindf.v22$sui_idea ~ aaq_bin)
+#   rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
+# 
+# }
+# names(rs_df) <- c("cutoff", "rs")
+# rs_df_arranged <- rs_df %>% 
+#   arrange(desc(rs)) 
+# rs_df_arranged[1,1]
+
+# # deem 'rs_df_arranged[1,1]' as SI cutoff
+# traindf.v22 <- traindf.v22 %>%
+#   mutate(aaq_dum = ifelse(AAQ_tot > rs_df_arranged[1,1], TRUE, FALSE))
+# 
+# table(traindf.v22$aaq_dum)
 ```
 
 ## Achievement
 n = 594  ** too small
 ```{r achieve4}
 table(traindf.v22$achieve4)
-
 ```
 
 ## Persist
 ```{r persist}
+traindf.v22$persist <- as.factor(traindf.v22$persist)
 table(traindf.v22$persist)
 ```
 
@@ -2418,7 +2429,6 @@ table(traindf.v22$persist)
 ```{r TSM var analyses}
 traindf.v23 <- traindf.v22
 ```
-
 
 ## Threats to self-moderation correlation
 ```{r CORR TSM}
@@ -2501,8 +2511,8 @@ clm_tsm <- traindf.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_t
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
 
-clm_tsm <- glm(si_type ~ persist + anx_score + dep_secret + aaq_tot,
-               data = clm_tsm)
+clm_tsm <- clm(si_type ~ persist + anx_score + dep_secret + aaq_tot,
+               data = clm_tsm) # ordered probit or logit may be needed
 
 summary(clm_tsm)
 coef(clm_tsm)
@@ -2663,6 +2673,7 @@ traindf.v22 = subset(traindf.v22, select= -c(achieve1, achieve14, achieve18)) # 
 
 ## Flourishing Scale
 ```{r flourish}
+traindf.v26$flourish <- as.numeric(traindf.v26$flourish)
 table(traindf.v26$flourish)
 
 #  for loop for predictive cutoff point needed
@@ -2691,6 +2702,8 @@ table(traindf.v26$flourish)
 
 ## Informal Mental Health Support
 ```{r inf}
+
+
 traindf.v26$inf_1[is.na(traindf.v26$inf_1)] <- 0
 traindf.v26$inf_2[is.na(traindf.v26$inf_2)] <- 0
 traindf.v26$inf_3[is.na(traindf.v26$inf_3)] <- 0
@@ -2726,6 +2739,8 @@ traindf.v26 = subset(traindf.v26, select= -c(inf_1:inf_help, inf_sum))
 traindf.v26 <- traindf.v26 %>%
   mutate(brs_tot = as.integer(BRS_1) + as.integer(BRS_2) + as.integer(BRS_3) + as.integer(BRS_4) + as.integer(BRS_5))
 table(traindf.v26$brs_tot)
+
+traindf.v26$brs_tot <- as.numeric(traindf.v26$brs_tot)
 
 #  for loop for predictive cutoff point needed
 rs_df <- data.frame("cutoff" = c(), "rs" = c())
@@ -3020,7 +3035,7 @@ traindf_sem <- traindf.v28 %>% select(
   # motivational moderators
   inf, flourish, belong1, mh_stigma, brs_tot)
 
-# create corr matrix, with dummy vars 
+# create sem matrix, with dummy vars 
 traindf_sem2 <- traindf_sem %>% 
   mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
@@ -3029,6 +3044,7 @@ traindf_sem2   # check output
 
 ## Create dummy vars
 ```{r dummy_cols SEM}
+
 results_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # outcome var
     "si_type",
@@ -3048,6 +3064,7 @@ results_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # motivational moderators
     "inf", "flourish", "belong1", "mh_stigma", "brs_tot"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+
 view(results_sem)
 ```
 
@@ -3063,7 +3080,49 @@ var_desc <- describe(traindf_sem2) %>% view()
 save(var_desc, file = "var_desc.RData")
 load("var_desc.RData")
 write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = TRUE)
+
+# Run preliminary stats on sample pre-split
+var_names <- c(
+  # diathesis
+  "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
+  "dx_adhd", "meds_count",
+  # environment
+  "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
+  # life events
+  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "trauma_year", "drug_mar",
+  # defeat
+  "aca_impa", "deprawsc",
+  # threats to self-moderation
+  "persist", "anx_score", "dep_secret", "aaq_tot",
+  # entrapment
+  "dep_impa", "gad7_impa", "percneed_cur",
+  # motivational moderators
+  "inf", "flourish", "belong1", "mh_stigma", "brs_tot") 
+
+varall_desc <- describe(var_names) %>% view()
+
 ```
+
+## Variable scatterplot
+```{r var_scatter}
+var_names <- c(
+  # diathesis
+  "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
+  "dx_adhd", "meds_count",
+  # environment
+  "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
+  # life events
+  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "trauma_year", "drug_mar",
+  # defeat
+  "aca_impa", "deprawsc",
+  # threats to self-moderation
+  "persist", "anx_score", "dep_secret", "aaq_tot",
+  # entrapment
+  "dep_impa", "gad7_impa", "percneed_cur",
+  # motivational moderators
+  "inf", "flourish", "belong1", "mh_stigma", "brs_tot")  
+```
+
 
 ## Model correlations
 ```{r model_corr}
@@ -3106,7 +3165,7 @@ write_xlsx(results_sem, path = "traindf_sem.xls", col_names = TRUE, format_heade
 ## SEM specification
 ```{r SEM specification}
 SI_model_tr <- '
-                # measurement model
+              # measurement model
                   dia_sem =~ age + sexual + gender_noncis + sib_freq + race + ed_any + dx_dep +
                              dx_bi + dx_anx + dx_tr + dx_adhd + meds_count
                   env_sem =~ divers + satisfied_overall + talk + religios + discrim +
@@ -3118,15 +3177,19 @@ SI_model_tr <- '
                   mm_sem =~  inf + flourish + belong1 + mh_stigma + brs_tot
                   si_sem =~  si_type
 
-                 # structural model - regressions
-                   def_sem =~ dia_sem + env_sem + le_sem
-                   entrap_sem =~ def_sem + tsm_sem + def_sem*tsm_sem
-                   si_sem =~ entrap_sem + mm_sem + entrap_sem*mm_sem
+               # structural model - regressions
+                  def_sem ~ dia_sem + env_sem + le_sem
+                  entrap_sem ~ def_sem + tsm_sem + def_sem*tsm_sem
+                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem
 
-                 # residual covariances
-                    dia_sem ~~ env_sem
-                    env_sem ~~ le_sem
-                    le_sem ~~ dia_sem  '
+               # residual covariances
+                  dia_sem ~~ env_sem
+                  env_sem ~~ le_sem
+                  le_sem ~~ dia_sem  '
+
+fit <- cfa(SI_model_tr, data = results_sem,
+            ordered = c("age","si_type", "sib_freq","meds_count", "binge_fr", "deprawsc",
+                        "anx_score", "aaq_tot", "dep_impa", "gad7_impa", "flourish", "brs_tot"))
 ```
 
 ## Model estimation
