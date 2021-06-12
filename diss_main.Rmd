@@ -3100,8 +3100,21 @@ write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = T
 ## Variable scatterplot
 ```{r var_scatter}
 traindf_sem2 <- as.data.frame(data.v9)
+# diathesis
 hist(data.v9$age)
+hist(data.v9$sexual)
+hist(data.v9$sib_freq)
+hist(data.v9$race)
+hist(data.v9$med_count)
 
+# boolean vars
+hist(data.v9$gender_noncis)
+hist(data.v9$ed_any)
+hist(data.v9$dx_dep)
+hist(data.v9$dx_bi)
+hist(data.v9$dx_anx)
+hist(data.v9$dx_trauma)
+hist(data.v9$dx_adhd)
 
 ```
 
@@ -3130,7 +3143,6 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ## Create data matrix, save into files
 ```{r save dataset}
-
 results_sem <- as.data.frame(results_sem)
 
 # save full var set for SEM
@@ -3191,8 +3203,6 @@ list(summary_train$coefficient,
 
 ## Model prediction
 ```{r SEM test model}
-
-
 fitmeasures(fit_train)
 
 # model diagnostics
@@ -3204,9 +3214,7 @@ lavCor(fit_train)
 
 # residuals in coef unit
 resid(fit_train, "cor")
-
 plot_matrix(residuals(fit_train, type="cor")$cor)
-
 
 # model prediction
 fit_train$prediction <- predict(SI_model_test, newdata = results_sem, type = "response")
@@ -3219,7 +3227,6 @@ geom_density( size = 1 ) +
 ggtitle( "Training Set's Predicted Score" ) +
 scale_color_economist(name = "data", labels = c( "negative", "positive" ) ) +
 theme_economist()
-
 
 # modification indices
 modificationindices(fit_train, minimum.value = 20)
