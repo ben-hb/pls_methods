@@ -1640,6 +1640,7 @@ traindf.v14$military <- as.logical(traindf.v14$military)
 ## International student
 ```{r international}
 table(traindf.v14$international)
+traindf.v14$international <- as.logical(traindf.v14$international)
 ```
 
 ## Therapy + Medication Treatment
@@ -1651,11 +1652,13 @@ table(traindf.v14$medtherc) # meds + therapy
 ## Family support
 ```{r fam_support_aca}
 table(traindf.v14$fam_support_aca)
+traindf.v14$fam_support_aca <- as.factor(traindf.v14$fam_support_aca)
 ```
 
 ## Overall school satisfaction
 ```{r satisfied_overall}
 table(traindf.v14$satisfied_overall)
+traindf.v14$satisfied_overall <- as.factor(traindf.v14$satisfied_overall)
 ```
 
 ## Activity Involvement
@@ -1706,6 +1709,9 @@ traindf.v14 <- traindf.v14 %>%
                               activ_rel == 1 | activ_soc == 1 | activ_art == 1 | activ_other == 1) ~ 1))
 
 table(traindf.v14$activ_yn)     # tabulate and check output
+traindf.v14$activ_yn <- as.logical(traindf.v14$activ_yn)
+
+
 traindf.v14 = subset(traindf.v14, select= -c(activ_none, activ_ac:activ_other))    # clean up vars
 ```
 
@@ -1830,7 +1836,7 @@ traindf.v14 <- traindf.v14 %>%
                                   school2_cc == TRUE ~ 2,
                                   school2_ad == TRUE ~ 3))
 table(traindf.v14$school2_type)
-      
+traindf.v14$school2_type <- as.factor(traindf.v14$school2_type)
 
 # Clean-up school2 var
 traindf.v14 = subset(traindf.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain,
@@ -1922,9 +1928,6 @@ fviz_cos2(env_pca, choice = "var", axes = 1,
           top = 40,
           xtickslab.rt = 45,
           ggtheme = theme_minimal())
-fviz_contrib(env_pca, choice = "var", axes = 2, top = 20)
-fviz_contrib(env_pca, choice = "var", axes = 3, top = 20)
-fviz_contrib(env_pca, choice = "var", axes = 4, top = 20)
 ```
 
 ### CLM environmental regression
@@ -1937,20 +1940,21 @@ clm_env <- traindf.v15 %>% select(si_type, discrim, religios, env_mh, residenc, 
 clm_env <- NA_preproc(clm_env)
 clm_env <- as.data.frame(clm_env)
 
-clm_env <- glm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
+clm_env <- clm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
                 ther_vis + divers + military + school2_type + residenc + env_mh, data = clm_env)
 summary(clm_env)
-coef(clm_env)
-ci_env <- confint(clm_env)
-ci_env
 
-model.env <- tidy(clm_env)                 # Convert model to dataframe
-model.env
-
-model.env  %>%
-  mutate(or = exp(estimate),               # Odds ratio/gradient
-         var.diag = diag(vcov(clm_env)),   # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))    # Odds-ratio adjusted
+# coef(clm_env)
+# ci_env <- confint(clm_env)
+# ci_env
+# 
+# model.env <- tidy(clm_env)                 # Convert model to dataframe
+# model.env
+# 
+# model.env  %>%
+#   mutate(or = exp(estimate),               # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_env)),   # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))    # Odds-ratio adjusted
 ```
 
 
@@ -1969,6 +1973,8 @@ traindf.v16 <- traindf.v16 %>%
   mutate(ins_cover = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 0,
                                (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 1))
 table(traindf.v16$ins_cover)   # check output
+traindf.v16$ins_cover <- as.logical(traindf.v16$ins_cover)
+
 traindf.v15 = subset(traindf.v15, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
 ```
 
@@ -1996,13 +2002,18 @@ traindf.v16 <- traindf.v16 %>%
                               drug_ect == 1 ~ 1,
                               drug_opi == 1 ~ 1,
                               drug_other == 1 ~ 1))
+
 table(traindf.v16$drugs_yn)
+traindf.v16$drugs_yn <- as.logical(traindf.v16$drugs_yn)
+
 table(traindf.v16$drug_mar)
+traindf.v16$drug_mar <- as.logical(traindf.v16$drug_mar)
 ```
 
 ## Current financial stressors
 ```{r fincur}
 table(traindf.v16$fincur)
+traindf.v16$fincur <- as.factor(traindf.v16$fincur)
 ```
 
 ## ISI scale
@@ -2028,6 +2039,7 @@ traindf.v17 <- traindf.v16 %>%
                                 abuse_life == 0 ~ 0))
 traindf.v17$abuse_year <- as.numeric(traindf.v17$abuse_year)
 table(traindf.v17$abuse_year)   # check output
+
 traindf.v17 = subset(traindf.v17, select= -c(abuse_life, abuse_recent)) # clean up var
 ```
 
@@ -2042,7 +2054,8 @@ traindf.v17 <- traindf.v17 %>%
   mutate(assault_sex = case_when(assault_sex == 2 ~ 0,
                                  assault_sex == 1 ~ 1))
 
-table(traindf.v17$assault_sex) # tabulate and check output
+# tabulate and check output
+table(traindf.v17$assault_sex) 
 table(traindf.v17$assault_emo)
 table(traindf.v17$assault_phys)
 ```
@@ -2052,7 +2065,9 @@ table(traindf.v17$assault_phys)
 traindf.v17 <- traindf.v17 %>%
   mutate(trauma_year = case_when((abuse_year == 1 | assault_emo == 1 | assault_phys == 1 | assault_sex == 1) ~ 1,
                                  (abuse_year == 0 & assault_emo == 0 & assault_phys == 0 & assault_sex == 0) ~ 0))
+
 table(traindf.v17$trauma_year)
+traindf.v17$trauma_year <- as.logical(traindf.v17$trauma_year)
 ```
 
 ## Binging frequency
@@ -2068,6 +2083,8 @@ traindf.v18 <- traindf.v17 %>%
   mutate(binge_fr = as.character(binge_fr))
 
 table(traindf.v18$binge_fr) # check output
+traindf.v18$binge_fr <- as.factor(traindf.v18$binge_fr)
+
 traindf.v18 = subset(traindf.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)) # clean up var
 ```
 
@@ -2078,13 +2095,17 @@ traindf.v18 <- traindf.v18 %>%
   mutate(psyhx = case_when((prov_pes == 1 | prov_inp == 1 | prov_par == 1) ~ 1, 
                            (prov_pes == 0 & prov_inp == 0 & prov_par == 0) ~ 0,
                            ther_ever == 0 ~ 0))
+
 table(traindf.v18$psyhx)   # check output
+traindf.v18$psyhx <- as.logical(traindf.v18$psyhx)
+
 traindf.v18 = subset(traindf.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up var
 ```
 
 ## Current GPA
 ```{r gpa_sr}
 table(traindf.v18$gpa_sr)
+traindf.v18$gpa_sr <- as.factor(traindf.v18$gpa_sr)
 ```
  
 ```{r LE traindf analysis}
@@ -2165,20 +2186,20 @@ clm_le <- traindf.v19 %>% select(si_type, ins_cover, trauma_year, gpa_sr, aca_im
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
 
-clm_le <- glm(si_type ~ ins_cover + trauma_year + gpa_sr + aca_impa + fincur + binge_fr + drug_mar + psyhx + drugs_yn,
+clm_le <- clm(si_type ~ ins_cover + trauma_year + gpa_sr + aca_impa + fincur + binge_fr + drug_mar + psyhx + drugs_yn,
               data = clm_le)
 summary(clm_le)
 coef(clm_le)
-ci_le <- confint(clm_le)
-ci_le
-
-model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
-model.le
-
-model.le  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-         var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# ci_le <- confint(clm_le)
+# ci_le
+# 
+# model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
+# model.le
+# 
+# model.le  %>%
+#    mutate(or = exp(estimate),  # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2193,6 +2214,7 @@ traindf.v20 <- traindf.v18
 ## PHQ risk/severity
 ```{r deprawsc}
 table(traindf.v20$deprawsc)
+traindf.v20$deprawsc <- as.numeric(traindf.v20$deprawsc)
 
 # Categorize by clinical translation for later --
 traindf.v20 <- traindf.v20 %>%
@@ -2219,6 +2241,7 @@ table(traindf.v20$dep_sev)
 ## Academic impact
 ```{r aca_impa}
 table(traindf.v20$aca_impa)
+traindf.v20$aca_impa <- as.factor(traindf.v20$aca_impa)
 ```
 
 ## Academic failure
@@ -2327,7 +2350,7 @@ results2_def <- traindf.v21 %>% select(si_type, aca_impa, deprawsc)
 clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
 
-clm_def <- glm(si_type ~ aca_impa + deprawsc, data = clm_def)
+clm_def <- clm(si_type ~ aca_impa + deprawsc, data = clm_def)
 
 summary(clm_def)
 coef(clm_def)
@@ -2355,7 +2378,6 @@ traindf.v22 <- traindf.v20
 ## GAD7 total
 ```{r anx_score}
 table(traindf.v22$anx_score)
-
 traindf.v22$anx_score <- as.numeric(traindf.v22$anx_score)
 
 # Convert to categories for later
@@ -2389,8 +2411,8 @@ traindf.v22$dep_secret <- as.factor(traindf.v22$dep_secret)
 traindf.v22 <- traindf.v22 %>%
   mutate(aaq_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
            as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7))
-table(traindf.v22$aaq_tot)
 
+table(traindf.v22$aaq_tot)
 traindf.v22$aaq_tot <- as.numeric(traindf.v22$aaq_tot)
 
 # #  for loop for predictive cutoff point needed
@@ -2432,7 +2454,6 @@ traindf.v23 <- traindf.v22
 
 ## Threats to self-moderation correlation
 ```{r CORR TSM}
-
 # Define TSM variable candidates for correlation matrix
 traindf_tsm <- traindf.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_tot)
 
@@ -2517,16 +2538,16 @@ clm_tsm <- clm(si_type ~ persist + anx_score + dep_secret + aaq_tot,
 summary(clm_tsm)
 coef(clm_tsm)
 
-ci_tsm <- confint(clm_tsm)
-ci_tsm
-
-model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
-model.tsm
-
-model.tsm  %>%
-    mutate(or = exp(estimate),  # Odds ratio/gradient
-           var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
-           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# ci_tsm <- confint(clm_tsm)
+# ci_tsm
+# 
+# model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
+# model.tsm
+# 
+# model.tsm  %>%
+#     mutate(or = exp(estimate),  # Odds ratio/gradient
+#            var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
+#            or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2541,16 +2562,19 @@ traindf.v24 <- traindf.v22
 ## Depression impact
 ```{r dep_impa}
 table(traindf.v24$dep_impa)
+traindf.v24$dep_impa <- as.factor(traindf.v24$dep_impa)
 ```
 
 ## Anxiety impact
 ```{r gad7_impa}
 table(traindf.v24$gad7_impa)
+traindf.v24$gad7_impa <- as.factor(traindf.v24$gad7_impa)
 ```
 
 ## Current needs
 ```{r perneed_cur}
 table(traindf.v24$percneed_cur)
+traindf.v24$percneed_cur <- as.factor(traindf.v24$percneed_curqa1`)
 ```
 
 ## ENTRAPMENT ANALYSES
@@ -2561,7 +2585,6 @@ traindf.v25 <- traindf.v24
 
 ### Entrapment correlation
 ```{r Entrapment corr}
-
 # Define entrapment variable candidates for correlation matrix
 traindf_entrap <- traindf.v25 %>% select(dep_impa, gad7_impa, percneed_cur)
 
@@ -2577,7 +2600,6 @@ corr <- as.data.frame(as.table(corr))                   #turn into a 3-column ta
 corr <- na.omit(corr)                                   #remove the NA values from above 
 corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
 print(corr)
-
 ```
 
 ### EFA Entrapment
@@ -2624,7 +2646,7 @@ clm_entrap <- traindf.v25 %>% select(si_type, dep_impa, gad7_impa, percneed_cur)
 clm_entrap <- NA_preproc(clm_entrap)
 clm_entrap <- as.data.frame(clm_entrap)
 
-clm_entrap <- glm(si_type ~ dep_impa + gad7_impa + percneed_cur,
+clm_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed_cur,
                   data = clm_entrap)
 
 summary(clm_entrap)
@@ -2655,6 +2677,8 @@ traindf.v26 <- traindf.v24
 ## Belonging
 ```{r belong}
 table(traindf.v26$belong1)
+traindf.v26$belong1 <- as.factor(traindf.v26$belong1)
+
 table(traindf.v26$belong2)  # elective question, but common
 table(traindf.v26$belong8)  # nested x 2
 table(traindf.v26$belong9)  # not as good of a proxy
@@ -2728,7 +2752,9 @@ traindf.v26 <- traindf.v26 %>%
                         inf_6 == 1 ~ 7,
                         inf_7 == 1 ~ 8,
                         inf_8 == 1 ~ 1))
+
 table(traindf.v26$inf)
+traindf.v26$inf <- as.factor(traindf.v26$inf)
 
 # clean up vars
 traindf.v26 = subset(traindf.v26, select= -c(inf_1:inf_help, inf_sum))
@@ -2807,7 +2833,7 @@ traindf.v26 <- traindf.v26 %>%
                               (stig_pcv_2 == 5 | stig_pcv_3 == 5 | stig_per_2 == 5 | stig_per_3 == 5) ~ 0,
                               (stig_pcv_2 == 6 | stig_pcv_3 == 6 | stig_per_2 == 6 | stig_per_3 == 6) ~ 0))
 table(traindf.v26$mh_stigma)
-
+traindf.v26$mh_stigma <- as.logical(traindf.v26$mh_stigma)
 ```
 
 
