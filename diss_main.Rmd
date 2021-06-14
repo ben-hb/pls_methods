@@ -3124,9 +3124,9 @@ traindf_sem2 <- as.data.frame(data.v9)
     densityplot(~ age | si_type, data = data.v9)
 
   #sexual
-    hist(data.v9$sexual)
-    ggplot(mutate(data.v9, age = fct_infreq(age))) + geom_bar(aes(x = Hair))
-    
+    # hist(data.v9$sexual)
+    # ggplot(mutate(data.v9, age = fct_infreq(age))) + geom_bar(aes(x = Hair))
+    # 
 
 hist(data.v9$sib_freq)
 
@@ -3304,15 +3304,15 @@ lavInspect(fit_test, what = "list")
 
 
 
+#################################################################
 
 
+# TEST DATA
 
 
-
-
-```{r}
 ## Religion
-```{r religios}
+```{r}
+
 # Label levels of religious importance
 testdf.v10 <- testdf.v10 %>%
   filter(!is.na(religios))
@@ -3592,13 +3592,13 @@ ther_vis, school2, medtherc, medther, talk, religios, residenc, satisfied_overal
 
 
 ```{r Env frame}
-testdf.v13 <- testdf.v11
+testdf.v14 <- testdf.v11
 ```
 
 ## Discrimination
 ```{r discrim}
-table(testdf.v13$discrim)
-testdf.v13$discrim <- as.factor(testdf.v13$discrim)
+table(testdf.v14$discrim)
+testdf.v14$discrim <- as.factor(testdf.v14$discrim)
 ```
 
 ## Distress & social support
@@ -3978,17 +3978,12 @@ testdf.v18$gpa_sr <- as.numeric(testdf.v18$gpa_sr)
 ```
  
 ```{r LE testdf analysis}
-testdf.v19 <- testdf.v18
+testdf.v20 <- testdf.v18
 ```
 
 
 # DEFEAT
 Candidate variables: aca_impa, failed, men_ill_ash, deprawsc
-
-
-```{r Defeat frame}
-testdf.v20 <- testdf.v18
-```
 
 ## PHQ risk/severity
 ```{r deprawsc}
@@ -4032,17 +4027,13 @@ testdf.v20 = subset(testdf.v20, select= -c(failed)) # clean up var
 ```
 
 ```{r Defeat analyses}
-testdf.v21 <- testdf.v20
+testdf.v22 <- testdf.v20
 ```
 
 
 # THREATS TO SELF-MODERATION
 Candidate variables: persist, anx_score, dep_secret, aaq_yn, achieve4
 
-
-```{r TSM frame}
-testdf.v22 <- testdf.v20
-```
 
 ## GAD7 total
 ```{r anx_score}
@@ -4074,7 +4065,7 @@ table(testdf.v22$dep_secret)
 testdf.v22$dep_secret <- as.factor(testdf.v22$dep_secret)
 ```
 
-## AAQ total (elective module)
+## AAQ total
 ```{r aaq_dum}
 # create AAQ_tot variable to sum up imputed AAQ questions
 testdf.v22 <- testdf.v22 %>%
@@ -4111,17 +4102,13 @@ table(testdf.v22$persist)
 ```
 
 ```{r TSM var analyses}
-testdf.v23 <- testdf.v22
+testdf.v24 <- testdf.v22
 ```
 
 
 # ENTRAPMENT
 Candidate variables: dep_impa, gad7_impa, perneed_cur
 
-
-```{r Entrap frame}
-testdf.v24 <- testdf.v22
-```
 
 ## Depression impact
 ```{r dep_impa}
@@ -4143,7 +4130,7 @@ testdf.v24$percneed_cur <- as.factor(testdf.v24$percneed_cur)
 
 ## ENTRAPMENT ANALYSES
 ```{r Entrapment analyses}
-testdf.v25 <- testdf.v24
+testdf.v26 <- testdf.v24
 ```
 
 
@@ -4151,10 +4138,6 @@ testdf.v25 <- testdf.v24
 Candidate variables: flourish, belong2, belong8, belong9, achieve1, achieve14, 
 achieve18, stig_pcv_2, stig_pcv_3, friend_devel, inf, brs_tot
 
-
-```{r MM frame}
-testdf.v26 <- testdf.v24
-```
 
 ## Belonging
 ```{r belong}
@@ -4309,7 +4292,7 @@ testdf.v26$mh_stigma <- as.logical(testdf.v26$mh_stigma)
 ```
 
 ```{r MM var analyses}
-testdf.v27 <- testdf.v26
+testdf.v28 <- testdf.v26
 ```
 
 
@@ -4318,8 +4301,6 @@ testdf.v27 <- testdf.v26
 
 ## Absolute missingness, by school
 ```{r Structural missingness, by school}
-testdf.v28 <- testdf.v26
-# school structural analysis
 var_names <- c(
   # diathesis
   "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
