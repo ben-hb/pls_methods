@@ -1069,7 +1069,7 @@ table(data.v9$dep_or_a_all)
 ## Religion
 ```{r religios}
 # Label levels of religious importance
-data.v10 <- data.v19 %>%
+data.v10 <- data.v9 %>%
   filter(!is.na(religios))
 table(data.v10$religios)       # Check output
 ```
@@ -1473,6 +1473,8 @@ table(data.v13$env_mh)
 ## Distress & social support
 Group talk var into subcategories of none, informal, formal, or a combo of support
 ```{r talk}
+data.v14 <- data.v13
+
 data.v14$talk1_1[is.na(data.v14$talk1_1)] <- 0
 data.v14$talk1_2[is.na(data.v14$talk1_2)] <- 0
 data.v14$talk1_3[is.na(data.v14$talk1_3)] <- 0
@@ -2737,124 +2739,13 @@ coef_mm <- coef(summary(clm_mm))
 ```
 
 
-# MISSINGNESS
-
-
-## Absolute missingness, by school
-```{r Structural missingness, by school}
-data.v28 <- data.v26
-# school structural analysis
-var_names <- c(
-  # diathesis
-  "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
-  "dx_adhd", "meds_count",
-  # environment
-  "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
-  # life events
-  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "trauma_year", "drug_mar",
-  # defeat
-  "aca_impa", "deprawsc",
-  # threats to self-moderation
-  "persist", "anx_score", "dep_secret", "aaq_tot",
-  # entrapment
-  "dep_impa", "gad7_impa", "percneed_cur",
-  # motivational moderators
-  "inf", "flourish", "belong1", "mh_stigma", "brs_tot")  
-var_names <- sort(var_names)
-
-# build table for absolute missingness based on school2
-school2 <- count(data.v28, school2)
-school2_ncol <- ncol(school2)
-
-for (j in 1:length(var_names)) {
-  school2[, school2_ncol + j] <- 999
-}
-
-# create column headers and vectors for school, total students, then each variable count
-names <- c("school2_values", "total", var_names)
-names(school2) <- names
-
-# input values for each school missingness across all variables
-for (j in 1:(length(var_names))) {
-for (i in 1:nrow(school2)) {   # i corresponds to rows, j to columns
-  school2[i, 2 + j] <- sum(!is.na(data.v28[data.v28$school2 == school2[[i,1]], var_names[j]]))
-}
-}
-# add percentage in each column
-school2_m <- as.matrix(school2[-1]) 
-props <- school2_m[,2:ncol(school2_m)] / school2_m[,1]
-school2 <- data.frame(school2[, 1:2], props)
-
-# view missingness matrix
-view(school2)
-
-# save matrix
-write_xlsx(school2, path = "sch2_missing.xlsx", col_names = TRUE, format_headers = TRUE)
-```
-
-## Missingness of each overall variable
-```{r Missingness of each overall var}
-# Create dataframe to store data 
-missing_rates <- data.frame("variable" = var_names,
-           "total" = rep(999, length(var_names)),
-           "prop_present" = rep(999, length(var_names)))
-
-# loop to replicate row for all var
-for (i in 1:nrow(missing_rates)) {
-  missing_rates[i, 2] = sum(!is.na(data.v28[[i]]))
-  missing_rates[i, 3] = missing_rates[i, 2] / nrow(data.v28)
-}
-# view matrix
-view(missing_rates)
-# save matrix
-write_xlsx(missing_rates, path = "overall_missing.xlsx", col_names = TRUE, format_headers = TRUE)
-```
-
-## Missingness of each var w/in each var
-```{r Missingness between vars}
-
-missing_dfs <- list()
-for (k in 1:length(var_names)) {
-
-#create skeleton of missingness matrix
-var <- count(data.v28, data.v28[var_names[k]])
-var_ncol <- ncol(var)
-
-for (j in 1:length(var_names)) {
-  var[, var_ncol + j] <- 999
-}
-# create column headers and vectors for school, total students, then each variable count
-names <- c(paste0(var_names[k], "_values"), "total", var_names)
-names(var) <- names
-
-# input values for each school missingness across all variables
-for (j in 1:(length(var_names))) {
-for (i in 1:nrow(var)) {   # i corresponds to rows, j to columns
-  var[i, 2 + j] <- sum(!is.na(data.v28[data.v28[[var_names[k]]] == var[[i,1]], var_names[j]]))
-}
-}
-# add percentage in each column
-var_m <- as.matrix(var[-1]) 
-props <- var_m[,2:ncol(var_m)] / var_m[,1]
-var <- data.frame(var[, 1:2], props)
-replace_na("NA")
-missing_dfs[[k]] <- var
-}
-
-names(missing_dfs) <- var_names
-save(missing_dfs, file = "missing_dfs.RData")
-load("missing_dfs.RData")
-write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers = TRUE)
-```
-
-
 # DATA PREP
 
 
 ## Select all vars for SEM
-```{r train_df_sem2}
+```{r 1819_df_sem2}
 # Prep SEM data vars
-data_sem <- data.v28 %>% select(
+data_sem_1819 <- data.v27 %>% select(
   # outcome var
   si_type,
   # diathesis
@@ -2873,21 +2764,21 @@ data_sem <- data.v28 %>% select(
   inf, flourish, belong1, mh_stigma, brs_tot)
 
 # create sem matrix, with dummy vars 
-data_sem2 <- data_sem %>% 
+data_sem2_1819 <- data_sem_1819 %>% 
   mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
-data_sem2   # check output
+data_sem2_1819   # check output
 
 # xlsx output
-data_sem3 <- as.data.frame(data_sem2)
-save(data_sem3 , file = "data_nondummy.RData")
-load("data_nondummy.RData")
-write_xlsx(data_sem3, path = "data_nondummy.xls", col_names = TRUE, format_headers = TRUE)
+data_sem3_1819 <- as.data.frame(data_sem2_1819)
+save(data_sem3_1819, file = "data_nondummy_1819.RData")
+load("data_nondummy_1819.RData")
+write_xlsx(data_sem3_1819, path = "data_nondummy_1819.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Create dummy vars
 ```{r dummy_cols SEM}
-results_sem_1819 <- dummy_cols(data_sem2, select_columns = c(
+results_sem_1819 <- dummy_cols(data_sem2_1819, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
@@ -2955,7 +2846,7 @@ results_sem_1819 <- as.data.frame(results_sem_1819)
 # save full var set for SEM
 save(results_sem_1819, file = "data_sem_1819.RData")
 load("data_sem_1819.RData")
-write_xlsx(results_sem_1819, path = "data_sem_1819.xls", col_names = TRUE, format_headers = TRUE
+write_xlsx(results_sem_1819, path = "data_sem_1819.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
