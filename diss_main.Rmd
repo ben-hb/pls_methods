@@ -4346,7 +4346,7 @@ school2 <- data.frame(school2[, 1:2], props)
 view(school2)
 
 # save matrix
-write_xlsx(school2, path = "sch2_missing.xlsx", col_names = TRUE, format_headers = TRUE)
+write_xlsx(school2, path = "sch2_missing_test.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Missingness of each overall variable
@@ -4364,7 +4364,7 @@ for (i in 1:nrow(missing_rates)) {
 # view matrix
 view(missing_rates)
 # save matrix
-write_xlsx(missing_rates, path = "overall_missing.xlsx", col_names = TRUE, format_headers = TRUE)
+write_xlsx(missing_rates, path = "overall_missing_test.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Missingness of each var w/in each var
@@ -4399,9 +4399,9 @@ missing_dfs[[k]] <- var
 }
 
 names(missing_dfs) <- var_names
-save(missing_dfs, file = "missing_dfs.RData")
-load("missing_dfs.RData")
-write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers = TRUE)
+save(missing_dfs, file = "missing_dfs_test.RData")
+load("missing_dfs_test.RData")
+write_xlsx(missing_dfs, path = "missing_test.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
 
