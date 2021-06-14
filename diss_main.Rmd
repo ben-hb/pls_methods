@@ -1626,7 +1626,6 @@ traindf.v14 = subset(traindf.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr,
 ## Military status
 ```{r military}
 table(traindf.v14$military)
-traindf.v14$military <- as.logical(traindf.v14$military)
 ```
 
 ## International student
@@ -1999,10 +1998,7 @@ traindf.v16 <- traindf.v16 %>%
                               drug_other == 1 ~ 1))
 
 table(traindf.v16$drugs_yn)
-traindf.v16$drugs_yn <- as.logical(traindf.v16$drugs_yn)
-
 table(traindf.v16$drug_mar)
-traindf.v16$drug_mar <- as.logical(traindf.v16$drug_mar)
 ```
 
 ## Current financial stressors
@@ -4259,7 +4255,8 @@ var_names <- c(
   # environment
   "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
   # life events
-  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "trauma_year", "drug_mar",
+  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys",
+  "assault_sex", "drug_mar",
   # defeat
   "aca_impa", "deprawsc",
   # threats to self-moderation
