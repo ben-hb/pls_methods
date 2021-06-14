@@ -4390,6 +4390,19 @@ load("testdf_nondummy.RData")
 write_xlsx(testdf_sem3, path = "testdf_nondummy.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
+## Descriptive stats
+```{r}
+# test data
+var_desc_test <- describe(testdf_sem2) %>% view()
+
+# xlsx output
+save(var_desc_test, file = "var_desc_test.RData")
+load("var_desc_test.RData")
+write_xlsx(var_desc_test, path = "var_desc_test.xls", col_names = TRUE, format_headers = TRUE)
+```
+
+
+
 ## Create dummy vars
 ```{r dummy_cols SEM}
 results_test_sem <- dummy_cols(testdf_sem2, select_columns = c(
