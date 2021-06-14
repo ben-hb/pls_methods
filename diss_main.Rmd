@@ -2924,7 +2924,8 @@ var_names <- c(
   # environment
   "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
   # life events
-  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "trauma_year", "drug_mar",
+  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys",
+  "assault_sex", "drug_mar",
   # defeat
   "aca_impa", "deprawsc",
   # threats to self-moderation
@@ -3096,57 +3097,7 @@ var_desc <- describe(traindf_sem2) %>% view()
 save(var_desc, file = "var_desc.RData")
 load("var_desc.RData")
 write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = TRUE)
-
-
-# test data
-var_desc2 <- describe(traindf_sem2) %>% view()
-
-# xlsx output
-save(var_desc, file = "var_desc.RData")
-load("var_desc.RData")
-write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = TRUE)
-
-
 ```
-
-## Variable plots
-```{r var_plots}
-traindf_sem2 <- as.data.frame(data.v9)
-# diathesis
-  # age
-    histogram(~ age, data = data.v9, type = "density", panel = function(x, ...) {
-    panel.histogram(x, ...)
-    xn <- seq(min(x), max(x), length.out = 100)
-    yn <- dnorm(xn, mean(x), sd(x))
-    panel.lines(xn, yn, col = "red")})
-
-  # age + SI type
-    densityplot(~ age | si_type, data = data.v9)
-
-  #sexual
-    # hist(data.v9$sexual)
-    # ggplot(mutate(data.v9, age = fct_infreq(age))) + geom_bar(aes(x = Hair))
-    # 
-
-hist(data.v9$sib_freq)
-
-
-pie(data.v9$race)
-
-
-hist(data.v9$med_count)
-
-# boolean vars
-hist(data.v9$gender_noncis)
-hist(data.v9$ed_any)
-hist(data.v9$dx_dep)
-hist(data.v9$dx_bi)
-hist(data.v9$dx_anx)
-hist(data.v9$dx_trauma)
-hist(data.v9$dx_adhd)
-
-```
-
 
 ## Model correlations
 ```{r model_corr}
