@@ -1577,6 +1577,7 @@ traindf.v13$discrim <- as.factor(traindf.v13$discrim)
 ## MH campus environment
 ```{r env_mh}
 table(traindf.v13$env_mh) 
+traindf.v13$env_mh <- as.factor(traindf.v13$env_mh)
 ```
 
 ## Total therapy visits
@@ -1626,6 +1627,7 @@ traindf.v14 = subset(traindf.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr,
 ## Military status
 ```{r military}
 table(traindf.v14$military)
+traindf.v14$military <- as.logical(traindf.v14$military)
 ```
 
 ## International student
@@ -1989,6 +1991,7 @@ table(traindf.v16$drug_other)  # too vague, small
 # Sample is too small to analyze individual drugs, except for marijuana. Transform to illicit drug y/n
 traindf.v16 <- traindf.v16 %>%
   mutate(drugs_yn = case_when(drug_none == 1 ~ 0,
+                              drug_mar == 1 ~ 1,
                               drug_coc == 1 ~ 1,
                               drug_her == 1 ~ 1,
                               drug_met == 1 ~ 1,
@@ -1996,9 +1999,11 @@ traindf.v16 <- traindf.v16 %>%
                               drug_ect == 1 ~ 1,
                               drug_opi == 1 ~ 1,
                               drug_other == 1 ~ 1))
+  # mutate(drug_mar = case_when(drug_mar == 1 ~ 1,
+  #                             drugs_yn == 1 ~ 0,
+  #                             drugs_yn == 0 ~ 0))
 
 table(traindf.v16$drugs_yn)
-table(traindf.v16$drug_mar)
 ```
 
 ## Current financial stressors
@@ -2092,7 +2097,7 @@ traindf.v19 <- traindf.v18
 ## LE correlation
 ```{r LE correlation}
 # Define life event var candidates for correlation matrix
-traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, drug_mar, binge_fr,
+traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, binge_fr,
                                      assault_sex, assault_phys, assault_sex, psyhx, drugs_yn)
 
 # convert traindf to numeric in order to run correlations
@@ -2115,8 +2120,8 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ## EFA LE
 ```{r le_pca}
-traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, drug_mar, binge_fr, 
-                                     assault_phys, assault_sex, assault_emo, psyhx, drugs_yn)
+traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, binge_fr, drugs_yn,
+                                     assault_phys, assault_sex, assault_emo, psyhx)
 
 # create corr matrix, with dummy vars
 traindf_le <- traindf_le %>% 
@@ -2127,7 +2132,7 @@ traindf_le   # check output
 
 results_le <- dummy_cols(traindf_le, select_columns = c("ins_cover", "assault_phys", "assault_sex",
                                                         "assault_emo", "gpa_sr", "psyhx", "aca_impa", 
-                                                        "drug_mar", "fincur", "binge_fr", "drugs_yn"),
+                                                        "fincur", "binge_fr", "drugs_yn"),
                          remove_first_dummy = TRUE)
 
 # le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
@@ -2161,14 +2166,14 @@ results_le <- dummy_cols(traindf_le, select_columns = c("ins_cover", "assault_ph
 
 ## CLM Life event regression
 ```{r clm_LE}
-clm_le <- traindf.v19 %>% select(si_type, ins_cover, gpa_sr, aca_impa, fincur, drug_mar, 
-                                 assault_sex, assault_emo, assault_phys, binge_fr, psyhx, drugs_yn)
+clm_le <- traindf.v19 %>% select(si_type, ins_cover, gpa_sr, aca_impa, fincur, assault_sex,
+                                 assault_emo, assault_phys, binge_fr, psyhx, drugs_yn)
 
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
 
 # clm_le <- clm(si_type ~ ins_cover + assault_emo + assault_phys + assault_phys + gpa_sr + 
-#                 aca_impa + fincur + binge_fr + drug_mar + psyhx + drugs_yn,
+#                 aca_impa + fincur + binge_fr + psyhx + drugs_yn,
 #               data = clm_le)
 # summary(clm_le)
 # coef(clm_le)
@@ -2918,10 +2923,10 @@ var_names <- c(
   "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
   "dx_adhd", "meds_count",
   # environment
-  "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
+  "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
   # life events
   "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys",
-  "assault_sex", "drug_mar",
+  "assault_sex",
   # defeat
   "aca_impa", "deprawsc",
   # threats to self-moderation
@@ -2982,7 +2987,6 @@ write_xlsx(missing_rates, path = "overall_missing.xlsx", col_names = TRUE, forma
 
 ## Missingness of each var w/in each var
 ```{r Missingness between vars}
-
 missing_dfs <- list()
 for (k in 1:length(var_names)) {
 
@@ -3030,9 +3034,9 @@ traindf_sem <- traindf.v28 %>% select(
   # diathesis
   age, sexual, gender_noncis, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, meds_count,
   # environment
-  divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn, military,
+  divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn,
   # life events
-  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, assault_emo, assault_phys, assault_sex, drug_mar,
+  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, assault_emo, assault_phys, assault_sex,
   # defeat
   aca_impa, deprawsc,
   # threats to self-moderation
@@ -3064,10 +3068,10 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_anx",
     "dx_tr", "dx_adhd", "meds_count",
     # environment
-    "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
+    "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
     # life events
     "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys", 
-    "assault_sex", "drug_mar",
+    "assault_sex",
     # defeat
     "aca_impa", "deprawsc",
     # threats to self-moderation
