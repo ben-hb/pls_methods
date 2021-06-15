@@ -2634,16 +2634,16 @@ clm_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed_cur,
 summary(clm_entrap)
 coef(clm_entrap)
 
-ci_entrap <- confint(clm_entrap)
-ci_entrap
-
-model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
-model.entrap
-
-model.entrap  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-         var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# ci_entrap <- confint(clm_entrap)
+# ci_entrap
+# 
+# model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
+# model.entrap
+# 
+# model.entrap  %>%
+#    mutate(or = exp(estimate),  # Odds ratio/gradient
+#          var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
+#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -3032,7 +3032,7 @@ traindf_sem <- traindf.v28 %>% select(
   # environment
   divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn, military,
   # life events
-  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, assault_emo, assault_phys, assault_sex,
+  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, assault_emo, assault_phys, assault_sex, drug_mar,
   # defeat
   aca_impa, deprawsc,
   # threats to self-moderation
@@ -3042,7 +3042,7 @@ traindf_sem <- traindf.v28 %>% select(
   # motivational moderators
   inf, flourish, belong1, mh_stigma, brs_tot)
 
-# create sem matrix, with dummy vars 
+# create sem matrix 
 traindf_sem2 <- traindf_sem %>% 
   mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
@@ -3057,7 +3057,7 @@ write_xlsx(traindf_sem3, path = "traindf_nondummy.xls", col_names = TRUE, format
 
 ## Create dummy vars
 ```{r dummy_cols SEM}
-results_sem <- dummy_cols(traindf_sem2, select_columns = c(
+results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
@@ -3066,7 +3066,8 @@ results_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # environment
     "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
     # life events
-    "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys", "assault_sex",
+    "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys", 
+    "assault_sex", "drug_mar",
     # defeat
     "aca_impa", "deprawsc",
     # threats to self-moderation
@@ -3077,7 +3078,7 @@ results_sem <- dummy_cols(traindf_sem2, select_columns = c(
     "inf", "flourish", "belong1", "mh_stigma", "brs_tot"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
-view(results_sem)
+view(results_tr_sem)
 ```
 
 
@@ -3100,7 +3101,7 @@ write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = T
 results_corr <- NA_preproc(results_sem)
 results_corr <- as.data.frame(results_corr)
 
-# run a correlation and drop the insignificant ones
+# run a correlation and drop the insignificant ones 
 sig <- 0.8
 corr <- cor(results_corr, use = "pairwise.complete.obs")                               
 corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
@@ -3114,23 +3115,16 @@ print(corr)
 #turn corr back into matrix in order to plot with corrplot
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-
 ```
 
 ## Create data matrix, save into files
 ```{r save dataset}
-results_sem <- as.data.frame(results_sem)
+results_tr_sem <- as.data.frame(results_tr_sem)
 
 # save full var set for SEM
-save(results_sem, file = "traindf_sem.RData")
+save(results_tr_sem, file = "traindf_sem.RData")
 load("traindf_sem.RData")
-write_xlsx(results_sem, path = "traindf_sem.xls", col_names = TRUE, format_headers = TRUE)
-
-# save full var set for SEM
-save(data.v9, file = "datav9.RData")
-load("datav9.RData")
-write_xlsx(data.v9, path = "datav9.xls", col_names = TRUE, format_headers = TRUE)
-
+write_xlsx(results_tr_sem, path = "traindf_sem.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -3146,7 +3140,7 @@ SI_model_tr <- '
                   env_sem =~ divers + satisfied_overall + talk + religios + discrim +
                              school2_type + activ_yn + military
                   le_sem =~  ins_cover + gpa_sr + binge_fr + psyhx + fincur + drugs_yn + 
-                             assault_emo + assault_phys + assault_sex
+                             assault_emo + assault_phys + assault_sex + drug_mar
                   def_sem =~ aca_impa + deprawsc
                   tsm_sem =~ persist + anx_score + dep_secret + aaq_tot
                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
@@ -3161,20 +3155,29 @@ SI_model_tr <- '
                # residual covariances
                   dia_sem ~~ env_sem
                   env_sem ~~ le_sem
-                  le_sem ~~ dia_sem  '
+                  le_sem ~~ dia_sem
+                  dx_adhd ~~ dx_dep
+                  dx_adhd ~~ dx_anx
+                  ed_any ~~ sib_freq
+                  dx_tr ~~ dx_anx
+                  dx_tr ~~ dx_dep
+                  dx_bi ~~ dx_dep
+                  assault_emo ~~ assault_sex
+                  assault_phys ~~ assault_sex
+                  assault_phys ~~ assault_emo     '
 ```
 
 ## Model estimation
 ```{r SEM model estimation}
 # Model estimation
 
-results_tr_sem <- as.matrix(results_sem)
+results_tr_sem <- as.matrix(results_tr_sem)
 
-fit <- cfa(SI_model_tr, data = results_sem,
+fit <- cfa(SI_model_tr, data = results_tr_sem,
              ordered = c("age","si_type", "sib_freq","meds_count", "binge_fr", "deprawsc",
                          "anx_score", "aaq_tot", "dep_impa", "gad7_impa", "flourish", "brs_tot"))
 
-fit_train <- sem(SI_model_tr, data=results_sem)
+fit_train <- sem(SI_model_tr, data=results_tr_sem)
 
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
@@ -3581,12 +3584,6 @@ table(testdf.v14$military)
 testdf.v14$military <- as.logical(testdf.v14$military)
 ```
 
-## International student
-```{r international}
-table(testdf.v14$international)
-testdf.v14$international <- as.logical(testdf.v14$international)
-```
-
 ## Overall school satisfaction
 ```{r satisfied_overall}
 table(testdf.v14$satisfied_overall)
@@ -3788,12 +3785,6 @@ testdf.v14 = subset(testdf.v14, select= -c(var_Boston, var_CalPoly, var_Colorado
                                        var_UNCSchoolArt, var_Watkins))
 ```
 
-## ENVIRONMENT ANALYSES
-```{r}
-testdf.v15 <- testdf.v14  # new dataframe for analysis
-```
-
-
 
 # LIFE EVENTS
 Candidate variables: ins_cover, gpa_sr, abuse_year, psyhx, isi_risk, binge_fr, fincur, drug_mar, drug_coc, drug_other, drug_met, drug_none, drug_opi, drug_her, drug_stim, drug_ect, assault_sex, assault_phys, assault_emo, isi_tot
@@ -3923,17 +3914,14 @@ testdf.v18 = subset(testdf.v18, select= -c(prov_pes, prov_inp, prov_par)) # clea
 table(testdf.v18$gpa_sr)
 testdf.v18$gpa_sr <- as.numeric(testdf.v18$gpa_sr)
 ```
- 
-```{r LE testdf analysis}
-testdf.v20 <- testdf.v18
-```
-
 
 # DEFEAT
 Candidate variables: aca_impa, failed, men_ill_ash, deprawsc
 
 ## PHQ risk/severity
 ```{r deprawsc}
+testdf.v20 <- testdf.v18
+
 table(testdf.v20$deprawsc)
 testdf.v20$deprawsc <- as.numeric(testdf.v20$deprawsc)
 
@@ -3956,25 +3944,12 @@ table(testdf.v20$dep_mild)
 table(testdf.v20$dep_mod)
 table(testdf.v20$dep_modsev)
 table(testdf.v20$dep_sev)
-
 ```
 
 ## Academic impact
 ```{r aca_impa}
 table(testdf.v20$aca_impa)
 testdf.v20$aca_impa <- as.factor(testdf.v20$aca_impa)
-```
-
-## Academic failure
-```{r failed}
-table(testdf.v20$failed)
-
-# sample too small in the elective, remove
-testdf.v20 = subset(testdf.v20, select= -c(failed)) # clean up var
-```
-
-```{r Defeat analyses}
-testdf.v22 <- testdf.v20
 ```
 
 
@@ -3984,6 +3959,8 @@ Candidate variables: persist, anx_score, dep_secret, aaq_yn, achieve4
 
 ## GAD7 total
 ```{r anx_score}
+testdf.v22 <- testdf.v20
+
 table(testdf.v22$anx_score)
 testdf.v22$anx_score <- as.numeric(testdf.v22$anx_score)
 
@@ -4021,35 +3998,12 @@ testdf.v22 <- testdf.v22 %>%
 
 table(testdf.v22$aaq_tot)
 testdf.v22$aaq_tot <- as.numeric(testdf.v22$aaq_tot)
-
-# #  for loop for predictive cutoff point needed
-# rs_df <- data.frame("cutoff" = c(), "rs" = c())
-# for (i in 8:48) {
-#   aaq_bin <- ifelse(testdf.v22$AAQ_tot >= i, TRUE, FALSE)
-#   model = lm(testdf.v22$sui_idea ~ aaq_bin)
-#   rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
-# 
-# }
-# names(rs_df) <- c("cutoff", "rs")
-# rs_df_arranged <- rs_df %>% 
-#   arrange(desc(rs)) 
-# rs_df_arranged[1,1]
-
-# # deem 'rs_df_arranged[1,1]' as SI cutoff
-# testdf.v22 <- testdf.v22 %>%
-#   mutate(aaq_dum = ifelse(AAQ_tot > rs_df_arranged[1,1], TRUE, FALSE))
-# 
-# table(testdf.v22$aaq_dum)
 ```
 
 ## Persist
 ```{r persist}
 testdf.v22$persist <- as.factor(testdf.v22$persist)
 table(testdf.v22$persist)
-```
-
-```{r TSM var analyses}
-testdf.v24 <- testdf.v22
 ```
 
 
@@ -4059,6 +4013,8 @@ Candidate variables: dep_impa, gad7_impa, perneed_cur
 
 ## Depression impact
 ```{r dep_impa}
+testdf.v24 <- testdf.v22
+
 table(testdf.v24$dep_impa)
 testdf.v24$dep_impa <- as.factor(testdf.v24$dep_impa)
 ```
@@ -4075,11 +4031,6 @@ table(testdf.v24$percneed_cur)
 testdf.v24$percneed_cur <- as.factor(testdf.v24$percneed_cur)
 ```
 
-## ENTRAPMENT ANALYSES
-```{r Entrapment analyses}
-testdf.v26 <- testdf.v24
-```
-
 
 # MOTIVATIONAL MODERATORS
 Candidate variables: flourish, belong2, belong8, belong9, achieve1, achieve14, 
@@ -4088,23 +4039,14 @@ achieve18, stig_pcv_2, stig_pcv_3, friend_devel, inf, brs_tot
 
 ## Belonging
 ```{r belong}
+testdf.v26 <- testdf.v24
+
 table(testdf.v26$belong1)
 testdf.v26$belong1 <- as.factor(testdf.v26$belong1)
 
 table(testdf.v26$belong2)  # elective question, but common
 table(testdf.v26$belong8)  # nested x 2
 table(testdf.v26$belong9)  # not as good of a proxy
-```
-
-## Achievement
-** too small for inclusion in model
-```{r achieve_1_14_18}
-table(testdf.v26$achieve1)
-table(testdf.v26$achieve14)
-table(testdf.v26$achieve18)
-
-# sample too small in the elective, remove
-testdf.v22 = subset(testdf.v22, select= -c(achieve1, achieve14, achieve18)) # clean up var
 ```
 
 ## Flourishing Scale
@@ -4238,16 +4180,14 @@ table(testdf.v26$mh_stigma)
 testdf.v26$mh_stigma <- as.logical(testdf.v26$mh_stigma)
 ```
 
-```{r MM var analyses}
-testdf.v28 <- testdf.v26
-```
-
 
 # MISSINGNESS
 
 
 ## Absolute missingness, by school
 ```{r Structural missingness, by school}
+testdf.v28 <- testdf.v26
+
 var_names <- c(
   # diathesis
   "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
@@ -4367,7 +4307,7 @@ testdf_sem <- testdf.v28 %>% select(
   # environment
   divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn, military,
   # life events
-  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, assault_emo, assault_phys, assault_sex,
+  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, assault_emo, assault_phys, assault_sex, drug_mar,
   # defeat
   aca_impa, deprawsc,
   # threats to self-moderation
@@ -4414,7 +4354,8 @@ results_test_sem <- dummy_cols(testdf_sem2, select_columns = c(
     # environment
     "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
     # life events
-    "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys", "assault_sex",
+    "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys", 
+    "assault_sex", "drug_mar",
     # defeat
     "aca_impa", "deprawsc",
     # threats to self-moderation
