@@ -3102,7 +3102,7 @@ write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = T
 
 ## Model correlations
 ```{r model_corr}
-results_corr <- NA_preproc(results_sem)
+results_corr <- NA_preproc(results_tr_sem)
 results_corr <- as.data.frame(results_corr)
 
 # run a correlation and drop the insignificant ones 
@@ -3123,12 +3123,12 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ## Create data matrix, save into files
 ```{r save dataset}
-results_tr_sem <- as.data.frame(results_tr_sem)
+results_tr_df <- as.matrix(results_tr_sem)
 
 # save full var set for SEM
-save(results_tr_sem, file = "traindf_sem.RData")
-load("traindf_sem.RData")
-write_xlsx(results_tr_sem, path = "traindf_sem.xls", col_names = TRUE, format_headers = TRUE)
+# save(results_tr_df, file = "traindf_sem.RData")
+# load("traindf_sem.RData")
+# write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -3139,18 +3139,18 @@ write_xlsx(results_tr_sem, path = "traindf_sem.xls", col_names = TRUE, format_he
 ```{r SEM specification}
 SI_model_tr <- '
               # measurement model
+                  si_sem =~  si_type
                   dia_sem =~ age + sexual + gender_noncis + sib_freq + race + ed_any + dx_dep +
                              dx_bi + dx_anx + dx_tr + dx_adhd + meds_count
                   env_sem =~ divers + satisfied_overall + talk + religios + discrim +
-                             school2_type + activ_yn + military
+                             school2_type + activ_yn
                   le_sem =~  ins_cover + gpa_sr + binge_fr + psyhx + fincur + drugs_yn + 
-                             assault_emo + assault_phys + assault_sex + drug_mar
+                             assault_emo + assault_phys + assault_sex
                   def_sem =~ aca_impa + deprawsc
                   tsm_sem =~ persist + anx_score + dep_secret + aaq_tot
                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
                   mm_sem =~  inf + flourish + belong1 + mh_stigma + brs_tot
-                  si_sem =~  si_type
-
+                  
                # structural model - regressions
                   def_sem ~ dia_sem + env_sem + le_sem
                   entrap_sem ~ def_sem + tsm_sem + def_sem*tsm_sem
@@ -3174,8 +3174,6 @@ SI_model_tr <- '
 ## Model estimation
 ```{r SEM model estimation}
 # Model estimation
-
-results_tr_sem <- as.matrix(results_tr_sem)
 
 fit <- cfa(SI_model_tr, data = results_tr_sem,
              ordered = c("age","si_type", "sib_freq","meds_count", "binge_fr", "deprawsc",
