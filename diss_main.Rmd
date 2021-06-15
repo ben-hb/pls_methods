@@ -475,11 +475,11 @@ table(data.v3$gender)
   
   # transform into cisgender and non-cisgender
 data.v3 <- data.v3 %>%  
-  mutate(gender_noncis = case_when(gender == 2 ~ 1,
+  mutate(gender_tgd = case_when(gender == 2 ~ 1,
                                    gender == 3 ~ 1,
                                    gender == 1 ~ 0))
-table(data.v3$gender_noncis)
-data.v3$gender_noncis <- as.factor(data.v3$gender_noncis)
+table(data.v3$gender_tgd)
+data.v3$gender_tgd <- as.factor(data.v3$gender_tgd)
 ```
 
 ### Reconcile 'gender_text' 
@@ -567,7 +567,7 @@ data.v3$gender[data.v3$gender_text %in% c("I am me. A human.", "I'm not yet sure
                                           "I don't have one because it's not a legitimate concept.", 
                                           "Gender is a construct which serves no purpose.")] <- 4
 
-table(data.v3$gender_noncis)   # check output
+table(data.v3$gender_tgd)   # check output
 ```
 
 ## Sexual Identity
@@ -1419,7 +1419,7 @@ traindf.v12 <- traindf.v11 # create new dataframe for summary stats. Will jump t
 ```{r Diathesis correlation}
 
 # Define diathesis vars for correlation matrix
-traindf_dia <- traindf.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, ed_scoff, body_sr,
+traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, ed_scoff, body_sr,
                                 dx_dep, dx_bi, dx_adhd, dx_ea, dx_tr, meds_count, ed_any, dx_anx,
                                 dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
                                 meds_none)
@@ -1445,7 +1445,7 @@ corr_simple <- function(traindf=traindf_dia, sig=0.6){
 corr_simple()
 
 # Extracting overlapping vars to visualize correlation for regression
-traindf_dia <- traindf.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
+traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, body_sr, ed_any,
                                 dx_dep, dx_bi, dx_adhd, dx_ea, dx_tr, dx_pers, dx_anx, meds_count)
 
 # Corr_simple function
@@ -1473,7 +1473,7 @@ corr_simple()
 ### EFA diathesis
 ```{r EFA diathesis}
 
-traindf_dia <- traindf.v12 %>% select(age, sexual, gender_noncis, finpast, sib_freq, race, body_sr,
+traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, body_sr,
                                 dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, dx_anx, ed_any, meds_count)
 
 # create corr matrix, with dummy vars
@@ -1487,7 +1487,7 @@ traindf_dia <- traindf_dia %>%
   data.matrix()
 traindf_dia   # check output
 
-results_dia <- dummy_cols(traindf_dia, select_columns = c("age", "sexual", "gender_noncis", "finpast", 
+results_dia <- dummy_cols(traindf_dia, select_columns = c("age", "sexual", "gender_tgd", "finpast", 
                                                        "sib_freq", "race", "body_sr", "dx_dep", "dx_bi", "dx_anx",
                                                        "dx_adhd", "dx_tr", "ed_any", "dx_pers", "meds_count"), 
                           remove_first_dummy = TRUE)
@@ -1519,13 +1519,13 @@ fviz_cos2(dia_pca, choice = "var", axes = 1,
 
 ### CLM diathesis regression
 ```{r clm_dia}
-clm_dia <- traindf.v12 %>% select(si_type, age, sexual, gender_noncis, finpast, sib_freq, race, body_sr, dx_anx,
+clm_dia <- traindf.v12 %>% select(si_type, age, sexual, gender_tgd, finpast, sib_freq, race, body_sr, dx_anx,
                                 dx_anx, dx_dep, dx_bi, dx_adhd, dx_tr, dx_pers, ed_any, meds_count)
 
 clm_dia <- NA_preproc(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
 
-clm_mod <- clm(si_type ~ age + sexual + gender_noncis + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
+clm_mod <- clm(si_type ~ age + sexual + gender_tgd + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
                         ed_any + dx_pers + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count,
                data = dia_mod)
 summary(clm_mod)
@@ -1976,7 +1976,7 @@ traindf.v15 = subset(traindf.v15, select= -c(ins_1, ins_mh, ins_ade, ins_inade))
 
 ## Illicit drug use
 Creates illicit drug use var (limitation -- 30 days reflection)
-```{r drug_type}
+```{r drugs_yn}
 ## add summary of each
 table(traindf.v16$drug_none)
 table(traindf.v16$drug_mar)  
@@ -2920,7 +2920,7 @@ traindf.v28 <- traindf.v26
 # school structural analysis
 var_names <- c(
   # diathesis
-  "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
+  "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
   "dx_adhd", "meds_count",
   # environment
   "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
@@ -3032,7 +3032,7 @@ traindf_sem <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_noncis, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, meds_count,
+  age, sexual, gender_tgd, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, meds_count,
   # environment
   divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn,
   # life events
@@ -3054,6 +3054,7 @@ traindf_sem2   # check output
 
 # xlsx output
 traindf_sem3 <- as.data.frame(traindf_sem2)
+
 save(traindf_sem3 , file = "traindf_nondummy.RData")
 load("traindf_nondummy.RData")
 write_xlsx(traindf_sem3, path = "traindf_nondummy.xls", col_names = TRUE, format_headers = TRUE)
@@ -3065,7 +3066,7 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_anx",
+    "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_anx",
     "dx_tr", "dx_adhd", "meds_count",
     # environment
     "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
@@ -3140,7 +3141,7 @@ results_tr_df <- as.matrix(results_tr_sem)
 SI_model_tr <- '
               # measurement model
                   si_sem =~  si_type
-                  dia_sem =~ age + sexual + gender_noncis + sib_freq + race + ed_any + dx_dep +
+                  dia_sem =~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_dep +
                              dx_bi + dx_anx + dx_tr + dx_adhd + meds_count
                   env_sem =~ divers + satisfied_overall + talk + religios + discrim +
                              school2_type + activ_yn
@@ -3173,8 +3174,6 @@ SI_model_tr <- '
 
 ## Model estimation
 ```{r SEM model estimation}
-# Model estimation
-
 fit <- cfa(SI_model_tr, data = results_tr_sem,
              ordered = c("age","si_type", "sib_freq","meds_count", "binge_fr", "deprawsc",
                          "anx_score", "aaq_tot", "dep_impa", "gad7_impa", "flourish", "brs_tot"))
@@ -3185,7 +3184,6 @@ summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
 list(summary_train$coefficient,
       round(1-(summary_train$deviance/summary_train$null.deviance), 2))
-
 ```
 
 ## Model prediction
@@ -3532,11 +3530,6 @@ testdf.v11 = subset(testdf.v11, select= -c(meds_1:meds_7)) # clean up vars/colum
 
 ```
 
-## DIATHESIS ANALYSES
-```{r Diathesis analyses}
-testdf.v12 <- testdf.v11 # create new dataframe for summary stats. Will jump to v13 for environmental
-```
-
 
 # ENVIRONMENT VARIABLES
 Candidate variables: res_status, military, activ_yn, residenc, discrim, env_mh, 
@@ -3578,12 +3571,6 @@ testdf.v14$talk <- as.factor(testdf.v14$talk)
 
 
 testdf.v14 = subset(testdf.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
-```
-
-## Military status
-```{r military}
-table(testdf.v14$military)
-testdf.v14$military <- as.logical(testdf.v14$military)
 ```
 
 ## Overall school satisfaction
@@ -3805,26 +3792,16 @@ testdf.v16 <- testdf.v16 %>%
 table(testdf.v16$ins_cover)   # check output
 testdf.v16$ins_cover <- as.logical(testdf.v16$ins_cover)
 
-testdf.v15 = subset(testdf.v15, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
+testdf.v16 = subset(testdf.v16, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
 ```
 
 ## Illicit drug use
 Creates illicit drug use var (limitation -- 30 days reflection)
-```{r drug_type}
-## add summary of each
-table(testdf.v16$drug_none)
-table(testdf.v16$drug_mar)  
-table(testdf.v16$drug_coc)
-table(testdf.v16$drug_her)  # too small
-table(testdf.v16$drug_met)  # too small
-table(testdf.v16$drug_stim)
-table(testdf.v16$drug_ect)  # too small
-table(testdf.v16$drug_opi)   # too small
-table(testdf.v16$drug_other)  # too vague, small
-
+```{r drugs_yn}
 # Sample is too small to analyze individual drugs, except for marijuana. Transform to illicit drug y/n
 testdf.v16 <- testdf.v16 %>%
   mutate(drugs_yn = case_when(drug_none == 1 ~ 0,
+                              drug_mar == 1 ~ 1,
                               drug_coc == 1 ~ 1,
                               drug_her == 1 ~ 1,
                               drug_met == 1 ~ 1,
@@ -3832,12 +3809,11 @@ testdf.v16 <- testdf.v16 %>%
                               drug_ect == 1 ~ 1,
                               drug_opi == 1 ~ 1,
                               drug_other == 1 ~ 1))
+  # mutate(drug_mar = case_when(drug_mar == 1 ~ 1,
+  #                             drugs_yn == 1 ~ 0,
+  #                             drugs_yn == 0 ~ 0))
 
 table(testdf.v16$drugs_yn)
-testdf.v16$drugs_yn <- as.logical(testdf.v16$drugs_yn)
-
-table(testdf.v16$drug_mar)
-testdf.v16$drug_mar <- as.logical(testdf.v16$drug_mar)
 ```
 
 ## Current financial stressors
@@ -4183,118 +4159,6 @@ testdf.v26$mh_stigma <- as.logical(testdf.v26$mh_stigma)
 ```
 
 
-# MISSINGNESS
-
-
-## Absolute missingness, by school
-```{r Structural missingness, by school}
-testdf.v28 <- testdf.v26
-
-var_names <- c(
-  # diathesis
-  "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
-  "dx_adhd", "meds_count",
-  # environment
-  "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
-  # life events
-  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys",
-  "assault_sex", "drug_mar",
-  # defeat
-  "aca_impa", "deprawsc",
-  # threats to self-moderation
-  "persist", "anx_score", "dep_secret", "aaq_tot",
-  # entrapment
-  "dep_impa", "gad7_impa", "percneed_cur",
-  # motivational moderators
-  "inf", "flourish", "belong1", "mh_stigma", "brs_tot")  
-var_names <- sort(var_names)
-
-# build table for absolute missingness based on school2
-school2 <- count(testdf.v28, school2)
-school2_ncol <- ncol(school2)
-
-for (j in 1:length(var_names)) {
-  school2[, school2_ncol + j] <- 999
-}
-
-# create column headers and vectors for school, total students, then each variable count
-names <- c("school2_values", "total", var_names)
-names(school2) <- names
-
-# input values for each school missingness across all variables
-for (j in 1:(length(var_names))) {
-for (i in 1:nrow(school2)) {   # i corresponds to rows, j to columns
-  school2[i, 2 + j] <- sum(!is.na(testdf.v28[testdf.v28$school2 == school2[[i,1]], var_names[j]]))
-}
-}
-# add percentage in each column
-school2_m <- as.matrix(school2[-1]) 
-props <- school2_m[,2:ncol(school2_m)] / school2_m[,1]
-school2 <- data.frame(school2[, 1:2], props)
-
-# view missingness matrix
-view(school2)
-
-# save matrix
-write_xlsx(school2, path = "sch2_missing_test.xlsx", col_names = TRUE, format_headers = TRUE)
-```
-
-## Missingness of each overall variable
-```{r Missingness of each overall var}
-# Create dataframe to store data 
-missing_rates <- data.frame("variable" = var_names,
-           "total" = rep(999, length(var_names)),
-           "prop_present" = rep(999, length(var_names)))
-
-# loop to replicate row for all var
-for (i in 1:nrow(missing_rates)) {
-  missing_rates[i, 2] = sum(!is.na(testdf.v28[[i]]))
-  missing_rates[i, 3] = missing_rates[i, 2] / nrow(testdf.v28)
-}
-# view matrix
-view(missing_rates)
-# save matrix
-write_xlsx(missing_rates, path = "overall_missing_test.xlsx", col_names = TRUE, format_headers = TRUE)
-```
-
-## Missingness of each var w/in each var
-```{r Missingness between vars}
-
-missing_dfs <- list()
-for (k in 1:length(var_names)) {
-
-#create skeleton of missingness matrix
-var <- count(testdf.v28, testdf.v28[var_names[k]])
-var_ncol <- ncol(var)
-
-for (j in 1:length(var_names)) {
-  var[, var_ncol + j] <- 999
-}
-# create column headers and vectors for school, total students, then each variable count
-names <- c(paste0(var_names[k], "_values"), "total", var_names)
-names(var) <- names
-
-# input values for each school missingness across all variables
-for (j in 1:(length(var_names))) {
-for (i in 1:nrow(var)) {   # i corresponds to rows, j to columns
-  var[i, 2 + j] <- sum(!is.na(testdf.v28[testdf.v28[[var_names[k]]] == var[[i,1]], var_names[j]]))
-}
-}
-# add percentage in each column
-var_m <- as.matrix(var[-1]) 
-props <- var_m[,2:ncol(var_m)] / var_m[,1]
-var <- data.frame(var[, 1:2], props)
-replace_na("NA")
-missing_dfs[[k]] <- var
-}
-
-names(missing_dfs) <- var_names
-save(missing_dfs, file = "missing_dfs_test.RData")
-load("missing_dfs_test.RData")
-write_xlsx(missing_dfs, path = "missing_test.xlsx", col_names = TRUE, format_headers = TRUE)
-```
-
-
 # DATA PREP
 
 
@@ -4305,11 +4169,11 @@ testdf_sem <- testdf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_noncis, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, meds_count,
+  age, sexual, gender_tgd, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, meds_count,
   # environment
-  divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn, military,
+  divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn,
   # life events
-  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, assault_emo, assault_phys, assault_sex, drug_mar,
+  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, assault_emo, assault_phys, assault_sex,
   # defeat
   aca_impa, deprawsc,
   # threats to self-moderation
@@ -4351,13 +4215,13 @@ results_test_sem <- dummy_cols(testdf_sem2, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_noncis", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_anx",
+    "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_anx",
     "dx_tr", "dx_adhd", "meds_count",
     # environment
-    "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn", "military",
+    "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
     # life events
     "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys", 
-    "assault_sex", "drug_mar",
+    "assault_sex",
     # defeat
     "aca_impa", "deprawsc",
     # threats to self-moderation
@@ -4371,3 +4235,56 @@ results_test_sem <- dummy_cols(testdf_sem2, select_columns = c(
 view(results_test_sem)
 ```
 
+
+# SEM ANALYSIS
+
+
+## SEM specification
+```{r SEM specification}
+SI_model_tr <- '
+              # measurement model
+                  si_sem =~  si_type
+                  dia_sem =~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_dep +
+                             dx_bi + dx_anx + dx_tr + dx_adhd + meds_count
+                  env_sem =~ divers + satisfied_overall + talk + religios + discrim +
+                             school2_type + activ_yn
+                  le_sem =~  ins_cover + gpa_sr + binge_fr + psyhx + fincur + drugs_yn + 
+                             assault_emo + assault_phys + assault_sex
+                  def_sem =~ aca_impa + deprawsc
+                  tsm_sem =~ persist + anx_score + dep_secret + aaq_tot
+                  entrap_sem =~ dep_impa + gad7_impa + percneed_cur
+                  mm_sem =~  inf + flourish + belong1 + mh_stigma + brs_tot
+                  
+               # structural model - regressions
+                  def_sem ~ dia_sem + env_sem + le_sem
+                  entrap_sem ~ def_sem + tsm_sem + def_sem*tsm_sem
+                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem
+
+               # residual covariances
+                  dia_sem ~~ env_sem
+                  env_sem ~~ le_sem
+                  le_sem ~~ dia_sem
+                  dx_adhd ~~ dx_dep
+                  dx_adhd ~~ dx_anx
+                  ed_any ~~ sib_freq
+                  dx_tr ~~ dx_anx
+                  dx_tr ~~ dx_dep
+                  dx_bi ~~ dx_dep
+                  assault_emo ~~ assault_sex
+                  assault_phys ~~ assault_sex
+                  assault_phys ~~ assault_emo     '
+```
+
+## Model estimation
+```{r SEM model estimation}
+fit <- cfa(SI_model_tr, data = results_test_sem,
+             ordered = c("age","si_type", "sib_freq","meds_count", "binge_fr", "deprawsc",
+                         "anx_score", "aaq_tot", "dep_impa", "gad7_impa", "flourish", "brs_tot"))
+
+fit_train <- sem(SI_model_tr, data=results_test_sem)
+
+summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
+
+list(summary_train$coefficient,
+      round(1-(summary_train$deviance/summary_train$null.deviance), 2))
+```
