@@ -2155,8 +2155,8 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ##EFA Environment
 ```{r EFA Environment}
-traindf_env <- traindf.v15 %>% select(discrim, religios, env_mh, residenc, activ_yn, divers, 
-                                school2_type, satisfied_overall,  talk, military, international)
+traindf_env <- traindf.v15 %>% select(discrim, religios, residenc, activ_yn, divers, 
+                                school2_type, satisfied_overall, talk)
 
 
 # create corr matrix, with dummy vars
@@ -2168,41 +2168,39 @@ traindf_env <- traindf_env %>%
   data.matrix()
 traindf_env   # check output
 
-# # PCA map with eigenvalues
-# results_env <- dummy_cols(traindf_env, select_columns = c("discrim", "religios", "env_mh", "residenc","talk",
-#                                                        "activ_yn", "divers", "school2_type", "satisfied_overall"),
-#                           remove_first_dummy = TRUE)
-# 
-# env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
-# names(env_pca)
-# summary(env_pca)
-# 
-# eigval_env <- get_eigenvalue(env_pca)
-# eigval_env
-# 
-# # Visualization
-# fviz_screeplot(env_pca, addlabels = TRUE, ylim = c(0, 50))
-# fviz_pca_var(env_pca,
-#              col.var = "contrib", # Color by contributions to the PC
-#              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-#              repel = TRUE     # Avoid text overlapping
-#              )
-# fviz_famd_var(env_pca,
-#              col.var = "contrib", # Color by contributions to the PC
-#              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-#              repel = TRUE     # Avoid text overlapping
-#              )
-# fviz_cos2(env_pca, choice = "var", axes = 1,
-#           fill = "steelblue", color = "steelblue",
-#           sort.val = c("desc", "asc", "none"),
-#           top = 40,
-#           xtickslab.rt = 45,
-#           ggtheme = theme_minimal())
+# PCA map with eigenvalues
+results_env <- dummy_cols(traindf_env, select_columns = c("discrim", "religios", "residenc", "activ_yn", "divers",
+                                                         "school2_type", "satisfied_overall", "talk"),
+                          remove_first_dummy = TRUE)
+
+env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
+names(env_pca)
+summary(env_pca)
+
+eigval_env <- get_eigenvalue(env_pca)
+eigval_env
+
+# Visualization
+fviz_screeplot(env_pca, addlabels = TRUE, ylim = c(0, 50))
+fviz_pca_var(env_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_famd_var(env_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_cos2(env_pca, choice = "var", axes = 1,
+          fill = "steelblue", color = "steelblue",
+          sort.val = c("desc", "asc", "none"),
+          top = 40,
+          xtickslab.rt = 45,
+          ggtheme = theme_minimal())
 ```
 
 ### CLM environmental regression
-Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + 
-school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
 ```{r CLM environment}
 clm_env <- traindf.v15 %>% select(si_type, discrim, religios, residenc, activ_yn, divers, 
                                   school2_type, satisfied_overall, talk)
@@ -2216,17 +2214,6 @@ clm_env <- clm_env %>%
  summary(clm_env2)
 
 coef(clm_env)
-
-# ci_env <- confint(clm_env)
-# ci_env
-# 
-# model.env <- tidy(clm_env)                 # Convert model to dataframe
-# model.env
-# 
-# model.env  %>%
-#   mutate(or = exp(estimate),               # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_env)),   # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))    # Odds-ratio adjusted
 ```
 
 
@@ -2248,7 +2235,7 @@ traindf.v16 <- traindf.v16 %>%
 table(traindf.v16$ins_cover)   # check output
 traindf.v16$ins_cover <- as.logical(traindf.v16$ins_cover)
 
-traindf.v16 = subset(traindf.v15, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
+traindf.v16 = subset(traindf.v16, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
 ```
 
 ## Illicit drug use
@@ -2348,11 +2335,16 @@ traindf.v17$binge_fr_o[is.na(traindf.v17$binge_fr_o)] <- 0
 
 # create one binge var
 traindf.v18 <- traindf.v17 %>% 
-  mutate(binge_fr = as.numeric(binge_fr_f) + as.numeric(binge_fr_m) + as.numeric(binge_fr_o)) %>%
-  mutate(binge_fr = as.character(binge_fr))
+  mutate(binge_fr = as.numeric(binge_fr_f) + as.numeric(binge_fr_m) + as.numeric(binge_fr_o))
+table(traindf.v18$binge_fr)
 
-table(traindf.v18$binge_fr) # check output
-traindf.v18$binge_fr <- as.factor(traindf.v18$binge_fr)
+traindf.v18 <- traindf.v18 %>%
+  mutate(binge = case_when(binge_fr >= 4 ~ 1,
+                           binge_fr < 4 ~ 0,
+                           is.na(binge_fr) ~ 0))
+
+traindf.v18$binge <-as.logical(traindf.v18$binge)
+table(traindf.v18$binge) # check output
 
 traindf.v18 = subset(traindf.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)) # clean up var
 ```
@@ -2396,7 +2388,7 @@ traindf.v19 <- traindf.v18
 ## LE correlation
 ```{r LE correlation}
 # Define life event var candidates for correlation matrix
-traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, binge_fr,
+traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, binge,
                                      assault, psyhx, drugs_yn)
 
 # convert traindf to numeric in order to run correlations
@@ -2419,7 +2411,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ## EFA LE
 ```{r le_pca}
-traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, binge_fr, drugs_yn,
+traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, binge, drugs_yn,
                                      assault, psyhx)
 
 # create corr matrix, with dummy vars
@@ -2433,58 +2425,45 @@ results_le <- dummy_cols(traindf_le, select_columns = c("ins_cover", "assault", 
                                                         "aca_impa", "fincur", "binge_fr", "drugs_yn"),
                          remove_first_dummy = TRUE)
 
-# le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
-# le_pca$eig   # output matrix with eigenvalues
-# 
-# eigval_le <- get_eigenvalue(le_pca)
-# eigval_le
-# 
-# # visualization for PCA, FAMD
-# fviz_screeplot(le_pca, addlabels = TRUE, ylim = c(0, 50))
-# fviz_pca_var(le_pca,
-#              col.var = "contrib", # Color by contributions to the PC
-#              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-#              repel = TRUE     # Avoid text overlapping
-#              )
-# fviz_famd_var(le_pca,
-#              col.var = "contrib", # Color by contributions to the PC
-#              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-#              repel = TRUE     # Avoid text overlapping
-#              )
-# fviz_cos2(le_pca, choice = "var", axes = 1, 
-#           fill = "steelblue", color = "steelblue",
-#           sort.val = c("desc", "asc", "none"),
-#           top = 40,
-#           xtickslab.rt = 45,
-#           ggtheme = theme_minimal())
-# fviz_contrib(le_pca, choice = "var", axes = 2, top = 20)
-# fviz_contrib(le_pca, choice = "var", axes = 3, top = 20)
-# fviz_contrib(le_pca, choice = "var", axes = 4, top = 20)
+le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
+le_pca$eig   # output matrix with eigenvalues
+
+eigval_le <- get_eigenvalue(le_pca)
+eigval_le
+
+# visualization for PCA, FAMD
+fviz_screeplot(le_pca, addlabels = TRUE, ylim = c(0, 50))
+fviz_pca_var(le_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_famd_var(le_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_cos2(le_pca, choice = "var", axes = 1,
+          fill = "steelblue", color = "steelblue",
+          sort.val = c("desc", "asc", "none"),
+          top = 40,
+          xtickslab.rt = 45,
+          ggtheme = theme_minimal())
 ```
 
 ## CLM Life event regression
 ```{r clm_LE}
 clm_le <- traindf.v19 %>% select(si_type, ins_cover, gpa_sr, aca_impa, fincur, assault,
-                                 binge_fr, psyhx, drugs_yn)
+                                 binge, psyhx, drugs_yn)
 
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
 
-# clm_le <- clm(si_type ~ ins_cover + assault_emo + assault_phys + assault_phys + gpa_sr + 
-#                 aca_impa + fincur + binge_fr + psyhx + drugs_yn,
-#               data = clm_le)
-# summary(clm_le)
-# coef(clm_le)
-# ci_le <- confint(clm_le)
-# ci_le
-# 
-# model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
-# model.le
-# 
-# model.le  %>%
-#    mutate(or = exp(estimate),  # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+clm_le <- clm(si_type ~ ins_cover + assault + gpa_sr + aca_impa + fincur + binge + 
+                psyhx + drugs_yn,
+              data = clm_le)
+summary(clm_le)
+coef(clm_le)
 ```
 
 
@@ -2512,7 +2491,9 @@ traindf.v20 <- traindf.v20 %>%
   mutate(dep_modsev = case_when((deprawsc > 14 & deprawsc < 20) ~ 1,
                                (deprawsc > 19 | deprawsc < 15) ~ 0)) %>%
   mutate(dep_sev = case_when(deprawsc > 19 ~ 1,
-                             deprawsc < 20 ~ 0))
+                             deprawsc < 20 ~ 0)) %>%
+  mutate(dep_na = case_when(is.na(deprawsc) ~ 1,
+                            !is.na(deprawsc) ~ 0))
 
 # Check outputs
 table(traindf.v20$dep_none)
@@ -2520,13 +2501,27 @@ table(traindf.v20$dep_mild)
 table(traindf.v20$dep_mod)
 table(traindf.v20$dep_modsev)
 table(traindf.v20$dep_sev)
+table(traindf.v20$dep_na)
 
+traindf.v20 <- traindf.v20 %>%
+  mutate(dep_type = case_when(dep_none == 1 ~ 1,
+                              dep_mild == 1 ~ 2,
+                              dep_mod == 1 ~ 3,
+                              dep_modsev == 1 ~ 4,
+                              dep_sev == 1 ~ 5,
+                              dep_na == 1 ~ 0))
+table(traindf.v20$dep_type)
 ```
 
 ## Academic impact
 ```{r aca_impa}
+traindf.v20 <- traindf.v20 %>%
+  mutate(aca_impa = case_when(aca_impa == 1 ~ 1,
+                              aca_impa == 2 ~ 2,
+                              aca_impa == 3 ~ 3,
+                              aca_impa == 4 ~ 4,
+                              is.na(aca_impa) ~ 0))
 table(traindf.v20$aca_impa)
-traindf.v20$aca_impa <- as.factor(traindf.v20$aca_impa)
 ```
 
 ## Academic failure
@@ -2554,7 +2549,7 @@ traindf.v21 <- traindf.v20
 ## Defeat correlation
 ```{r Defeat cor}
 # Define defeat variable candidates for correlation matrix
-traindf_def <- traindf.v21 %>% select(aca_impa, deprawsc)
+traindf_def <- traindf.v21 %>% select(aca_impa, dep_type)
 
  # convert traindf to numeric in order to run correlations
 traindf_def <- traindf_def %>% mutate_if(is.character, as.factor)
@@ -2569,7 +2564,7 @@ corr <- na.omit(corr)                         # remove the NA values from above
 corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
 print(corr)
 
-traindf_def <- traindf.v21 %>% select(aca_impa, deprawsc)
+traindf_def <- traindf.v21 %>% select(aca_impa, dep_type)
 
 # convert traindf to numeric in order to run correlations
 traindf_def <- traindf_def %>% mutate_if(is.character, as.factor)
@@ -2587,7 +2582,7 @@ print(corr)
 
 ## EFA defeat
 ```{r EFA_def}
-traindf_def <- traindf.v21 %>% select(aca_impa, deprawsc)
+traindf_def <- traindf.v21 %>% select(aca_impa, dep_type)
 
 # create corr matrix, with dummy vars 
 traindf_def <- traindf_def %>% 
@@ -2596,7 +2591,7 @@ traindf_def <- traindf_def %>%
   data.matrix()
 traindf_def   # check output
 
-results_def <- dummy_cols(traindf_def, select_columns = c("aca_impa", "deprawsc"),
+results_def <- dummy_cols(traindf_def, select_columns = c("aca_impa", "dep_type"),
                          remove_first_dummy = TRUE)
 
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
@@ -2630,12 +2625,12 @@ fviz_contrib(def_pca, choice = "var", axes = 4, top = 20)
 
 ## CLM defeat
 ```{r CLM defeat}
-results2_def <- traindf.v21 %>% select(si_type, aca_impa, deprawsc)
+results2_def <- traindf.v21 %>% select(si_type, aca_impa, dep_type)
 
 clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
 
-clm_def <- clm(si_type ~ aca_impa + deprawsc, data = clm_def)
+clm_def <- clm(si_type ~ aca_impa + dep_type, data = clm_def)
 
 summary(clm_def)
 coef(clm_def)
