@@ -1418,7 +1418,6 @@ data.v10 <- data.v10 %>%
                             ed_any == 0 ~ 0,
                             ed_any == NA ~ 0))
 table(traindf.v10$ed_any)
-
 ```
 
 ## WCS
@@ -1748,7 +1747,6 @@ corr_simple()
 
 ### EFA diathesis
 ```{r EFA diathesis}
-
 traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, body_sr,
                                 dx_dep, dx_bi, dx_adhd, dx_tr, dx_anx, ed_any, meds_count)
 
@@ -1795,10 +1793,8 @@ fviz_cos2(dia_pca, choice = "var", axes = 1,
 
 ### CLM diathesis regression
 ```{r clm_dia}
-clm_dia <- dummy_cols(traindf.v12, select_columns = c("si_type", "age", "sexual", "gender_tgd", "sib_freq", 
-                                                             "race", "ed_any", "dx_dep", "dx_bi", "dx_anx", "dx_tr", 
-                                                             "dx_adhd", "meds_count"),
-                             remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+clm_dia <- traindf.v12 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race,
+                                  ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, meds_count)
 
 view(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
@@ -1835,8 +1831,18 @@ data.v13 = subset(traindf.v12, select= -c(citizen, permanentres, visa, otherdoc,
 
 ## Discrimination
 ```{r discrim}
+traindf.v13 <- traindf.v13 %>%
+  mutate(discrim = case_when(discrim == 1 ~ 1,
+                             discrim == 2 ~ 2,
+                             discrim == 3 ~ 3,
+                             discrim == 4 ~ 4,
+                             discrim == 5 ~ 5,
+                             discrim == 6 ~ 6,
+                             discrim == NA ~ 0))
 table(traindf.v13$discrim)
 traindf.v13$discrim <- as.factor(traindf.v13$discrim)
+
+
 ```
 
 ## MH campus environment
@@ -1915,6 +1921,15 @@ traindf.v14$fam_support_aca <- as.factor(traindf.v14$fam_support_aca)
 
 ## Overall school satisfaction
 ```{r satisfied_overall}
+traindf.v14 <- traindf.v14 %>%
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 1,
+                                       satisfied_overall == 2 ~ 2,
+                                       satisfied_overall == 3 ~ 3,
+                                       satisfied_overall == 4 ~ 4,
+                                       satisfied_overall == 5 ~ 5,
+                                       satisfied_overall == 6 ~ 6,
+                                       satisfied_overall == NA ~ 0))
+
 table(traindf.v14$satisfied_overall)
 traindf.v14$satisfied_overall <- as.factor(traindf.v14$satisfied_overall)
 ```
@@ -2147,22 +2162,24 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ##EFA Environment
 ```{r EFA Environment}
-traindf_env <- traindf.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
-                                school2_type, satisfied_overall, ther_vis, talk, military, international)
+traindf_env <- traindf.v15 %>% select(discrim, religios, env_mh, residenc, activ_yn, divers, 
+                                school2_type, satisfied_overall,  talk, military, international)
+
 
 # create corr matrix, with dummy vars
 traindf_env <- traindf_env %>% 
   mutate_if(is.numeric, as.factor) %>% 
-  mutate_if(is.logical, as.factor) %>% 
+  mutate(
+    age = as.numeric(satisfied_overall)) %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
+traindf_env   # check output
 
-# PCA map with eigenvalues
-results_env <- dummy_cols(traindf_env, select_columns = c("discrim", "religios", "env_mh", "residenc", "ther_vis",
-                                                       "activ_yn", "divers", "school2_type", "satisfied_overall", 
-                                                       "ther_vis", "talk", "military", "international"),
-                          remove_first_dummy = TRUE)
-
+# # PCA map with eigenvalues
+# results_env <- dummy_cols(traindf_env, select_columns = c("discrim", "religios", "env_mh", "residenc","talk",
+#                                                        "activ_yn", "divers", "school2_type", "satisfied_overall"),
+#                           remove_first_dummy = TRUE)
+# 
 # env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
 # names(env_pca)
 # summary(env_pca)
@@ -2182,7 +2199,7 @@ results_env <- dummy_cols(traindf_env, select_columns = c("discrim", "religios",
 #              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
 #              repel = TRUE     # Avoid text overlapping
 #              )
-# fviz_cos2(env_pca, choice = "var", axes = 1, 
+# fviz_cos2(env_pca, choice = "var", axes = 1,
 #           fill = "steelblue", color = "steelblue",
 #           sort.val = c("desc", "asc", "none"),
 #           top = 40,
@@ -2194,18 +2211,19 @@ results_env <- dummy_cols(traindf_env, select_columns = c("discrim", "religios",
 Variables for consideration: discrim + religios + env_mh + residenc + ther_vis + activ_yn + divers + 
 school2_4yr + school2_cc + school2_ad + satisfied_overall + ther_vis + talk + military + international
 ```{r CLM environment}
-clm_env <- traindf.v15 %>% select(si_type, discrim, religios, env_mh, residenc, ther_vis, activ_yn, religios,
-                               divers, school2_type, satisfied_overall, ther_vis, talk, military, international)
+clm_env <- traindf.v15 %>% select(si_type, discrim, religios, residenc, activ_yn, divers, 
+                                  school2_type, satisfied_overall, talk)
 
 clm_env <- clm_env %>% 
   NA_preproc() %>%
   as.data.frame()
 
-# clm_env2 <- glm(si_type ~ discrim + satisfied_overall + ther_vis + talk + activ_yn + international + religios +
-#                 ther_vis + divers + military + school2_type + residenc + env_mh, data = clm_env)
-# summary(clm_env2)
+ clm_env2 <- clm(si_type ~ discrim + residenc + religios + activ_yn + divers + school2_type +
+                   satisfied_overall + talk, data = clm_env)
+ summary(clm_env2)
 
-# coef(clm_env)
+coef(clm_env)
+
 # ci_env <- confint(clm_env)
 # ci_env
 # 
@@ -2231,12 +2249,14 @@ traindf.v16 <- traindf.v14
 ```{r ins_cover}
 # create one insurance var from related questions in 'ins_' module
 traindf.v16 <- traindf.v16 %>% 
-  mutate(ins_cover = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 0,
-                               (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 1))
+  mutate(ins_cover = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
+                               (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 2,   # adequate MH coverage
+                               (ins_1 == NA | ins_mh == NA | ins_ade == NA) ~ 0))             # non-response
 table(traindf.v16$ins_cover)   # check output
 traindf.v16$ins_cover <- as.logical(traindf.v16$ins_cover)
 
-traindf.v15 = subset(traindf.v15, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
+traindf.v16 = subset(traindf.v15, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
+view(traindf.v16$ins_cover)
 ```
 
 ## Illicit drug use
