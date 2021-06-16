@@ -3313,7 +3313,7 @@ traindf_sem <- traindf.v28 %>% select(
 
 # create sem matrix 
 traindf_sem2 <- traindf_sem %>% 
-  mutate_if(is.numeric, as.factor) %>% 
+  # mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
 traindf_sem2   # check output
 
