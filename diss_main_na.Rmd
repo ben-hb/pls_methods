@@ -1838,7 +1838,7 @@ traindf.v13 <- traindf.v13 %>%
                              discrim == 4 ~ 4,
                              discrim == 5 ~ 5,
                              discrim == 6 ~ 6,
-                             discrim == NA ~ 0))
+                             is.na(discrim) ~ 0))
 table(traindf.v13$discrim)
 traindf.v13$discrim <- as.factor(traindf.v13$discrim)
 
@@ -1928,7 +1928,7 @@ traindf.v14 <- traindf.v14 %>%
                                        satisfied_overall == 4 ~ 4,
                                        satisfied_overall == 5 ~ 5,
                                        satisfied_overall == 6 ~ 6,
-                                       satisfied_overall == NA ~ 0))
+                                       is.na(satisfied_overall) ~ 0))
 
 table(traindf.v14$satisfied_overall)
 traindf.v14$satisfied_overall <- as.factor(traindf.v14$satisfied_overall)
@@ -1954,38 +1954,30 @@ traindf.v14$activ_rel[is.na(traindf.v14$activ_rel)] <- 0
 traindf.v14$activ_art[is.na(traindf.v14$activ_art)] <- 0
 traindf.v14$activ_other[is.na(traindf.v14$activ_other)] <- 0
 
-  # change class to numeric
-traindf.v14$activ_ac <- as.numeric(traindf.v14$activ_ac)
-traindf.v14$activ_athc <- as.numeric(traindf.v14$activ_athc)
-traindf.v14$activ_athv <- as.numeric(traindf.v14$activ_athv)
-traindf.v14$activ_athi <- as.numeric(traindf.v14$activ_athi)
-traindf.v14$activ_cs <- as.numeric(traindf.v14$activ_cs)
-traindf.v14$activ_cu <- as.numeric(traindf.v14$activ_cu)
-traindf.v14$activ_da <- as.numeric(traindf.v14$activ_da)
-traindf.v14$activ_fs <- as.numeric(traindf.v14$activ_fs)
-traindf.v14$activ_gs <- as.numeric(traindf.v14$activ_gs)
-traindf.v14$activ_gov <- as.numeric(traindf.v14$activ_gov)
-traindf.v14$activ_mp <- as.numeric(traindf.v14$activ_md)
-traindf.v14$activ_md <- as.numeric(traindf.v14$activ_none)
-traindf.v14$activ_soc <- as.numeric(traindf.v14$activ_soc)
-traindf.v14$activ_rel <- as.numeric(traindf.v14$activ_rel)
-traindf.v14$activ_art <- as.numeric(traindf.v14$activ_art)
-traindf.v14$activ_other <- as.numeric(traindf.v14$activ_other)
-
 # Create one activity variable (dichotomous) based on involment in campus activities
 traindf.v14 <- traindf.v14 %>% 
   mutate(activ_yn = case_when(activ_none == 1 ~ 0,
-                              (activ_ac == 1 | activ_athc == 1 | activ_athv == 1 | activ_athi == 1 | 
-                                 activ_cs == 1 | activ_cu |
-                              activ_da == 1 | activ_fs == 1 | activ_gs == 1 | activ_gov == 1 | 
-                                activ_mp == 1 | activ_md == 1 |
-                              activ_rel == 1 | activ_soc == 1 | activ_art == 1 | activ_other == 1) ~ 1))
+                              activ_ac == 1 ~ 1,
+                              activ_athc == 1 ~ 1,
+                              activ_athv == 1 ~ 1,
+                              activ_athi == 1 ~ 1,
+                              activ_cs == 1 ~ 1,
+                              activ_cu == 1 ~ 1,
+                              activ_da == 1 ~ 1,
+                              activ_fs == 1 ~ 1,
+                              activ_gs == 1 ~ 1,
+                              activ_gov == 1 ~ 1,
+                              activ_mp == 1 ~ 1,
+                              activ_md == 1 ~ 1,
+                              activ_rel == 1 ~ 1,
+                              activ_soc == 1 ~ 1,
+                              activ_art == 1 ~ 1,
+                              activ_other == 1 ~ 1))
 
-table(traindf.v14$activ_yn)     # tabulate and check output
 traindf.v14$activ_yn <- as.logical(traindf.v14$activ_yn)
+table(traindf.v14$activ_yn)     # tabulate and check output
 
-
-traindf.v14 = subset(traindf.v14, select= -c(activ_none, activ_ac:activ_other))    # clean up vars
+#traindf.v14 = subset(traindf.v14, select= -c(activ_none, activ_ac:activ_other))    # clean up vars
 ```
 
 ## School variable
@@ -2108,8 +2100,9 @@ traindf.v14 <- traindf.v14 %>%
   mutate(school2_type = case_when(school2_4yr == TRUE ~ 1,
                                   school2_cc == TRUE ~ 2,
                                   school2_ad == TRUE ~ 3))
-table(traindf.v14$school2_type)
 traindf.v14$school2_type <- as.factor(traindf.v14$school2_type)
+table(traindf.v14$school2_type)
+
 
 # Clean-up school2 var
 traindf.v14 = subset(traindf.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain,
@@ -2251,12 +2244,11 @@ traindf.v16 <- traindf.v14
 traindf.v16 <- traindf.v16 %>% 
   mutate(ins_cover = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
                                (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 2,   # adequate MH coverage
-                               (ins_1 == NA | ins_mh == NA | ins_ade == NA) ~ 0))             # non-response
+                               (is.na(ins_1) ~ 0)))       # non-response
 table(traindf.v16$ins_cover)   # check output
 traindf.v16$ins_cover <- as.logical(traindf.v16$ins_cover)
 
 traindf.v16 = subset(traindf.v15, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
-view(traindf.v16$ins_cover)
 ```
 
 ## Illicit drug use
@@ -2283,18 +2275,26 @@ traindf.v16 <- traindf.v16 %>%
                               drug_stim == 1 ~ 1,
                               drug_ect == 1 ~ 1,
                               drug_opi == 1 ~ 1,
-                              drug_other == 1 ~ 1))
-  # mutate(drug_mar = case_when(drug_mar == 1 ~ 1,
-  #                             drugs_yn == 1 ~ 0,
-  #                             drugs_yn == 0 ~ 0))
+                              drug_other == 1 ~ 1)) %>%
+  mutate(drugs_yn = case_when(drugs_yn == 1 ~ 1,
+                              drugs_yn == 0 ~ 0,
+                              is.na(drugs_yn) ~ 0))
 
 table(traindf.v16$drugs_yn)
 ```
 
 ## Current financial stressors
 ```{r fincur}
+traindf.v16 <- traindf.v16 %>%
+  mutate(fincur = case_when(fincur == 1 ~ 1,  # always or often stressful
+                            fincur == 2 ~ 1,  
+                            fincur == 3 ~ 2,  # sometimes
+                            fincur == 4 ~ 3,  # rarely or never
+                            fincur == 5 ~ 3,
+                            is.na(fincur) ~ 0))  # non-response
 table(traindf.v16$fincur)
 traindf.v16$fincur <- as.factor(traindf.v16$fincur)
+
 ```
 
 ## ISI scale
@@ -2304,9 +2304,8 @@ table(traindf.v16$isi_1)
 table(traindf.v16$isi_2)
 ```
 
-## Abuse
-Transformed: Abuse_year~ abuse reported in the last year only
-```{r abuse_year}
+## Abuse or assault, in the last year only
+```{r assault}
 table(traindf.v16$abuse_life)
 table(traindf.v16$abuse_recent)
 
@@ -2317,15 +2316,10 @@ traindf.v17 <- traindf.v16 %>%
                                 abuse_recent == 3 ~ 1,
                                 abuse_recent == 4 ~ 0,
                                 abuse_recent == 5 ~ 0,
-                                abuse_life == 0 ~ 0))
-traindf.v17$abuse_year <- as.numeric(traindf.v17$abuse_year)
+                                abuse_life == 0 ~ 0,
+                                is.na(abuse_life) ~ 0))
 table(traindf.v17$abuse_year)   # check output
 
-traindf.v17 = subset(traindf.v17, select= -c(abuse_life, abuse_recent)) # clean up var
-```
-
-## Recent assault history
-```{r assault}
 # restructure sexual assault var
 traindf.v17 <- traindf.v17 %>%
   mutate(assault = case_when(
@@ -2337,10 +2331,12 @@ traindf.v17 <- traindf.v17 %>%
                              assault_sex == 2 ~ 0,
                              assault_emo == 0 ~ 0,
                              assault_phys == 1 ~ 0))
+traindf.v17$assault <- as.logical(traindf.v17$assault)
 
 # tabulate and check output
 table(traindf.v17$assault) 
-
+                                         
+traindf.v17 = subset(traindf.v17, select= -c(abuse_life, abuse_recent)) # clean up var
 ```
 
 ## Binging frequency
@@ -2367,18 +2363,30 @@ traindf.v18 = subset(traindf.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)
 traindf.v18 <- traindf.v18 %>% 
   mutate(psyhx = case_when((prov_pes == 1 | prov_inp == 1 | prov_par == 1) ~ 1, 
                            (prov_pes == 0 & prov_inp == 0 & prov_par == 0) ~ 0,
-                           ther_ever == 0 ~ 0))
-
-table(traindf.v18$psyhx)   # check output
+                           ther_ever == 0 ~ 0,
+                           is.na(ther_ever) ~ 0))
 traindf.v18$psyhx <- as.logical(traindf.v18$psyhx)
 
+table(traindf.v18$psyhx)   # check output
 traindf.v18 = subset(traindf.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up var
 ```
 
 ## Current GPA
 ```{r gpa_sr}
+traindf.v18 <- traindf.v18 %>%
+  mutate(gpa_sr = case_when(gpa_sr == 0 ~ 1,   # A+
+                            gpa_sr == 1 ~ 1,   # A
+                            gpa_sr == 2 ~ 1,   # A-
+                            gpa_sr == 3 ~ 2,   # B+
+                            gpa_sr == 4 ~ 2,   # B
+                            gpa_sr == 5 ~ 2,   # B-
+                            gpa_sr == 6 ~ 3,   # C+
+                            gpa_sr == 7 ~ 3,   # C
+                            gpa_sr == 8 ~ 3,   # C-
+                            gpa_sr == 9 ~ 4,   # D+ and below
+                            gpa_sr == 10 ~ 0,  # Don't know
+                            is.na(gpa_sr) ~ 0))
 table(traindf.v18$gpa_sr)
-traindf.v18$gpa_sr <- as.numeric(traindf.v18$gpa_sr)
 ```
  
 ```{r LE traindf analysis}
@@ -2389,7 +2397,7 @@ traindf.v19 <- traindf.v18
 ```{r LE correlation}
 # Define life event var candidates for correlation matrix
 traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, binge_fr,
-                                     assault_sex, assault_phys, assault_sex, psyhx, drugs_yn)
+                                     assault, psyhx, drugs_yn)
 
 # convert traindf to numeric in order to run correlations
 traindf_le <- traindf_le %>% mutate_if(is.character, as.factor)
