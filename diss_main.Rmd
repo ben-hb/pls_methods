@@ -3251,11 +3251,22 @@ SI_model_tr <- '
                                 percneed_cur_2 + percneed_cur_3 + percneed_cur_4 + percneed_cur_5 + 
                                     percneed_cur_6 + percneed_cur_NA + 
                   
-                  mm_sem =~  inf + 
-                             flourish + 
-                             belong1 + 
-                             mh_stigma + 
-                             brs_tot
+                  mm_sem =~  inf_2 + inf_3 + inf_4 + inf_5 + inf_6 + inf_7 + inf_8 + inf_9 + inf_NA + 
+                             flourish_2 + flourish_3 + flourish_4 + flourish_5 + flourish_6 + flourish_7 + 
+                                flourish_8 + flourish_9 + flourish_10 + flourish_11 + flourish_12 + flourish_13 + 
+                                flourish_14 + flourish_15 + flourish_16 + flourish_17 + flourish_18 + flourish_19 + 
+                                flourish_20 + flourish_21 + flourish_22 + flourish_23 + flourish_24 + flourish_25 + 
+                                flourish_26 + flourish_27 + flourish_28 + flourish_29 + flourish_30 + flourish_31 + 
+                                flourish_32 + flourish_33 + flourish_34 + flourish_35 + flourish_36 + flourish_37 + 
+                                flourish_38 + flourish_39 + flourish_40 + flourish_41 + flourish_42 + flourish_43 +
+                                flourish_44 + flourish_45 + flourish_46 + flourish_47 + flourish_48 + flourish_49 + 
+                                flourish_NA
+                             belong1_2 + belong1_3 + belong1_4 + belong1_5 + belong1_6 + belong1_NA + 
+                             mh_stigma_1 + mh_stigma_NA +
+                             brs_tot_2 + brs_tot_3 + brs_tot_4 + brs_tot_5 + brs_tot_6 + brs_tot_7 + brs_tot_8 + 
+                                brs_tot_9 + brs_tot_10 + brs_tot_11 + brs_tot_12 + brs_tot_13 + brs_tot_14 + 
+                                brs_tot_15 + brs_tot_16 + brs_tot_17 + brs_tot_18 + brs_tot_19 + brs_tot_20 + 
+                                brs_tot_21 + brs_tot_NA
                   
                # structural model - regressions
                   def_sem ~ dia_sem + env_sem + le_sem
