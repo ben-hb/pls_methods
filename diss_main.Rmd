@@ -1312,6 +1312,19 @@ data.v9 <- data.v8 %>%
   mutate(dx_pers = case_when(dx_pers == 1 ~ 1,
                              dx_none == 1 ~ 0))       # personality
 
+data.v9$dx_any <- as.logical(data.v9$dx_any)
+data.v9$dx_dep <- as.logical(data.v9$dx_dep)
+data.v9$dx_anx <- as.logical(data.v9$dx_anx)
+data.v9$dx_bi <- as.logical(data.v9$dx_bi)
+data.v9$dx_psy <- as.logical(data.v9$dx_psy) 
+data.v9$dx_ea <- as.logical(data.v9$dx_ea)
+data.v9$dx_tr <- as.logical(data.v9$dx_tr)
+data.v9$dx_sa <- as.logical(data.v9$dx_sa)
+data.v9$dx_adhd <- as.logical(data.v9$dx_adhd)
+data.v9$dx_pers <- as.logical(data.v9$dx_pers)
+data.v9$dx_none <- as.logical(data.v9$dx_none)
+data.v9$dx_none <- as.numeric(data.v9$dx_none)
+
 # Check output
 table(data.v9$dx_any)
 table(data.v9$dx_dep)
@@ -1323,7 +1336,6 @@ table(data.v9$dx_tr)
 table(data.v9$dx_sa)
 table(data.v9$dx_adhd)
 table(data.v9$dx_pers)
-table(data.v9$dx_none)
 
 # likely frontrunners for dx
 table(data.v9$dx_dep)
@@ -1332,8 +1344,6 @@ table(data.v9$dx_bi)
 table(data.v9$dx_tr)
 table(data.v9$dx_adhd)
 table(data.v9$ed_any)
-table(data.v9$dep_or_a_all)
-
 ```
 
 
@@ -2294,16 +2304,22 @@ traindf.v17 = subset(traindf.v17, select= -c(abuse_life, abuse_recent)) # clean 
 ```
 
 ## Recent assault history
-```{r assault_[type]}
+```{r assault}
 # restructure sexual assault var
 traindf.v17 <- traindf.v17 %>%
-  mutate(assault_sex = case_when(assault_sex == 2 ~ 0,
-                                 assault_sex == 1 ~ 1))
+  mutate(assault = case_when(
+                             assault_sex == 1 ~ 1,
+                             assault_emo == 1 ~ 1,
+                             assault_phys == 1 ~ 1, 
+                             abuse_year == 1 ~ 1,
+                             abuse_year == 0 ~ 0,
+                             assault_sex == 2 ~ 0,
+                             assault_emo == 0 ~ 0,
+                             assault_phys == 1 ~ 0))
 
 # tabulate and check output
-table(traindf.v17$assault_sex) 
-table(traindf.v17$assault_emo)
-table(traindf.v17$assault_phys)
+table(traindf.v17$assault) 
+
 ```
 
 ## Binging frequency
@@ -2375,7 +2391,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ## EFA LE
 ```{r le_pca}
 traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, binge_fr, drugs_yn,
-                                     assault_phys, assault_sex, assault_emo, psyhx)
+                                     assault, psyhx)
 
 # create corr matrix, with dummy vars
 traindf_le <- traindf_le %>% 
@@ -2384,9 +2400,8 @@ traindf_le <- traindf_le %>%
   data.matrix()
 traindf_le   # check output
 
-results_le <- dummy_cols(traindf_le, select_columns = c("ins_cover", "assault_phys", "assault_sex",
-                                                        "assault_emo", "gpa_sr", "psyhx", "aca_impa", 
-                                                        "fincur", "binge_fr", "drugs_yn"),
+results_le <- dummy_cols(traindf_le, select_columns = c("ins_cover", "assault", "gpa_sr", "psyhx", 
+                                                        "aca_impa", "fincur", "binge_fr", "drugs_yn"),
                          remove_first_dummy = TRUE)
 
 # le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
@@ -2420,8 +2435,8 @@ results_le <- dummy_cols(traindf_le, select_columns = c("ins_cover", "assault_ph
 
 ## CLM Life event regression
 ```{r clm_LE}
-clm_le <- traindf.v19 %>% select(si_type, ins_cover, gpa_sr, aca_impa, fincur, assault_sex,
-                                 assault_emo, assault_phys, binge_fr, psyhx, drugs_yn)
+clm_le <- traindf.v19 %>% select(si_type, ins_cover, gpa_sr, aca_impa, fincur, assault,
+                                 binge_fr, psyhx, drugs_yn)
 
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
@@ -3179,8 +3194,7 @@ var_names <- c(
   # environment
   "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
   # life events
-  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys",
-  "assault_sex",
+  "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault",
   # defeat
   "aca_impa", "deprawsc",
   # threats to self-moderation
@@ -3290,7 +3304,7 @@ traindf_sem <- traindf.v28 %>% select(
   # environment
   divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn,
   # life events
-  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, assault_emo, assault_phys, assault_sex,
+  ins_cover, gpa_sr, binge_fr, psyhx, fincur, drugs_yn, assault,
   # defeat
   aca_impa, deprawsc,
   # threats to self-moderation
@@ -3298,7 +3312,7 @@ traindf_sem <- traindf.v28 %>% select(
   # entrapment
   dep_impa, gad7_impa, percneed_cur,
   # motivational moderators
-  inf, flourish, belong1, mh_stigma, brs_tot)
+  inf, flourish, belong1, brs_tot)
 
 # create sem matrix 
 traindf_sem2 <- traindf_sem %>% 
@@ -3325,8 +3339,7 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # environment
     "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
     # life events
-    "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys", 
-    "assault_sex",
+    "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault", 
     # defeat
     "aca_impa", "deprawsc",
     # threats to self-moderation
@@ -3334,10 +3347,10 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # entrapment
     "dep_impa", "gad7_impa", "percneed_cur",
     # motivational moderators
-    "inf", "flourish", "belong1", "mh_stigma", "brs_tot"), 
+    "inf", "flourish", "belong1", "brs_tot"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
-view(results_tr_sem)
+#view(results_tr_sem)
 ```
 
 # rename dummy cols
@@ -3382,9 +3395,9 @@ view(results_tr_sem2)
 
 ```{r}
 
-zeroinfl <- function(si_type, results_tr_sem2, na.action = TRUE, weights = TRUE, offset = TRUE,
-                     dist = c("binomial"),
-                     link = c("logit"))
+# zeroinfl <- function(si_type, results_tr_sem2, na.action = TRUE, weights = TRUE, offset = TRUE,
+#                      dist = c("binomial"),
+#                      link = c("logit"))
   
 
 ```
@@ -3431,7 +3444,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ## Create data matrix, save into files
 ```{r save dataset}
-results_tr_df <- as.data.frame(results_tr_sem2)
+# results_tr_df <- as.data.frame(results_tr_sem2)
 
 # #save full var set for SEM
 # save(results_tr_df, file = "traindf_sem.RData")
@@ -3456,11 +3469,11 @@ SI_model_tr <- '
                              race_ame + race_asi + race_his + race_pac + race_ara + 
                                 race_whi + race_oth + race_non + race_bla + 
                              ed_any_2 + ed_any_NA + 
-                             dx_dep_2 + dx_dep_NA + 
-                             dx_bi_2 + dx_bi_NA + 
-                             dx_anx_2 +  dx_anx_NA + 
-                             dx_tr_2 + dx_tr_NA + 
-                             dx_adhd_2 + dx_adhd_NA +
+                             dx_dep_1 + dx_dep_NA + 
+                             dx_bi_1 + dx_bi_NA + 
+                             dx_anx_1 +  dx_anx_NA + 
+                             dx_tr_1 + dx_tr_NA + 
+                             dx_adhd_1 + dx_adhd_NA +
                              meds_count_2 + meds_count_3 + meds_count_4 + meds_count_5 + 
                                 meds_count_6 + meds_count_7
                   
@@ -3481,9 +3494,7 @@ SI_model_tr <- '
                              psyhx_1 + psyhx_NA +
                              fincur_2 + fincur_3 + fincur_4 + fincur_5 + fincur_NA + 
                              drugs_yn_2 + drugs_yn_NA +
-                             assault_emo_2 + assault_emo_NA +
-                             assault_phys_2 + assault_phys_NA +
-                             assault_sex_2 + assault_sex_NA
+                             assault_2 + assault_NA
                   
                   def_sem =~ aca_impa_2 + aca_impa_3 + aca_impa_4 + aca_impa_NA +
                              deprawsc_2 + deprawsc_3 + deprawsc_4 + deprawsc_5 + deprawsc_6 + 
@@ -3526,7 +3537,6 @@ SI_model_tr <- '
                                 flourish_44 + flourish_45 + flourish_46 + flourish_47 + flourish_48 + flourish_49 + 
                                 flourish_NA +
                              belong1_2 + belong1_3 + belong1_4 + belong1_5 + belong1_6 + belong1_NA + 
-                             mh_stigma_1 + mh_stigma_NA +
                              brs_tot_2 + brs_tot_3 + brs_tot_4 + brs_tot_5 + brs_tot_6 + brs_tot_7 + brs_tot_8 + 
                                 brs_tot_9 + brs_tot_10 + brs_tot_11 + brs_tot_12 + brs_tot_13 + brs_tot_14 + 
                                 brs_tot_15 + brs_tot_16 + brs_tot_17 + brs_tot_18 + brs_tot_19 + brs_tot_20 +
@@ -3537,16 +3547,11 @@ SI_model_tr <- '
                   entrap_sem ~ def_sem + tsm_sem + def_sem*tsm_sem
                   si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem   
 
-               # covars
+               # residual covars
                   ed_any_NA ~~ sib_freq_NA
-                  dx_dep_2 ~~ dx_bi_2
-                  dx_dep_2 ~~ dx_tr_2
-                  assault_emo_2 ~~ assault_sex_2
-                  assault_emo_2 ~~ assault_phys_2
-                  assault_sex_2 ~~ assault_phys_2
-                  brs_tot_NA ~~ aaq_tot_NA
-      '
-
+                  dx_dep_1 ~~ dx_bi_1
+                  dx_dep_1 ~~ dx_tr_1
+                  brs_tot_NA ~~ aaq_tot_NA     '
 ```
 
 ## Model estimation
@@ -3555,54 +3560,53 @@ SI_model_tr <- '
 results_tr_sem2 <- as.data.frame(results_tr_sem2)
 results_tr_sem2 <- NA_preproc(results_tr_sem2)
 
-# fit_tr <- cfa(SI_model_tr, data = results_tr_sem2,
-#            ordered = c("si_type_2", "si_type_3", "si_type_4",
-#                        "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25",
-#                        "sib_freq_2", "sib_freq_3", "sib_freq_4", "sib_freq_5",
-#                                 "sib_freq_6", "sib_freq_7", "sib_freq_NA",
-#                        "meds_count_2", "meds_count_3", "meds_count_4", "meds_count_5",
-#                                 "meds_count_6", "meds_count_7",
-#                        "binge_fr_2", "binge_fr_3", "binge_fr_4", "binge_fr_5", "binge_fr_6",
-#                                 "binge_fr_7", "binge_fr_8",
-#                        "deprawsc_2", "deprawsc_3", "deprawsc_4", "deprawsc_5", "deprawsc_6",
-#                                 "deprawsc_7", "deprawsc_8", "deprawsc_9", "deprawsc_10", "deprawsc_11",
-#                                 "deprawsc_12", "deprawsc_13", "deprawsc_14", "deprawsc_15", "deprawsc_16",
-#                                 "deprawsc_17", "deprawsc_18", "deprawsc_19", "deprawsc_20", "deprawsc_21",
-#                                 "deprawsc_22", "deprawsc_23", "deprawsc_24", "deprawsc_25", "deprawsc_26",
-#                                 "deprawsc_27", "deprawsc_28", "deprawsc_NA",
-#                       "anx_score_2", "anx_score_3", "anx_score_4", "anx_score_5", "anx_score_6",
-#                                 "anx_score_7", "anx_score_8", "anx_score_9", "anx_score_10", "anx_score_11",
-#                                 "anx_score_12", "anx_score_13", "anx_score_14", "anx_score_15", "anx_score_16",
-#                                 "anx_score_17", "anx_score_18", "anx_score_19", "anx_score_20", "anx_score_21",
-#                                 "anx_score_22", "anx_score_NA",
-#                       "aaq_tot_2", "aaq_tot_3", "aaq_tot_4", "aaq_tot_5", "aaq_tot_6", "aaq_tot_7",
-#                                 "aaq_tot_8", "aaq_tot_9", "aaq_tot_10", "aaq_tot_11", "aaq_tot_12", "aaq_tot_13",
-#                                 "aaq_tot_14", "aaq_tot_15", "aaq_tot_16", "aaq_tot_17", "aaq_tot_18", "aaq_tot_19",
-#                                 "aaq_tot_20", "aaq_tot_21", "aaq_tot_22", "aaq_tot_23", "aaq_tot_24", "aaq_tot_25",
-#                                 "aaq_tot_26", "aaq_tot_27", "aaq_tot_28", "aaq_tot_29", "aaq_tot_30", "aaq_tot_31",
-#                                 "aaq_tot_32", "aaq_tot_33", "aaq_tot_34", "aaq_tot_35", "aaq_tot_36", "aaq_tot_37",
-#                                 "aaq_tot_38", "aaq_tot_39", "aaq_tot_40", "aaq_tot_41", "aaq_tot_42", "aaq_tot_43",
-#                                 "aaq_tot_NA",
-#                       "dep_impa_2", "dep_impa_3", "dep_impa_4", "dep_impa_NA",
-#                       "gad7_impa_2", "gad7_impa_3", "gad7_impa_4", "gad7_impa_NA",
-#                       "flourish_2", "flourish_3", "flourish_4", "flourish_5", "flourish_6", "flourish_7",
-#                                 "flourish_8", "flourish_9", "flourish_10", "flourish_11", "flourish_12", "flourish_13",
-#                                 "flourish_14", "flourish_15", "flourish_16", "flourish_17", "flourish_18", "flourish_19",
-#                                 "flourish_20", "flourish_21", "flourish_22", "flourish_23", "flourish_24", "flourish_25",
-#                                 "flourish_26", "flourish_27", "flourish_28", "flourish_29", "flourish_30", "flourish_31",
-#                                 "flourish_32", "flourish_33", "flourish_34", "flourish_35", "flourish_36", "flourish_37",
-#                                 "flourish_38", "flourish_39", "flourish_40", "flourish_41", "flourish_42", "flourish_43",
-#                                 "flourish_44", "flourish_45", "flourish_46", "flourish_47", "flourish_48", "flourish_49",
-#                                 "flourish_NA",
-#                       "brs_tot_2", "brs_tot_3", "brs_tot_4", "brs_tot_5", "brs_tot_6", "brs_tot_7", "brs_tot_8",
-#                                 "brs_tot_9", "brs_tot_10", "brs_tot_11", "brs_tot_12", "brs_tot_13", "brs_tot_14",
-#                                 "brs_tot_15", "brs_tot_16", "brs_tot_17", "brs_tot_18", "brs_tot_19", "brs_tot_20",
-#                                 "brs_tot_21", "brs_tot_NA"))
+fit_tr <- cfa(SI_model_tr, data = results_tr_sem2,
+           ordered = c("si_type_2", "si_type_3", "si_type_4",
+                       "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25",
+                       "sib_freq_2", "sib_freq_3", "sib_freq_4", "sib_freq_5",
+                                "sib_freq_6", "sib_freq_7", "sib_freq_NA",
+                       "meds_count_2", "meds_count_3", "meds_count_4", "meds_count_5",
+                                "meds_count_6", "meds_count_7",
+                       "binge_fr_2", "binge_fr_3", "binge_fr_4", "binge_fr_5", "binge_fr_6",
+                                "binge_fr_7", "binge_fr_8",
+                       "deprawsc_2", "deprawsc_3", "deprawsc_4", "deprawsc_5", "deprawsc_6",
+                                "deprawsc_7", "deprawsc_8", "deprawsc_9", "deprawsc_10", "deprawsc_11",
+                                "deprawsc_12", "deprawsc_13", "deprawsc_14", "deprawsc_15", "deprawsc_16",
+                                "deprawsc_17", "deprawsc_18", "deprawsc_19", "deprawsc_20", "deprawsc_21",
+                                "deprawsc_22", "deprawsc_23", "deprawsc_24", "deprawsc_25", "deprawsc_26",
+                                "deprawsc_27", "deprawsc_28", "deprawsc_NA",
+                      "anx_score_2", "anx_score_3", "anx_score_4", "anx_score_5", "anx_score_6",
+                                "anx_score_7", "anx_score_8", "anx_score_9", "anx_score_10", "anx_score_11",
+                                "anx_score_12", "anx_score_13", "anx_score_14", "anx_score_15", "anx_score_16",
+                                "anx_score_17", "anx_score_18", "anx_score_19", "anx_score_20", "anx_score_21",
+                                "anx_score_22", "anx_score_NA",
+                      "aaq_tot_2", "aaq_tot_3", "aaq_tot_4", "aaq_tot_5", "aaq_tot_6", "aaq_tot_7",
+                                "aaq_tot_8", "aaq_tot_9", "aaq_tot_10", "aaq_tot_11", "aaq_tot_12", "aaq_tot_13",
+                                "aaq_tot_14", "aaq_tot_15", "aaq_tot_16", "aaq_tot_17", "aaq_tot_18", "aaq_tot_19",
+                                "aaq_tot_20", "aaq_tot_21", "aaq_tot_22", "aaq_tot_23", "aaq_tot_24", "aaq_tot_25",
+                                "aaq_tot_26", "aaq_tot_27", "aaq_tot_28", "aaq_tot_29", "aaq_tot_30", "aaq_tot_31",
+                                "aaq_tot_32", "aaq_tot_33", "aaq_tot_34", "aaq_tot_35", "aaq_tot_36", "aaq_tot_37",
+                                "aaq_tot_38", "aaq_tot_39", "aaq_tot_40", "aaq_tot_41", "aaq_tot_42", "aaq_tot_43",
+                                "aaq_tot_NA",
+                      "dep_impa_2", "dep_impa_3", "dep_impa_4", "dep_impa_NA",
+                      "gad7_impa_2", "gad7_impa_3", "gad7_impa_4", "gad7_impa_NA",
+                      "flourish_2", "flourish_3", "flourish_4", "flourish_5", "flourish_6", "flourish_7",
+                                "flourish_8", "flourish_9", "flourish_10", "flourish_11", "flourish_12", "flourish_13",
+                                "flourish_14", "flourish_15", "flourish_16", "flourish_17", "flourish_18", "flourish_19",
+                                "flourish_20", "flourish_21", "flourish_22", "flourish_23", "flourish_24", "flourish_25",
+                                "flourish_26", "flourish_27", "flourish_28", "flourish_29", "flourish_30", "flourish_31",
+                                "flourish_32", "flourish_33", "flourish_34", "flourish_35", "flourish_36", "flourish_37",
+                                "flourish_38", "flourish_39", "flourish_40", "flourish_41", "flourish_42", "flourish_43",
+                                "flourish_44", "flourish_45", "flourish_46", "flourish_47", "flourish_48", "flourish_49",
+                                "flourish_NA",
+                      "brs_tot_2", "brs_tot_3", "brs_tot_4", "brs_tot_5", "brs_tot_6", "brs_tot_7", "brs_tot_8",
+                                "brs_tot_9", "brs_tot_10", "brs_tot_11", "brs_tot_12", "brs_tot_13", "brs_tot_14",
+                                "brs_tot_15", "brs_tot_16", "brs_tot_17", "brs_tot_18", "brs_tot_19", "brs_tot_20",
+                                "brs_tot_21", "brs_tot_NA"))
 
 #lavInspect(results_tr_sem2, "cov.lv")
 
-
-fit_train <- sem(SI_model_tr, data=results_tr_sem2,            
+fit_train <- sem(SI_model_tr, data=results_tr_sem2,          
                  ordered = c("si_type_2", "si_type_3", "si_type_4",
                        "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25",
                        "sib_freq_2", "sib_freq_3", "sib_freq_4", "sib_freq_5",
