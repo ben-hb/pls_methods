@@ -3178,7 +3178,7 @@ results_tr_df <- as.data.frame(results_tr_sem2)
 ```{r SEM specification}
 SI_model_tr <- '
               # measurement model
-                  si_sem =~  si_type_4, si_type_3 + si_type_2
+                  si_sem =~  si_type_2 + si_type_3 + si_type_4
                   
                   dia_sem =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
                              sexual_lgb + sexual_qq + sexual_het + gender_tgd_2 +
@@ -3266,7 +3266,17 @@ SI_model_tr <- '
                # structural model - regressions
                   def_sem ~ dia_sem + env_sem + le_sem
                   entrap_sem ~ def_sem + tsm_sem + def_sem*tsm_sem
-                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem   '
+                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem   
+
+               # covars
+                  ed_any_NA ~~ sib_freq_NA
+                  dx_dep_2 ~~ dx_bi_2
+                  dx_dep_2 ~~ dx_tr_2
+                  assault_emo_2 ~~ assault_sex_2
+                  assault_emo_2 ~~ assault_phys_2
+                  assault_sex_2 ~~ assault_phys_2
+                  brs_tot_NA ~~ aaq_tot_NA
+      '
 
 ```
 
@@ -3274,16 +3284,13 @@ SI_model_tr <- '
 ```{r SEM model estimation}
 results_tr_sem2 <- as.matrix(results_tr_sem2)
 
-
-
-
-fit <- cfa(SI_model_tr, data = results_tr_sem2,
-           ordered = c("age","si_type", "sib_freq","meds_count", "binge_fr", "deprawsc",
-                       "anx_score", "aaq_tot", "dep_impa", "gad7_impa", "flourish", "brs_tot"))
+# fit <- cfa(SI_model_tr, data = results_tr_sem2,
+#            ordered = c("age","si_type", "sib_freq","meds_count", "binge_fr", "deprawsc",
+#                        "anx_score", "aaq_tot", "dep_impa", "gad7_impa", "flourish", "brs_tot"))
 
 fit <- cfa(SI_model_tr, data = results_tr_sem2,
-           ordered = c("age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25",
-                       "si_type_4", "si_type_3", "si_type_2",
+           ordered = c("si_type_2", "si_type_3", "si_type_4",
+                       "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25",
                        "sib_freq_2", "sib_freq_3", "sib_freq_4", "sib_freq_5",
                                 "sib_freq_6", "sib_freq_7", "sib_freq_NA",
                        "meds_count_2", "meds_count_3", "meds_count_4", "meds_count_5",
