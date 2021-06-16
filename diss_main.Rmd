@@ -3212,22 +3212,50 @@ SI_model_tr <- '
                   le_sem =~  ins_cover_1 + ins_cover_NA +
                              gpa_sr_2 + gpa_sr_3 + gpa_sr_4 + gpa_sr_5 + gpa_sr_6 + gpa_sr_7 + 
                                 gpa_sr_8 + gpa_sr_9 + gpa_sr_10 + gpa_sr_11 + gpa_sr_NA + 
-                             binge_fr + binge_fr + binge_fr + binge_fr + binge_fr + binge_fr + 
-                                binge_fr + binge_fr + binge_fr + binge_fr + binge_fr + binge_fr + 
-                             psyhx + 
-                             fincur + 
+                             binge_fr_2 + binge_fr_3 + binge_fr_4 + binge_fr_5 + binge_fr_6 + 
+                                binge_fr_7 + binge_fr_8 + 
+                             psyhx_1 + psyhx_NA +
+                             fincur_2 + fincur_3 + fincur_4 + fincur_5 + fincur_NA + 
                              drugs_yn_2 + drugs_yn_NA
                              assault_emo_2 + assault_emo_NA +
                              assault_phys_2 + assault_phys_NA
                              assault_sex_2 + assault_sex_NA
                   
-                  def_sem =~ aca_impa + deprawsc
+                  def_sem =~ aca_impa_2 + aca_impa_3 + aca_impa_4 + aca_impa_NA +
+                             deprawsc_2 + deprawsc_3 + deprawsc_4 + deprawsc_5 + deprawsc_6 + 
+                                deprawsc_7 + deprawsc_8 + deprawsc_9 + deprawsc_10 + deprawsc_11 + 
+                                deprawsc_12 + deprawsc_13 + deprawsc_14 + deprawsc_15 + deprawsc_16 + 
+                                deprawsc_17 + deprawsc_18 + deprawsc_19 + deprawsc_20 + deprawsc_21 + 
+                                deprawsc_22 + deprawsc_23 + deprawsc_24 + deprawsc_25 + deprawsc_26 + 
+                                deprawsc_27 + deprawsc_28 + deprawsc_NA + 
                   
-                  tsm_sem =~ persist + anx_score + dep_secret + aaq_tot
+                  tsm_sem =~ persist_2 + persist_3 + persist_4 + persist_5 + persist_6 + persist_NA +
+                             anx_score_2 + anx_score_3 + anx_score_4 + anx_score_5 + anx_score_6 +
+                                anx_score_7 + anx_score_8 + anx_score_9 + anx_score_10 + anx_score_11 + 
+                                anx_score_12 + anx_score_13 + anx_score_14 + anx_score_15 + anx_score_16 + 
+                                anx_score_17 + anx_score_18 + anx_score_19 + anx_score_20 + anx_score_21 + 
+                                anx_score_22 + anx_score_NA + 
+                             dep_secret_2 + dep_secret_3 + dep_secret_4 + dep_secret_5 + dep_secret_6 + 
+                                dep_secret_NA + 
+                             aaq_tot_2 + aaq_tot_3 + aaq_tot_4 + aaq_tot_5 + aaq_tot_6 + aaq_tot_7 + 
+                                aaq_tot_8 + aaq_tot_9 + aaq_tot_10 + aaq_tot_11 + aaq_tot_12 + aaq_tot_13 + 
+                                aaq_tot_14 + aaq_tot_15 + aaq_tot_16 + aaq_tot_17 + aaq_tot_18 + aaq_tot_19 + 
+                                aaq_tot_20 + aaq_tot_21 + aaq_tot_22 + aaq_tot_23 + aaq_tot_24 + aaq_tot_25 + 
+                                aaq_tot_26 + aaq_tot_27 + aaq_tot_28 + aaq_tot_29 + aaq_tot_30 + aaq_tot_31 + 
+                                aaq_tot_32 + aaq_tot_33 + aaq_tot_34 + aaq_tot_35 + aaq_tot_36 + aaq_tot_37 + 
+                                aaq_tot_38 + aaq_tot_39 + aaq_tot_40 + aaq_tot_41 + aaq_tot_42 + aaq_tot_43 + 
+                                aaq_tot_NA
                   
-                  entrap_sem =~ dep_impa + gad7_impa + percneed_cur
+                  entrap_sem =~ dep_impa_2 + dep_impa_3 + dep_impa_4 + dep_impa_NA + 
+                                gad7_impa_2 + gad7_impa_3 + gad7_impa_4 + gad7_impa_NA +
+                                percneed_cur_2 + percneed_cur_3 + percneed_cur_4 + percneed_cur_5 + 
+                                    percneed_cur_6 + percneed_cur_NA + 
                   
-                  mm_sem =~  inf + flourish + belong1 + mh_stigma + brs_tot
+                  mm_sem =~  inf + 
+                             flourish + 
+                             belong1 + 
+                             mh_stigma + 
+                             brs_tot
                   
                # structural model - regressions
                   def_sem ~ dia_sem + env_sem + le_sem
