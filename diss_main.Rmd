@@ -3101,7 +3101,6 @@ results_tr_sem2 <- results_tr_sem %>%
   rename(sexual_het = sexual_NA) %>%
   rename(sexual_LGB = sexual_2) %>%
   rename(sexual_qq = sexual_3) %>%
-  rename(sexual_non = sexual_4) %>%
   
   rename(race_bla = race_NA) %>%
   rename(race_ame = race_2) %>%
@@ -3182,11 +3181,10 @@ results_tr_df <- as.matrix(results_tr_sem2)
 ```{r SEM specification}
 SI_model_tr <- '
               # measurement model
-                  si_sem =~  si_type_4 + si_type_3 + si_type_2 + si_type_NA
+                  si_sem =~  si_type_4 + si_type_3 + si_type_2
                   
-                  dia_sem =~ age_NA + age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
-                             sexual_lgb + sexual_qq + sexual_non + sexual_het + 
-                             gender_tgd_2
+                  dia_sem =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
+                             sexual_LGB + sexual_qq + sexual_het + gender_tgd_2 +
                              sib_freq_2 + sib_freq_3 + sib_freq_4 + sib_freq_5 + 
                                 sib_freq_6 + sib_freq_7 + sib_freq_NA + 
                              race_ame + race_asi + race_his + race_pac + race_ara + 
@@ -3203,11 +3201,11 @@ SI_model_tr <- '
                   env_sem =~ divers_2 + divers_3 + divers_4 + divers_5 + divers_6 + divers_NA +
                              satisfied_overall_2 + satisfied_overall_3 + satisfied_overall_4 + 
                                 satisfied_overall_5 + satisfied_overall_6 + satisfied_overall_NA +
-                             talk_for + talk_info + talk_com + talk_no +
+                             talk_for + talk_inf + talk_com + talk_no +
                              religios_2 + religios_3 + religios_4 + religios_5 +
                              discrim_2 + discrim_3 + discrim_4 + discrim_5 + discrim_6 + discrim_NA +
                              sch_cc + sch_ad + sch_4yr +
-                             activ_yn_1 + activ_yn_NA + 
+                             activ_yn_1 + activ_yn_NA
                   
                   le_sem =~  ins_cover_1 + ins_cover_NA +
                              gpa_sr_2 + gpa_sr_3 + gpa_sr_4 + gpa_sr_5 + gpa_sr_6 + gpa_sr_7 + 
@@ -3216,9 +3214,9 @@ SI_model_tr <- '
                                 binge_fr_7 + binge_fr_8 + 
                              psyhx_1 + psyhx_NA +
                              fincur_2 + fincur_3 + fincur_4 + fincur_5 + fincur_NA + 
-                             drugs_yn_2 + drugs_yn_NA
+                             drugs_yn_2 + drugs_yn_NA +
                              assault_emo_2 + assault_emo_NA +
-                             assault_phys_2 + assault_phys_NA
+                             assault_phys_2 + assault_phys_NA +
                              assault_sex_2 + assault_sex_NA
                   
                   def_sem =~ aca_impa_2 + aca_impa_3 + aca_impa_4 + aca_impa_NA +
@@ -3227,7 +3225,7 @@ SI_model_tr <- '
                                 deprawsc_12 + deprawsc_13 + deprawsc_14 + deprawsc_15 + deprawsc_16 + 
                                 deprawsc_17 + deprawsc_18 + deprawsc_19 + deprawsc_20 + deprawsc_21 + 
                                 deprawsc_22 + deprawsc_23 + deprawsc_24 + deprawsc_25 + deprawsc_26 + 
-                                deprawsc_27 + deprawsc_28 + deprawsc_NA + 
+                                deprawsc_27 + deprawsc_28 + deprawsc_NA
                   
                   tsm_sem =~ persist_2 + persist_3 + persist_4 + persist_5 + persist_6 + persist_NA +
                              anx_score_2 + anx_score_3 + anx_score_4 + anx_score_5 + anx_score_6 +
@@ -3249,7 +3247,7 @@ SI_model_tr <- '
                   entrap_sem =~ dep_impa_2 + dep_impa_3 + dep_impa_4 + dep_impa_NA + 
                                 gad7_impa_2 + gad7_impa_3 + gad7_impa_4 + gad7_impa_NA +
                                 percneed_cur_2 + percneed_cur_3 + percneed_cur_4 + percneed_cur_5 + 
-                                    percneed_cur_6 + percneed_cur_NA + 
+                                    percneed_cur_6 + percneed_cur_NA
                   
                   mm_sem =~  inf_2 + inf_3 + inf_4 + inf_5 + inf_6 + inf_7 + inf_8 + inf_9 + inf_NA + 
                              flourish_2 + flourish_3 + flourish_4 + flourish_5 + flourish_6 + flourish_7 + 
@@ -3260,26 +3258,24 @@ SI_model_tr <- '
                                 flourish_32 + flourish_33 + flourish_34 + flourish_35 + flourish_36 + flourish_37 + 
                                 flourish_38 + flourish_39 + flourish_40 + flourish_41 + flourish_42 + flourish_43 +
                                 flourish_44 + flourish_45 + flourish_46 + flourish_47 + flourish_48 + flourish_49 + 
-                                flourish_NA
+                                flourish_NA +
                              belong1_2 + belong1_3 + belong1_4 + belong1_5 + belong1_6 + belong1_NA + 
                              mh_stigma_1 + mh_stigma_NA +
                              brs_tot_2 + brs_tot_3 + brs_tot_4 + brs_tot_5 + brs_tot_6 + brs_tot_7 + brs_tot_8 + 
                                 brs_tot_9 + brs_tot_10 + brs_tot_11 + brs_tot_12 + brs_tot_13 + brs_tot_14 + 
-                                brs_tot_15 + brs_tot_16 + brs_tot_17 + brs_tot_18 + brs_tot_19 + brs_tot_20 + 
+                                brs_tot_15 + brs_tot_16 + brs_tot_17 + brs_tot_18 + brs_tot_19 + brs_tot_20 +
                                 brs_tot_21 + brs_tot_NA
                   
                # structural model - regressions
                   def_sem ~ dia_sem + env_sem + le_sem
                   entrap_sem ~ def_sem + tsm_sem + def_sem*tsm_sem
-                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem
+                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem    '
 
-               # residual covariances
-                  dep_impac ~~ gad7_impa    '
 ```
 
 ## Model estimation
 ```{r SEM model estimation}
-fit <- cfa(SI_model_tr, data = results_tr_sem,
+fit <- cfa(SI_model_tr, data = results_tr_sem2,
              ordered = c("age","si_type", "sib_freq","meds_count", "binge_fr", "deprawsc",
                          "anx_score", "aaq_tot", "dep_impa", "gad7_impa", "flourish", "brs_tot"))
 
