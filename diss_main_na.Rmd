@@ -690,9 +690,6 @@ data.v2 <- data.v2 %>%
   filter(!is.na(si_type))
 table(data.v2$si_type) # ensuring that all NAs are now clean
 data.v2$si_type <- as.factor(data.v2$si_type)
-
-# Define starting sample (n = 51137)
-length(unique(data.v2$responseid))
 ```
 
 
@@ -987,6 +984,7 @@ data.v5 <- data.v4 %>%
                              sexual == 1 ~ 1,  # heterosexual
                              sexual == 6 ~ 4))
 table(data.v5$sexual) # tabulate and check outputs
+data.v4$sexual <- as.factor(data.v4$sexual)
 ```
 
 ## BMI
@@ -1797,29 +1795,18 @@ fviz_cos2(dia_pca, choice = "var", axes = 1,
 
 ### CLM diathesis regression
 ```{r clm_dia}
-clm_dia <- traindf.v12 %>% select(si_type, age, sexual, gender_tgd, finpast, sib_freq, race, body_sr, dx_anx,
-                                dx_anx, dx_dep, dx_bi, dx_adhd, dx_tr, ed_any, meds_count)
+clm_dia <- dummy_cols(traindf.v12, select_columns = c("si_type", "age", "sexual", "gender_tgd", "sib_freq", 
+                                                             "race", "ed_any", "dx_dep", "dx_bi", "dx_anx", "dx_tr", 
+                                                             "dx_adhd", "meds_count"),
+                             remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
-clm_dia <- NA_preproc(clm_dia)
+view(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
 
-clm_mod <- clm(si_type ~ age + sexual + gender_tgd + finpast + sib_freq + body_sr + dx_tr + race + dx_anx +
-                        ed_any + dx_anx + dx_dep + dx_bi + dx_adhd + meds_count,
-               data = dia_mod)
+clm_mod <- clm(si_type ~ ., data = dia_mod)
+
 summary(clm_mod)
 coef(clm_mod)
-
-ci_dia <- confint(clm_mod)
-ci_dia
-
-model.dia <- tidy(clm_mod)  # Convert model to dataframe for easy manipulation
-model.dia
-
-model.dia$var.diag <- diag(vcov(clm_mod))
-model.dia  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_mod)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
