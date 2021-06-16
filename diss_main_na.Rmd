@@ -2658,7 +2658,6 @@ traindf.v22 <- traindf.v20
 ## GAD7 total
 ```{r anx_score}
 table(traindf.v22$anx_score)
-traindf.v22$anx_score <- as.numeric(traindf.v22$anx_score)
 
 # Convert to categories for later
 traindf.v22 <- traindf.v22 %>%
@@ -2669,13 +2668,25 @@ traindf.v22 <- traindf.v22 %>%
   mutate(anx_mod = case_when((anx_score > 10 & anx_score < 16) ~ 1,
                              (anx_score > 15 | anx_score < 11) ~ 0)) %>%
   mutate(anx_sev = case_when(anx_score > 15 ~ 1,
-                             anx_score < 16 ~ 0))
+                             anx_score < 16 ~ 0)) %>%
+  mutate(anx_na = case_when(is.na(anx_score) ~ 1,
+                            !is.na(anx_score) ~ 0))
 # Check outputs
 table(traindf.v22$anx_none)
 table(traindf.v22$anx_mild)
 table(traindf.v22$anx_mod)
 table(traindf.v22$anx_sev)
-table(traindf.v22$anx_score)
+table(traindf.v22$anx_na)
+
+traindf.v22 <- traindf.v22 %>%
+  mutate(anx_type = case_when(anx_none == 1 ~ 1,
+                              anx_mild == 1 ~ 2,
+                              anx_mod == 1 ~ 3,
+                              anx_sev == 1 ~ 4,
+                              anx_na == 1 ~ 0))
+
+table(traindf.v22$anx_type)
+
 ```
 
 ## Depression secret
