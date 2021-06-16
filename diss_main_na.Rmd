@@ -2657,18 +2657,18 @@ traindf.v22 <- traindf.v20
 
 ## GAD7 total
 ```{r anx_score}
-table(traindf.v22$anx_score)
+table(traindf.v22$anx_score)    # PROBLEMSSSSSS
 
 # Convert to categories for later
 traindf.v22 <- traindf.v22 %>%
-  mutate(anx_none = case_when(anx_score < 6 ~ 1,
-                              anx_score > 5 ~ 0)) %>%
   mutate(anx_mild = case_when((anx_score > 5 & anx_score < 11) ~ 1,
                               (anx_score < 6 | anx_score > 10) ~ 0)) %>%
   mutate(anx_mod = case_when((anx_score > 10 & anx_score < 16) ~ 1,
                              (anx_score > 15 | anx_score < 11) ~ 0)) %>%
   mutate(anx_sev = case_when(anx_score > 15 ~ 1,
                              anx_score < 16 ~ 0)) %>%
+  mutate(anx_none = case_when(anx_score < 6 ~ 1,
+                              anx_score > 5 ~ 0)) %>%
   mutate(anx_na = case_when(is.na(anx_score) ~ 1,
                             !is.na(anx_score) ~ 0))
 # Check outputs
@@ -2746,7 +2746,7 @@ traindf.v23 <- traindf.v22
 ## Threats to self-moderation correlation
 ```{r CORR TSM}
 # Define TSM variable candidates for correlation matrix
-traindf_tsm <- traindf.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_tot)
+traindf_tsm <- traindf.v23 %>% select(persist, anx_type, dep_secret, achieve4, aaq_tot)
 
 # convert data to numeric in order to run correlations 
 traindf_tsm <- traindf_tsm %>% mutate_if(is.character, as.factor)
@@ -2762,7 +2762,7 @@ corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correla
 print(corr)
   
 # Re-run corr with non-overlapping vars
-traindf_tsm <- traindf.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_tot)
+traindf_tsm <- traindf.v23 %>% select(persist, anx_type, dep_secret, achieve4, aaq_tot)
 
 # convert data to numeric in order to run correlations 
 traindf_tsm <- traindf_tsm %>% mutate_if(is.character, as.factor)

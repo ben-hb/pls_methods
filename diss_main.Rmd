@@ -730,8 +730,8 @@ table(data.v3$gender)
   # transform into cisgender and non-cisgender
 data.v3 <- data.v3 %>%  
   mutate(gender_tgd = case_when(gender == 2 ~ 1,
-                                   gender == 3 ~ 1,
-                                   gender == 1 ~ 0))
+                                gender == 3 ~ 1,
+                                gender == 1 ~ 0))
 table(data.v3$gender_tgd)
 data.v3$gender_tgd <- as.factor(data.v3$gender_tgd)
 ```
@@ -3318,11 +3318,11 @@ traindf_sem2 <- traindf_sem %>%
 traindf_sem2   # check output
 
 
-# xlsx output
-traindf_sem3 <- as.data.frame(traindf_sem2)
-save(traindf_sem3 , file = "traindf_nondummy.RData")
-load("traindf_nondummy.RData")
-write_xlsx(traindf_sem3, path = "traindf_nondummy.xls", col_names = TRUE, format_headers = TRUE)
+# # xlsx output
+# traindf_sem3 <- as.data.frame(traindf_sem2)
+# save(traindf_sem3 , file = "traindf_nondummy.RData")
+# load("traindf_nondummy.RData")
+# write_xlsx(traindf_sem3, path = "traindf_nondummy.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Create dummy vars
