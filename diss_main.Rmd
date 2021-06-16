@@ -47,6 +47,7 @@ library(ordinalgmifs)
 library(ordinalNet)
 library(pastecs)
 library(PerformanceAnalytics)
+library(pscl)
 library(psych)
 library(purrr)
 library(readr)
@@ -401,6 +402,7 @@ corrplot::corrplot(matrix_toplot, is.corr = FALSE,
                tl.col='black', tl.cex=.75)
 }
 }
+                     di
 ```
 
 
@@ -3061,7 +3063,7 @@ write_xlsx(traindf_sem3, path = "traindf_nondummy.xls", col_names = TRUE, format
 ```
 
 ## Create dummy vars
-```{r dummy_cols SEM}
+```{r dummy_vars}
 results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # outcome var
     "si_type",
@@ -3132,6 +3134,7 @@ view(results_tr_sem2)
 ```{r Var_sum}
 # training data
 var_desc <- describe(traindf_sem2) %>% view()
+
 
 # xlsx output
 save(var_desc, file = "var_desc.RData")
@@ -3282,13 +3285,12 @@ SI_model_tr <- '
 
 ## Model estimation
 ```{r SEM model estimation}
-results_tr_sem2 <- as.matrix(results_tr_sem2)
 
-# fit <- cfa(SI_model_tr, data = results_tr_sem2,
-#            ordered = c("age","si_type", "sib_freq","meds_count", "binge_fr", "deprawsc",
-#                        "anx_score", "aaq_tot", "dep_impa", "gad7_impa", "flourish", "brs_tot"))
 
-fit <- cfa(SI_model_tr, data = results_tr_sem2,
+results_tr_sem2 <- as.data.frame(results_tr_sem2)
+results_tr_sem2 <- NA_preproc(results_tr_sem2)
+
+fit_tr <- cfa(SI_model_tr, data = results_tr_sem2,
            ordered = c("si_type_2", "si_type_3", "si_type_4",
                        "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25",
                        "sib_freq_2", "sib_freq_3", "sib_freq_4", "sib_freq_5",
@@ -3332,10 +3334,52 @@ fit <- cfa(SI_model_tr, data = results_tr_sem2,
                                 "brs_tot_15", "brs_tot_16", "brs_tot_17", "brs_tot_18", "brs_tot_19", "brs_tot_20",
                                 "brs_tot_21", "brs_tot_NA"))
 
-lavInspect(results_tr_sem2, "cov.lv")
+#lavInspect(results_tr_sem2, "cov.lv")
 
 
-fit_train <- sem(SI_model_tr, data=results_tr_sem2)
+fit_train <- sem(SI_model_tr, data=results_tr_sem2,            
+                 ordered = c("si_type_2", "si_type_3", "si_type_4",
+                       "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25",
+                       "sib_freq_2", "sib_freq_3", "sib_freq_4", "sib_freq_5",
+                                "sib_freq_6", "sib_freq_7", "sib_freq_NA",
+                       "meds_count_2", "meds_count_3", "meds_count_4", "meds_count_5",
+                                "meds_count_6", "meds_count_7",
+                       "binge_fr_2", "binge_fr_3", "binge_fr_4", "binge_fr_5", "binge_fr_6",
+                                "binge_fr_7", "binge_fr_8",
+                       "deprawsc_2", "deprawsc_3", "deprawsc_4", "deprawsc_5", "deprawsc_6",
+                                "deprawsc_7", "deprawsc_8", "deprawsc_9", "deprawsc_10", "deprawsc_11",
+                                "deprawsc_12", "deprawsc_13", "deprawsc_14", "deprawsc_15", "deprawsc_16",
+                                "deprawsc_17", "deprawsc_18", "deprawsc_19", "deprawsc_20", "deprawsc_21",
+                                "deprawsc_22", "deprawsc_23", "deprawsc_24", "deprawsc_25", "deprawsc_26",
+                                "deprawsc_27", "deprawsc_28", "deprawsc_NA",
+                      "anx_score_2", "anx_score_3", "anx_score_4", "anx_score_5", "anx_score_6",
+                                "anx_score_7", "anx_score_8", "anx_score_9", "anx_score_10", "anx_score_11",
+                                "anx_score_12", "anx_score_13", "anx_score_14", "anx_score_15", "anx_score_16",
+                                "anx_score_17", "anx_score_18", "anx_score_19", "anx_score_20", "anx_score_21",
+                                "anx_score_22", "anx_score_NA",
+                      "aaq_tot_2", "aaq_tot_3", "aaq_tot_4", "aaq_tot_5", "aaq_tot_6", "aaq_tot_7",
+                                "aaq_tot_8", "aaq_tot_9", "aaq_tot_10", "aaq_tot_11", "aaq_tot_12", "aaq_tot_13",
+                                "aaq_tot_14", "aaq_tot_15", "aaq_tot_16", "aaq_tot_17", "aaq_tot_18", "aaq_tot_19",
+                                "aaq_tot_20", "aaq_tot_21", "aaq_tot_22", "aaq_tot_23", "aaq_tot_24", "aaq_tot_25",
+                                "aaq_tot_26", "aaq_tot_27", "aaq_tot_28", "aaq_tot_29", "aaq_tot_30", "aaq_tot_31",
+                                "aaq_tot_32", "aaq_tot_33", "aaq_tot_34", "aaq_tot_35", "aaq_tot_36", "aaq_tot_37",
+                                "aaq_tot_38", "aaq_tot_39", "aaq_tot_40", "aaq_tot_41", "aaq_tot_42", "aaq_tot_43",
+                                "aaq_tot_NA",
+                      "dep_impa_2", "dep_impa_3", "dep_impa_4", "dep_impa_NA",
+                      "gad7_impa_2", "gad7_impa_3", "gad7_impa_4", "gad7_impa_NA",
+                      "flourish_2", "flourish_3", "flourish_4", "flourish_5", "flourish_6", "flourish_7",
+                                "flourish_8", "flourish_9", "flourish_10", "flourish_11", "flourish_12", "flourish_13",
+                                "flourish_14", "flourish_15", "flourish_16", "flourish_17", "flourish_18", "flourish_19",
+                                "flourish_20", "flourish_21", "flourish_22", "flourish_23", "flourish_24", "flourish_25",
+                                "flourish_26", "flourish_27", "flourish_28", "flourish_29", "flourish_30", "flourish_31",
+                                "flourish_32", "flourish_33", "flourish_34", "flourish_35", "flourish_36", "flourish_37",
+                                "flourish_38", "flourish_39", "flourish_40", "flourish_41", "flourish_42", "flourish_43",
+                                "flourish_44", "flourish_45", "flourish_46", "flourish_47", "flourish_48", "flourish_49",
+                                "flourish_NA",
+                      "brs_tot_2", "brs_tot_3", "brs_tot_4", "brs_tot_5", "brs_tot_6", "brs_tot_7", "brs_tot_8",
+                                "brs_tot_9", "brs_tot_10", "brs_tot_11", "brs_tot_12", "brs_tot_13", "brs_tot_14",
+                                "brs_tot_15", "brs_tot_16", "brs_tot_17", "brs_tot_18", "brs_tot_19", "brs_tot_20",
+                                "brs_tot_21", "brs_tot_NA"))
 
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
