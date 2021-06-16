@@ -403,466 +403,6 @@ corrplot::corrplot(matrix_toplot, is.corr = FALSE,
 }
 
 
-
-{
-  ## set up likelihood
-  ziPoisson <- function(parms) {
-    ## count mean
-    mu <- as.vector(exp(X %*% parms[1:kx] + offsetx))
-    ## binary mean
-    phi <- as.vector(linkinv(Z %*% parms[(kx+1):(kx+kz)] + offsetz))
-    
-    ## log-likelihood for y = 0 and y >= 1
-    loglik0 <- log( phi + exp( log(1-phi) - mu ) ) ## -mu = dpois(0, lambda = mu, log = TRUE)
-    loglik1 <- log(1-phi) + dpois(Y, lambda = mu, log = TRUE)
-    
-    ## collect and return
-    loglik <- sum(weights[Y0] * loglik0[Y0]) + sum(weights[Y1] * loglik1[Y1])
-    loglik
-  }
-  
-  ziNegBin <- function(parms) {
-    ## count mean
-    mu <- as.vector(exp(X %*% parms[1:kx] + offsetx))
-    ## binary mean
-    phi <- as.vector(linkinv(Z %*% parms[(kx+1):(kx+kz)] + offsetz))
-    ## negbin size
-    theta <- exp(parms[(kx+kz)+1])
-    
-    ## log-likelihood for y = 0 and y >= 1
-    loglik0 <- log( phi + exp( log(1-phi) + suppressWarnings(dnbinom(0, size = theta, mu = mu, log = TRUE)) ) )
-    loglik1 <- log(1-phi) + suppressWarnings(dnbinom(Y, size = theta, mu = mu, log = TRUE))
-
-    ## collect and return
-    loglik <- sum(weights[Y0] * loglik0[Y0]) + sum(weights[Y1] * loglik1[Y1])
-    loglik
-  }
-  
-  ziGeom <- function(parms) ziNegBin(c(parms, 0))
-
-  ## set up likelihood
-  ziBinomial <- function(parms) {
-    ## count mean
-    mu <- as.vector(linkinv(X %*% parms[1:kx]))
-    ## binary mean
-    phi <- as.vector(linkinv(Z %*% parms[(kx+1):(kx+kz)]))
-    
-    ## log-likelihood for y = 0 and y >= 1
-    loglik0 <- log(phi + exp(log(1-phi) + dbinom(x=0, size=size, prob=mu, log=TRUE)))
-    loglik1 <- log(1-phi) + dbinom(x=Y, size=size, prob=mu, log=TRUE)
-    
-    ## collect and return
-    loglik <- sum(weights[Y0] * loglik0[Y0]) + sum(weights[Y1] * loglik1[Y1])
-    loglik
-  }
-
-  gradPoisson <- function(parms) {
-    ## count mean
-    eta <- as.vector(X %*% parms[1:kx] + offsetx)
-    mu <- exp(eta)
-    ## binary mean
-    etaz <- as.vector(Z %*% parms[(kx+1):(kx+kz)] + offsetz)
-    muz <- linkinv(etaz)
-  
-    ## densities at 0
-    clogdens0 <- -mu
-    dens0 <- muz * (1 - as.numeric(Y1)) + exp(log(1 - muz) + clogdens0)
-
-    ## working residuals  
-    wres_count <- ifelse(Y1, Y - mu, -exp(-log(dens0) + log(1 - muz) + clogdens0 + log(mu)))
-    wres_zero <- ifelse(Y1, -1/(1-muz) * linkobj$mu.eta(etaz),
-      (linkobj$mu.eta(etaz) - exp(clogdens0) * linkobj$mu.eta(etaz))/dens0)
-      
-    colSums(cbind(wres_count * weights * X, wres_zero * weights * Z))
-  }
-  
-  gradGeom <- function(parms) {
-    ## count mean
-    eta <- as.vector(X %*% parms[1:kx] + offsetx)
-    mu <- exp(eta)
-    ## binary mean
-    etaz <- as.vector(Z %*% parms[(kx+1):(kx+kz)] + offsetz)
-    muz <- linkinv(etaz)
-
-    ## densities at 0
-    clogdens0 <- dnbinom(0, size = 1, mu = mu, log = TRUE)
-    dens0 <- muz * (1 - as.numeric(Y1)) + exp(log(1 - muz) + clogdens0)
-
-    ## working residuals  
-    wres_count <- ifelse(Y1, Y - mu * (Y + 1)/(mu + 1), -exp(-log(dens0) +
-      log(1 - muz) + clogdens0 - log(mu + 1) + log(mu)))
-    wres_zero <- ifelse(Y1, -1/(1-muz) * linkobj$mu.eta(etaz),
-      (linkobj$mu.eta(etaz) - exp(clogdens0) * linkobj$mu.eta(etaz))/dens0)
-      
-    colSums(cbind(wres_count * weights * X, wres_zero * weights * Z))
-  }
-
-  gradNegBin <- function(parms) {
-    ## count mean
-    eta <- as.vector(X %*% parms[1:kx] + offsetx)
-    mu <- exp(eta)
-    ## binary mean
-    etaz <- as.vector(Z %*% parms[(kx+1):(kx+kz)] + offsetz)
-    muz <- linkinv(etaz)
-    ## negbin size
-    theta <- exp(parms[(kx+kz)+1])
-
-    ## densities at 0
-    clogdens0 <- dnbinom(0, size = theta, mu = mu, log = TRUE)
-    dens0 <- muz * (1 - as.numeric(Y1)) + exp(log(1 - muz) + clogdens0)
-
-    ## working residuals  
-    wres_count <- ifelse(Y1, Y - mu * (Y + theta)/(mu + theta), -exp(-log(dens0) +
-      log(1 - muz) + clogdens0 + log(theta) - log(mu + theta) + log(mu)))
-    wres_zero <- ifelse(Y1, -1/(1-muz) * linkobj$mu.eta(etaz),
-      (linkobj$mu.eta(etaz) - exp(clogdens0) * linkobj$mu.eta(etaz))/dens0)
-    wres_theta <- theta * ifelse(Y1, digamma(Y + theta) - digamma(theta) +
-      log(theta) - log(mu + theta) + 1 - (Y + theta)/(mu + theta),
-      exp(-log(dens0) + log(1 - muz) + clogdens0) *
-      (log(theta) - log(mu + theta) + 1 - theta/(mu + theta)))
-
-    colSums(cbind(wres_count * weights * X, wres_zero * weights * Z, wres_theta))
-  }
-
-  gradBinomial <- function(parms) {
-    ## count mean
-    eta <- as.vector(X %*% parms[1:kx])
-    mu <- linkinv(eta)
-    ## binary mean
-    etaz <- as.vector(Z %*% parms[(kx+1):(kx+kz)])
-    muz <- linkinv(etaz)
-  
-    ## densities at 0
-    clogdens0 <- dbinom(0, size=size, prob=mu, log=TRUE)
-    dens0 <- muz * (1 - as.numeric(Y1)) + exp(log(1-muz) + clogdens0)
-
-    ## working residuals
-    ## ToDo: wres_count needs to be properly modified!!!
-    wres_count <- ifelse(Y1, Y - mu * (Y+1)/(mu+1), -exp(-log(dens0) + log(1-muz) + clogdens0 - log(mu+1) + log(mu)))
-    wres_zero  <- ifelse(Y1, -1/(1-muz) * linkobj$mu.eta(etaz), 
-                             (linkobj$mu.eta(etaz) - exp(clogdens0) * linkobj$mu.eta(etaz))/dens0)
-     
-    colSums(cbind(wres_count * weights * X, wres_zero * weights * Z))
-  }
-  ## set it to NULL until wres_count is figured out!!!
-  ##   --> optim() will consequently use finite-difference approximation for gradients
-  gradBinomial <- NULL
-
-  dist <- match.arg(dist)
-  loglikfun <- switch(dist,
-                      "poisson" = ziPoisson,
-		      "geometric" = ziGeom,
-		      "negbin" = ziNegBin,
-			  "binomial" = ziBinomial)
-  gradfun <- switch(dist,
-                      "poisson" = gradPoisson,
-		      "geometric" = gradGeom,
-		      "negbin" = gradNegBin,
-			  "binomial" = gradBinomial)
-
-  ## binary link processing
-  linkstr <- match.arg(link)
-  linkobj <- make.link(linkstr)
-  linkinv <- linkobj$linkinv
-
-  if(control$trace) cat("Zero-inflated Count Model\n",
-    paste("count model:", dist, "with", ifelse(dist == "binomial", linkstr, log), "link\n"),
-    paste("zero-inflation model: binomial with", linkstr, "link\n"), sep = "")
-  
-  ## call and formula
-  cl <- match.call()
-  if(missing(data)) data <- environment(formula)
-  mf <- match.call(expand.dots = FALSE)
-  m <- match(c("formula", "data", "subset", "na.action", "weights", "offset"), names(mf), 0)
-  mf <- mf[c(1, m)]
-  mf$drop.unused.levels <- TRUE
-  
-  ## extended formula processing
-  if(length(formula[[3]]) > 1 && identical(formula[[3]][[1]], as.name("|")))
-  {
-    ff <- formula
-    formula[[3]][1] <- call("+")
-    mf$formula <- formula
-    ffc <- . ~ .
-    ffz <- ~ .
-    ffc[[2]] <- ff[[2]]
-    ffc[[3]] <- ff[[3]][[2]]
-    ffz[[3]] <- ff[[3]][[3]]
-    ffz[[2]] <- NULL
-  } else {
-    ffz <- ffc <- ff <- formula
-    ffz[[2]] <- NULL
-  }
-  if(length(grep("in formula and no", try(terms(ffz), silent = TRUE), fixed = TRUE)) > 0) {
-    ffz <- eval(parse(text = sprintf( paste("%s -", deparse(ffc[[2]])), deparse(ffz) )))
-  }
-
-  ## call model.frame()
-  mf[[1]] <- as.name("model.frame")
-  mf <- eval(mf, parent.frame())
-  
-  ## extract terms, model matrices, response
-  mt <- terms(formula, data = data)
-  mtX <- terms(ffc, data = data)
-  X <- model.matrix(mtX, mf)
-  mtZ <- terms(ffz, data = data)
-  mtZ <- terms(update(mtZ, ~ .), data = data)
-  Z <- model.matrix(mtZ, mf)
-  Y <- model.response(mf, "numeric")
-  if(dist == "binomial") { ## ToDo: how is this done in glm()?
-    size <- rowSums(Y)
-    Y <- Y[, 1]
-  }
-
-  ## sanity checks
-  if(length(Y) < 1) stop("empty model")
-  if(all(Y > 0)) stop("invalid dependent variable, minimum count is not zero")  
-  if(!isTRUE(all.equal(as.vector(Y), as.integer(round(Y + 0.001)))))
-    stop("invalid dependent variable, non-integer values")
-  Y <- as.integer(round(Y + 0.001))
-  if(any(Y < 0)) stop("invalid dependent variable, negative counts")
-  
-  if(control$trace) {
-    cat("dependent variable:\n")
-    tab <- table(factor(Y, levels = 0:max(Y)), exclude = NULL)
-    names(dimnames(tab)) <- NULL
-    print(tab)
-  }
-      
-  ## convenience variables
-  n <- length(Y)
-  kx <- NCOL(X)
-  kz <- NCOL(Z)
-  Y0 <- Y <= 0
-  Y1 <- Y > 0
-
-  ## weights and offset
-  weights <- model.weights(mf)
-  if(is.null(weights)) weights <- 1
-  if(length(weights) == 1) weights <- rep.int(weights, n)
-  weights <- as.vector(weights)
-  names(weights) <- rownames(mf)
-  
-  offsetx <- model_offset_2(mf, terms = mtX, offset = TRUE)
-  if(is.null(offsetx)) offsetx <- 0
-  if(length(offsetx) == 1) offsetx <- rep.int(offsetx, n)
-  offsetx <- as.vector(offsetx)
-  offsetz <- model_offset_2(mf, terms = mtZ, offset = FALSE)
-  if(is.null(offsetz)) offsetz <- 0
-  if(length(offsetz) == 1) offsetz <- rep.int(offsetz, n)
-  offsetz <- as.vector(offsetz)
-
-  ## starting values
-  start <- control$start
-  if(!is.null(start)) {
-    valid <- TRUE
-    if(!("count" %in% names(start))) {
-      valid <- FALSE
-      warning("invalid starting values, count model coefficients not specified")
-      start$count <- rep.int(0, kx)
-    }
-    if(!("zero" %in% names(start))) {
-      valid <- FALSE
-      warning("invalid starting values, zero-inflation model coefficients not specified")
-      start$zero <- rep.int(0, kz)
-    }
-    if(length(start$count) != kx) {
-      valid <- FALSE
-      warning("invalid starting values, wrong number of count model coefficients")
-    }
-    if(length(start$zero) != kz) {
-      valid <- FALSE
-      warning("invalid starting values, wrong number of zero-inflation model coefficients")
-    }
-    if(dist == "negbin") {
-      if(!("theta" %in% names(start))) start$theta <- 1
-      start <- list(count = start$count, zero = start$zero, theta = as.vector(start$theta[1]))
-    } else {
-      start <- list(count = start$count, zero = start$zero)
-    }
-    if(!valid) start <- NULL
-  }
-  
-  if(is.null(start)) {
-    if(control$trace) cat("generating starting values...")
-    if(dist %in% c("poisson", "negbin", "geometric")) {
-      model_count <- glm.fit(X, Y, family = poisson(), weights = weights, offset = offsetx)
-    } else { ## binomial
-      model_count <- glm.fit(X, cbind(Y1, size), family = binomial(link=linkstr), weights = weights)
-    }
-    model_zero <- glm.fit(Z, as.integer(Y0), weights = weights, family = binomial(link = linkstr), offset = offsetz)
-    start <- list(count = model_count$coefficients, zero = model_zero$coefficients)
-    if(dist == "negbin") start$theta <- 1
-
-    ## EM estimation of starting values
-    if(control$EM & dist == "poisson") {
-      mui <- model_count$fitted
-      probi <- model_zero$fitted
-      probi <- probi/(probi + (1-probi) * dpois(0, mui))
-      probi[Y1] <- 0
-
-      ll_new <- loglikfun(c(start$count, start$zero))
-      ll_old <- 2 * ll_new
-    
-      while(abs((ll_old - ll_new)/ll_old) > control$reltol) {
-        ll_old <- ll_new
-        model_count <- glm.fit(X, Y, weights = weights * (1-probi), offset = offsetx,
-	  family = poisson(), start = start$count)
-        model_zero <- suppressWarnings(glm.fit(Z, probi, weights = weights, offset = offsetz,
-	  family = binomial(link = linkstr), start = start$zero))
-        mui <- model_count$fitted
-        probi <- model_zero$fitted
-        probi <- probi/(probi + (1-probi) * dpois(0, mui))
-        probi[Y1] <- 0
-        start <- list(count = model_count$coefficients, zero = model_zero$coefficients)
-        ll_new <- loglikfun(c(start$count, start$zero))
-      }
-    }
-
-    if(control$EM & dist == "geometric") {
-      mui <- model_count$fitted
-      probi <- model_zero$fitted
-      probi <- probi/(probi + (1-probi) * dnbinom(0, size = 1, mu = mui))
-      probi[Y1] <- 0
-
-      ll_new <- loglikfun(c(start$count, start$zero))
-      ll_old <- 2 * ll_new      
-      if(!require("MASS")) {
-        ll_old <- ll_new
-	warning("EM estimation of starting values not available")
-      }
-    
-      while(abs((ll_old - ll_new)/ll_old) > control$reltol) {
-        ll_old <- ll_new
-        model_count <- suppressWarnings(glm.fit(X, Y, weights = weights * (1-probi),
-	  offset = offsetx, family = negative.binomial(1), start = start$count))
-        model_zero <- suppressWarnings(glm.fit(Z, probi, weights = weights,
-	  offset = offsetz, family = binomial(link = linkstr), start = start$zero))
-        start <- list(count = model_count$coefficients, zero = model_zero$coefficients)
-        mui <- model_count$fitted
-        probi <- model_zero$fitted
-        probi <- probi/(probi + (1-probi) * dnbinom(0, size = 1, mu = mui))
-        probi[Y1] <- 0
-        ll_new <- loglikfun(c(start$count, start$zero))
-      }
-    }
-
-    if(control$EM & dist == "negbin") {
-      mui <- model_count$fitted
-      probi <- model_zero$fitted
-      probi <- probi/(probi + (1-probi) * dnbinom(0, size = start$theta, mu = mui))
-      probi[Y1] <- 0
-
-      ll_new <- loglikfun(c(start$count, start$zero, log(start$theta)))      
-      ll_old <- 2 * ll_new      
-      if(!require("MASS")) {
-        ll_old <- ll_new
-	warning("EM estimation of starting values not available")
-      }
-      
-      ## offset handling in glm.nb is sub-optimal, hence...
-      offset <- offsetx
-    
-      while(abs((ll_old - ll_new)/ll_old) > control$reltol) {
-        ll_old <- ll_new
-        model_count <- suppressWarnings(glm.nb(Y ~ 0 + X + offset(offset), weights = weights * (1-probi),
-	  start = start$count, init.theta = start$theta))
-        model_zero <- suppressWarnings(glm.fit(Z, probi, weights = weights, offset = offsetz,
-	  family = binomial(link = linkstr), start = start$zero))
-        start <- list(count = model_count$coefficients, zero = model_zero$coefficients, theta = model_count$theta)
-        mui <- model_count$fitted
-        probi <- model_zero$fitted
-        probi <- probi/(probi + (1-probi) * dnbinom(0, size = start$theta, mu = mui))
-        probi[Y1] <- 0
-        ll_new <- loglikfun(c(start$count, start$zero, log(start$theta)))
-      }
-    }
-
-    if(control$EM & dist == "binomial") {
-      stop("EM estimation of starting values not available")
-    }
-
-    if(control$trace) cat("done\n")
-  }
-
-  ## ML estimation
-  if(control$trace) cat("calling optim() for ML estimation:\n")
-  method <- control$method
-  hessian <- control$hessian
-  ocontrol <- control
-  control$method <- control$hessian <- control$EM <- control$start <- NULL
-  fit <- optim(fn = loglikfun, gr = gradfun,
-    par = c(start$count, start$zero, if(dist == "negbin") log(start$theta) else NULL),
-    method = method, hessian = hessian, control = control)
-  if(fit$convergence > 0) warning("optimization failed to converge")
-
-  ## coefficients and covariances
-  coefc <- fit$par[1:kx]
-  names(coefc) <- names(start$count) <- colnames(X)
-  coefz <- fit$par[(kx+1):(kx+kz)]
-  names(coefz) <- names(start$zero) <- colnames(Z)
-
-  vc <- -solve(as.matrix(fit$hessian))
-  if(dist == "negbin") {
-    np <- kx + kz + 1
-    theta <- as.vector(exp(fit$par[np]))
-    SE.logtheta <- as.vector(sqrt(diag(vc)[np]))
-    vc <- vc[-np, -np, drop = FALSE]
-  } else {
-    theta <- NULL
-    SE.logtheta <- NULL
-  }
-  colnames(vc) <- rownames(vc) <- c(paste("count", colnames(X), sep = "_"),
-                                    paste("zero",  colnames(Z), sep = "_"))
-
-  ## fitted and residuals
-  if(dist != "binomial") {
-    mu <- exp(X %*% coefc + offsetx)[,1]
-  } else {
-    mu <- linkinv(X %*% coefc)[,1]
-  }
-  phi <- linkinv(Z %*% coefz + offsetz)[,1]
-  Yhat <- (1-phi) * mu
-  res <- sqrt(weights) * (Y - Yhat)
-
-  ## effective observations
-  nobs <- sum(weights > 0) ## = n - sum(weights == 0)
-
-  rval <- list(coefficients = list(count = coefc, zero = coefz),
-    residuals = res,
-    fitted.values = Yhat,
-    optim = fit,
-    method = method,
-    control = ocontrol,
-    start = start,
-    weights = if(identical(as.vector(weights), rep.int(1L, n))) NULL else weights,
-    offset = list(count = if(identical(offsetx, rep.int(0, n))) NULL else offsetx,
-      zero = if(identical(offsetz, rep.int(0, n))) NULL else offsetz),
-    n = nobs,
-    df.null = nobs - 2,
-    df.residual = nobs - (kx + kz + (dist == "negbin")),
-    terms = list(count = mtX, zero = mtZ, full = mt),
-    theta = theta,
-    SE.logtheta = SE.logtheta,
-    loglik = fit$value,
-    vcov = vc,
-    dist = dist,
-    link = linkstr,
-    linkinv = linkinv,
-    converged = fit$convergence < 1,
-    call = cl,
-    formula = ff,
-    levels = .getXlevels(mt, mf),
-    contrasts = list(count = attr(X, "contrasts"), zero = attr(Z, "contrasts"))
-  )
-  if(model) rval$model <- mf
-  if(y) rval$y <- Y
-  if(x) rval$x <- list(count = X, zero = Z)
-      
-  class(rval) <- "zeroinfl"
-  return(rval)
-}
-
 zeroinfl.control <- function(method = "BFGS", maxit = 10000, trace = FALSE, EM = FALSE, start = NULL, ...) {
   rval <- list(method = method, maxit = maxit, trace = trace, EM = EM, start = start)
   rval <- c(rval, list(...))
@@ -4015,49 +3555,49 @@ SI_model_tr <- '
 results_tr_sem2 <- as.data.frame(results_tr_sem2)
 results_tr_sem2 <- NA_preproc(results_tr_sem2)
 
-fit_tr <- cfa(SI_model_tr, data = results_tr_sem2,
-           ordered = c("si_type_2", "si_type_3", "si_type_4",
-                       "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25",
-                       "sib_freq_2", "sib_freq_3", "sib_freq_4", "sib_freq_5",
-                                "sib_freq_6", "sib_freq_7", "sib_freq_NA",
-                       "meds_count_2", "meds_count_3", "meds_count_4", "meds_count_5",
-                                "meds_count_6", "meds_count_7",
-                       "binge_fr_2", "binge_fr_3", "binge_fr_4", "binge_fr_5", "binge_fr_6",
-                                "binge_fr_7", "binge_fr_8",
-                       "deprawsc_2", "deprawsc_3", "deprawsc_4", "deprawsc_5", "deprawsc_6",
-                                "deprawsc_7", "deprawsc_8", "deprawsc_9", "deprawsc_10", "deprawsc_11",
-                                "deprawsc_12", "deprawsc_13", "deprawsc_14", "deprawsc_15", "deprawsc_16",
-                                "deprawsc_17", "deprawsc_18", "deprawsc_19", "deprawsc_20", "deprawsc_21",
-                                "deprawsc_22", "deprawsc_23", "deprawsc_24", "deprawsc_25", "deprawsc_26",
-                                "deprawsc_27", "deprawsc_28", "deprawsc_NA",
-                      "anx_score_2", "anx_score_3", "anx_score_4", "anx_score_5", "anx_score_6",
-                                "anx_score_7", "anx_score_8", "anx_score_9", "anx_score_10", "anx_score_11",
-                                "anx_score_12", "anx_score_13", "anx_score_14", "anx_score_15", "anx_score_16",
-                                "anx_score_17", "anx_score_18", "anx_score_19", "anx_score_20", "anx_score_21",
-                                "anx_score_22", "anx_score_NA",
-                      "aaq_tot_2", "aaq_tot_3", "aaq_tot_4", "aaq_tot_5", "aaq_tot_6", "aaq_tot_7",
-                                "aaq_tot_8", "aaq_tot_9", "aaq_tot_10", "aaq_tot_11", "aaq_tot_12", "aaq_tot_13",
-                                "aaq_tot_14", "aaq_tot_15", "aaq_tot_16", "aaq_tot_17", "aaq_tot_18", "aaq_tot_19",
-                                "aaq_tot_20", "aaq_tot_21", "aaq_tot_22", "aaq_tot_23", "aaq_tot_24", "aaq_tot_25",
-                                "aaq_tot_26", "aaq_tot_27", "aaq_tot_28", "aaq_tot_29", "aaq_tot_30", "aaq_tot_31",
-                                "aaq_tot_32", "aaq_tot_33", "aaq_tot_34", "aaq_tot_35", "aaq_tot_36", "aaq_tot_37",
-                                "aaq_tot_38", "aaq_tot_39", "aaq_tot_40", "aaq_tot_41", "aaq_tot_42", "aaq_tot_43",
-                                "aaq_tot_NA",
-                      "dep_impa_2", "dep_impa_3", "dep_impa_4", "dep_impa_NA",
-                      "gad7_impa_2", "gad7_impa_3", "gad7_impa_4", "gad7_impa_NA",
-                      "flourish_2", "flourish_3", "flourish_4", "flourish_5", "flourish_6", "flourish_7",
-                                "flourish_8", "flourish_9", "flourish_10", "flourish_11", "flourish_12", "flourish_13",
-                                "flourish_14", "flourish_15", "flourish_16", "flourish_17", "flourish_18", "flourish_19",
-                                "flourish_20", "flourish_21", "flourish_22", "flourish_23", "flourish_24", "flourish_25",
-                                "flourish_26", "flourish_27", "flourish_28", "flourish_29", "flourish_30", "flourish_31",
-                                "flourish_32", "flourish_33", "flourish_34", "flourish_35", "flourish_36", "flourish_37",
-                                "flourish_38", "flourish_39", "flourish_40", "flourish_41", "flourish_42", "flourish_43",
-                                "flourish_44", "flourish_45", "flourish_46", "flourish_47", "flourish_48", "flourish_49",
-                                "flourish_NA",
-                      "brs_tot_2", "brs_tot_3", "brs_tot_4", "brs_tot_5", "brs_tot_6", "brs_tot_7", "brs_tot_8",
-                                "brs_tot_9", "brs_tot_10", "brs_tot_11", "brs_tot_12", "brs_tot_13", "brs_tot_14",
-                                "brs_tot_15", "brs_tot_16", "brs_tot_17", "brs_tot_18", "brs_tot_19", "brs_tot_20",
-                                "brs_tot_21", "brs_tot_NA"))
+# fit_tr <- cfa(SI_model_tr, data = results_tr_sem2,
+#            ordered = c("si_type_2", "si_type_3", "si_type_4",
+#                        "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25",
+#                        "sib_freq_2", "sib_freq_3", "sib_freq_4", "sib_freq_5",
+#                                 "sib_freq_6", "sib_freq_7", "sib_freq_NA",
+#                        "meds_count_2", "meds_count_3", "meds_count_4", "meds_count_5",
+#                                 "meds_count_6", "meds_count_7",
+#                        "binge_fr_2", "binge_fr_3", "binge_fr_4", "binge_fr_5", "binge_fr_6",
+#                                 "binge_fr_7", "binge_fr_8",
+#                        "deprawsc_2", "deprawsc_3", "deprawsc_4", "deprawsc_5", "deprawsc_6",
+#                                 "deprawsc_7", "deprawsc_8", "deprawsc_9", "deprawsc_10", "deprawsc_11",
+#                                 "deprawsc_12", "deprawsc_13", "deprawsc_14", "deprawsc_15", "deprawsc_16",
+#                                 "deprawsc_17", "deprawsc_18", "deprawsc_19", "deprawsc_20", "deprawsc_21",
+#                                 "deprawsc_22", "deprawsc_23", "deprawsc_24", "deprawsc_25", "deprawsc_26",
+#                                 "deprawsc_27", "deprawsc_28", "deprawsc_NA",
+#                       "anx_score_2", "anx_score_3", "anx_score_4", "anx_score_5", "anx_score_6",
+#                                 "anx_score_7", "anx_score_8", "anx_score_9", "anx_score_10", "anx_score_11",
+#                                 "anx_score_12", "anx_score_13", "anx_score_14", "anx_score_15", "anx_score_16",
+#                                 "anx_score_17", "anx_score_18", "anx_score_19", "anx_score_20", "anx_score_21",
+#                                 "anx_score_22", "anx_score_NA",
+#                       "aaq_tot_2", "aaq_tot_3", "aaq_tot_4", "aaq_tot_5", "aaq_tot_6", "aaq_tot_7",
+#                                 "aaq_tot_8", "aaq_tot_9", "aaq_tot_10", "aaq_tot_11", "aaq_tot_12", "aaq_tot_13",
+#                                 "aaq_tot_14", "aaq_tot_15", "aaq_tot_16", "aaq_tot_17", "aaq_tot_18", "aaq_tot_19",
+#                                 "aaq_tot_20", "aaq_tot_21", "aaq_tot_22", "aaq_tot_23", "aaq_tot_24", "aaq_tot_25",
+#                                 "aaq_tot_26", "aaq_tot_27", "aaq_tot_28", "aaq_tot_29", "aaq_tot_30", "aaq_tot_31",
+#                                 "aaq_tot_32", "aaq_tot_33", "aaq_tot_34", "aaq_tot_35", "aaq_tot_36", "aaq_tot_37",
+#                                 "aaq_tot_38", "aaq_tot_39", "aaq_tot_40", "aaq_tot_41", "aaq_tot_42", "aaq_tot_43",
+#                                 "aaq_tot_NA",
+#                       "dep_impa_2", "dep_impa_3", "dep_impa_4", "dep_impa_NA",
+#                       "gad7_impa_2", "gad7_impa_3", "gad7_impa_4", "gad7_impa_NA",
+#                       "flourish_2", "flourish_3", "flourish_4", "flourish_5", "flourish_6", "flourish_7",
+#                                 "flourish_8", "flourish_9", "flourish_10", "flourish_11", "flourish_12", "flourish_13",
+#                                 "flourish_14", "flourish_15", "flourish_16", "flourish_17", "flourish_18", "flourish_19",
+#                                 "flourish_20", "flourish_21", "flourish_22", "flourish_23", "flourish_24", "flourish_25",
+#                                 "flourish_26", "flourish_27", "flourish_28", "flourish_29", "flourish_30", "flourish_31",
+#                                 "flourish_32", "flourish_33", "flourish_34", "flourish_35", "flourish_36", "flourish_37",
+#                                 "flourish_38", "flourish_39", "flourish_40", "flourish_41", "flourish_42", "flourish_43",
+#                                 "flourish_44", "flourish_45", "flourish_46", "flourish_47", "flourish_48", "flourish_49",
+#                                 "flourish_NA",
+#                       "brs_tot_2", "brs_tot_3", "brs_tot_4", "brs_tot_5", "brs_tot_6", "brs_tot_7", "brs_tot_8",
+#                                 "brs_tot_9", "brs_tot_10", "brs_tot_11", "brs_tot_12", "brs_tot_13", "brs_tot_14",
+#                                 "brs_tot_15", "brs_tot_16", "brs_tot_17", "brs_tot_18", "brs_tot_19", "brs_tot_20",
+#                                 "brs_tot_21", "brs_tot_NA"))
 
 #lavInspect(results_tr_sem2, "cov.lv")
 
