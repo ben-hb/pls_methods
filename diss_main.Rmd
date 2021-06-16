@@ -3090,10 +3090,7 @@ table(traindf.v26$mh_stigma)
 traindf.v26$mh_stigma <- as.logical(traindf.v26$mh_stigma)
 ```
 
-
 ## Motivational moderator analyses
-
-
 ```{r MM var analyses}
 traindf.v27 <- traindf.v26
 ```
@@ -3308,7 +3305,7 @@ traindf_sem <- traindf.v28 %>% select(
   # defeat
   aca_impa, deprawsc,
   # threats to self-moderation
-  persist, anx_score, aaq_tot, dep_secret,
+  persist, anx_score, dep_secret,
   # entrapment
   dep_impa, gad7_impa, percneed_cur,
   # motivational moderators
@@ -3343,7 +3340,7 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # defeat
     "aca_impa", "deprawsc",
     # threats to self-moderation
-    "persist", "anx_score", "dep_secret", "aaq_tot",
+    "persist", "anx_score", "dep_secret",
     # entrapment
     "dep_impa", "gad7_impa", "percneed_cur",
     # motivational moderators
@@ -3391,8 +3388,7 @@ results_tr_sem2 <- results_tr_sem %>%
 view(results_tr_sem2)
 ```
 
-
-
+# Zero inflation stats
 ```{r}
 
 # zeroinfl <- function(si_type, results_tr_sem2, na.action = TRUE, weights = TRUE, offset = TRUE,
@@ -3401,9 +3397,6 @@ view(results_tr_sem2)
   
 
 ```
-
-
-
 
 
 # SUMMARY STATISTICS
@@ -3511,15 +3504,7 @@ SI_model_tr <- '
                                 anx_score_17 + anx_score_18 + anx_score_19 + anx_score_20 + anx_score_21 + 
                                 anx_score_22 + anx_score_NA + 
                              dep_secret_2 + dep_secret_3 + dep_secret_4 + dep_secret_5 + dep_secret_6 + 
-                                dep_secret_NA + 
-                             aaq_tot_2 + aaq_tot_3 + aaq_tot_4 + aaq_tot_5 + aaq_tot_6 + aaq_tot_7 + 
-                                aaq_tot_8 + aaq_tot_9 + aaq_tot_10 + aaq_tot_11 + aaq_tot_12 + aaq_tot_13 + 
-                                aaq_tot_14 + aaq_tot_15 + aaq_tot_16 + aaq_tot_17 + aaq_tot_18 + aaq_tot_19 + 
-                                aaq_tot_20 + aaq_tot_21 + aaq_tot_22 + aaq_tot_23 + aaq_tot_24 + aaq_tot_25 + 
-                                aaq_tot_26 + aaq_tot_27 + aaq_tot_28 + aaq_tot_29 + aaq_tot_30 + aaq_tot_31 + 
-                                aaq_tot_32 + aaq_tot_33 + aaq_tot_34 + aaq_tot_35 + aaq_tot_36 + aaq_tot_37 + 
-                                aaq_tot_38 + aaq_tot_39 + aaq_tot_40 + aaq_tot_41 + aaq_tot_42 + aaq_tot_43 + 
-                                aaq_tot_NA
+                                dep_secret_NA
                   
                   entrap_sem =~ dep_impa_2 + dep_impa_3 + dep_impa_4 + dep_impa_NA + 
                                 gad7_impa_2 + gad7_impa_3 + gad7_impa_4 + gad7_impa_NA +
@@ -3550,8 +3535,7 @@ SI_model_tr <- '
                # residual covars
                   ed_any_NA ~~ sib_freq_NA
                   dx_dep_1 ~~ dx_bi_1
-                  dx_dep_1 ~~ dx_tr_1
-                  brs_tot_NA ~~ aaq_tot_NA     '
+                  dx_dep_1 ~~ dx_tr_1     '
 ```
 
 ## Model estimation
@@ -3580,14 +3564,14 @@ fit_tr <- cfa(SI_model_tr, data = results_tr_sem2,
                                 "anx_score_12", "anx_score_13", "anx_score_14", "anx_score_15", "anx_score_16",
                                 "anx_score_17", "anx_score_18", "anx_score_19", "anx_score_20", "anx_score_21",
                                 "anx_score_22", "anx_score_NA",
-                      "aaq_tot_2", "aaq_tot_3", "aaq_tot_4", "aaq_tot_5", "aaq_tot_6", "aaq_tot_7",
-                                "aaq_tot_8", "aaq_tot_9", "aaq_tot_10", "aaq_tot_11", "aaq_tot_12", "aaq_tot_13",
-                                "aaq_tot_14", "aaq_tot_15", "aaq_tot_16", "aaq_tot_17", "aaq_tot_18", "aaq_tot_19",
-                                "aaq_tot_20", "aaq_tot_21", "aaq_tot_22", "aaq_tot_23", "aaq_tot_24", "aaq_tot_25",
-                                "aaq_tot_26", "aaq_tot_27", "aaq_tot_28", "aaq_tot_29", "aaq_tot_30", "aaq_tot_31",
-                                "aaq_tot_32", "aaq_tot_33", "aaq_tot_34", "aaq_tot_35", "aaq_tot_36", "aaq_tot_37",
-                                "aaq_tot_38", "aaq_tot_39", "aaq_tot_40", "aaq_tot_41", "aaq_tot_42", "aaq_tot_43",
-                                "aaq_tot_NA",
+                      # "aaq_tot_2", "aaq_tot_3", "aaq_tot_4", "aaq_tot_5", "aaq_tot_6", "aaq_tot_7",
+                      #           "aaq_tot_8", "aaq_tot_9", "aaq_tot_10", "aaq_tot_11", "aaq_tot_12", "aaq_tot_13",
+                      #           "aaq_tot_14", "aaq_tot_15", "aaq_tot_16", "aaq_tot_17", "aaq_tot_18", "aaq_tot_19",
+                      #           "aaq_tot_20", "aaq_tot_21", "aaq_tot_22", "aaq_tot_23", "aaq_tot_24", "aaq_tot_25",
+                      #           "aaq_tot_26", "aaq_tot_27", "aaq_tot_28", "aaq_tot_29", "aaq_tot_30", "aaq_tot_31",
+                      #           "aaq_tot_32", "aaq_tot_33", "aaq_tot_34", "aaq_tot_35", "aaq_tot_36", "aaq_tot_37",
+                      #           "aaq_tot_38", "aaq_tot_39", "aaq_tot_40", "aaq_tot_41", "aaq_tot_42", "aaq_tot_43",
+                      #           "aaq_tot_NA",
                       "dep_impa_2", "dep_impa_3", "dep_impa_4", "dep_impa_NA",
                       "gad7_impa_2", "gad7_impa_3", "gad7_impa_4", "gad7_impa_NA",
                       "flourish_2", "flourish_3", "flourish_4", "flourish_5", "flourish_6", "flourish_7",
@@ -3626,14 +3610,14 @@ fit_train <- sem(SI_model_tr, data=results_tr_sem2,
                                 "anx_score_12", "anx_score_13", "anx_score_14", "anx_score_15", "anx_score_16",
                                 "anx_score_17", "anx_score_18", "anx_score_19", "anx_score_20", "anx_score_21",
                                 "anx_score_22", "anx_score_NA",
-                      "aaq_tot_2", "aaq_tot_3", "aaq_tot_4", "aaq_tot_5", "aaq_tot_6", "aaq_tot_7",
-                                "aaq_tot_8", "aaq_tot_9", "aaq_tot_10", "aaq_tot_11", "aaq_tot_12", "aaq_tot_13",
-                                "aaq_tot_14", "aaq_tot_15", "aaq_tot_16", "aaq_tot_17", "aaq_tot_18", "aaq_tot_19",
-                                "aaq_tot_20", "aaq_tot_21", "aaq_tot_22", "aaq_tot_23", "aaq_tot_24", "aaq_tot_25",
-                                "aaq_tot_26", "aaq_tot_27", "aaq_tot_28", "aaq_tot_29", "aaq_tot_30", "aaq_tot_31",
-                                "aaq_tot_32", "aaq_tot_33", "aaq_tot_34", "aaq_tot_35", "aaq_tot_36", "aaq_tot_37",
-                                "aaq_tot_38", "aaq_tot_39", "aaq_tot_40", "aaq_tot_41", "aaq_tot_42", "aaq_tot_43",
-                                "aaq_tot_NA",
+                      # "aaq_tot_2", "aaq_tot_3", "aaq_tot_4", "aaq_tot_5", "aaq_tot_6", "aaq_tot_7",
+                      #           "aaq_tot_8", "aaq_tot_9", "aaq_tot_10", "aaq_tot_11", "aaq_tot_12", "aaq_tot_13",
+                      #           "aaq_tot_14", "aaq_tot_15", "aaq_tot_16", "aaq_tot_17", "aaq_tot_18", "aaq_tot_19",
+                      #           "aaq_tot_20", "aaq_tot_21", "aaq_tot_22", "aaq_tot_23", "aaq_tot_24", "aaq_tot_25",
+                      #           "aaq_tot_26", "aaq_tot_27", "aaq_tot_28", "aaq_tot_29", "aaq_tot_30", "aaq_tot_31",
+                      #           "aaq_tot_32", "aaq_tot_33", "aaq_tot_34", "aaq_tot_35", "aaq_tot_36", "aaq_tot_37",
+                      #           "aaq_tot_38", "aaq_tot_39", "aaq_tot_40", "aaq_tot_41", "aaq_tot_42", "aaq_tot_43",
+                      #           "aaq_tot_NA",
                       "dep_impa_2", "dep_impa_3", "dep_impa_4", "dep_impa_NA",
                       "gad7_impa_2", "gad7_impa_3", "gad7_impa_4", "gad7_impa_NA",
                       "flourish_2", "flourish_3", "flourish_4", "flourish_5", "flourish_6", "flourish_7",
@@ -4402,7 +4386,7 @@ testdf.v20$aca_impa <- as.factor(testdf.v20$aca_impa)
 
 
 # THREATS TO SELF-MODERATION
-Candidate variables: persist, anx_score, dep_secret, aaq_yn, achieve4
+Candidate variables: persist, anx_score, dep_secret, aaq_tot, achieve4
 
 
 ## GAD7 total
@@ -4647,7 +4631,7 @@ testdf_sem <- testdf.v28 %>% select(
   # defeat
   aca_impa, deprawsc,
   # threats to self-moderation
-  persist, anx_score, aaq_tot, dep_secret,
+  persist, anx_score, dep_secret,
   # entrapment
   dep_impa, gad7_impa, percneed_cur,
   # motivational moderators
@@ -4695,7 +4679,7 @@ results_test_sem <- dummy_cols(testdf_sem2, select_columns = c(
     # defeat
     "aca_impa", "deprawsc",
     # threats to self-moderation
-    "persist", "anx_score", "dep_secret", "aaq_tot",
+    "persist", "anx_score", "dep_secret",
     # entrapment
     "dep_impa", "gad7_impa", "percneed_cur",
     # motivational moderators
@@ -4721,7 +4705,7 @@ SI_model_tr <- '
                   le_sem =~  ins_cover + gpa_sr + binge_fr + psyhx + fincur + drugs_yn + 
                              assault_emo + assault_phys + assault_sex
                   def_sem =~ aca_impa + deprawsc
-                  tsm_sem =~ persist + anx_score + dep_secret + aaq_tot
+                  tsm_sem =~ persist + anx_score + dep_secret 
                   entrap_sem =~ dep_impa + gad7_impa + percneed_cur
                   mm_sem =~  inf + flourish + belong1 + mh_stigma + brs_tot
                   
@@ -4749,7 +4733,7 @@ SI_model_tr <- '
 ```{r SEM model estimation}
 fit <- cfa(SI_model_tr, data = results_test_sem,
              ordered = c("age","si_type", "sib_freq","meds_count", "binge_fr", "deprawsc",
-                         "anx_score", "aaq_tot", "dep_impa", "gad7_impa", "flourish", "brs_tot"))
+                         "anx_score", "dep_impa", "gad7_impa", "flourish", "brs_tot"))
 
 fit_train <- sem(SI_model_tr, data=results_test_sem)
 
