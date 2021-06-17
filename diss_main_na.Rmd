@@ -2780,7 +2780,7 @@ print(corr)
 
 ## EFA TSM
 ```{r EFA TSM}
-traindf_tsm <- traindf.v23 %>% select(persist, anx_score, dep_secret, achieve4, aaq_tot)
+traindf_tsm <- traindf.v23 %>% select(persist, anx_type, dep_secret, achieve4, aaq_tot)
 
 # create corr matrix, with dummy vars 
 traindf_tsm <- traindf_tsm %>% 
@@ -2789,7 +2789,7 @@ traindf_tsm <- traindf_tsm %>%
   data.matrix()
 traindf_tsm   # check output
 
-results_tsm <- dummy_cols(traindf_tsm, select_columns = c("persist", "anx_score", "dep_secret", "achieve4", "aaq_tot"),
+results_tsm <- dummy_cols(traindf_tsm, select_columns = c("persist", "anx_type", "dep_secret", "achieve4", "aaq_tot"),
                          remove_first_dummy = TRUE)
 
 tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
@@ -2818,13 +2818,13 @@ fviz_cos2(tsm_pca, choice = "var", axes = 1,
 
 ## CLM TSM
 ```{r CLM TSM}
-clm_tsm <- traindf.v23 %>% select(si_type, persist, anx_score, dep_secret, aaq_tot)
+clm_tsm <- traindf.v23 %>% select(si_type, persist, anx_type, dep_secret, aaq_tot)
 
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
 
-clm_tsm <- clm(si_type ~ persist + anx_score + dep_secret + aaq_tot,
-               data = clm_tsm) # ordered probit or logit may be needed
+clm_tsm <- clm(si_type ~ persist + anx_type + dep_secret + aaq_tot,
+               data = clm_tsm) 
 
 summary(clm_tsm)
 coef(clm_tsm)
@@ -2852,20 +2852,38 @@ traindf.v24 <- traindf.v22
 
 ## Depression impact
 ```{r dep_impa}
+traindf.v24 <- traindf.v24 %>%
+  mutate(dep_impa = case_when(dep_impa == 1 ~ 1,
+                              dep_impa == 2 ~ 2,
+                              dep_impa == 3 ~ 3,
+                              dep_impa == 4 ~ 4,
+                              is.na(dep_impa) ~ 0))
 table(traindf.v24$dep_impa)
-traindf.v24$dep_impa <- as.factor(traindf.v24$dep_impa)
 ```
 
 ## Anxiety impact
 ```{r gad7_impa}
+traindf.v24 <- traindf.v24 %>%
+  mutate(gad7_impa = case_when(gad7_impa == 1 ~ 1,
+                               gad7_impa == 2 ~ 2,
+                               gad7_impa == 3 ~ 3,
+                               gad7_impa == 4 ~ 4,
+                               is.na(gad7_impa) ~ 0))
 table(traindf.v24$gad7_impa)
-traindf.v24$gad7_impa <- as.factor(traindf.v24$gad7_impa)
 ```
 
 ## Current needs
-```{r perneed_cur}
+```{r percneed_cur}
+traindf.v24 <- traindf.v24 %>%
+  mutate(percneed_cur = case_when(percneed_cur == 1 ~ 1,
+                                 percneed_cur == 2 ~ 2,
+                                 percneed_cur == 3 ~ 3,
+                                 percneed_cur == 4 ~ 4,
+                                 percneed_cur == 5 ~ 5,
+                                 percneed_cur == 6 ~ 6,
+                                 is.na(percneed_cur) ~ 0))
 table(traindf.v24$percneed_cur)
-traindf.v24$percneed_cur <- as.factor(traindf.v24$percneed_cur)
+
 ```
 
 ## ENTRAPMENT ANALYSES
@@ -2967,8 +2985,15 @@ traindf.v26 <- traindf.v24
 
 ## Belonging
 ```{r belong}
+traindf.v26 <- traindf.v26 %>%
+  mutate(belong1 = case_when(belong1 == 1 ~ 1,
+                             belong1 == 2 ~ 2,
+                             belong1 == 3 ~ 3,
+                             belong1 == 4 ~ 4,
+                             belong1 == 5 ~ 5,
+                             belong1 == 6 ~ 6,
+                             is.na(belong1) ~ 0))
 table(traindf.v26$belong1)
-traindf.v26$belong1 <- as.factor(traindf.v26$belong1)
 
 table(traindf.v26$belong2)  # elective question, but common
 table(traindf.v26$belong8)  # nested x 2
@@ -3057,6 +3082,8 @@ traindf.v26 <- traindf.v26 %>%
 table(traindf.v26$brs_tot)
 traindf.v26$brs_tot <- as.numeric(traindf.v26$brs_tot)
 
+table(is.na(traindf.v26$brs_tot))
+
 #  for loop for predictive cutoff point needed
 rs_df <- data.frame("cutoff" = c(), "rs" = c())
 for (i in 6:24) {
@@ -3098,31 +3125,41 @@ table(traindf.v26$stig_per_3)
 
 # transform into y/n 
 traindf.v26 <- traindf.v26 %>%
-  mutate(stig_pcv_2b = case_when((stig_pcv_2 == 1 | stig_pcv_2 == 2 | stig_pcv_2 == 3) ~ 1,
+  mutate(stig_pcv2 = case_when((stig_pcv_2 == 1 | stig_pcv_2 == 2 | stig_pcv_2 == 3) ~ 1,
                                 (stig_pcv_2 == 4 | stig_pcv_2 == 5 | stig_pcv_2 == 6) ~ 0)) %>%
-  mutate(stig_pcv_3b = case_when((stig_pcv_3 == 1 | stig_pcv_3 == 2 | stig_pcv_3 == 3) ~ 1,
+  mutate(stig_pcv3 = case_when((stig_pcv_3 == 1 | stig_pcv_3 == 2 | stig_pcv_3 == 3) ~ 1,
                                 (stig_pcv_3 == 4 | stig_pcv_3 == 5 | stig_pcv_3 == 6) ~ 0)) %>%  
-  mutate(stig_per_2b = case_when((stig_per_2 == 1 | stig_per_2 == 2 | stig_per_2 == 3) ~ 1,
+  mutate(stig_per2 = case_when((stig_per_2 == 1 | stig_per_2 == 2 | stig_per_2 == 3) ~ 1,
                                 (stig_per_2 == 4 | stig_per_2 == 5 | stig_per_2 == 6) ~ 0)) %>%
-  mutate(stig_per_3b = case_when((stig_per_3 == 1 | stig_per_3 == 2 | stig_per_3 == 3) ~ 1,
+  mutate(stig_per3 = case_when((stig_per_3 == 1 | stig_per_3 == 2 | stig_per_3 == 3) ~ 1,
                                 (stig_per_3 == 4 | stig_per_3 == 5 | stig_per_3 == 6) ~ 0))  
 
-table(traindf.v26$stig_pcv_2b)  # Most people feel that MH tx is a sign of personal failure.
-table(traindf.v26$stig_pcv_3b)  # Most people think less of a person who has received MH tx.
-table(traindf.v26$stig_per_2b)  # I feel that receiving MH tx is a sign of personal failure.
-table(traindf.v26$stig_per_3b)  # I would think less of a person who has received MH tx.
+traindf.v26$stig_pcv_2 <- as.logical(traindf.v26$stig_pcv_2)
+traindf.v26$stig_pcv_3 <- as.logical(traindf.v26$stig_pcv_3)
+traindf.v26$stig_per_2 <- as.logical(traindf.v26$stig_per_2)
+traindf.v26$stig_per_3 <- as.logical(traindf.v26$stig_per_3)
+
+table(traindf.v26$stig_pcv2)  # Most people feel that MH tx is a sign of personal failure.
+table(traindf.v26$stig_pcv3)  # Most people think less of a person who has received MH tx.
+table(traindf.v26$stig_per2)  # I feel that receiving MH tx is a sign of personal failure.
+table(traindf.v26$stig_per3)  # I would think less of a person who has received MH tx.
 
 
-# tcombine scales?
+# combine scales
 traindf.v26 <- traindf.v26 %>%
-  mutate(mh_stigma= case_when((stig_pcv_2 == 1 | stig_pcv_3 == 1 | stig_per_2 == 1 | stig_per_3 == 1) ~ 1,
-                              (stig_pcv_2 == 2 | stig_pcv_3 == 2 | stig_per_2 == 2 | stig_per_3 == 2) ~ 0,
-                              (stig_pcv_2 == 3 | stig_pcv_3 == 3 | stig_per_2 == 3 | stig_per_3 == 3) ~ 0,
-                              (stig_pcv_2 == 4 | stig_pcv_3 == 4 | stig_per_2 == 4 | stig_per_3 == 4) ~ 0,
-                              (stig_pcv_2 == 5 | stig_pcv_3 == 5 | stig_per_2 == 5 | stig_per_3 == 5) ~ 0,
-                              (stig_pcv_2 == 6 | stig_pcv_3 == 6 | stig_per_2 == 6 | stig_per_3 == 6) ~ 0))
-table(traindf.v26$mh_stigma)
+  mutate(mh_stigma = case_when(stig_pcv2b == 1 ~ 1,
+                               stig_pcv3b == 1 ~ 1,
+                               stig_per2b == 1 ~ 1,
+                               stig_per_3b == 1 ~ 1,
+                               stig_pcv_2b == 0 ~ 0,
+                               stig_pcv_3b == 0 ~ 0,
+                               stig_per_2b == 0 ~ 0,
+                               stig_per_3b == 0 ~ 0))
 traindf.v26$mh_stigma <- as.logical(traindf.v26$mh_stigma)
+
+table(traindf.v26$mh_stigma)
+
+
 ```
 
 ## Motivational moderator analyses
