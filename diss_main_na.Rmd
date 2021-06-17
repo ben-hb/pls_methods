@@ -3489,24 +3489,24 @@ results_tr_sem2 <- results_tr_sem
   rename(sexual_lgb = sexual_2) %>%
   rename(sexual_qq = sexual_3) %>%
 
-  # rename(race_bla = race_NA) %>%
-  # rename(race_ame = race_2) %>%
-  # rename(race_asi = race_3) %>%
-  # rename(race_his = race_4) %>%
-  # rename(race_pac = race_5) %>%
-  # rename(race_ara = race_6) %>%
-  # rename(race_whi = race_7) %>%
-  # rename(race_oth = race_8) %>%
-  # rename(race_non = race_9) %>%
-  # 
-  # rename(talk_no = talk_NA) %>%
-  # rename(talk_for = talk_2) %>%
-  # rename(talk_inf = talk_3) %>%
-  # rename(talk_com = talk_4) %>%
-  # 
-  # rename(sch_4yr = school2_type_NA) %>%
-  # rename(sch_cc = school2_type_2) %>%
-  # rename(sch_ad = school2_type_3)
+  rename(race_bla = race_NA) %>%
+  rename(race_ame = race_2) %>%
+  rename(race_asi = race_3) %>%
+  rename(race_his = race_4) %>%
+  rename(race_pac = race_5) %>%
+  rename(race_ara = race_6) %>%
+  rename(race_whi = race_7) %>%
+  rename(race_oth = race_8) %>%
+  rename(race_non = race_9) %>%
+
+  rename(talk_no = talk_NA) %>%
+  rename(talk_for = talk_2) %>%
+  rename(talk_inf = talk_3) %>%
+  rename(talk_com = talk_4) %>%
+
+  rename(sch_4yr = school2_type_NA) %>%
+  rename(sch_cc = school2_type_2) %>%
+  rename(sch_ad = school2_type_3)
 
 view(results_tr_sem2)
 ```
@@ -3548,9 +3548,9 @@ SI_model_tr <- '
                   si_sem =~  si_type_2 + si_type_3 + si_type_4
 
                   dia_sem =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
-                             sexual_lgb + sexual_qq + sexual_het + gender_tgd_2 +
-                             sib_freq_2 + sib_freq_3 + sib_freq_4 + sib_freq_5 +
-                                sib_freq_6 + sib_freq_7 + sib_freq_NA +
+                             sexual_2 + sexual_3 + sexual_hNA +
+                             gender_tgd_2 +
+                             sib_freq_2 + sib_freq_3 + sib_freq_4 + sib_freq_5 + sib_freq_6 + 
                              race_ame + race_asi + race_his + race_pac + race_ara +
                                 race_whi + race_oth + race_non + race_bla +
                              ed_any_2 + ed_any_NA +
@@ -3559,45 +3559,41 @@ SI_model_tr <- '
                              dx_anx_1 +  dx_anx_NA +
                              dx_tr_1 + dx_tr_NA +
                              dx_adhd_1 + dx_adhd_NA +
-                             meds_count_2 + meds_count_3 + meds_count_4 + meds_count_5 +
-                                meds_count_6 + meds_count_7
+                             meds_count_1 + meds_count_2 + meds_count_3 
 
                   env_sem =~ divers_2 + divers_3 + divers_4 + divers_5 + divers_6 + divers_NA +
                              satisfied_overall_2 + satisfied_overall_3 + satisfied_overall_4 +
-                                satisfied_overall_5 + satisfied_overall_6 + satisfied_overall_NA +
+                                satisfied_overall_5 + satisfied_overall_6 + satisfied_overall_7
                              talk_for + talk_inf + talk_com + talk_no +
                              religios_2 + religios_3 + religios_4 + religios_5 +
-                             discrim_2 + discrim_3 + discrim_4 + discrim_5 + discrim_6 + discrim_NA +
+                             discrim_2 + discrim_3 + discrim_4 + discrim_5 + discrim_6 + discrim_7 +
                              sch_cc + sch_ad + sch_4yr +
                              activ_yn_1 + activ_yn_NA
 
-                  le_sem =~  ins_cover_1 + ins_cover_NA +
-                             gpa_sr_2 + gpa_sr_3 + gpa_sr_4 + gpa_sr_5 + gpa_sr_6 + gpa_sr_7 +
-                                gpa_sr_8 + gpa_sr_9 + gpa_sr_10 + gpa_sr_11 + gpa_sr_NA +
-                             binge_fr_2 + binge_fr_3 + binge_fr_4 + binge_fr_5 + binge_fr_6 +
-                                binge_fr_7 + binge_fr_8 +
+                  le_sem =~  ins_cover_1 +
+                             gpa_sr_1 + gpa_sr_2 + gpa_sr_3 + gpa_sr_4 +
+                             binge_1
                              psyhx_1 + psyhx_NA +
-                             fincur_2 + fincur_3 + fincur_4 + fincur_5 + fincur_NA +
-                             drugs_yn_2 + drugs_yn_NA +
-                             assault_2 + assault_NA
+                             fincur_2 + fincur_3 + fincur_4 + 
+                             drugs_yn_1
+                             assault_1 + assault_NA
 
-                  def_sem =~ aca_impa_2 + aca_impa_3 + aca_impa_4 + aca_impa_NA +
-                             dep
+                  def_sem =~ aca_impa_1 + aca_impa_2 + aca_impa_3 + aca_impa_4 + 
+                             dep_type_1 + dep_type_2 + dep_type_3 + dep_type_4 + dep_type_5
 
-                  tsm_sem =~ persist_2 + persist_3 + persist_4 + persist_5 + persist_6 + persist_NA +
-                             anx_score_2 + +
-                             dep_secret_2 + dep_secret_3 + dep_secret_4 + dep_secret_5 + dep_secret_6 +
-                                dep_secret_NA
-
-                  entrap_sem =~ dep_impa_2 + dep_impa_3 + dep_impa_4 + dep_impa_NA +
-                                gad7_impa_2 + gad7_impa_3 + gad7_impa_4 + gad7_impa_NA +
-                                percneed_cur_2 + percneed_cur_3 + percneed_cur_4 + percneed_cur_5 +
-                                    percneed_cur_6 + percneed_cur_NA
+                  tsm_sem =~ persist_1 + persist_2 + persist_3 + persist_4 + persist_5 + persist_6 +
+                             anx_type1 + anx_type_NA
+                             dep_secret_1 + dep_secret_2 + dep_secret_3 + dep_secret_4 + dep_secret_5 + dep_secret_6
+                             
+                  entrap_sem =~ dep_impa_1 + dep_impa_2 + dep_impa_3 + dep_impa_4 +
+                                gad7_impa_1 + gad7_impa_2 + gad7_impa_3 + gad7_impa_4 +
+                                percneed_cur_1 + percneed_cur_2 + percneed_cur_3 + percneed_cur_4 + 
+                                    percneed_cur_5 + percneed_cur_6
 
                   mm_sem =~  inf_2 + inf_3 + inf_4 + inf_5 + inf_6 + inf_7 + inf_8 + inf_9 + inf_NA +
-                             flourish_2 +
-                             belong1_2 + belong1_3 + belong1_4 + belong1_5 + belong1_6 + belong1_NA +
-                             brs_dum
+                             flourish_sum_1 + flourish_dum_2 +
+                             belong1_2 + belong1_3 + belong1_4 + belong1_5 + belong1_6 +
+                             brs_dum_1 + brs_dum_2
 
                # structural model - regressions
                   def_sem ~ dia_sem + env_sem + le_sem
@@ -3672,40 +3668,13 @@ fit_train <- sem(SI_model_tr, data=results_tr_sem2,
                                 "meds_count_6", "meds_count_7",
                        "binge_fr_2", "binge_fr_3", "binge_fr_4", "binge_fr_5", "binge_fr_6",
                                 "binge_fr_7", "binge_fr_8",
-                       "deprawsc_2", "deprawsc_3", "deprawsc_4", "deprawsc_5", "deprawsc_6",
-                                "deprawsc_7", "deprawsc_8", "deprawsc_9", "deprawsc_10", "deprawsc_11",
-                                "deprawsc_12", "deprawsc_13", "deprawsc_14", "deprawsc_15", "deprawsc_16",
-                                "deprawsc_17", "deprawsc_18", "deprawsc_19", "deprawsc_20", "deprawsc_21",
-                                "deprawsc_22", "deprawsc_23", "deprawsc_24", "deprawsc_25", "deprawsc_26",
-                                "deprawsc_27", "deprawsc_28", "deprawsc_NA",
-                      "anx_score_2", "anx_score_3", "anx_score_4", "anx_score_5", "anx_score_6",
-                                "anx_score_7", "anx_score_8", "anx_score_9", "anx_score_10", "anx_score_11",
-                                "anx_score_12", "anx_score_13", "anx_score_14", "anx_score_15", "anx_score_16",
-                                "anx_score_17", "anx_score_18", "anx_score_19", "anx_score_20", "anx_score_21",
-                                "anx_score_22", "anx_score_NA",
-                      "aaq_tot_2", "aaq_tot_3", "aaq_tot_4", "aaq_tot_5", "aaq_tot_6", "aaq_tot_7",
-                                "aaq_tot_8", "aaq_tot_9", "aaq_tot_10", "aaq_tot_11", "aaq_tot_12", "aaq_tot_13",
-                                "aaq_tot_14", "aaq_tot_15", "aaq_tot_16", "aaq_tot_17", "aaq_tot_18", "aaq_tot_19",
-                                "aaq_tot_20", "aaq_tot_21", "aaq_tot_22", "aaq_tot_23", "aaq_tot_24", "aaq_tot_25",
-                                "aaq_tot_26", "aaq_tot_27", "aaq_tot_28", "aaq_tot_29", "aaq_tot_30", "aaq_tot_31",
-                                "aaq_tot_32", "aaq_tot_33", "aaq_tot_34", "aaq_tot_35", "aaq_tot_36", "aaq_tot_37",
-                                "aaq_tot_38", "aaq_tot_39", "aaq_tot_40", "aaq_tot_41", "aaq_tot_42", "aaq_tot_43",
-                                "aaq_tot_NA",
+                       "dep_type,
+                      "anx_type,
+                      "aaq_dum_2", "aaq_dum_NA",
                       "dep_impa_2", "dep_impa_3", "dep_impa_4", "dep_impa_NA",
                       "gad7_impa_2", "gad7_impa_3", "gad7_impa_4", "gad7_impa_NA",
-                      "flourish_2", "flourish_3", "flourish_4", "flourish_5", "flourish_6", "flourish_7",
-                                "flourish_8", "flourish_9", "flourish_10", "flourish_11", "flourish_12", "flourish_13",
-                                "flourish_14", "flourish_15", "flourish_16", "flourish_17", "flourish_18", "flourish_19",
-                                "flourish_20", "flourish_21", "flourish_22", "flourish_23", "flourish_24", "flourish_25",
-                                "flourish_26", "flourish_27", "flourish_28", "flourish_29", "flourish_30", "flourish_31",
-                                "flourish_32", "flourish_33", "flourish_34", "flourish_35", "flourish_36", "flourish_37",
-                                "flourish_38", "flourish_39", "flourish_40", "flourish_41", "flourish_42", "flourish_43",
-                                "flourish_44", "flourish_45", "flourish_46", "flourish_47", "flourish_48", "flourish_49",
-                                "flourish_NA",
-                      "brs_tot_2", "brs_tot_3", "brs_tot_4", "brs_tot_5", "brs_tot_6", "brs_tot_7", "brs_tot_8",
-                                "brs_tot_9", "brs_tot_10", "brs_tot_11", "brs_tot_12", "brs_tot_13", "brs_tot_14",
-                                "brs_tot_15", "brs_tot_16", "brs_tot_17", "brs_tot_18", "brs_tot_19", "brs_tot_20",
-                                "brs_tot_21", "brs_tot_NA"))
+                      "flourish_dum_1", "flourish_dum_NA",
+                      "brs_dum_2", "brs_dum_NA"))
 
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
