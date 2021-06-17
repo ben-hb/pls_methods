@@ -2209,8 +2209,9 @@ clm_env <- clm_env %>%
   NA_preproc() %>%
   as.data.frame()
 
- clm_env2 <- clm(si_type ~ discrim + residenc + religios + activ_yn + divers + school2_type +
-                   satisfied_overall + talk, data = clm_env)
+ clm_env2 <- clm(si_type ~ discrim + religios + residenc + activ_yn + divers + 
+                   school2_type + satisfied_overall + talk, 
+                 data = clm_env)
  summary(clm_env2)
 
 coef(clm_env)
@@ -2421,8 +2422,8 @@ traindf_le <- traindf_le %>%
   data.matrix()
 traindf_le   # check output
 
-results_le <- dummy_cols(traindf_le, select_columns = c("ins_cover", "assault", "gpa_sr", "psyhx", 
-                                                        "aca_impa", "fincur", "binge_fr", "drugs_yn"),
+results_le <- dummy_cols(traindf_le, select_columns = c("ins_cover", "gpa_sr", "aca_impa", 
+                                                        "fincur", "binge","drugs_yn", "assault", "psyhx"),
                          remove_first_dummy = TRUE)
 
 le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
@@ -2459,7 +2460,7 @@ clm_le <- traindf.v19 %>% select(si_type, ins_cover, gpa_sr, aca_impa, fincur, a
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
 
-clm_le <- clm(si_type ~ ins_cover + assault + gpa_sr + aca_impa + fincur + binge + 
+clm_le <- clm(si_type ~ ins_cover + gpa_sr + aca_impa + fincur + assault + binge + 
                 psyhx + drugs_yn,
               data = clm_le)
 summary(clm_le)
@@ -2563,21 +2564,6 @@ corr <- as.data.frame(as.table(corr))         # turn into a 3-column table
 corr <- na.omit(corr)                         # remove the NA values from above 
 corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
 print(corr)
-
-traindf_def <- traindf.v21 %>% select(aca_impa, dep_type)
-
-# convert traindf to numeric in order to run correlations
-traindf_def <- traindf_def %>% mutate_if(is.character, as.factor)
-traindf_def <-  traindf_def %>% mutate_if(is.factor, as.numeric)
-
-# run a correlation and drop the insignificant ones
-corr <- cor(traindf_def, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr, diag=TRUE)] <- NA        # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                # drop perfect correlations
-corr <- as.data.frame(as.table(corr))         # turn into a 3-column table
-corr <- na.omit(corr)                         # remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
-print(corr)
 ```
 
 ## EFA defeat
@@ -2618,9 +2604,6 @@ fviz_cos2(def_pca, choice = "var", axes = 1,
           top = 40,
           xtickslab.rt = 45,
           ggtheme = theme_minimal())
-fviz_contrib(def_pca, choice = "var", axes = 2, top = 20)
-fviz_contrib(def_pca, choice = "var", axes = 3, top = 20)
-fviz_contrib(def_pca, choice = "var", axes = 4, top = 20)
 ```
 
 ## CLM defeat
@@ -2978,16 +2961,16 @@ clm_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed_cur,
 summary(clm_entrap)
 coef(clm_entrap)
 
-# ci_entrap <- confint(clm_entrap)
-# ci_entrap
-# 
-# model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
-# model.entrap
-# 
-# model.entrap  %>%
-#    mutate(or = exp(estimate),  # Odds ratio/gradient
-#          var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
-#          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+ci_entrap <- confint(clm_entrap)
+ci_entrap
+
+model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
+model.entrap
+
+model.entrap  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+         var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
+         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -3048,13 +3031,16 @@ rs_df_arranged[1,1]
 
 # deem 'rs_df_arranged[1,1]' as SI cutoff
 traindf.v26 <- traindf.v26 %>%
-  mutate(flourish_dum = ifelse(flourish > rs_df_arranged[1,1], TRUE, FALSE))
+  mutate(flourish_dum = ifelse(flourish > rs_df_arranged[1,1], 1, 2))  # 1 for over bin, # 2 for below bin
 
-# Output
 rs_df_arranged[1,1]
 table(traindf.v26$flourish_dum)
-table(traindf.v26$flourish)
 
+traindf.v26 <- traindf.v26 %>%
+  mutate(flourish_dum = case_when(flourish_dum == 1 ~ 1,
+                                  flourish_dum == 2 ~ 2,
+                                  is.na(flourish_dum) ~ 0))
+table(traindf.v26$flourish_dum)
 ```
 
 ## Informal Mental Health Support
@@ -3082,7 +3068,16 @@ traindf.v26 <- traindf.v26 %>%
                         inf_5 == 1 ~ 6,
                         inf_6 == 1 ~ 7,
                         inf_7 == 1 ~ 8,
-                        inf_8 == 1 ~ 1))
+                        inf_8 == 1 ~ 1)) %>%
+  mutate(inf = case_when(inf == 1 ~ 1,
+                         inf == 2 ~ 2,
+                         inf == 3 ~ 3,
+                         inf == 4 ~ 4,
+                         inf == 5 ~ 5,
+                         inf == 6 ~ 6,
+                         inf == 7 ~ 7,
+                         inf == 8 ~ 8,
+                         is.na(inf) ~ 0))
 
 table(traindf.v26$inf)
 traindf.v26$inf <- as.factor(traindf.v26$inf)
