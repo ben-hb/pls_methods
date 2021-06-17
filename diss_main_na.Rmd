@@ -1842,8 +1842,6 @@ traindf.v13 <- traindf.v13 %>%
                              is.na(discrim) ~ 0))
 table(traindf.v13$discrim)
 traindf.v13$discrim <- as.factor(traindf.v13$discrim)
-
-
 ```
 
 ## MH campus environment
@@ -3257,7 +3255,7 @@ var_names <- c(
   "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
   "dx_adhd", "meds_count",
   # environment
-  "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
+  "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
   # life events
   "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault",
   # defeat
@@ -3267,7 +3265,7 @@ var_names <- c(
   # entrapment
   "dep_impa", "gad7_impa", "percneed_cur",
   # motivational moderators
-  "inf", "flourish_dum", "belong1", "mh_stigma", "brs_dum")  
+  "inf", "flourish_dum", "belong1", "brs_dum")  
 var_names <- sort(var_names)
 
 # build table for absolute missingness based on school2
@@ -3368,7 +3366,7 @@ traindf_sem <- traindf.v28 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, meds_count,
   # environment
-  divers, satisfied_overall, talk, religios, discrim, school2_type, activ_yn,
+  satisfied_overall, talk, religios, discrim, school2_type, activ_yn,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault,
   # defeat
@@ -3402,7 +3400,7 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_anx",
     "dx_tr", "dx_adhd", "meds_count",
     # environment
-    "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
+    "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
     # life events
     "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", 
     # defeat
@@ -3561,8 +3559,7 @@ SI_model_tr <- '
                              dx_adhd_1 + dx_adhd_NA +
                              meds_count_1 + meds_count_2 + meds_count_3 
 
-                  env_sem =~ divers_2 + divers_3 + divers_4 + divers_5 + divers_6 + divers_NA +
-                             satisfied_overall_2 + satisfied_overall_3 + satisfied_overall_4 +
+                  env_sem =~ satisfied_overall_2 + satisfied_overall_3 + satisfied_overall_4 +
                                 satisfied_overall_5 + satisfied_overall_6 + satisfied_overall_7 +
                              talk_2 + talk_3 + talk_4 + talk_NA +
                              religios_2 + religios_3 + religios_4 + religios_5 +
