@@ -9,58 +9,35 @@ output:
 # LOAD PACKAGES
 ```{r Call packages}
 library(assertive)
-#library(bestglm)
 library(broom)
-#library(car)
 library(caret)
 library(caTools)
 library(clipr)
 library(corrplot)
-#library(cowplot)
-#library(effsize)
 library(effectsize)
 library(emulator)
-#library(esc)
 library(expss)
 library(FactoMineR)
 library(factoextra)
 library(fastDummies)
-#library(finalfit)
-#library(ggpubr)
-#library(gridExtra)
 library(haven)
-#library(hrbrthemes)
 library(Hmisc)
-#library(ISLR)
 library(janitor)
 library(lavaan)
 library(lattice)
 library(leaps)
-#library(lsr)
 library(magrittr)
-#library(MASS)
 library(missMDA)
-#library(MissMech)
 library(mvord)
 library(ordinal)
 library(ordinalgmifs)
 library(ordinalNet)
-#library(packrat)
-#library(pastecs)
-#library(PerformanceAnalytics)
 library(pscl)
 library(psych)
-#library(purrr)
-#library(readr)
-#library(repr)
 library(rcompanion)
 library(readxl)
 library(reshape2)
-#library(rococo)
-#library(rpart)
-#library(rpart.plot)
 library(rstatix)
-#library(Rtsne)
 library(semPlot)
 library(semTools)
 library(stats)
@@ -68,8 +45,6 @@ library(stringr)
 library(sure)
 library(tidyverse)
 library(validate)
-#library(visualpred)
-#library(VIM)
 library(writexl)
 ```
 
@@ -1229,32 +1204,22 @@ data.v6$race[data.v6$race_other_text %in% c("Half Middle Eastern half white",
 
 # tabulate and check outputs
 table(data.v6$race)
-data.v6 = subset(data.v6, select= -c(race_bla, race_ame, race_asi, race_his, race_pi, race_ara, race_whi, race_other))   # clean up vars
+data.v6 = subset(data.v6, select= -c(race_bla, race_asi, race_his, race_whi, race_other))   # clean up vars
+
+# consolidate race_ara, race_pi, race_ame --> other
 ```
 
 ## SIBs and frequency
 Create dichotomous var for SIBs -- sib_any and sib_none -- as well as frequency measure
 ``` {r sib_any}
 data.v7 <- data.v6 %>%
-  mutate(sib_any = case_when(sib_none == 1 ~ 0,
-                             sib_cut == 1 ~ 1,
-                             sib_burn == 1 ~ 1,
-                             sib_punc == 1 ~ 1,
-                             sib_scra == 1 ~ 1,
-                             sib_pull == 1 ~ 1,
-                             sib_bite == 1 ~ 1,
-                             sib_woun == 1 ~ 1,
-                             sib_carv == 1 ~ 1,
-                             sib_rub == 1 ~ 1,
-                             sib_wall == 1 ~ 1,
-                             sib_oth == 1 ~ 1)) %>%
-  mutate(sib_freq = case_when(sib_any == 0 ~ 0,
+  mutate(sib_freq = case_when(sib_none == 1 ~ 0,
                               sib_freq == 1 ~ 1,
-                              sib_freq == 2 ~ 2,
-                              sib_freq == 3 ~ 3,
-                              sib_freq == 4 ~ 4,
-                              sib_freq == 5 ~ 5,
-                              sib_freq == 6 ~ 6))
+                              sib_freq == 2 ~ 1,
+                              sib_freq == 3 ~ 2,
+                              sib_freq == 4 ~ 2,
+                              sib_freq == 5 ~ 2,
+                              sib_freq == 6 ~ 2))
 table(data.v7$sib_freq)  # tabulate and check output
 data.v7 <- data.v7 %>%
   filter(!is.na(sib_freq))
@@ -1274,27 +1239,24 @@ table(data.v7$finpast)
 
 ## Co-occuring MH diagnoses
 ```{r dx_mh}
-
 # To ensure those who skipped the question are not accidentally added to No MH dx category
 data.v8 <- data.v7
-  
-data.v8$dx_adhd = data.v8$dx_neurodev_1
 
-data.v8 <- data.v8 %>%
-  mutate(dx_any = case_when(dx_dep == 1 ~ 1,   
-                            dx_anx  == 1 ~ 1,
-                            dx_bi == 1 ~ 1,
-                            dx_psy == 1 ~ 1,
-                            dx_ea == 1 ~ 1,
-                            dx_tr == 1 ~ 1,
-                            dx_sa == 1 ~ 1,
-                            dx_adhd == 1 ~ 1,
-                            dx_pers == 1 ~ 1,
-                            dx_none == 1 ~ 0))
-                            
-# MH diagnoses sub-category counts
-data.v9 <- data.v8 %>%
-  filter(!is.na(dx_any)) %>%   # filters out any respondents who skipped the MH section 
+# set NAs to zero
+data.v8$dx_dep[is.na(data.v8$dx_dep)] <- 0
+data.v8$dx_anx[is.na(data.v8$dx_anx)] <- 0
+data.v8$dx_bi[is.na(data.v8$dx_bi)] <- 0
+data.v8$dx_psy[is.na(data.v8$dx_psy)] <- 0
+data.v8$dx_ea[is.na(data.v8$dx_ea)] <- 0
+data.v8$dx_tr[is.na(data.v8$dx_tr)] <- 0
+data.v8$dx_sa[is.na(data.v8$dx_sa)] <- 0
+data.v8$dx_neurodev_1[is.na(data.v8$dx_neurodev_1)] <- 0
+data.v8$dx_pers[is.na(data.v8$dx_pers)] <- 0
+
+data.v8$dx_adhd = data.v8$dx_neurodev_1
+data.v8$dx_adhd[is.na(data.v8$dx_adhd)] <- 0
+
+data.v9 <- data.v8 %>%   # filters out any respondents who skipped the MH section 
   mutate(dx_dep = case_when(dx_dep == 1 ~ 1,
                             dx_none == 1 ~ 0)) %>%    # depression
   mutate(dx_anx = case_when(dx_anx == 1 ~ 1,
@@ -1314,7 +1276,6 @@ data.v9 <- data.v8 %>%
   mutate(dx_pers = case_when(dx_pers == 1 ~ 1,
                              dx_none == 1 ~ 0))       # personality
 
-data.v9$dx_any <- as.logical(data.v9$dx_any)
 data.v9$dx_dep <- as.logical(data.v9$dx_dep)
 data.v9$dx_anx <- as.logical(data.v9$dx_anx)
 data.v9$dx_bi <- as.logical(data.v9$dx_bi)
@@ -1325,7 +1286,7 @@ data.v9$dx_sa <- as.logical(data.v9$dx_sa)
 data.v9$dx_adhd <- as.logical(data.v9$dx_adhd)
 data.v9$dx_pers <- as.logical(data.v9$dx_pers)
 data.v9$dx_none <- as.logical(data.v9$dx_none)
-data.v9$dx_none <- as.numeric(data.v9$dx_none)
+
 
 # Check output
 table(data.v9$dx_any)
@@ -1338,9 +1299,6 @@ table(data.v9$dx_tr)
 table(data.v9$dx_sa)
 table(data.v9$dx_adhd)
 table(data.v9$dx_pers)
-
-data.v9 <- data.v9 %>%
-  filter(!is.na(dx_any))
 ```
 
 
@@ -2853,13 +2811,13 @@ table(traindf.v24$gad7_impa)
 ## Current needs
 ```{r percneed_cur}
 traindf.v24 <- traindf.v24 %>%
-  mutate(percneed_cur = case_when(percneed_cur == 1 ~ 1,
+  mutate(percneed_cur = case_when(percneed ==  ###############
+                                 percneed_cur == 1 ~ 1,
                                  percneed_cur == 2 ~ 2,
                                  percneed_cur == 3 ~ 3,
                                  percneed_cur == 4 ~ 4,
                                  percneed_cur == 5 ~ 5,
-                                 percneed_cur == 6 ~ 6,
-                                 is.na(percneed_cur) ~ 0))
+                                 percneed_cur == 6 ~ 6))
 table(traindf.v24$percneed_cur)
 
 ```
@@ -2969,9 +2927,11 @@ traindf.v26 <- traindf.v26 %>%
                              belong1 == 3 ~ 3,
                              belong1 == 4 ~ 4,
                              belong1 == 5 ~ 5,
-                             belong1 == 6 ~ 6,
-                             is.na(belong1) ~ 0))
+                             belong1 == 6 ~ 6))
 table(traindf.v26$belong1)
+
+traindf.v26$belong1 <- as.numeric(traindf.v26$belong1)
+summary(traindf.v26$belong1)
 
 table(traindf.v26$belong2)  # elective question, but common
 table(traindf.v26$belong8)  # nested x 2
@@ -3034,28 +2994,21 @@ traindf.v26$inf_7[is.na(traindf.v26$inf_7)] <- 0
 # change inf_ var to numeric
 traindf.v26 <- traindf.v26 %>% 
   # merge all var into inf_type
-  mutate(inf = case_when(inf_1 == 1 ~ 2,
-                         inf_2 == 1 ~ 3,
-                         inf_3 == 1 ~ 4,
-                         inf_4 == 1 ~ 5,
-                         inf_5 == 1 ~ 6,
-                         inf_6 == 1 ~ 7,
-                         inf_7 == 1 ~ 8,
-                         inf_8 == 1 ~ 1)) %>%
-  mutate(inf = case_when(inf == 1 ~ 1,
-                         inf == 2 ~ 2,
-                         inf == 3 ~ 3,
-                         inf == 4 ~ 4,
-                         inf == 5 ~ 5,
-                         inf == 6 ~ 6,
-                         inf == 7 ~ 7,
-                         inf == 8 ~ 8))
+  mutate(inf = case_when(inf_8 == 1 ~ 1,
+                         inf_1 == 1 ~ 0,
+                         inf_2 == 1 ~ 0,
+                         inf_3 == 1 ~ 0,
+                         inf_4 == 1 ~ 0,
+                         inf_5 == 1 ~ 0,
+                         inf_6 == 1 ~ 0,
+                         inf_7 == 1 ~ 0))
+
 
 table(traindf.v26$inf)
 traindf.v26$inf <- as.factor(traindf.v26$inf)
 
 # clean up vars
-traindf.v26 = subset(traindf.v26, select= -c(inf_1:inf_help))
+#traindf.v26 = subset(traindf.v26, select= -c(inf_1:inf_help))
 ```
 
 ## BRS
@@ -3243,8 +3196,7 @@ traindf.v28 <- traindf.v26
 # school structural analysis
 var_names <- c(
   # diathesis
-  "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_tr", "dx_anx", 
-  "dx_adhd", "meds_count",
+  "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_mh", "meds_count",
   # environment
   "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
   # life events
@@ -3336,7 +3288,7 @@ traindf_sem <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, race, ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, meds_count,
+  age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
   # environment
   satisfied_overall, talk, religios, discrim, school2_type, activ_yn,
   # life events
@@ -3358,9 +3310,9 @@ view(traindf_sem2)   # check output
 
 # # xlsx output
 traindf_sem3 <- as.data.frame(traindf_sem2)
-# save(traindf_sem3 , file = "traindf_nondummy.RData")
-# load("traindf_nondummy.RData")
-# write_xlsx(traindf_sem3, path = "traindf_nondummy.xls", col_names = TRUE, format_headers = TRUE)
+save(traindf_sem3 , file = "traindf_nondummy.RData")
+load("traindf_nondummy.RData")
+write_xlsx(traindf_sem3, path = "traindf_nondummy.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Create dummy vars
@@ -3369,8 +3321,7 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_dep", "dx_bi", "dx_anx",
-    "dx_tr", "dx_adhd", "meds_count",
+    "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_mh", "meds_count",
     # environment
     "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
     # life events
@@ -3451,13 +3402,13 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ## Create data matrix, save into files
 ```{r save dataset}
-# results_tr_df <- as.data.frame(results_tr_sem)
-# view(results_tr_df)
+results_tr_df <- as.data.frame(results_tr_sem)
+view(results_tr_df)
 
 #save full var set for SEM
-# save(results_tr_df, file = "traindf_sem.RData")
-# load("traindf_sem.RData")
-# write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_headers = TRUE)
+save(results_tr_df, file = "traindf_sem.RData")
+load("traindf_sem.RData")
+write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -3538,15 +3489,11 @@ SI_model_tr <- '
                   dia_sem =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
                              sexual_2 + sexual_3 + sexual_NA +
                              gender_tgd_2 +
-                             sib_freq_2 + sib_freq_3 + sib_freq_4 + sib_freq_5 + sib_freq_6 + 
+                             sib_freq_2 + sib_freq_3 + sib_freq_4 + 
                              race_2 + race_3 + race_4 + race_5 + race_6 +
                                 race_7 + race_8 + race_9 +
                              ed_any_2 + ed_any_NA +
-                             dx_dep_1 + dx_dep_NA +
-                             dx_bi_1 + dx_bi_NA +
-                             dx_anx_1 + dx_anx_NA +
-                             dx_tr_1 + dx_tr_NA +
-                             dx_adhd_1 + dx_adhd_NA +
+                             dx_mh_1 + dx_mh_NA
                              meds_count_1 + meds_count_2 + meds_count_3 
 
                   env_sem =~ satisfied_overall_2 + satisfied_overall_3 + satisfied_overall_4 +
@@ -3577,7 +3524,7 @@ SI_model_tr <- '
                                 percneed_cur_1 + percneed_cur_2 + percneed_cur_3 + percneed_cur_4 + 
                                     percneed_cur_5 + percneed_cur_6
 
-                  mm_sem =~  inf_2 + inf_3 + inf_4 + inf_5 + inf_6 + inf_7 + inf_8 + inf_9 + inf_NA +
+                  mm_sem =~  inf_2 + inf_NA +
                              flourish_dum_1 + flourish_dum_2 +
                              belong1_2 + belong1_3 + belong1_4 + belong1_5 + belong1_6 +
                              brs_dum_1 + brs_dum_2
@@ -3597,17 +3544,12 @@ SI_model_tr <- '
 
 ## Model estimation
 ```{r SEM model estimation}
-results_tr_df <- as.data.frame(results_corr)
+results_tr_sem2 <- as.data.frame(results_corr)
 
-is.atomic(results_tr_df)
-is.recursive(results_tr_df)
+is.atomic(results_tr_sem2)
+is.recursive(results_tr_sem2)
 
-# fit_tr <- cfa(SI_model_tr, data = results_tr_df, 
-#               ordered = "si_type_2", "si_type_3", "si_type_4",
-#               "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25", 
-#               "meds_count_1", "meds_count_2", "meds_count_3")
-
-fit_train <- sem(SI_model_tr, data=results_tr_df, 
+fit_train <- sem(SI_model_tr, data=results_tr_sem2, 
                  ordered = "si_type_2", "si_type_3", "si_type_4",
                  "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25", 
                  "meds_count_1", "meds_count_2", "meds_count_3")
@@ -4652,8 +4594,7 @@ results_test_sem <- dummy_cols(testdf_sem2, select_columns = c(
     # environment
     "divers", "satisfied_overall", "talk", "religios", "discrim", "school2_type", "activ_yn",
     # life events
-    "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault_emo", "assault_phys", 
-    "assault_sex",
+    "ins_cover", "gpa_sr", "binge_fr", "psyhx", "fincur", "drugs_yn", "assault",
     # defeat
     "aca_impa", "deprawsc",
     # threats to self-moderation
@@ -4661,7 +4602,7 @@ results_test_sem <- dummy_cols(testdf_sem2, select_columns = c(
     # entrapment
     "dep_impa", "gad7_impa", "percneed_cur",
     # motivational moderators
-    "inf", "flourish", "belong1", "mh_stigma", "brs_tot"), 
+    "inf", "flourish", "belong1", "brs_tot"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 view(results_test_sem)
