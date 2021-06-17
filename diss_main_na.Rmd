@@ -9,58 +9,58 @@ output:
 # LOAD PACKAGES
 ```{r Call packages}
 library(assertive)
-library(bestglm)
+#library(bestglm)
 library(broom)
-library(car)
+#library(car)
 library(caret)
 library(caTools)
 library(clipr)
 library(corrplot)
-library(cowplot)
-library(effsize)
+#library(cowplot)
+#library(effsize)
 library(effectsize)
 library(emulator)
-library(esc)
+#library(esc)
 library(expss)
 library(FactoMineR)
 library(factoextra)
 library(fastDummies)
-library(finalfit)
-library(ggpubr)
-library(gridExtra)
+#library(finalfit)
+#library(ggpubr)
+#library(gridExtra)
 library(haven)
-library(hrbrthemes)
+#library(hrbrthemes)
 library(Hmisc)
-library(ISLR)
+#library(ISLR)
 library(janitor)
 library(lavaan)
 library(lattice)
 library(leaps)
-library(lsr)
+#library(lsr)
 library(magrittr)
-library(MASS)
+#library(MASS)
 library(missMDA)
-library(MissMech)
+#library(MissMech)
 library(mvord)
 library(ordinal)
 library(ordinalgmifs)
 library(ordinalNet)
-library(packrat)
-library(pastecs)
-library(PerformanceAnalytics)
+#library(packrat)
+#library(pastecs)
+#library(PerformanceAnalytics)
 library(pscl)
 library(psych)
-library(purrr)
-library(readr)
-library(repr)
+#library(purrr)
+#library(readr)
+#library(repr)
 library(rcompanion)
 library(readxl)
 library(reshape2)
-library(rococo)
-library(rpart)
-library(rpart.plot)
+#library(rococo)
+#library(rpart)
+#library(rpart.plot)
 library(rstatix)
-library(Rtsne)
+#library(Rtsne)
 library(semPlot)
 library(semTools)
 library(stats)
@@ -68,8 +68,8 @@ library(stringr)
 library(sure)
 library(tidyverse)
 library(validate)
-library(visualpred)
-library(VIM)
+#library(visualpred)
+#library(VIM)
 library(writexl)
 ```
 
@@ -671,7 +671,6 @@ Creates indicator variable 'si_type' using the subtypes of suicidal ideation usi
 
 
 ```{r si_type}
-
 data.v2 <- data.v1 %>%
 
 # create si_type var
@@ -679,7 +678,6 @@ data.v2 <- data.v1 %>%
                            (sui_idea == 1 & suic_plan == 1) ~ 3,                   # active SI
                            (sui_idea == 1) ~ 2,                                    # passive SI
                            sui_idea == 0 ~ 1))                                     # no SI reported
-
 # tabulate and check output
 table(data.v2$si_type)
 table(data.v2$sui_idea)
@@ -3164,7 +3162,7 @@ traindf.v27 <- traindf.v26
 ### Motivational Moderator correlation
 ```{r MM_corr}
 # Define MM variable candidates for correlation matrix
-traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, mh_stigma, brs_dum)
+traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, brs_dum)
 
  # convert traindf to numeric in order to run correlations
 traindf_mm <- traindf_mm %>% mutate_if(is.character, as.factor)
@@ -3183,7 +3181,7 @@ print(corr)
 
 ### EFA MM
 ```{r EFA MM}
-traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, mh_stigma, brs_dum)
+traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, brs_dum)
 
 # create corr matrix, with dummy vars 
 traindf_mm <- traindf_mm %>% 
@@ -3191,7 +3189,7 @@ traindf_mm <- traindf_mm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 traindf_mm   # check output
-results_mm <- dummy_cols(traindf_mm, select_columns = c("inf", "flourish_dum", "belong1", "mh_stigma", "brs_dum"),
+results_mm <- dummy_cols(traindf_mm, select_columns = c("inf", "flourish_dum", "belong1", "brs_dum"),
                          remove_first_dummy = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 eigval_mm <- get_eigenvalue(mm_pca)
@@ -3220,12 +3218,12 @@ fviz_cos2(mm_pca, choice = "var", axes = 1,
 ### CLM Motivational moderators regression
 Variables for consideration:  inf, flourish_dum, belong2, stig_pcv_2, stig_pcv_3, brs_dum
 ```{r CLM mm}
-clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1, mh_stigma, brs_tot)
+clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1, brs_tot)
 
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
 
-clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + mh_stigma + brs_tot, data = clm_mm)
+clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + brs_tot, data = clm_mm)
 
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))
@@ -3385,10 +3383,10 @@ traindf_sem2 <- traindf_sem %>%
 view(traindf_sem2)   # check output
 
 # # xlsx output
-# traindf_sem3 <- as.data.frame(traindf_sem2)
-# save(traindf_sem3 , file = "traindf_nondummy.RData")
-# load("traindf_nondummy.RData")
-# write_xlsx(traindf_sem3, path = "traindf_nondummy.xls", col_names = TRUE, format_headers = TRUE)
+traindf_sem3 <- as.data.frame(traindf_sem2)
+save(traindf_sem3 , file = "traindf_nondummy.RData")
+load("traindf_nondummy.RData")
+write_xlsx(traindf_sem3, path = "traindf_nondummy.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Create dummy vars
@@ -3465,9 +3463,9 @@ results_tr_df <- as.data.frame(results_tr_sem)
 view(results_tr_sem)
 
 #save full var set for SEM
-save(results_tr_df, file = "traindf_sem.RData")
-load("traindf_sem.RData")
-write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_headers = TRUE)
+# save(results_tr_df, file = "traindf_sem.RData")
+# load("traindf_sem.RData")
+# write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -3579,7 +3577,7 @@ SI_model_tr <- '
                              dep_type_1 + dep_type_2 + dep_type_3 + dep_type_4 + dep_type_5
 
                   tsm_sem =~ persist_1 + persist_2 + persist_3 + persist_4 + persist_5 + persist_6 +
-                             anx_type_1 + anx_type_4 +
+                                anx_type_1 + anx_type_4 +
                              dep_secret_1 + dep_secret_2 + dep_secret_3 + dep_secret_4 + dep_secret_5 + dep_secret_6
                              
                   entrap_sem =~ dep_impa_1 + dep_impa_2 + dep_impa_3 + dep_impa_4 +
@@ -3599,22 +3597,22 @@ SI_model_tr <- '
 
                # residual covars
                   dx_dep_1 ~~ dx_bi_1
-                  dx_dep_1 ~~ dx_tr_1     '
+                  dx_dep_1 ~~ dx_tr_1
+                  dx_adhd_1 ~~ dx_anx_1   
+                  dx_adhd_1 ~~ dx_dep_1
+                  dax_adhd_1 ~~ dx_tr_1  '
 ```
 
 ## Model estimation
 ```{r SEM model estimation}
-
-results_tr_sem2 <- results_tr_sem2 %>%
-  NA_preproc() %>%
-  as.matrix()
+results_tr_sem2 <- as.matrix(results_tr_sem2)
+is.atomic(results_tr_sem2)
+is.recursive(results_tr_sem2)
 
 fit_tr <- cfa(SI_model_tr, data = results_tr_sem2, 
               ordered = "si_type_2", "si_type_3", "si_type_4",
               "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25", 
               "meds_count_1", "meds_count_2", "meds_count_3")
-
-#lavInspect(results_tr_sem2, "cov.lv")
 
 fit_train <- sem(SI_model_tr, data=results_tr_sem2, ordered = "si_type_2", "si_type_3", "si_type_4",
               "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25", 
