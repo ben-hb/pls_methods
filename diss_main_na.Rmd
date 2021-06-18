@@ -3494,24 +3494,32 @@ SI_model_tr <- '
                   si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem     
 
                # covars
+                  dx_mh_1 ~~ ed_any_2
+                  dx_mh_1 ~~ meds_count_1
                   dx_mh_1 ~~ meds_count_2
                   dx_mh_1 ~~ meds_count_3
                   dx_mh_1 ~~ meds_count_4
                   dx_mh_1 ~~ meds_count_5
-                  dx_mh_1 ~~ meds_count_6  '
+                  dx_mh_1 ~~ meds_count_6  
+                  dx_mh_1 ~~ dep_type_3
+                  dx_mh_1 ~~ dep_type_4
+                  dx_mh_1 ~~ dep_type_5
+                  dx_mh_1 ~~ anx_type_3
+                  dx_mh_1 ~~ anx_type_4    '
 ```
 
 ## Model estimation
 ```{r SEM model estimation}
-results_tr_sem2 <- as.data.frame(results_corr)
+results_tr_sem <- as.data.frame(results_tr_sem)
 
-is.atomic(results_tr_sem2)
-is.recursive(results_tr_sem2)
+is.atomic(results_tr_sem)
+is.recursive(results_tr_sem)
 
-fit_train <- sem(SI_model_tr, data=results_tr_sem2, 
+fit_train <- sem(SI_model_tr, data=results_tr_sem, 
                  ordered = "si_type_2", "si_type_3", "si_type_4",
                  "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25", 
-                 "meds_count_1", "meds_count_2", "meds_count_3")
+                 "meds_count_1", "meds_count_2", "meds_count_3", "meds_count_4", 
+                    "meds_count_5", "meds_count_6")
 
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
