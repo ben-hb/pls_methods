@@ -649,7 +649,7 @@ Creates indicator variable 'si_type' using the subtypes of suicidal ideation usi
 data.v2 <- data.v1 %>%
 
 # create si_type var
-  mutate(si_type = case_when((sui_idea == 1 & suic_plan == 1 & suic_att == 1) ~ 4, # volitional, suicide attempt or related bx
+  mutate(si_type = case_when((sui_idea == 1 & suic_plan == 1 & suic_att == 1) ~ 4, # suicide attempt
                            (sui_idea == 1 & suic_plan == 1) ~ 3,                   # active SI
                            (sui_idea == 1) ~ 2,                                    # passive SI
                            sui_idea == 0 ~ 1))                                     # no SI reported
@@ -683,11 +683,6 @@ data.v3$age <- as.numeric(data.v3$age)
 ```
 
 ## Gender identity
-
-- Original (n=55138): 1=Male; 2=Female; 3=Trans male/Trans man; 4=Trans female/Trans woman; 5=Genderqueer/Gender 
-non-conforming, 6=Other, self-identify
-- Transformed (n=55138): 1 = cis-gender, 2=transgender 3=gender diverse, 4=non-answer (NA, jokesters, decline to answer)
-
 ```{r gender}
 data.v3 <- data.v3 %>%
   filter(!is.na(gender)) %>% 
@@ -796,9 +791,6 @@ table(data.v3$gender_tgd)   # check output
 ```
 
 ## Sexual Identity
-  - Original: 1=heterosexual, 2=lesbian, 3=gay, 4=bisexual, 5=queer, 6=questioning, 7=other
-  - Transformed_1: 1=heterosexual, 2=lesbian/gay 3=bisexual, 4=queer/questioning, 5= other, 6=pansexual, 7=asexual/gray/demi, 8=non-answers
-  -- can do interaction with gender and sexuality post-analysis
 ```{r sexual}
 data.v4 <- data.v3 %>%
   # aggregates all 'sexual' answers into one var
@@ -945,7 +937,7 @@ table(data.v4$sexual)   # tabulate and check outputs
 ```
 
 ### 'Sexual' transformed 
-sexual identity: (1) heterosexual; (2) lesbian, gay, bisexual; (3) queer/pan/asex/other, and (4) non-answers
+sexual identity: (1) heterosexual; (2) lesbian/gay/bisexual; (3) queer/pan/asex/other, and (4) non-answers
 ```{r sexual regroup}
 
 data.v5 <- data.v4 %>%
@@ -996,13 +988,13 @@ table(data.v5$body_sr)
 data.v6 <- data.v5 %>% 
 # 'race' subtypes combined into one variable
   mutate(race = case_when(race_bla == 1 ~ 1,
-                          race_ame == 1 ~ 2,
-                          race_asi == 1 ~ 3,
-                          race_his == 1 ~ 4,
+                          race_ame == 1 ~ 5,
+                          race_asi == 1 ~ 2,
+                          race_his == 1 ~ 3,
                           race_pac == 1 ~ 5,
-                          race_ara == 1 ~ 6,
-                          race_whi == 1 ~ 7,
-                          race_oth == 1 ~ 8,
+                          race_ara == 1 ~ 5,
+                          race_whi == 1 ~ 4,
+                          race_oth == 1 ~ 5,
                           FALSE ~ 9))
 table(data.v6$race) # check output
 data.v6 <- data.v6 %>%
@@ -1015,10 +1007,10 @@ table(data.v6$race)
 Reconciles all 'other' answers vi race_other_text
 ```{r race reconciliation}
   #decline to answer
-data.v6$race[str_detect(data.v6$race_other_text, "[A|a]merica")] <- 9
-data.v6$race[str_detect(data.v6$race_other_text, "[H|h]uman")] <- 9
-data.v6$race[str_detect(data.v6$race_other_text, "[N|n]one")] <- 9
-data.v6$race[str_detect(data.v6$race_other_text, "[P|p]erson")] <- 9
+data.v6$race[str_detect(data.v6$race_other_text, "[A|a]merica")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[H|h]uman")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[N|n]one")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[P|p]erson")] <- 5
 data.v6$race[data.v6$race_other_text %in% c("prefer not to say", "Prefer not to answer.", "Prefer not to specify", 
                                             "Prefer not to answer :)", "FUCK YOU", "Caramel American", "Why", "irrelevant",
                                             "Prefer not to state", "Prefer no to say", "Brown", "No thx", "Texan", 
@@ -1051,63 +1043,63 @@ data.v6$race[data.v6$race_other_text %in% c("Volvo", "Vulcan", "Snowman", "tree"
                                             "Desert Camoflauge",  "Attack helicopter", "Ethnic Kekistani")] <- 9
 
   # white
-data.v6$race[str_detect(data.v6$race_other_text, "[J|j]ew")] <- 7  # if Israeli, could be White, Asian, or ME (e.g. Palestine)
-data.v6$race[str_detect(data.v6$race_other_text, "[A|a]shkenazi")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[C|c]aucasian")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[E|e]uropean")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[G|g]reek")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[I|i]rish")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[I|i]talian")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[A|a]lbania")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]em[e|i]tic")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[R|r]ussian")] <- 7 # could be Asian depending on region
-data.v6$race[str_detect(data.v6$race_other_text, "[R|r]oma")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[T|t]urkish")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]lavic")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[M|m]etis")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[B|b]asque")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]icilian")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[P|p]olish")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]candinavian")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[F|f]innish")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[C|c]eltic")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]cottish")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[C|c]anad")] <- 7
-data.v6$race[str_detect(data.v6$race_other_text, "[M|m]editerranean")] <- 7
+data.v6$race[str_detect(data.v6$race_other_text, "[J|j]ew")] <- 4  # if Israeli, could be White, Asian, or ME (e.g. Palestine)
+data.v6$race[str_detect(data.v6$race_other_text, "[A|a]shkenazi")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[C|c]aucasian")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[E|e]uropean")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[G|g]reek")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[I|i]rish")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[I|i]talian")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[A|a]lbania")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]em[e|i]tic")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[R|r]ussian")] <- 4 # could be Asian depending on region
+data.v6$race[str_detect(data.v6$race_other_text, "[R|r]oma")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[T|t]urkish")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]lavic")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[M|m]etis")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[B|b]asque")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]icilian")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[P|p]olish")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]candinavian")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[F|f]innish")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[C|c]eltic")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]cottish")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[C|c]anad")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[M|m]editerranean")] <- 4
 data.v6$race[data.v6$race_other_text %in% c("please refer to me as Caucasian; it's extremely offensive to refer to every race-- excluding Caucasians-- in their politically correct form",
                                             "Not sure if I'm Hispanic, as I am Portuguese and Spanish (from my mother's side) . I identify as white as I am of European descent.",
                                             "Portugese", "Cape Verdean", "Capeverdean", "Bulgarian-American", "Ginger", 
                                             "Anglo Saxon", "anglo/white", "Balkan for ethnicity", "Ulster-scots", 
                                             "I'm white, but I do have some Native American in me but it's not the dominant visible ethnicity.", 
-                                            "White (Jewish/Jamaican-Chinese/Irish)", "ARMENIAN")] <- 7
+                                            "White (Jewish/Jamaican-Chinese/Irish)", "ARMENIAN")] <- 4
   # Identifies as American Indian or other indigenous descent
-data.v6$race[str_detect(data.v6$race_other_text, "[N|n]ative [A|a]merican")] <- 2
-data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndigenous")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[N|n]ative [A|a]merican")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndigenous")] <- 5
 data.v6$race[data.v6$race_other_text %in% c("I look white but im also status native", "Indigenous/Mestizo", 
-                                            "american indian that isn'y legally claimed")] <- 2
+                                            "american indian that isn'y legally claimed")] <- 5
   # Identifies as Asian
-data.v6$race[str_detect(data.v6$race_other_text, "[A|a]sian")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[C|c]hinese")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[J|j]apanese")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndian")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[B|b]anglades")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[F|f]ilipino")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[G|g]uyanese")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[M|m]ongolia")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[C|c]hina")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]outheast")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]outh [A|a]sian")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[P|p]unjabi")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]iberia")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndonesia")] <- 3
-data.v6$race[str_detect(data.v6$race_other_text, "[W|w]est [I|i]ndian")] <- 3
+data.v6$race[str_detect(data.v6$race_other_text, "[A|a]sian")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[C|c]hinese")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[J|j]apanese")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndian")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[B|b]anglades")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[F|f]ilipino")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[G|g]uyanese")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[M|m]ongolia")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[C|c]hina")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]outheast")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]outh [A|a]sian")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[P|p]unjabi")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]iberia")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndonesia")] <- 2
+data.v6$race[str_detect(data.v6$race_other_text, "[W|w]est [I|i]ndian")] <- 2
 data.v6$race[data.v6$race_other_text %in% c("Sri Lankan", "Sri-Lankan", "Malays", "Chinese Ethinicy-Nuosu", "Austronesian",
                                             "third culture kid, born and raised in asia until 18yo", "Central Asian",  
                                             "Indian, UAE native", "Indian/Subcontinental", "Indians arent on the list.....", 
                                             "American Texan of Indian (South asia) Descent", "Okinawan", "Asian/Chinese",
                                             "Japanese American and Native Hawaiian Culture", "Asian. International.", 
                                             "Australian/Indian","Indo-Caribbean",  "Atlantic Islander", 
-                                            "Telugu-speaking Tamil-ethnicity Indian")] <- 3
+                                            "Telugu-speaking Tamil-ethnicity Indian")] <- 2
   # Identifies as Black
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]frican")] <- 1
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]fro")] <- 1
@@ -1128,45 +1120,45 @@ data.v6$race[str_detect(data.v6$race_other_text, "[N|n]igerian")] <- 1
 data.v6$race[data.v6$race_other_text %in% c("Cameroonian American", "Creole", "Jamacian American", "North Africa")] <- 1
 
   # Identifies as Hispanic
-data.v6$race[str_detect(data.v6$race_other_text, "[M|m]exican")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[X|x]ican[o|a]")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[L|l]atin[o|a]")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[P|p]uerto [R|r]ican")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]panish")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[C|c]hican[o|a]")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[I|i]berian")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[M|m]estiz[o|a]")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[P|p]ortuguese")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[B|b]razil")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[C|c]uba")] <- 4
-data.v6$race[data.v6$race_other_text %in% c("Costa Rican", "Central American Native", "Andean")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[M|m]exican")] <- 3
+data.v6$race[str_detect(data.v6$race_other_text, "[X|x]ican[o|a]")] <- 3
+data.v6$race[str_detect(data.v6$race_other_text, "[L|l]atin[o|a]")] <- 3
+data.v6$race[str_detect(data.v6$race_other_text, "[P|p]uerto [R|r]ican")] <- 3
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]panish")] <- 3
+data.v6$race[str_detect(data.v6$race_other_text, "[C|c]hican[o|a]")] <- 3
+data.v6$race[str_detect(data.v6$race_other_text, "[I|i]berian")] <- 3
+data.v6$race[str_detect(data.v6$race_other_text, "[M|m]estiz[o|a]")] <- 3
+data.v6$race[str_detect(data.v6$race_other_text, "[P|p]ortuguese")] <- 3
+data.v6$race[str_detect(data.v6$race_other_text, "[B|b]razil")] <- 3
+data.v6$race[str_detect(data.v6$race_other_text, "[C|c]uba")] <- 3
+data.v6$race[data.v6$race_other_text %in% c("Costa Rican", "Central American Native", "Andean")] <- 3
 
   # Identifies as Middle Eastern or of Arab descent
-data.v6$race[str_detect(data.v6$race_other_text, "[A|a]rmenia")] <- 6
-data.v6$race[str_detect(data.v6$race_other_text, "[P|p]akistani")] <- 6
-data.v6$race[str_detect(data.v6$race_other_text, "[A|a]rab")] <- 6
-data.v6$race[str_detect(data.v6$race_other_text, "[P|p]ersian")] <- 6
-data.v6$race[str_detect(data.v6$race_other_text, "[P|p]alestin")] <- 6
-data.v6$race[str_detect(data.v6$race_other_text, "[I|i]srael")] <- 6
-data.v6$race[str_detect(data.v6$race_other_text, "[A|a]fghan")] <- 6
-data.v6$race[str_detect(data.v6$race_other_text, "[N|n]orth [A|a]frica")] <- 6
-data.v6$race[str_detect(data.v6$race_other_text, "[H|h]azara")] <- 6
+data.v6$race[str_detect(data.v6$race_other_text, "[A|a]rmenia")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[P|p]akistani")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[A|a]rab")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[P|p]ersian")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[P|p]alestin")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[I|i]srael")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[A|a]fghan")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[N|n]orth [A|a]frica")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[H|h]azara")] <- 5
 data.v6$race[data.v6$race_other_text %in% c("Northern African; Moroccan; Israeli", "Arab Mix", "Berber/North African", 
-                                            "Coptic Egyptian (non-Arab)", "Kekistani")] <- 6
+                                            "Coptic Egyptian (non-Arab)", "Kekistani")] <- 5
 
   # Identifies all other data or mixed ethicity
-data.v6$race[str_detect(data.v6$race_other_text, "[B|b]iracial")] <- 8
-data.v6$race[str_detect(data.v6$race_other_text, "[B|b]i-racial")] <- 8
-data.v6$race[str_detect(data.v6$race_other_text, "[M|m]ix")] <- 8
-data.v6$race[str_detect(data.v6$race_other_text, "[H|h]alf")] <- 8
-data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndo-[C|c]arribean")] <- 8
-data.v6$race[str_detect(data.v6$race_other_text, "[M|m]ulti")] <- 8
-data.v6$race[str_detect(data.v6$race_other_text, "[M|m]ulatto")] <- 8
-data.v6$race[str_detect(data.v6$race_other_text, "[P|p]anda")] <- 8
-data.v6$race[str_detect(data.v6$race_other_text, "[O|o]ther")] <- 8
-data.v6$race[str_detect(data.v6$race_other_text, "[U|u]nkown")] <- 8
-data.v6$race[str_detect(data.v6$race_other_text, "[A|a]mbiguous")] <- 8
-data.v6$race[str_detect(data.v6$race_other_text, "[A|a]mbiguous")] <- 8
+data.v6$race[str_detect(data.v6$race_other_text, "[B|b]iracial")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[B|b]i-racial")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[M|m]ix")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[H|h]alf")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndo-[C|c]arribean")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[M|m]ulti")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[M|m]ulatto")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[P|p]anda")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[O|o]ther")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[U|u]nkown")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[A|a]mbiguous")] <- 5
+data.v6$race[str_detect(data.v6$race_other_text, "[A|a]mbiguous")] <- 5
 data.v6$race[data.v6$race_other_text %in% c("Sub Asian/East African", "two or more races", "Moroccan Mexican",
                                             "Transracial", "Adopted", "Part Thetan", "Taiwanese-Greek-Cypriot American",
                                             "East Indian, Caribbean", "50/50", "Korean Ecuadorian", "Brazilian, Luso,
@@ -1183,24 +1175,24 @@ data.v6$race[data.v6$race_other_text %in% c("Sub Asian/East African", "two or mo
                                             "German, Chinese, Arabic, Melanesian", "Hispanic and Middle Eastern",
                                             "mulatto", "mixed & south american",  "international", "Biracial",
                                             "Multiracial",  "Korean Ecuadorian", "Central American/ Caribbean",
-                                            "An American Mutt- a bit of everything somewhere in there")] <- 8 
+                                            "An American Mutt- a bit of everything somewhere in there")] <- 5
   # Identifies as black and white as 'Other/Mixed'
-data.v6$race[data.v6$race_other_text %in% c("Black/White","White/African American", "White/African American")] <- 8
+data.v6$race[data.v6$race_other_text %in% c("Black/White","White/African American", "White/African American")] <- 5
   # Identifies as Asian and White as 'Other/Mixed'
-data.v6$race[str_detect(data.v6$race_other_text, "[E|e]urasian")] <- 8
+data.v6$race[str_detect(data.v6$race_other_text, "[E|e]urasian")] <- 85
 data.v6$race[data.v6$race_other_text %in% c("Japanese, Chinese, French, British, Greek", "Asian/White",
                                             "Asian/European", "Asian and White", "asian and white",  
                                             "White (Caucasian) and Indian (S. Asia)", "Chinese/White",
                                             "American/Asian African/American White", "3/4 White, 1/4 Japanese", 
-                                            "White & Asian", "Chinese and White")] <- 8
+                                            "White & Asian", "Chinese and White")] <- 5
   # Identifies as Hispanic and White as 'Other/Mixed'
 data.v6$race[data.v6$race_other_text %in% c("I am 1/4th Hispanic 3/4 German",  "Honduran, Irish", "White hispanic",
                                             "White, and Hispanic", "Hispanic/Jewish", "White and Hispanic", "White Hispanic",
                                             "French and spanish", "LATINA/WHITE", "white/hispanic",
-                                            "If I identify as puerto rican does that mean i get more scholarship money?")] <- 8
+                                            "If I identify as puerto rican does that mean i get more scholarship money?")] <- 5
 	 # Identifies as MR and White as 'Other/Mixed'
 data.v6$race[data.v6$race_other_text %in% c("Half Middle Eastern half white", 
-                                            "Half my family is white and the other middle eastern")] <- 8
+                                            "Half my family is white and the other middle eastern")] <- 5
 
 # tabulate and check outputs
 table(data.v6$race)
@@ -1210,7 +1202,6 @@ data.v6 = subset(data.v6, select= -c(race_bla, race_asi, race_his, race_whi, rac
 ```
 
 ## SIBs and frequency
-Create dichotomous var for SIBs -- sib_any and sib_none -- as well as frequency measure
 ``` {r sib_any}
 data.v7 <- data.v6 %>%
   mutate(sib_freq = case_when(sib_none == 1 ~ 0,
@@ -1228,7 +1219,9 @@ data.v7 = subset(data.v7, select= -c(sib_none:sib_oth)) # clean up vars/columns
 
 ## SCOFF scale
 ```{r SCOFF}
+data.v7$ed_scoff <- as.numeric(data.v7$ed_scoff)
 table(data.v7$ed_scoff)
+
 data.v7 = subset(data.v7, select= -c(scoff_1:scoff_5)) # clean up vars/columns  
 ```
 
@@ -1257,48 +1250,24 @@ data.v8$dx_adhd = data.v8$dx_neurodev_1
 data.v8$dx_adhd[is.na(data.v8$dx_adhd)] <- 0
 
 data.v9 <- data.v8 %>%   # filters out any respondents who skipped the MH section 
-  mutate(dx_dep = case_when(dx_dep == 1 ~ 1,
-                            dx_none == 1 ~ 0)) %>%    # depression
-  mutate(dx_anx = case_when(dx_anx == 1 ~ 1,
-                            dx_none == 1 ~ 0)) %>%    # anxiety
-  mutate(dx_bi = case_when(dx_bi == 1 ~ 1,
-                           dx_none == 1 ~ 0)) %>%     # bipolar
-  mutate(dx_psy = case_when(dx_psy == 1 ~ 1,
-                            dx_none == 1 ~ 0)) %>%    # psychotic
-  mutate(dx_ea = case_when(dx_ea == 1 ~ 1,
-                           dx_none == 1 ~ 0)) %>%     # eating d/o
-  mutate(dx_tr = case_when(dx_tr == 1 ~ 1,
-                           dx_none == 1 ~ 0)) %>%     # trauma
-  mutate(dx_sa = case_when(dx_sa == 1 ~ 1,
-                           dx_none == 1 ~ 0)) %>%     # substance abuse
-  mutate(dx_adhd = case_when(dx_adhd == 1 ~ 1,
-                             dx_none == 1 ~ 0)) %>%   # adhd
-  mutate(dx_pers = case_when(dx_pers == 1 ~ 1,
-                             dx_none == 1 ~ 0))       # personality
-
-data.v9$dx_dep <- as.logical(data.v9$dx_dep)
-data.v9$dx_anx <- as.logical(data.v9$dx_anx)
-data.v9$dx_bi <- as.logical(data.v9$dx_bi)
-data.v9$dx_psy <- as.logical(data.v9$dx_psy) 
-data.v9$dx_ea <- as.logical(data.v9$dx_ea)
-data.v9$dx_tr <- as.logical(data.v9$dx_tr)
-data.v9$dx_sa <- as.logical(data.v9$dx_sa)
-data.v9$dx_adhd <- as.logical(data.v9$dx_adhd)
-data.v9$dx_pers <- as.logical(data.v9$dx_pers)
-data.v9$dx_none <- as.logical(data.v9$dx_none)
-
+  mutate(dx_mh = case_when(dx_dep == 1 ~ 1,
+                           dx_anx == 1 ~ 1,
+                           dx_bi == 1 ~ 1,
+                           dx_psy == 1 ~ 1,
+                           dx_ea == 1 ~ 1,
+                           dx_tr == 1 ~ 1,
+                           dx_sa == 1 ~ 1,
+                           dx_adhd == 1 ~ 1,
+                           dx_pers == 1 ~ 1,
+                           dx_any == 1 ~ 1,
+                           dx_none == 0 ~ 0)) %>%
+  mutate(dx_mh = case_when(dx_mh == 1 ~ 1,
+                           is.na(dx_mh) ~ 0))
+                      
+data.v9$dx_dep <- as.logical(data.v9$dx_mh)
 
 # Check output
-table(data.v9$dx_any)
-table(data.v9$dx_dep)
-table(data.v9$dx_anx)
-table(data.v9$dx_bi)
-table(data.v9$dx_psy)
-table(data.v9$dx_ea)
-table(data.v9$dx_tr)
-table(data.v9$dx_sa)
-table(data.v9$dx_adhd)
-table(data.v9$dx_pers)
+table(data.v9$dx_mh)
 ```
 
 
@@ -1326,6 +1295,8 @@ dim(testdf.v10)
 # Label levels of religious importance
 traindf.v10 <- traindf.v10 %>%
   filter(!is.na(religios))
+data.v10$religios <- as.numeric(data.v10$religios)
+
 table(data.v10$religios)       # Check output
 ```
 
@@ -1372,8 +1343,7 @@ traindf.v10 = subset(traindf.v10, select= -c(alc_tx)) # clean up vars/columns
 ```{r ed_any}
 data.v10 <- data.v10 %>%
   mutate(ed_any = case_when(ed_any == 1 ~ 1,
-                            ed_any == 0 ~ 0,
-                            ed_any == NA ~ 0))
+                            ed_any == 0 ~ 0))
 table(traindf.v10$ed_any)
 ```
 
@@ -1652,9 +1622,7 @@ traindf.v12 <- traindf.v11 # create new dataframe for summary stats. Will jump t
 
 # Define diathesis vars for correlation matrix
 traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, ed_scoff, body_sr,
-                                dx_dep, dx_bi, dx_adhd, dx_ea, dx_tr, meds_count, ed_any, dx_anx,
-                                dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood, meds_sle,
-                                meds_none)
+                                dx_mh, meds_count, ed_any)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_dia, sig=0.6){
@@ -1677,8 +1645,8 @@ corr_simple <- function(traindf=traindf_dia, sig=0.6){
 corr_simple()
 
 # Extracting overlapping vars to visualize correlation for regression
-traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, body_sr, ed_any,
-                                dx_dep, dx_bi, dx_adhd, dx_ea, dx_tr, dx_pers, dx_anx, meds_count)
+traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, 
+                                      body_sr, ed_any, dx_mh, meds_count)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_dia, sig=0.6){
@@ -1705,7 +1673,7 @@ corr_simple()
 ### EFA diathesis
 ```{r EFA diathesis}
 traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, body_sr,
-                                dx_dep, dx_bi, dx_adhd, dx_tr, dx_anx, ed_any, meds_count)
+                                dx_mh, ed_any, meds_count)
 
 # create corr matrix, with dummy vars
 traindf_dia <- traindf_dia %>% 
@@ -1719,8 +1687,8 @@ traindf_dia <- traindf_dia %>%
 traindf_dia   # check output
 
 results_dia <- dummy_cols(traindf_dia, select_columns = c("age", "sexual", "gender_tgd", "finpast", 
-                                                       "sib_freq", "race", "body_sr", "dx_dep", "dx_bi", "dx_anx",
-                                                       "dx_adhd", "dx_tr", "ed_any", "dx_pers", "meds_count"), 
+                                                       "sib_freq", "race", "body_sr", "dx_mh", "ed_any",
+                                                       "meds_count"), 
                           remove_first_dummy = TRUE)
 
 # factoextra -- https://rpkgs.traindfnovia.com/factoextra/
@@ -1751,7 +1719,7 @@ fviz_cos2(dia_pca, choice = "var", axes = 1,
 ### CLM diathesis regression
 ```{r clm_dia}
 clm_dia <- traindf.v12 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race,
-                                  ed_any, dx_dep, dx_bi, dx_anx, dx_tr, dx_adhd, meds_count)
+                                  ed_any, dx_mh, meds_count)
 
 view(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
@@ -1797,7 +1765,7 @@ traindf.v13 <- traindf.v13 %>%
                              discrim == 6 ~ 6,
                              is.na(discrim) ~ 0))
 table(traindf.v13$discrim)
-traindf.v13$discrim <- as.factor(traindf.v13$discrim)
+traindf.v13$discrim <- as.numeric(traindf.v13$discrim)
 ```
 
 ## MH campus environment
@@ -1846,7 +1814,6 @@ traindf.v14 <- traindf.v14 %>%
 table(traindf.v14$talk)  # check output
 traindf.v14$talk <- as.factor(traindf.v14$talk)
 
-
 traindf.v14 = subset(traindf.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
 ```
 
@@ -1871,7 +1838,7 @@ table(traindf.v14$medtherc) # meds + therapy
 ## Family support
 ```{r fam_support_aca}
 table(traindf.v14$fam_support_aca)
-traindf.v14$fam_support_aca <- as.factor(traindf.v14$fam_support_aca)
+traindf.v14$fam_support_aca <- as.numeric(traindf.v14$fam_support_aca)
 ```
 
 ## Overall school satisfaction
@@ -1886,12 +1853,12 @@ traindf.v14 <- traindf.v14 %>%
                                        is.na(satisfied_overall) ~ 0))
 
 table(traindf.v14$satisfied_overall)
-traindf.v14$satisfied_overall <- as.factor(traindf.v14$satisfied_overall)
+traindf.v14$satisfied_overall <- as.numeric(traindf.v14$satisfied_overall)
 ```
 
 ## Activity Involvement
 ```{r Activities}
-# set all NAs in acitvities equal to 0
+# set all NAs in actvities equal to 0
 traindf.v14$activ_ac[is.na(traindf.v14$activ_ac)] <- 0
 traindf.v14$activ_athc[is.na(traindf.v14$activ_athc)] <- 0
 traindf.v14$activ_athv[is.na(traindf.v14$activ_athv)] <- 0
@@ -2224,6 +2191,7 @@ traindf.v16 <- traindf.v16 %>%
                               is.na(drugs_yn) ~ 0))
 
 table(traindf.v16$drugs_yn)
+table(traindf.v16$drug_mar)
 ```
 
 ## Current financial stressors
@@ -2237,7 +2205,6 @@ traindf.v16 <- traindf.v16 %>%
                             is.na(fincur) ~ 0))  # non-response
 table(traindf.v16$fincur)
 traindf.v16$fincur <- as.factor(traindf.v16$fincur)
-
 ```
 
 ## ISI scale
@@ -2335,6 +2302,7 @@ traindf.v18 <- traindf.v18 %>%
                             gpa_sr == 10 ~ 0,  # Don't know
                             is.na(gpa_sr) ~ 0))
 table(traindf.v18$gpa_sr)
+traindf.v18$gpa_sr <- as.numeric(traindf.v18$gpa_sr)
 ```
  
 ```{r LE traindf analysis}
@@ -2367,8 +2335,8 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ## EFA LE
 ```{r le_pca}
-traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, binge, drugs_yn,
-                                     assault, psyhx)
+traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, 
+                                     binge, drugs_yn, assault, psyhx)
 
 # create corr matrix, with dummy vars
 traindf_le <- traindf_le %>% 
@@ -2377,8 +2345,8 @@ traindf_le <- traindf_le %>%
   data.matrix()
 traindf_le   # check output
 
-results_le <- dummy_cols(traindf_le, select_columns = c("ins_cover", "gpa_sr", "aca_impa", 
-                                                        "fincur", "binge","drugs_yn", "assault", "psyhx"),
+results_le <- dummy_cols(traindf_le, select_columns = c("ins_cover", "gpa_sr", "aca_impa", "psyhx",
+                                                        "fincur", "binge","drugs_yn", "assault"),
                          remove_first_dummy = TRUE)
 
 le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
@@ -2469,6 +2437,20 @@ traindf.v20 <- traindf.v20 %>%
 table(traindf.v20$dep_type)
 ```
 
+## GAD7 total
+```{r anx_score}
+table(traindf.v20$anx_score)    # PROBLEMSSSSSS
+
+# Convert to categories for later
+traindf.v20 <- traindf.v20 %>%
+  mutate(anx_type = case_when(is.na(anx_score) ~ 0,                     # non answer
+                              (anx_score < 5) ~ 1,                                 # anx none
+                              ((anx_score > 4) & (anx_score < 10)) ~ 2,            # anx mild
+                              ((anx_score > 9) & (anx_score < 15)) ~ 3,           # anx mod
+                              (anx_score > 14) ~ 4))                    # anx severe
+table(traindf.v20$anx_type)
+```
+
 ## Academic impact
 ```{r aca_impa}
 traindf.v20 <- traindf.v20 %>%
@@ -2477,6 +2459,7 @@ traindf.v20 <- traindf.v20 %>%
                               aca_impa == 3 ~ 3,
                               aca_impa == 4 ~ 4,
                               is.na(aca_impa) ~ 0))
+traindf.v20$aca_impa <- as.numeric(traindf.v20$aca_impa)
 table(traindf.v20$aca_impa)
 ```
 
@@ -2505,7 +2488,7 @@ traindf.v21 <- traindf.v20
 ## Defeat correlation
 ```{r Defeat cor}
 # Define defeat variable candidates for correlation matrix
-traindf_def <- traindf.v21 %>% select(aca_impa, dep_type)
+traindf_def <- traindf.v21 %>% select(aca_impa, dep_type, anx_type)
 
  # convert traindf to numeric in order to run correlations
 traindf_def <- traindf_def %>% mutate_if(is.character, as.factor)
@@ -2523,7 +2506,7 @@ print(corr)
 
 ## EFA defeat
 ```{r EFA_def}
-traindf_def <- traindf.v21 %>% select(aca_impa, dep_type)
+traindf_def <- traindf.v21 %>% select(aca_impa, dep_type, anx_type)
 
 # create corr matrix, with dummy vars 
 traindf_def <- traindf_def %>% 
@@ -2532,7 +2515,7 @@ traindf_def <- traindf_def %>%
   data.matrix()
 traindf_def   # check output
 
-results_def <- dummy_cols(traindf_def, select_columns = c("aca_impa", "dep_type"),
+results_def <- dummy_cols(traindf_def, select_columns = c("aca_impa", "dep_type", "anx_type"),
                          remove_first_dummy = TRUE)
 
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
@@ -2563,7 +2546,7 @@ fviz_cos2(def_pca, choice = "var", axes = 1,
 
 ## CLM defeat
 ```{r CLM defeat}
-results2_def <- traindf.v21 %>% select(si_type, aca_impa, dep_type)
+results2_def <- traindf.v21 %>% select(si_type, aca_impa, dep_type, anx_type)
 
 clm_def <- NA_preproc(results2_def)
 clm_def <- as.data.frame(clm_def)
@@ -2591,21 +2574,6 @@ Candidate variables: persist, anx_score, dep_secret, aaq_yn, achieve4
 
 ```{r TSM frame}
 traindf.v22 <- traindf.v20
-```
-
-## GAD7 total
-```{r anx_score}
-table(traindf.v22$anx_score)    # PROBLEMSSSSSS
-
-# Convert to categories for later
-traindf.v22 <- traindf.v22 %>%
-  mutate(anx_type = case_when(is.na(anx_score) ~ 0,                     # non answer
-                              (anx_score < 5) ~ 1,                                 # anx none
-                              ((anx_score > 4) & (anx_score < 10)) ~ 2,            # anx mild
-                              ((anx_score > 9) & (anx_score < 15)) ~ 3,           # anx mod
-                              (anx_score > 14) ~ 4))                    # anx severe
-table(traindf.v22$anx_type)
-
 ```
 
 ## Depression secret
@@ -2672,6 +2640,7 @@ traindf.v22 <- traindf.v22 %>%
                              persist == 6 ~ 6, 
                              is.na(persist) ~ 0))
 table(traindf.v22$persist)
+traindf.v22$persist <- as.numeric(traindf.v22$persist)
 ```
 
 
@@ -2682,7 +2651,7 @@ traindf.v23 <- traindf.v22
 ## Threats to self-moderation correlation
 ```{r CORR TSM}
 # Define TSM variable candidates for correlation matrix
-traindf_tsm <- traindf.v23 %>% select(persist, anx_type, dep_secret, achieve4, aaq_dum)
+traindf_tsm <- traindf.v23 %>% select(persist, dep_secret, achieve4, aaq_dum)
 
 # convert data to numeric in order to run correlations 
 traindf_tsm <- traindf_tsm %>% mutate_if(is.character, as.factor)
@@ -2716,7 +2685,7 @@ print(corr)
 
 ## EFA TSM
 ```{r EFA TSM}
-traindf_tsm <- traindf.v23 %>% select(persist, anx_type, dep_secret, achieve4, aaq_dum)
+traindf_tsm <- traindf.v23 %>% select(persist, dep_secret, achieve4, aaq_dum)
 
 # create corr matrix, with dummy vars 
 traindf_tsm <- traindf_tsm %>% 
@@ -2725,7 +2694,7 @@ traindf_tsm <- traindf_tsm %>%
   data.matrix()
 traindf_tsm   # check output
 
-results_tsm <- dummy_cols(traindf_tsm, select_columns = c("persist", "anx_type", "dep_secret", "achieve4", "aaq_dum"),
+results_tsm <- dummy_cols(traindf_tsm, select_columns = c("persist", "dep_secret", "achieve4", "aaq_dum"),
                          remove_first_dummy = TRUE)
 
 # tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
@@ -2754,12 +2723,12 @@ results_tsm <- dummy_cols(traindf_tsm, select_columns = c("persist", "anx_type",
 
 ## CLM TSM
 ```{r CLM TSM}
-clm_tsm <- traindf.v23 %>% select(si_type, persist, anx_type, dep_secret, aaq_dum)
+clm_tsm <- traindf.v23 %>% select(si_type, persist, dep_secret, aaq_dum)
 
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
 
-clm_tsm <- clm(si_type ~ persist + anx_type + dep_secret + aaq_dum,
+clm_tsm <- clm(si_type ~ persist + dep_secret + aaq_dum,
                data = clm_tsm) 
 
 summary(clm_tsm)
@@ -2793,9 +2762,12 @@ traindf.v24 <- traindf.v24 %>%
                               dep_impa == 2 ~ 2,
                               dep_impa == 3 ~ 3,
                               dep_impa == 4 ~ 4,
-                              is.na(dep_impa) ~ 0))
+                              is.na(dep_impa) ~ 5))
+traindf.v24$dep_impa <- as.numeric(traindf.v24$dep_impa)
 table(traindf.v24$dep_impa)
+
 ```
+
 
 ## Anxiety impact
 ```{r gad7_impa}
@@ -2804,20 +2776,22 @@ traindf.v24 <- traindf.v24 %>%
                                gad7_impa == 2 ~ 2,
                                gad7_impa == 3 ~ 3,
                                gad7_impa == 4 ~ 4,
-                               is.na(gad7_impa) ~ 0))
+                               is.na(gad7_impa) ~ 5))
+raindf.v24$gad7_impa <- as.numeric(traindf.v24$gad7_impa)
 table(traindf.v24$gad7_impa)
 ```
 
 ## Current needs
 ```{r percneed_cur}
 traindf.v24 <- traindf.v24 %>%
-  mutate(percneed_cur = case_when(percneed ==  ###############
+  mutate(percneed_cur = case_when(is.na(percneed_cur) ~ 7,
                                  percneed_cur == 1 ~ 1,
                                  percneed_cur == 2 ~ 2,
                                  percneed_cur == 3 ~ 3,
                                  percneed_cur == 4 ~ 4,
                                  percneed_cur == 5 ~ 5,
                                  percneed_cur == 6 ~ 6))
+traindf.v24$percneed_cur <- as.numeric(traindf.v24$percneed_cur)
 table(traindf.v24$percneed_cur)
 
 ```
@@ -3044,7 +3018,6 @@ traindf.v26 <- traindf.v26 %>%
 rs_df_arranged[1,1]
 table(traindf.v26$brs_tot)
 table(traindf.v26$brs_dum)
-
 ```
 
 ## Friendship development
@@ -3202,9 +3175,9 @@ var_names <- c(
   # life events
   "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault",
   # defeat
-  "aca_impa", "dep_type",
+  "aca_impa", "dep_type", "anx_type",
   # threats to self-moderation
-  "persist", "anx_type", "dep_secret",
+  "persist", "dep_secret",
   # entrapment
   "dep_impa", "gad7_impa", "percneed_cur",
   # motivational moderators
@@ -3294,9 +3267,9 @@ traindf_sem <- traindf.v28 %>% select(
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault,
   # defeat
-  aca_impa, dep_type,
+  aca_impa, dep_type, anx_type,
   # threats to self-moderation
-  persist, anx_type, dep_secret,
+  persist, dep_secret,
   # entrapment
   dep_impa, gad7_impa, percneed_cur,
   # motivational moderators
@@ -3327,9 +3300,9 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # life events
     "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", 
     # defeat
-    "aca_impa", "dep_type",
+    "aca_impa", "dep_type", "anx_type",
     # threats to self-moderation
-    "persist", "anx_type", "dep_secret",
+    "persist", "dep_secret",
     # entrapment
     "dep_impa", "gad7_impa", "percneed_cur",
     # motivational moderators
@@ -3395,9 +3368,9 @@ corr <- subset(corr, abs(Freq) > sig)                   #select significant valu
 corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
 print(corr)
   
-#turn corr back into matrix in order to plot with corrplot
-mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+# #turn corr back into matrix in order to plot with corrplot
+# mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
+# corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 
 ## Create data matrix, save into files
@@ -3489,9 +3462,8 @@ SI_model_tr <- '
                   dia_sem =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
                              sexual_2 + sexual_3 + sexual_NA +
                              gender_tgd_2 +
-                             sib_freq_2 + sib_freq_3 + sib_freq_4 + 
-                             race_2 + race_3 + race_4 + race_5 + race_6 +
-                                race_7 + race_8 + race_9 +
+                             sib_freq_1 + sib_freq_2 +  
+                             race_2 + race_3 + race_4 + race_5 +
                              ed_any_2 + ed_any_NA +
                              dx_mh_1 + dx_mh_NA
                              meds_count_1 + meds_count_2 + meds_count_3 
@@ -3532,14 +3504,7 @@ SI_model_tr <- '
                # structural model - regressions
                   def_sem ~ dia_sem + env_sem + le_sem
                   entrap_sem ~ def_sem + tsm_sem + def_sem*tsm_sem
-                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem
-
-               # residual covars
-                  dx_dep_1 ~~ dx_bi_1
-                  dx_dep_1 ~~ dx_tr_1
-                  dx_adhd_1 ~~ dx_anx_1   
-                  dx_adhd_1 ~~ dx_dep_1
-                  dx_adhd_1 ~~ dx_tr_1  '
+                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem     '
 ```
 
 ## Model estimation
