@@ -2134,28 +2134,28 @@ fviz_cos2(env_pca, choice = "var", axes = 1,
 
 ### CLM environmental regression
 ```{r CLM environment}
-clm_env <- traindf.v15 %>% select(si_type, discrim, religios, residenc, activ_yn, divers, 
+clm_env <- traindf.v15 %>% select(si_type, discrim, religios, residenc, activ_yn, 
                                   school2_type, satisfied_overall, talk)
 
 clm_env <- clm_env %>% 
   NA_preproc() %>%
   as.data.frame()
+view(clm_env)
 
- clm_env2 <- clm(si_type ~ discrim + religios + residenc + activ_yn + divers + 
-                   school2_type + satisfied_overall + talk, 
-                 data = clm_env)
- summary(clm_env2)
+clm_env2 <- clm(si_type ~ discrim + religios + residenc + activ_yn +
+                  school2_type + satisfied_overall + talk, 
+                data = clm_env)
+summary(clm_env2)
+coef(clm_env2)
 
-coef(clm_env)
-
-# ci_env <- confint(clm_env)
-# ci_env
+# clm_env2 <- confint(clm_env2)
+# clm_env2
 # 
-# model.env <- tidy(clm_env)  # Convert model to dataframe for easy manipulation
+# model.env <- tidy(clm_env2)  # Convert model to dataframe for easy manipulation
 # model.env
 # model.env  %>%
 #    mutate(or = exp(estimate),  # Odds ratio/gradient
-#           var.diag = diag(vcov(clm_env)),  # Variance of each coefficient
+#           var.diag = diag(vcov(clm_env2)),  # Variance of each coefficient
 #           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
@@ -2471,7 +2471,7 @@ traindf.v20 <- traindf.v20 %>%
                               dep_sev == 1 ~ 5)) %>%
   filter(!is.na(dep_type)) # filters out all NAs
 
-table(traindf.v20$dep_type,)
+table(traindf.v20$dep_type)
 ```
 
 ## GAD7 total
@@ -2624,7 +2624,7 @@ traindf.v22 <- traindf.v22 %>%
                                 dep_secret == 5 ~ 5,
                                 dep_secret == 6 ~ 6,
                                 is.na(dep_secret) ~ 0))
-table(traindf.v22$dep_secret)
+table(traindf.v22$dep_secret, useNA = "always")  # not sure what to do about this one.... NA = 7000+
 ```
 
 ## AAQ total (elective module)
@@ -2653,8 +2653,8 @@ table(traindf.v22$aaq_tot)
  traindf.v22 <- traindf.v22 %>%
    mutate(aaq_dum = ifelse(aaq_tot > rs_df_arranged[1,1], 1, 2)) %>%
    mutate(aaq_dum = case_when(aaq_dum == 1 ~ 1,
-                              aaq_dum == 2 ~ 2,
-                              is.na(aaq_dum) ~ 0))
+                              aaq_dum == 2 ~ 2)) %>%
+   filter(!is.na(aaq_dum))
 
 traindf.v22$aaq_dum <- as.factor(traindf.v22$aaq_dum)
 table(traindf.v22$aaq_dum)
@@ -2795,11 +2795,11 @@ traindf.v24 <- traindf.v22
 ## Depression impact
 ```{r dep_impa}
 traindf.v24 <- traindf.v24 %>%
-  mutate(dep_impa = case_when(dep_impa == 1 ~ 1,
+  mutate(dep_impa = case_when(is.na(dep_impa) ~ 0,
+                              dep_impa == 1 ~ 1,
                               dep_impa == 2 ~ 2,
                               dep_impa == 3 ~ 3,
-                              dep_impa == 4 ~ 4,
-                              is.na(dep_impa) ~ 5))
+                              dep_impa == 4 ~ 4))
 traindf.v24$dep_impa <- as.numeric(traindf.v24$dep_impa)
 table(traindf.v24$dep_impa)
 
@@ -2809,19 +2809,19 @@ table(traindf.v24$dep_impa)
 ## Anxiety impact
 ```{r gad7_impa}
 traindf.v24 <- traindf.v24 %>%
-  mutate(gad7_impa = case_when(gad7_impa == 1 ~ 1,
+  mutate(gad7_impa = case_when(is.na(gad7_impa) ~ 0,
+                               gad7_impa == 1 ~ 1,
                                gad7_impa == 2 ~ 2,
                                gad7_impa == 3 ~ 3,
-                               gad7_impa == 4 ~ 4,
-                               is.na(gad7_impa) ~ 5))
-raindf.v24$gad7_impa <- as.numeric(traindf.v24$gad7_impa)
+                               gad7_impa == 4 ~ 4))
+traindf.v24$gad7_impa <- as.numeric(traindf.v24$gad7_impa)
 table(traindf.v24$gad7_impa)
 ```
 
 ## Current needs
 ```{r percneed_cur}
 traindf.v24 <- traindf.v24 %>%
-  mutate(percneed_cur = case_when(is.na(percneed_cur) ~ 7,
+  mutate(percneed_cur = case_when(is.na(percneed_cur) ~ 0,
                                  percneed_cur == 1 ~ 1,
                                  percneed_cur == 2 ~ 2,
                                  percneed_cur == 3 ~ 3,
@@ -3013,10 +3013,8 @@ traindf.v26 <- traindf.v26 %>%
                          inf_5 == 1 ~ 0,
                          inf_6 == 1 ~ 0,
                          inf_7 == 1 ~ 0))
-
-
+traindf.v26$inf <- as.logical(traindf.v26$inf)
 table(traindf.v26$inf)
-traindf.v26$inf <- as.factor(traindf.v26$inf)
 
 # clean up vars
 #traindf.v26 = subset(traindf.v26, select= -c(inf_1:inf_help))
@@ -3119,7 +3117,7 @@ traindf.v27 <- traindf.v26
 ### Motivational Moderator correlation
 ```{r MM_corr}
 # Define MM variable candidates for correlation matrix
-traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, brs_dum)
+traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1)
 
  # convert traindf to numeric in order to run correlations
 traindf_mm <- traindf_mm %>% mutate_if(is.character, as.factor)
@@ -3138,7 +3136,7 @@ print(corr)
 
 ### EFA MM
 ```{r EFA MM}
-traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, brs_dum)
+traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1)
 
 # create corr matrix, with dummy vars 
 traindf_mm <- traindf_mm %>% 
@@ -3146,7 +3144,7 @@ traindf_mm <- traindf_mm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 traindf_mm   # check output
-results_mm <- dummy_cols(traindf_mm, select_columns = c("inf", "flourish_dum", "belong1", "brs_dum"),
+results_mm <- dummy_cols(traindf_mm, select_columns = c("inf", "flourish_dum", "belong1"),
                          remove_first_dummy = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 eigval_mm <- get_eigenvalue(mm_pca)
@@ -3174,12 +3172,12 @@ fviz_cos2(mm_pca, choice = "var", axes = 1,
 
 ### CLM Motivational moderators regression
 ```{r CLM mm}
-clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1, brs_tot)
+clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1)
 
 clm_mm <- NA_preproc(clm_mm)
 clm_mm <- as.data.frame(clm_mm)
 
-clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + brs_tot, data = clm_mm)
+clm_mm <- clm(si_type ~ inf + flourish_dum + belong1, data = clm_mm)
 
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))
@@ -3214,11 +3212,11 @@ var_names <- c(
   # defeat
   "aca_impa", "dep_type", "anx_type",
   # threats to self-moderation
-  "persist", "dep_secret",
+  "persist", "dep_secret", "aaq_dum",
   # entrapment
   "dep_impa", "gad7_impa", "percneed_cur",
   # motivational moderators
-  "inf", "flourish_dum", "belong1", "brs_dum")  
+  "inf", "flourish_dum", "belong1")  
 var_names <- sort(var_names)
 
 # build table for absolute missingness based on school2
@@ -3306,11 +3304,11 @@ traindf_sem <- traindf.v28 %>% select(
   # defeat
   aca_impa, dep_type, anx_type,
   # threats to self-moderation
-  persist, dep_secret,
+  persist, dep_secret, aaq_dum,
   # entrapment
   dep_impa, gad7_impa, percneed_cur,
   # motivational moderators
-  inf, flourish_dum, belong1, brs_dum)  #mh_stigma, 
+  inf, flourish_dum, belong1)  #mh_stigma, 
 
 # create sem matrix 
 traindf_sem2 <- traindf_sem %>% 
@@ -3339,11 +3337,11 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # defeat
     "aca_impa", "dep_type", "anx_type",
     # threats to self-moderation
-    "persist", "dep_secret",
+    "persist", "dep_secret", "aaq_dum",
     # entrapment
     "dep_impa", "gad7_impa", "percneed_cur",
     # motivational moderators
-    "inf", "flourish_dum", "belong1", "brs_dum"), 
+    "inf", "flourish_dum", "belong1"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 view(results_tr_sem)
