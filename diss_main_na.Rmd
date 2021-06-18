@@ -1726,10 +1726,20 @@ clm_dia <- traindf.v12 %>% select(si_type, age, sexual, gender_tgd, sib_freq, ra
 view(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
 
-clm_mod <- clm(si_type ~ ., data = dia_mod)
+dia_mod <- clm(si_type ~ ., data = dia_mod)
 
-summary(clm_mod)
-coef(clm_mod)
+summary(dia_mod)
+coef(dia_mod)
+
+ci_dia <- confint(dia_mod)
+ci_dia
+
+model.dia <- tidy(dia_mod)  # Convert model to dataframe for easy manipulation
+model.dia
+model.dia  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+          var.diag = diag(vcov(dia_mod)),  # Variance of each coefficient
+          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2137,6 +2147,16 @@ clm_env <- clm_env %>%
  summary(clm_env2)
 
 coef(clm_env)
+
+# ci_env <- confint(clm_env)
+# ci_env
+# 
+# model.env <- tidy(clm_env)  # Convert model to dataframe for easy manipulation
+# model.env
+# model.env  %>%
+#    mutate(or = exp(estimate),  # Odds ratio/gradient
+#           var.diag = diag(vcov(clm_env)),  # Variance of each coefficient
+#           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2268,12 +2288,11 @@ traindf.v18 <- traindf.v17 %>%
 table(traindf.v18$binge_fr)
 
 traindf.v18 <- traindf.v18 %>%
-  mutate(binge = case_when(binge_fr < 2 ~ 0
-                           binge_fr >= 4 ~ 1,
+  mutate(binge = case_when(binge_fr >= 4 ~ 1,
                            binge_fr < 4 ~ 0,
                            is.na(binge_fr) ~ 0))
 
-traindf.v18$binge <-as.numeric(traindf.v18$binge)
+traindf.v18$binge <-as.logical(traindf.v18$binge)
 table(traindf.v18$binge) # check output
 
 traindf.v18 = subset(traindf.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)) # clean up var
@@ -2328,7 +2347,7 @@ traindf_le <-  traindf_le %>% mutate_if(is.factor, as.numeric)
 
 # run a correlation and drop the insignificant ones
 corr <- cor(traindf_le, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
+corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop dups and correlations of 1    
 corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
 corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
 corr <- na.omit(corr)                                   #remove the NA values from above 
@@ -2384,8 +2403,8 @@ fviz_cos2(le_pca, choice = "var", axes = 1,
 
 ## CLM Life event regression
 ```{r clm_LE}
-clm_le <- traindf.v19 %>% select(si_type, ins_cover, gpa_sr, aca_impa, fincur, assault,
-                                 binge, psyhx, drugs_yn)
+clm_le <- traindf.v19 %>% select(si_type, ins_cover, gpa_sr, aca_impa, fincur, 
+                                 assault, binge, psyhx, drugs_yn)
 
 clm_le <- NA_preproc(clm_le)
 clm_le <- as.data.frame(clm_le)
@@ -2395,6 +2414,16 @@ clm_le <- clm(si_type ~ ins_cover + gpa_sr + aca_impa + fincur + assault + binge
               data = clm_le)
 summary(clm_le)
 coef(clm_le)
+
+ci_le <- confint(clm_le)
+ci_le
+
+model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
+model.le
+model.le  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+          var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
+          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -2439,33 +2468,34 @@ traindf.v20 <- traindf.v20 %>%
                               dep_mild == 1 ~ 2,
                               dep_mod == 1 ~ 3,
                               dep_modsev == 1 ~ 4,
-                              dep_sev == 1 ~ 5,
-                              dep_na == 1 ~ 0))
-table(traindf.v20$dep_type)
+                              dep_sev == 1 ~ 5)) %>%
+  filter(!is.na(dep_type)) # filters out all NAs
+
+table(traindf.v20$dep_type,)
 ```
 
 ## GAD7 total
 ```{r anx_score}
-table(traindf.v20$anx_score)    # PROBLEMSSSSSS
+traindf.v20$anx_score <- as.numeric(traindf.v20$anx_score)
 
-# Convert to categories for later
+# Convert to severity
 traindf.v20 <- traindf.v20 %>%
-  mutate(anx_type = case_when(is.na(anx_score) ~ 0,                     # non answer
-                              (anx_score < 5) ~ 1,                                 # anx none
-                              ((anx_score > 4) & (anx_score < 10)) ~ 2,            # anx mild
-                              ((anx_score > 9) & (anx_score < 15)) ~ 3,           # anx mod
-                              (anx_score > 14) ~ 4))                    # anx severe
-table(traindf.v20$anx_type)
+  filter(!is.na(anx_score)) %>% # filters out all NAs
+  mutate(anx_type = case_when(anx_score > 14 ~ 4,
+                              anx_score < 5 ~ 1,                       # anx none
+                              anx_score < 10 ~ 2,                      # anx mild
+                              anx_score < 15 ~ 3))                    # anx severe
+table(traindf.v20$anx_type) # check output
 ```
 
 ## Academic impact
 ```{r aca_impa}
 traindf.v20 <- traindf.v20 %>%
+  filter(!is.na(aca_impa)) %>%
   mutate(aca_impa = case_when(aca_impa == 1 ~ 1,
                               aca_impa == 2 ~ 2,
                               aca_impa == 3 ~ 3,
-                              aca_impa == 4 ~ 4,
-                              is.na(aca_impa) ~ 0))
+                              aca_impa == 4 ~ 4)) 
 traindf.v20$aca_impa <- as.numeric(traindf.v20$aca_impa)
 table(traindf.v20$aca_impa)
 ```
