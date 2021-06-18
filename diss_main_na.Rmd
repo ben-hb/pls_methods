@@ -2154,15 +2154,15 @@ clm_env2 <- clm(si_type ~ discrim + religios + residenc + activ_yn +
 summary(clm_env2)
 coef(clm_env2)
 
-# clm_env2 <- confint(clm_env2)
-# clm_env2
-# 
-# model.env <- tidy(clm_env2)  # Convert model to dataframe for easy manipulation
-# model.env
-# model.env  %>%
-#    mutate(or = exp(estimate),  # Odds ratio/gradient
-#           var.diag = diag(vcov(clm_env2)),  # Variance of each coefficient
-#           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+ci_env2 <- confint(clm_env2)
+ci_env2
+
+model.dia <- tidy(clm_env2)  # Convert model to dataframe for easy manipulation
+model.dia
+model.dia  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+          var.diag = diag(vcov(clm_env2)),  # Variance of each coefficient
+          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
