@@ -61,8 +61,8 @@ Premotivational variables
     drug_mar, drug_coc, drug_her, drug_met, drug_stim, drug_ect, drug_opi, drug_other, drug_none
 
 Motivational variables
-  - Defeat: aca_impac, men_ill_ash, deprawsc **
-  - Threats to Self-Moderation: persist, anx_score, dep_secret, aaq_yn, achieve4 **
+  - Defeat: aca_impac, men_ill_ash, deprawsc, anx_score
+  - Threats to Self-Moderation: persist, dep_secret, aaq_yn, achieve4
   - Entrapment: dep_impa, gad7_impa, percneed_cur **
   - Motivational Moderators: inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, BRS_tot 
   
@@ -670,8 +670,6 @@ data.v2$si_type <- as.factor(data.v2$si_type)
 # DIATHESIS VARIABLES (.v3 - .v11)
 
 Candidate variables: age, sexual, gender, finpast, sib_freq, sib, bmi, race, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, med_any, med_sti, med_dep, med_psy, med_anx, med_mood, med_sle, meds_other, meds_none, alc_tx, wcs_tot, med_count, dx_chronic, disab_1
-
-
 ```{r Diathesis frame}
 data.v3 <- data.v2
 ```
@@ -698,8 +696,8 @@ data.v3 <- data.v3 %>%
   mutate(gender_tgd = case_when(gender == 2 ~ 1,
                                 gender == 3 ~ 1,
                                 gender == 1 ~ 0))
-table(data.v3$gender_tgd)
 data.v3$gender_tgd <- as.factor(data.v3$gender_tgd)
+table(data.v3$gender_tgd)
 ```
 
 ### Reconcile 'gender_text' 
@@ -811,7 +809,6 @@ table(data.v4$sexual) # tabulate and check outputs
 
 ### Reconcile sexual_text
 ```{r sexual_text}
-
 # identifying non-answers
   ## jokesters
 data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]elicopter")] <- 8
@@ -939,7 +936,6 @@ table(data.v4$sexual)   # tabulate and check outputs
 ### 'Sexual' transformed 
 sexual identity: (1) heterosexual; (2) lesbian/gay/bisexual; (3) queer/pan/asex/other, and (4) non-answers
 ```{r sexual regroup}
-
 data.v5 <- data.v4 %>%
     filter(!is.na(sexual)) %>% 
   # aggregates all 'sexual' answers into one var
@@ -1609,7 +1605,6 @@ traindf.v11 <- traindf.v11 %>%
 
 table(traindf.v11$meds_count)  # check output
 #traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
-
 ```
 
 ## DIATHESIS ANALYSES
@@ -1819,15 +1814,22 @@ traindf.v14$talk1_8[is.na(traindf.v14$talk1_8)] <- 0
 # change talk_ var to numeric
 traindf.v14 <- traindf.v14 %>% 
   # aggregate all talk vars under 3 'talk' categories -- none, informal help, formal help, formal+informal help
-  mutate(talk = case_when(((talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) &      # combined
+  mutate(talk = case_when(((talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) &        # combined
                              (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1)) ~ 4,
-                          (talk1_9 == 1 | talk1no == 1) ~ 1,                                  # no support
-                          (talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) ~ 2,    # formal support
-                          (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1) ~ 3))    # informal support
+                          (talk1_9 == 1 | talk1no == 1) ~ 1,                                    # no support
+                          (talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) ~ 2,      # formal support
+                          (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1) ~ 3)) %>% # informal support
+  mutate(talk = case_when(talk == 1 ~ 1,
+                          talk == 2 ~ 2,
+                          talk == 3 ~ 3,
+                          talk == 4 ~ 4,
+                          talk == 0 ~ 0,
+                          is.na(talk) ~ 0))
 table(traindf.v14$talk)  # check output
 traindf.v14$talk <- as.factor(traindf.v14$talk)
 
-traindf.v14 = subset(traindf.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
+#traindf.v14 = subset(traindf.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, 
+#talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
 ```
 
 ## Military status
@@ -1850,8 +1852,8 @@ table(traindf.v14$medtherc) # meds + therapy
 
 ## Family support
 ```{r fam_support_aca}
-table(traindf.v14$fam_support_aca)
 traindf.v14$fam_support_aca <- as.numeric(traindf.v14$fam_support_aca)
+table(traindf.v14$fam_support_aca)
 ```
 
 ## Overall school satisfaction
@@ -1862,7 +1864,8 @@ traindf.v14 <- traindf.v14 %>%
                                        satisfied_overall == 3 ~ 3,
                                        satisfied_overall == 4 ~ 4,
                                        satisfied_overall == 5 ~ 5,
-                                       satisfied_overall == 6 ~ 6))
+                                       satisfied_overall == 6 ~ 6)) %>% 
+  filter(!is.na(satisfied_overall))
 traindf.v14$satisfied_overall <- as.numeric(traindf.v14$satisfied_overall)
 table(traindf.v14$satisfied_overall)
 ```
@@ -1905,12 +1908,13 @@ traindf.v14 <- traindf.v14 %>%
                               activ_rel == 1 ~ 1,
                               activ_soc == 1 ~ 1,
                               activ_art == 1 ~ 1,
-                              activ_other == 1 ~ 1))
+                              activ_other == 1 ~ 1)) %>%
+  filter(!is.na(activ_yn))
 
 traindf.v14$activ_yn <- as.logical(traindf.v14$activ_yn)
 table(traindf.v14$activ_yn)     # tabulate and check output
 
-traindf.v14 = subset(traindf.v14, select= -c(activ_none, activ_ac:activ_other))    # clean up vars
+#traindf.v14 = subset(traindf.v14, select= -c(activ_none, activ_ac:activ_other))    # clean up vars
 ```
 
 ## School variable
@@ -2032,7 +2036,8 @@ table(traindf.v14$school2_ad)
 traindf.v14 <- traindf.v14 %>%
   mutate(school2_type = case_when(school2_4yr == TRUE ~ 1,
                                   school2_cc == TRUE ~ 2,
-                                  school2_ad == TRUE ~ 3))
+                                  school2_ad == TRUE ~ 3)) %>%
+  filter(!is.na(school2_type))
 traindf.v14$school2_type <- as.factor(traindf.v14$school2_type)
 table(traindf.v14$school2_type)
 
