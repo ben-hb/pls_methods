@@ -2976,19 +2976,16 @@ for (i in 9:55) {
 names(rs_df) <- c("cutoff", "rs")
 rs_df_arranged <- rs_df %>% 
   arrange(desc(rs)) 
-rs_df_arranged[1,1]
+rs_df_arranged[1,1] # chi-squared high
 
-# deem 'rs_df_arranged[1,1]' as SI cutoff
+# create levels for scoring
 traindf.v26 <- traindf.v26 %>%
-  mutate(flourish_dum = ifelse(flourish > rs_df_arranged[1,1], 1, 2))  # 1 for over bin, # 2 for below bin
-
-rs_df_arranged[1,1]
-table(traindf.v26$flourish_dum)
-
-traindf.v26 <- traindf.v26 %>%
-  mutate(flourish_dum = case_when(flourish_dum == 1 ~ 1,
-                                  flourish_dum == 2 ~ 2,
-                                  is.na(flourish_dum) ~ 0))
+  mutate(flourish_dum = case_when(is.na(flourish_dum) ~ 0,
+                                  flourish > 50 ~ 5,
+                                  flourish > 40 ~ 4,
+                                  flourish > 30 ~ 3,
+                                  flourish > 20 ~ 2,
+                                  flourish < 14 ~ 1))
 table(traindf.v26$flourish_dum)
 ```
 
@@ -3349,7 +3346,7 @@ view(results_tr_sem)
 
 # Zero inflation stats
 ```{r}
-# zeroinfl <- function(si_type, results_tr_sem2, na.action = TRUE
+# zeroinfl <- function(si_type, results_tr_sem, na.action = TRUE
 #                      dist = c("binomial"),
 #                      link = c("logit"))
 ```
@@ -3367,7 +3364,6 @@ var_desc <- describe(traindf_sem2) %>% view()
 save(var_desc, file = "var_desc.RData")
 load("var_desc.RData")
 write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = TRUE)
-
 
 # ## Missingness of each overall variable
 # # Create dataframe to store data 
@@ -3420,45 +3416,6 @@ write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_hea
 ```
 
 
-# rename SEM dummy cols
-```{r rename_cols}
-# results_tr_sem2 <- results_tr_sem
-
-#   rename(age_19 = age_2) %>%
-#   rename(age_20 = age_3) %>%
-#   rename(age_21 = age_4) %>%
-#   rename(age_22 = age_5) %>%
-#   rename(age_23 = age_6) %>%
-#   rename(age_24 = age_7) %>%
-#   rename(age_25 = age_8) %>%
-# 
-#   rename(sexual_het = sexual_NA) %>%
-#   rename(sexual_lgb = sexual_2) %>%
-#   rename(sexual_qq = sexual_3) %>%
-# 
-#   rename(race_bla = race_NA) %>%
-#   rename(race_ame = race_2) %>%
-#   rename(race_asi = race_3) %>%
-#   rename(race_his = race_4) %>%
-#   rename(race_pac = race_5) %>%
-#   rename(race_ara = race_6) %>%
-#   rename(race_whi = race_7) %>%
-#   rename(race_oth = race_8) %>%
-#   rename(race_non = race_9) %>%
-# 
-#   rename(talk_no = talk_NA) %>%
-#   rename(talk_for = talk_2) %>%
-#   rename(talk_inf = talk_3) %>%
-#   rename(talk_com = talk_4) %>%
-# 
-#   rename(sch_4yr = school2_type_NA) %>%
-#   rename(sch_cc = school2_type_2) %>%
-#   rename(sch_ad = school2_type_3)
-
-# view(results_tr_sem2)
-```
-
-
 # SEM ANALYSIS
 
 
@@ -3479,13 +3436,7 @@ write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_hea
 #                # structural model - regressions
 #                   def_sem ~ dia_sem + env_sem + le_sem
 #                   entrap_sem ~ def_sem + tsm_sem + def_sem*tsm_sem
-#                   si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem   
-# 
-#                # residual covars
-#                   ed_any ~~ sib_freq
-#                   dx_dep ~~ dx_bi
-#                   dx_dep ~~ dx_tr    
-#                   dx_adhd ~~ dx_anx    '
+#                   si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem     '
 ```
 
 
@@ -3500,46 +3451,54 @@ SI_model_tr <- '
                              sib_freq_1 + sib_freq_2 +  
                              race_2 + race_3 + race_4 + race_5 +
                              ed_any_2 + ed_any_NA +
-                             dx_mh_1 + dx_mh_NA
-                             meds_count_1 + meds_count_2 + meds_count_3 
+                             dx_mh_1
+                             meds_count_1 + meds_count_2 + meds_count_3 + meds_count_4
+                                meds_count_5 + meds_count_6
 
                   env_sem =~ satisfied_overall_2 + satisfied_overall_3 + satisfied_overall_4 +
-                                satisfied_overall_5 + satisfied_overall_6 + satisfied_overall_7 +
+                                satisfied_overall_5 + satisfied_overall_6 + satisfied_overall_NA +
                              talk_2 + talk_3 + talk_4 + talk_NA +
                              religios_2 + religios_3 + religios_4 + religios_5 +
-                             discrim_2 + discrim_3 + discrim_4 + discrim_5 + discrim_6 + discrim_7 +
+                             discrim_2 + discrim_3 + discrim_4 + discrim_5 + discrim_6 + discrim_NA +
                              school2_type_2 + school2_type_3 + school2_type_NA +
                              activ_yn_1 + activ_yn_NA
 
-                  le_sem =~  ins_cover_1 +
+                  le_sem =~  ins_cover_2 + ins_cover_3 +
                              gpa_sr_1 + gpa_sr_2 + gpa_sr_3 + gpa_sr_4 +
                              binge_1 +
                              psyhx_1 + psyhx_NA +
-                             fincur_2 + fincur_3 + fincur_4 + 
+                             fincur_1 + fincur_2 + fincur_3 + 
                              drugs_yn_1 +
-                             assault_1 + assault_NA
+                             assault_1
 
-                  def_sem =~ aca_impa_1 + aca_impa_2 + aca_impa_3 + aca_impa_4 + 
-                             dep_type_1 + dep_type_2 + dep_type_3 + dep_type_4 + dep_type_5
+                  def_sem =~ aca_impa_2 + aca_impa_3 + aca_impa_4 + 
+                             dep_type_2 + dep_type_3 + dep_type_4 + dep_type_5 +
+                             anx_type_2 + anx_type_3 + anx_type_4
 
-                  tsm_sem =~ persist_1 + persist_2 + persist_3 + persist_4 + persist_5 + persist_6 +
-                                anx_type_1 + anx_type_4 +
-                             dep_secret_1 + dep_secret_2 + dep_secret_3 + dep_secret_4 + dep_secret_5 + dep_secret_6
+                  tsm_sem =~ persist_2 + persist_3 + persist_4 + persist_5 + persist_6 +
+                             dep_secret_1 + dep_secret_2 + dep_secret_3 + dep_secret_4 + dep_secret_5 + dep_secret_6 +
+                             aaq_dum_2
                              
                   entrap_sem =~ dep_impa_1 + dep_impa_2 + dep_impa_3 + dep_impa_4 +
                                 gad7_impa_1 + gad7_impa_2 + gad7_impa_3 + gad7_impa_4 +
                                 percneed_cur_1 + percneed_cur_2 + percneed_cur_3 + percneed_cur_4 + 
                                     percneed_cur_5 + percneed_cur_6
 
-                  mm_sem =~  inf_2 + inf_NA +
-                             flourish_dum_1 + flourish_dum_2 +
-                             belong1_2 + belong1_3 + belong1_4 + belong1_5 + belong1_6 +
-                             brs_dum_1 + brs_dum_2
+                  mm_sem =~  inf_1 + inf_NA +
+                             flourish_dum_2 + flourish_dum_3 + + flourish_dum43 + flourish_dum_5 + flourish_dum_NA +
+                             belong1_2 + belong1_3 + belong1_4 + belong1_5 + belong1_6 + belong1_NA
 
                # structural model - regressions
                   def_sem ~ dia_sem + env_sem + le_sem
                   entrap_sem ~ def_sem + tsm_sem + def_sem*tsm_sem
-                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem     '
+                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem     
+
+               # covars
+                  dx_mh_1 ~~ meds_count_2
+                  dx_mh_1 ~~ meds_count_3
+                  dx_mh_1 ~~ meds_count_4
+                  dx_mh_1 ~~ meds_count_5
+                  dx_mh_1 ~~ meds_count_6  '
 ```
 
 ## Model estimation
