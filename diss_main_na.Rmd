@@ -3407,6 +3407,44 @@ write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_hea
 
 # SEM ANALYSIS
 
+```{r}
+SI_model_tr <- '
+                # measurement model
+                  si_sem =~  si_type
+
+                  dia_sem =~ age + sexual + gender_tgd + sib_freq + race + 
+                             ed_any + dx_mh + meds_count
+
+                  env_sem =~ satisfied_overall + talk + religios + school2_type +
+                             + activ_yn
+
+                  le_sem =~  ins_cover + gpa_sr  binge + psyhx + fincur + 
+                             drugs_yn + drug_mar + assault
+
+                  def_sem =~ aca_impa + dep_type + anx_type
+
+                  tsm_sem =~ persist + aaq_dum
+                             
+                  entrap_sem =~ dep_impa + gad7_impa
+                  
+                  mm_sem =~  inf + flourish_dum +  belong1
+
+               # structural model - regressions
+                  def_sem ~ dia_sem + env_sem + le_sem
+                  entrap_sem ~ def_sem + tsm_sem + def_sem*tsm_sem
+                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem     
+
+               # covars
+                  dx_mh ~~ ed_any
+                  dx_mh ~~ meds_count
+                  assault ~~ dx_mh
+                  dx_mh ~~ dep_type
+                  drugs_yn ~~ drug_mar   '
+```
+
+
+
+
 
 ```{r SEM specification w/ dum}
 SI_model_tr <- '
