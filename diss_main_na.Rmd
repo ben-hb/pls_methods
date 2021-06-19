@@ -1675,6 +1675,8 @@ corr_simple()
 traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race,
                                 dx_mh, ed_any, meds_count)
 
+traindf_dia <- na.omit(traindf_dia)
+
 # create corr matrix, with dummy vars
 traindf_dia <- traindf_dia %>% 
   mutate_if(is.numeric, as.factor) %>% 
@@ -1720,6 +1722,8 @@ fviz_cos2(dia_pca, choice = "var", axes = 1,
 ```{r clm_dia}
 clm_dia <- traindf.v12 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race,
                                   ed_any, dx_mh, meds_count)
+
+clm_dia <- na.omit(clm_dia)
 
 view(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
@@ -1774,7 +1778,6 @@ traindf.v13 <- traindf.v13 %>%
                              discrim == 5 ~ 5,
                              discrim == 6 ~ 6))
 table(traindf.v13$discrim, useNA = "always")
-
 traindf.v13$discrim <- as.numeric(traindf.v13$discrim)
 ```
 
@@ -2069,8 +2072,8 @@ traindf.v15 <- traindf.v14  # new dataframe for analysis
 ### Environmental correlation
 ```{r}
 # Define environment vars for correlation matrix
-traindf_env <- traindf.v15 %>% select(discrim, religios, env_mh, residenc, ther_vis, activ_yn, divers, 
-                                school2_type, satisfied_overall, ther_vis, talk, military, international)
+traindf_env <- traindf.v15 %>% select(discrim, religios, residenc, activ_yn, divers, 
+                                school2_type, satisfied_overall, talk, military, international)
 
  # Convert traindf to numeric in order to run correlations
 traindf_env <- traindf_env %>% mutate_if(is.character, as.factor)
@@ -2096,6 +2099,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 traindf_env <- traindf.v15 %>% select(religios, residenc, activ_yn, school2_type, 
                                       satisfied_overall, talk)
 
+traindf_env <- na.omit(traindf_env)
 # create corr matrix, with dummy vars
 traindf_env <- traindf_env %>% 
   mutate_if(is.numeric, as.factor) %>% 
@@ -2827,8 +2831,7 @@ table(traindf.v24$gad7_impa, useNA = "always")
 ## Current needs
 ```{r percneed_cur}
 traindf.v24 <- traindf.v24 %>%
-  mutate(percneed_cur = case_when(is.na(percneed_cur) ~ 0,
-                                 percneed_cur == 1 ~ 1,
+  mutate(percneed_cur = case_when(percneed_cur == 1 ~ 1,
                                  percneed_cur == 2 ~ 2,
                                  percneed_cur == 3 ~ 3,
                                  percneed_cur == 4 ~ 4,
@@ -3219,7 +3222,7 @@ var_names <- c(
   # threats to self-moderation
   "persist", "aaq_dum",
   # entrapment
-  "dep_impa", "gad7_impa", "percneed_cur",
+  "dep_impa", "gad7_impa",
   # motivational moderators
   "inf", "flourish_dum", "belong1")  
 var_names <- sort(var_names)
@@ -3311,7 +3314,7 @@ traindf_sem <- traindf.v28 %>% select(
   # threats to self-moderation
   persist, aaq_dum,
   # entrapment
-  dep_impa, gad7_impa, percneed_cur,
+  dep_impa, gad7_impa,
   # motivational moderators
   inf, flourish_dum, belong1)  #mh_stigma, 
 
@@ -3344,7 +3347,7 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # threats to self-moderation
     "persist", "aaq_dum",
     # entrapment
-    "dep_impa", "gad7_impa", "percneed_cur",
+    "dep_impa", "gad7_impa",
     # motivational moderators
     "inf", "flourish_dum", "belong1"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
@@ -3433,14 +3436,9 @@ SI_model_tr <- '
                   si_sem =~  si_type_2 + si_type_3 + si_type_4
 
                   dia_sem =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
-                             sexual_2 + sexual_3 + sexual_NA +
-                             gender_tgd_2 +
-                             sib_freq_1 + sib_freq_2 +  
-                             race_2 + race_3 + race_4 + race_5 +
-                             ed_any_2 + ed_any_NA +
-                             dx_mh_1 +
-                             meds_count_1 + meds_count_2 + meds_count_3 + meds_count_4 +
-                                meds_count_5 + meds_count_6
+                             sexual_2 + sexual_3 + gender_tgd_2 + sib_freq_1 + sib_freq_2 +  
+                             race_2 + race_3 + race_4 + race_5 + ed_any_2 + ed_any_NA + dx_mh_1 +
+                             meds_count_1 + meds_count_2 + meds_count_3
 
                   env_sem =~ satisfied_overall_2 + satisfied_overall_3 + satisfied_overall_4 +
                                 satisfied_overall_5 + satisfied_overall_6 +
@@ -3449,27 +3447,18 @@ SI_model_tr <- '
                              school2_type_2 + school2_type_3 +
                              activ_yn_1
 
-                  le_sem =~  ins_cover_2 + ins_cover_3 +
-                             gpa_sr_1 + gpa_sr_2 + gpa_sr_3 + gpa_sr_4 +
-                             binge_1 +
-                             psyhx_1 +
-                             fincur_1 + fincur_2 + fincur_3 + 
-                             drugs_yn_1 +
-                             drug_mar_1 +
-                             assault_1
+                  le_sem =~  ins_cover_2 + ins_cover_3 + gpa_sr_1 + gpa_sr_2 + 
+                             gpa_sr_3 + gpa_sr_4 +  binge_1 + psyhx_1 + fincur_1 + 
+                             fincur_2 + fincur_3 + drugs_yn_1 + drug_mar_1 + assault_1
 
                   def_sem =~ aca_impa_2 + aca_impa_3 + aca_impa_4 + 
                              dep_type_2 + dep_type_3 + dep_type_4 + dep_type_5 +
                              anx_type_2 + anx_type_3 + anx_type_4
 
-                  tsm_sem =~ persist_2 + persist_3 + persist_4 + persist_5 + persist_6 +
-                             dep_secret_2 + dep_secret_3 + dep_secret_4 + dep_secret_5 + dep_secret_6 +
-                             aaq_dum_2
+                  tsm_sem =~ persist_2 + persist_3 + persist_4 + persist_5 + persist_6 + aaq_dum_2
                              
-                  entrap_sem =~ dep_impa_2 + dep_impa_3 + dep_impa_4 +
-                                gad7_impa_2 + gad7_impa_3 + gad7_impa_4 +
-                                percneed_cur_1 + percneed_cur_2 + percneed_cur_3 + percneed_cur_4 + 
-                                    percneed_cur_5 + percneed_cur_6
+                  entrap_sem =~ dep_impa_2 + dep_impa_3 + dep_impa_4 + gad7_impa_2 + gad7_impa_3 + 
+                                gad7_impa_4
 
                   mm_sem =~  inf_1 +
                              flourish_dum_2 + flourish_dum_3 + flourish_dum_4 + flourish_dum_5 +
@@ -3485,9 +3474,6 @@ SI_model_tr <- '
                   dx_mh_1 ~~ meds_count_1
                   dx_mh_1 ~~ meds_count_2
                   dx_mh_1 ~~ meds_count_3
-                  dx_mh_1 ~~ meds_count_4
-                  dx_mh_1 ~~ meds_count_5
-                  dx_mh_1 ~~ meds_count_6  
                   assault_1 ~~ dx_mh_1
                   dx_mh_1 ~~ dep_type_3
                   dx_mh_1 ~~ dep_type_4
@@ -3498,33 +3484,24 @@ SI_model_tr <- '
 
 ## Model estimation
 ```{r SEM model estimation}
-
-
 results_tr_sem <- as.data.frame(results_tr_sem)
 
 is.atomic(results_tr_sem)
 is.recursive(results_tr_sem)
 
-fit_train <- sem(SI_model_tr, data=results_tr_sem)
+fit_train <- sem(SI_model_tr, data=results_tr_sem,
                  ordered =c( "si_type_2", "si_type_3", "si_type_4",
                  "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25",
-                 "meds_count_1", "meds_count_2", "meds_count_3", "meds_count_4",
-                 "meds_count_5", "meds_count_6", "satisfied_overall_2", "satisfied_overall_3",
-                 "satisfied_overall_4", "satisfied_overall_5", "satisfied_overall_6",
-                 "discrim_2", "discrim_3", "discrim_4", "discrim_5", "discrim_6",
+                 "meds_count_1", "meds_count_2", "meds_count_3", "satisfied_overall_2", 
+                 "satisfied_overall_3", "satisfied_overall_4", "satisfied_overall_5", "satisfied_overall_6",
                  "gpa_sr_1", "gpa_sr_2", "gpa_sr_3", "gpa_sr_4", "aca_impa_2", "aca_impa_3",
                  "aca_impa_4", "dep_type_2", "dep_type_3", "dep_type_4", "dep_type_5",
                  "anx_type_2", "anx_type_3", "anx_type_4", "persist_2", "persist_3",
-                 "persist_4", " persist_5", "persist_6,  dep_secret_1", " dep_secret_2",
-                 "dep_secret_3", "dep_secret_4", "dep_secret_5", "dep_secret_6",
-                 "dep_impa_1", " dep_impa_2", " dep_impa_3", " dep_impa_4",
-                 "gad7_impa_1", " gad7_impa_2", " gad7_impa_3", " gad7_impa_4",
-                 "percneed_cur_1", "percneed_cur_2", "percneed_cur_3", "percneed_cur_4",
-                 "percneed_cur_5", "percneed_cur_6","flourish_dum_2", "flourish_dum_3",
-                 "flourish_dum_4", "flourish_dum_5", "flourish_dum_NA", "belong1_2",
-                 "belong1_3", "belong1_4", "belong1_5", "belong1_6", "belong_1_NA"))
-fit_train@SampleStats@cov
-
+                 "persist_4", " persist_5", "persist_6", "dep_impa_1", "dep_impa_2", 
+                 "dep_impa_3", "dep_impa_4", "gad7_impa_1", "gad7_impa_2", "gad7_impa_3", 
+                 "gad7_impa_4", "flourish_dum_2", "flourish_dum_3", "flourish_dum_4", 
+                 "flourish_dum_5", "flourish_dum_NA",  "belong1_2", "belong1_3", "belong1_4", 
+                 "belong1_5", "belong1_6", "belong_1_NA"))
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
 list(summary_train$coefficient,
