@@ -669,7 +669,7 @@ data.v2$si_type <- as.factor(data.v2$si_type)
 
 # DIATHESIS VARIABLES (.v3 - .v11)
 
-Candidate variables: age, sexual, gender, finpast, sib_freq, sib, bmi, race, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, med_any, med_sti, med_dep, med_psy, med_anx, med_mood, med_sle, meds_other, meds_none, alc_tx, wcs_tot, med_count, dx_chronic, disab_1
+Candidate variables: age, sexual, gender, finpast, sib_freq, sib, bmi, race, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, med_any, med_sti, med_dep, med_psy, med_anx, med_mood, med_sle, meds_other, meds_none, alc_tx, wcs_tot, med_count, dx_chronic, disab_1, disab_2
 ```{r Diathesis frame}
 data.v3 <- data.v2
 ```
@@ -3304,7 +3304,7 @@ traindf_sem2 <- traindf_sem %>%
   # mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
 traindf_sem2 <- na.omit(traindf_sem2)
-view(traindf_sem2)   # check output
+head(traindf_sem2)   # check output
 
 # # xlsx output
 traindf_sem_out <- as.data.frame(traindf_sem2)
@@ -3335,7 +3335,7 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 results_tr_sem <- na.omit(results_tr_sem)
-view(results_tr_sem)
+head(results_tr_sem)
 ```
 
 
@@ -3382,9 +3382,9 @@ corr <- na.omit(corr)                                   #remove the NA values fr
 corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
 print(corr)
   
-# #turn corr back into matrix in order to plot with corrplot
-# mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-# corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+#turn corr back into matrix in order to plot with corrplot
+mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
+corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 
 ## Create data matrix, save into files
@@ -3400,6 +3400,8 @@ write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_hea
 
 
 # SEM ANALYSIS
+
+
 
 ```{r}
 SI_model_tr <- ' # measurement model
@@ -3435,6 +3437,15 @@ SI_model_tr <- ' # measurement model
                   drugs_yn ~~ drug_mar  '
 ```
 
+
+```{r}
+# diss_cfa <- cfa(model = SI_model_tr, data = traindf_sem2, 
+#                 ordered =c("si_type", "age", "meds_count", "satisfied_overall",
+#                  "gpa_sr", "aca_impa", "dep_type", "anx_type", "persist",
+#                  "dep_impa", "gad7_impa", "flourish_dum", "belong1"))
+```
+
+
 ## Model estimation
 ```{r SEM model estimation}
 traindf_sem3 <- as.data.frame(traindf_sem2)
@@ -3444,7 +3455,7 @@ fit_train <- sem(SI_model_tr, data=traindf_sem3,
                  ordered =c("si_type", "age", "meds_count", "satisfied_overall",
                  "gpa_sr", "aca_impa", "dep_type", "anx_type", "persist",
                  "dep_impa", "gad7_impa", "flourish_dum", "belong1"))
-summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
+summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE, condition.x=TRUE)
 
 list(summary_train$coefficient,
       round(1-(summary_train$deviance/summary_train$null.deviance), 2))
@@ -3468,9 +3479,7 @@ resid(fit_train, "cor")
 plot_matrix(residuals(fit_train, type="cor")$cor)
 
 # model prediction
-fit_train$prediction <- predict(SI_model_test, newdata = results_sem, type = "response")
-fit_train$prediction <- predict(SI_model_test, newdata = traindf.v29, type = "response")
-fit_test$prediction  <- predict(SI_model_test, newdata = testdf.v29 , type = "response")
+fit_train$prediction <- predict(SI_model_test, newdata = traindf_sem2, type = "response")
 
 # distribution of the prediction score grouped by outcome
 ggplot(fit_train, aes(prediction, color = as.factor(left) ) ) +
