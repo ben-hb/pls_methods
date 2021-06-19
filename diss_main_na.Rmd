@@ -785,7 +785,9 @@ data.v3$gender[data.v3$gender_text %in% c("I am me. A human.", "I'm not yet sure
                                           "I don't have one because it's not a legitimate concept.", 
                                           "Gender is a construct which serves no purpose.")] <- 4
 
-table(data.v3$gender_tgd)   # check output
+data.v3 <- data.v3 %>%
+  filter(!is.na(gender_tgd))
+table(data.v3$gender_tgd, useNA = "always")   # check output
 ```
 
 ## Sexual Identity
@@ -944,9 +946,10 @@ data.v5 <- data.v4 %>%
                              sexual == 2 ~ 2,  # lesbian, gay
                              sexual == 3 ~ 2,  # bisexual
                              sexual == 1 ~ 1,  # heterosexual
-                             sexual == 6 ~ 4))
+                             sexual == 6 ~ 4)) %>%
+  filter(!is.na(sexual))
 data.v4$sexual <- as.factor(data.v4$sexual)
-table(data.v5$sexual) # tabulate and check outputs
+table(data.v5$sexual, useNA = "always") # tabulate and check outputs
 ```
 
 ## BMI
@@ -995,7 +998,7 @@ data.v6 <- data.v5 %>%
 table(data.v6$race) # check output
 data.v6 <- data.v6 %>%
   filter(!is.na(race))
-table(data.v6$race)
+table(data.v6$race, useNA = "always")
 ```
 
 
@@ -1191,7 +1194,7 @@ data.v6$race[data.v6$race_other_text %in% c("Half Middle Eastern half white",
                                             "Half my family is white and the other middle eastern")] <- 5
 
 # tabulate and check outputs
-table(data.v6$race)
+table(data.v6$race, useNA = "always")
 data.v6 = subset(data.v6, select= -c(race_bla, race_asi, race_his, race_whi, race_other))   # clean up vars
 
 # consolidate race_ara, race_pi, race_ame --> other
@@ -1206,10 +1209,9 @@ data.v7 <- data.v6 %>%
                               sib_freq == 3 ~ 1,
                               sib_freq == 4 ~ 2,
                               sib_freq == 5 ~ 2,
-                              sib_freq == 6 ~ 2))
-table(data.v7$sib_freq)  # tabulate and check output
-data.v7 <- data.v7 %>%
+                              sib_freq == 6 ~ 2)) %>%
   filter(!is.na(sib_freq))
+table(data.v7$sib_freq, useNA = "always")
 data.v7 = subset(data.v7, select= -c(sib_none:sib_oth)) # clean up vars/columns
 ```
 
@@ -1262,7 +1264,7 @@ data.v9 <- data.v8 %>%   # filters out any respondents who skipped the MH sectio
 data.v9$dx_dep <- as.logical(data.v9$dx_mh)
 
 # Check output
-table(data.v9$dx_mh)
+table(data.v9$dx_mh, useNA = "always")
 ```
 
 
@@ -1292,7 +1294,7 @@ traindf.v10 <- traindf.v10 %>%
   filter(!is.na(religios))
 data.v10$religios <- as.numeric(data.v10$religios)
 
-table(traindf.v10$religios)       # Check output
+table(traindf.v10$religios, useNA = "always")       # Check output
 ```
 
 ## AUDIT  
@@ -1603,7 +1605,7 @@ traindf.v11 <- traindf.v11 %>%
                                 meds_count == 5 ~ 3,
                                 meds_count == 6 ~ 3))
 
-table(traindf.v11$meds_count)  # check output
+table(traindf.v11$meds_count, useNA = "always")  # check output
 
 #traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
 ```
@@ -1670,7 +1672,7 @@ corr_simple()
 
 ### EFA diathesis
 ```{r EFA diathesis}
-traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, body_sr,
+traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race,
                                 dx_mh, ed_any, meds_count)
 
 # create corr matrix, with dummy vars
@@ -1685,7 +1687,7 @@ traindf_dia <- traindf_dia %>%
 traindf_dia   # check output
 
 results_dia <- dummy_cols(traindf_dia, select_columns = c("age", "sexual", "gender_tgd", "finpast", 
-                                                       "sib_freq", "race", "body_sr", "dx_mh", "ed_any",
+                                                       "sib_freq", "race", "dx_mh", "ed_any",
                                                        "meds_count"), 
                           remove_first_dummy = TRUE)
 
@@ -1823,9 +1825,10 @@ traindf.v14 <- traindf.v14 %>%
                           talk == 2 ~ 2,
                           talk == 3 ~ 3,
                           talk == 4 ~ 4,
-                          talk == 0 ~ 0))
+                          talk == 0 ~ 0)) %>%
+  filter(!is.na(talk))
 traindf.v14$talk <- as.factor(traindf.v14$talk)
-table(traindf.v14$talk, useNA = "always")  # check output
+table(traindf.v14$talk, useNA = "always") # check output
 
 #traindf.v14 = subset(traindf.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, 
 #talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
@@ -1909,7 +1912,6 @@ traindf.v14 <- traindf.v14 %>%
                               activ_art == 1 ~ 1,
                               activ_other == 1 ~ 1)) %>%
   filter(!is.na(activ_yn))
-
 traindf.v14$activ_yn <- as.logical(traindf.v14$activ_yn)
 table(traindf.v14$activ_yn, useNA = "always")     # tabulate and check output
 
@@ -2093,7 +2095,6 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```{r EFA Environment}
 traindf_env <- traindf.v15 %>% select(religios, residenc, activ_yn, school2_type, 
                                       satisfied_overall, talk)
-
 
 # create corr matrix, with dummy vars
 traindf_env <- traindf_env %>% 
@@ -2627,8 +2628,8 @@ traindf.v22 <- traindf.v22 %>%
                                 dep_secret == 3 ~ 3,
                                 dep_secret == 4 ~ 4,
                                 dep_secret == 5 ~ 5,
-                                dep_secret == 6 ~ 6)) %>%
-  filter(!is.na(dep_secret))
+                                dep_secret == 6 ~ 6))
+  # filter(!is.na(dep_secret))
 table(traindf.v22$dep_secret, useNA = "always")  # not sure what to do about this one.... NA = 7000+
 ```
 
@@ -2679,10 +2680,10 @@ traindf.v22 <- traindf.v22 %>%
                              persist == 3 ~ 3, 
                              persist == 4 ~ 4, 
                              persist == 5 ~ 5, 
-                             persist == 6 ~ 6, 
-                             is.na(persist) ~ 0))
-table(traindf.v22$persist, useNA = "always")
+                             persist == 6 ~ 6))
 traindf.v22$persist <- as.numeric(traindf.v22$persist)
+table(traindf.v22$persist, useNA = "always")
+
 ```
 
 
@@ -2693,7 +2694,7 @@ traindf.v23 <- traindf.v22
 ## Threats to self-moderation correlation
 ```{r CORR TSM}
 # Define TSM variable candidates for correlation matrix
-traindf_tsm <- traindf.v23 %>% select(persist, dep_secret, achieve4, aaq_dum)
+traindf_tsm <- traindf.v23 %>% select(persist, aaq_dum)
 
 # convert data to numeric in order to run correlations 
 traindf_tsm <- traindf_tsm %>% mutate_if(is.character, as.factor)
@@ -2709,7 +2710,7 @@ corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correla
 print(corr)
   
 # Re-run corr with non-overlapping vars
-traindf_tsm <- traindf.v23 %>% select(persist, anx_type, dep_secret, achieve4, aaq_dum)
+traindf_tsm <- traindf.v23 %>% select(persist, aaq_dum)
 
 # convert data to numeric in order to run correlations 
 traindf_tsm <- traindf_tsm %>% mutate_if(is.character, as.factor)
@@ -2727,7 +2728,7 @@ print(corr)
 
 ## EFA TSM
 ```{r EFA TSM}
-traindf_tsm <- traindf.v23 %>% select(persist, dep_secret, achieve4, aaq_dum)
+traindf_tsm <- traindf.v23 %>% select(persist, aaq_dum)
 
 # create corr matrix, with dummy vars 
 traindf_tsm <- traindf_tsm %>% 
@@ -2736,41 +2737,41 @@ traindf_tsm <- traindf_tsm %>%
   data.matrix()
 traindf_tsm   # check output
 
-results_tsm <- dummy_cols(traindf_tsm, select_columns = c("persist", "dep_secret", "achieve4", "aaq_dum"),
+results_tsm <- dummy_cols(traindf_tsm, select_columns = c("persist", "aaq_dum"),
                          remove_first_dummy = TRUE)
 
-# tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
-# eigval_tsm <- get_eigenvalue(tsm_pca)
-# eigval_tsm
-# 
-# # Visualization of PCA, FAMD
-# fviz_screeplot(tsm_pca, addlabels = TRUE, ylim = c(0, 50))
-# fviz_pca_var(tsm_pca,
-#              col.var = "contrib", # Color by contributions to the PC
-#              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-#              repel = TRUE     # Avoid text overlapping
-#              )
-# fviz_famd_var(tsm_pca,
-#              col.var = "contrib", # Color by contributions to the PC
-#              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-#              repel = TRUE     # Avoid text overlapping
-#              )
-# fviz_cos2(tsm_pca, choice = "var", axes = 1,
-#           fill = "steelblue", color = "steelblue",
-#           sort.val = c("desc", "asc", "none"),
-#           top = 40,
-#           xtickslab.rt = 45,
-#           ggtheme = theme_minimal())
+tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
+eigval_tsm <- get_eigenvalue(tsm_pca)
+eigval_tsm
+
+# Visualization of PCA, FAMD
+fviz_screeplot(tsm_pca, addlabels = TRUE, ylim = c(0, 50))
+fviz_pca_var(tsm_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_famd_var(tsm_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_cos2(tsm_pca, choice = "var", axes = 1,
+          fill = "steelblue", color = "steelblue",
+          sort.val = c("desc", "asc", "none"),
+          top = 40,
+          xtickslab.rt = 45,
+          ggtheme = theme_minimal())
 ```
 
 ## CLM TSM
 ```{r CLM TSM}
-clm_tsm <- traindf.v23 %>% select(si_type, persist, dep_secret, aaq_dum)
+clm_tsm <- traindf.v23 %>% select(si_type, persist, aaq_dum)
 
 clm_tsm <- NA_preproc(clm_tsm)
 clm_tsm <- as.data.frame(clm_tsm)
 
-clm_tsm <- clm(si_type ~ persist + dep_secret + aaq_dum,
+clm_tsm <- clm(si_type ~ persist + aaq_dum,
                data = clm_tsm) 
 
 summary(clm_tsm)
@@ -2806,7 +2807,7 @@ traindf.v24 <- traindf.v24 %>%
                               dep_impa == 4 ~ 4)) %>%
   filter(!is.na(dep_impa))
 traindf.v24$dep_impa <- as.numeric(traindf.v24$dep_impa)
-table(traindf.v24$dep_impa)
+table(traindf.v24$dep_impa, useNA = "always")
 
 ```
 
@@ -3216,7 +3217,7 @@ var_names <- c(
   # defeat
   "aca_impa", "dep_type", "anx_type",
   # threats to self-moderation
-  "persist", "dep_secret", "aaq_dum",
+  "persist", "aaq_dum",
   # entrapment
   "dep_impa", "gad7_impa", "percneed_cur",
   # motivational moderators
@@ -3308,7 +3309,7 @@ traindf_sem <- traindf.v28 %>% select(
   # defeat
   aca_impa, dep_type, anx_type,
   # threats to self-moderation
-  persist, dep_secret, aaq_dum,
+  persist, aaq_dum,
   # entrapment
   dep_impa, gad7_impa, percneed_cur,
   # motivational moderators
@@ -3341,7 +3342,7 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # defeat
     "aca_impa", "dep_type", "anx_type",
     # threats to self-moderation
-    "persist", "dep_secret", "aaq_dum",
+    "persist", "aaq_dum",
     # entrapment
     "dep_impa", "gad7_impa", "percneed_cur",
     # motivational moderators
