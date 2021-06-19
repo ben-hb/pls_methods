@@ -1338,10 +1338,10 @@ traindf.v10 = subset(traindf.v10, select= -c(alc_tx)) # clean up vars/columns
 
 ## Eating disorder, any type
 ```{r ed_any}
-data.v10 <- data.v10 %>%
+traindf.v10 <- traindf.v10 %>%
+  filter(!is.na(ed_any)) %>%
   mutate(ed_any = case_when(ed_any == 1 ~ 1,
-                            ed_any == 0 ~ 0)) %>%
-  filter(!is.na(ed_any))
+                            ed_any == 0 ~ 0))
 table(traindf.v10$ed_any, useNA = "always")
 ```
 
@@ -1833,8 +1833,8 @@ traindf.v14 <- traindf.v14 %>%
 traindf.v14$talk <- as.factor(traindf.v14$talk)
 table(traindf.v14$talk, useNA = "always") # check output
 
-#traindf.v14 = subset(traindf.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, 
-#talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
+traindf.v14 = subset(traindf.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, 
+talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
 ```
 
 ## Military status
@@ -1872,7 +1872,7 @@ traindf.v14 <- traindf.v14 %>%
                                        satisfied_overall == 6 ~ 6)) %>% 
   filter(!is.na(satisfied_overall))
 traindf.v14$satisfied_overall <- as.numeric(traindf.v14$satisfied_overall)
-table(traindf.v14$satisfied_overall)
+table(traindf.v14$satisfied_overall, useNA = "always")
 ```
 
 ## Activity Involvement
@@ -2300,9 +2300,8 @@ table(traindf.v18$binge_fr)
 
 traindf.v18 <- traindf.v18 %>%
   mutate(binge = case_when(binge_fr >= 4 ~ 1,
-                           binge_fr < 4 ~ 0,
-                           is.na(binge_fr) ~ 0))
-
+                           binge_fr < 4 ~ 0)) %>%
+  filter(!is.na(binge))
 traindf.v18$binge <-as.logical(traindf.v18$binge)
 table(traindf.v18$binge, useNA = "always") # check output
 
@@ -3416,7 +3415,7 @@ SI_model_tr <- '
 
                   dia_sem =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
                              sexual_2 + sexual_3 + gender_tgd_2 + sib_freq_1 + sib_freq_2 +  
-                             race_2 + race_3 + race_4 + race_5 + ed_any_2 + ed_any_NA + dx_mh_1 +
+                             race_2 + race_3 + race_4 + race_5 + ed_any_1 + dx_mh_1 +
                              meds_count_1 + meds_count_2 + meds_count_3
 
                   env_sem =~ satisfied_overall_2 + satisfied_overall_3 + satisfied_overall_4 +
@@ -3447,7 +3446,7 @@ SI_model_tr <- '
                   si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem     
 
                # covars
-                  dx_mh_1 ~~ ed_any_2
+                  dx_mh_1 ~~ ed_any_1
                   dx_mh_1 ~~ meds_count_1
                   dx_mh_1 ~~ meds_count_2
                   dx_mh_1 ~~ meds_count_3
