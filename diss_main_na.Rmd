@@ -3106,7 +3106,7 @@ traindf.v27 <- traindf.v26
 ### Motivational Moderator correlation
 ```{r MM_corr}
 # Define MM variable candidates for correlation matrix
-traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1)
+traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, mh_stigma)
 
  # convert traindf to numeric in order to run correlations
 traindf_mm <- traindf_mm %>% mutate_if(is.character, as.factor)
@@ -3125,7 +3125,7 @@ print(corr)
 
 ### EFA MM
 ```{r EFA MM}
-traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1)
+traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, mh_stigma)
 traindf_mm <- na.omit(traindf_mm)
 
 # create corr matrix, with dummy vars 
@@ -3134,7 +3134,7 @@ traindf_mm <- traindf_mm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 traindf_mm   # check output
-results_mm <- dummy_cols(traindf_mm, select_columns = c("inf", "flourish_dum", "belong1"),
+results_mm <- dummy_cols(traindf_mm, select_columns = c("inf", "flourish_dum", "belong1", "mh_stigma"),
                          remove_first_dummy = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 eigval_mm <- get_eigenvalue(mm_pca)
@@ -3162,11 +3162,11 @@ fviz_cos2(mm_pca, choice = "var", axes = 1,
 
 ### CLM Motivational moderators regression
 ```{r CLM mm}
-clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1)
+clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1, mh_stigma)
 clm_mm <- na.omit(clm_mm)
 
 # run MM regression
-clm_mm <- clm(si_type ~ inf + flourish_dum + belong1, data = clm_mm)
+clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + mh_stigma, data = clm_mm)
 
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))
@@ -3205,7 +3205,7 @@ var_names <- c(
   # entrapment
   "dep_impa", "gad7_impa",
   # motivational moderators
-  "inf", "flourish_dum", "belong1")  
+  "inf", "flourish_dum", "belong1", "mh_stigma")  
 var_names <- sort(var_names)
 
 # build table for absolute missingness based on school2
@@ -3297,19 +3297,20 @@ traindf_sem <- traindf.v28 %>% select(
   # entrapment
   dep_impa, gad7_impa,
   # motivational moderators
-  inf, flourish_dum, belong1)  #mh_stigma, 
+  inf, flourish_dum, belong1, mh_stigma)  #mh_stigma, 
 
 # create sem matrix 
 traindf_sem2 <- traindf_sem %>% 
   # mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
+traindf_sem2 <- na.omit(traindf_sem2)
 view(traindf_sem2)   # check output
 
 # # xlsx output
-traindf_sem3 <- as.data.frame(traindf_sem2)
-save(traindf_sem3 , file = "traindf_nondummy.RData")
+traindf_sem_out <- as.data.frame(traindf_sem2)
+save(traindf_sem_out , file = "traindf_nondummy.RData")
 load("traindf_nondummy.RData")
-write_xlsx(traindf_sem3, path = "traindf_nondummy.xls", col_names = TRUE, format_headers = TRUE)
+write_xlsx(traindf_sem_out, path = "traindf_nondummy.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Create dummy vars
@@ -3330,18 +3331,11 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
     # entrapment
     "dep_impa", "gad7_impa",
     # motivational moderators
-    "inf", "flourish_dum", "belong1"), 
+    "inf", "flourish_dum", "belong1", "mh_stigma"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 results_tr_sem <- na.omit(results_tr_sem)
 view(results_tr_sem)
-```
-
-# Zero inflation stats
-```{r}
-# zeroinfl <- function(si_type, results_tr_sem, na.action = TRUE
-#                      dist = c("binomial"),
-#                      link = c("logit"))
 ```
 
 
@@ -3408,8 +3402,7 @@ write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_hea
 # SEM ANALYSIS
 
 ```{r}
-SI_model_tr <- '
-                # measurement model
+SI_model_tr <- ' # measurement model
                   si_sem =~  si_type
 
                   dia_sem =~ age + sexual + gender_tgd + sib_freq + race + 
@@ -3418,7 +3411,7 @@ SI_model_tr <- '
                   env_sem =~ satisfied_overall + talk + religios + school2_type +
                              + activ_yn
 
-                  le_sem =~  ins_cover + gpa_sr  binge + psyhx + fincur + 
+                  le_sem =~  ins_cover + gpa_sr + binge + psyhx + fincur + 
                              drugs_yn + drug_mar + assault
 
                   def_sem =~ aca_impa + dep_type + anx_type
@@ -3427,7 +3420,7 @@ SI_model_tr <- '
                              
                   entrap_sem =~ dep_impa + gad7_impa
                   
-                  mm_sem =~  inf + flourish_dum +  belong1
+                  mm_sem =~  inf + flourish_dum + belong1 + mh_stigma
 
                # structural model - regressions
                   def_sem ~ dia_sem + env_sem + le_sem
@@ -3439,89 +3432,24 @@ SI_model_tr <- '
                   dx_mh ~~ meds_count
                   assault ~~ dx_mh
                   dx_mh ~~ dep_type
-                  drugs_yn ~~ drug_mar   '
-```
-
-
-
-
-
-```{r SEM specification w/ dum}
-SI_model_tr <- '
-                # measurement model
-                  si_sem =~  si_type_2 + si_type_3 + si_type_4
-
-                  dia_sem =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
-                             sexual_2 + sexual_3 + gender_tgd_2 + sib_freq_1 + sib_freq_2 +  
-                             race_2 + race_3 + race_4 + race_5 + ed_any_1 + dx_mh_1 +
-                             meds_count_1 + meds_count_2 + meds_count_3
-
-                  env_sem =~ satisfied_overall_2 + satisfied_overall_3 + satisfied_overall_4 +
-                             satisfied_overall_5 + satisfied_overall_6 + talk_2 + talk_3 + 
-                             talk_4 + religios_2 + religios_3 + religios_4 + religios_5 +
-                             school2_type_2 + school2_type_3 + activ_yn_1
-
-                  le_sem =~  ins_cover_2 + ins_cover_3 + gpa_sr_1 + gpa_sr_2 + 
-                             gpa_sr_3 + gpa_sr_4 +  binge_1 + psyhx_1 + fincur_1 + 
-                             drugs_yn_1 + drug_mar_1 + assault_1
-
-                  def_sem =~ aca_impa_2 + aca_impa_3 + aca_impa_4 + 
-                             dep_type_2 + dep_type_3 + dep_type_4 + dep_type_5 +
-                             anx_type_2 + anx_type_3 + anx_type_4
-
-                  tsm_sem =~ persist_2 + persist_3 + persist_4 + persist_5 + persist_6 + aaq_dum_2
-                             
-                  entrap_sem =~ dep_impa_2 + dep_impa_3 + dep_impa_4 + 
-                                gad7_impa_2 + gad7_impa_3 + gad7_impa_4
-
-                  mm_sem =~  inf_1 +
-                             flourish_dum_2 + flourish_dum_3 + flourish_dum_4 + flourish_dum_5 +
-                             belong1_2 + belong1_3 + belong1_4 + belong1_5 + belong1_6
-
-               # structural model - regressions
-                  def_sem ~ dia_sem + env_sem + le_sem
-                  entrap_sem ~ def_sem + tsm_sem + def_sem*tsm_sem
-                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem     
-
-               # covars
-                  dx_mh_1 ~~ ed_any_1
-                  dx_mh_1 ~~ meds_count_1
-                  dx_mh_1 ~~ meds_count_2
-                  dx_mh_1 ~~ meds_count_3
-                  assault_1 ~~ dx_mh_1
-                  dx_mh_1 ~~ dep_type_3
-                  dx_mh_1 ~~ dep_type_4
-                  dx_mh_1 ~~ dep_type_5
-                  dx_mh_1 ~~ anx_type_3
-                  dx_mh_1 ~~ anx_type_4    
-                  drugs_yn_1 ~~ drug_mar_1   '
+                  drugs_yn ~~ drug_mar  '
 ```
 
 ## Model estimation
 ```{r SEM model estimation}
-results_tr_sem2 <- as.data.frame(results_tr_sem)
-results_tr_sem2 <- na.omit(results_tr_sem2)
+traindf_sem3 <- as.data.frame(traindf_sem2)
+traindf_sem3 <- na.omit(traindf_sem3)
 
-is.atomic(results_tr_sem2)
-is.recursive(results_tr_sem2)
-
-fit_train <- sem(SI_model_tr, data=results_tr_sem2,
-                 ordered =c("si_type_2", "si_type_3", "si_type_4",
-                 "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25",
-                 "meds_count_1", "meds_count_2", "meds_count_3", "satisfied_overall_2",
-                 "satisfied_overall_3", "satisfied_overall_4", "satisfied_overall_5", "satisfied_overall_6",
-                 "gpa_sr_1", "gpa_sr_2", "gpa_sr_3", "gpa_sr_4", "aca_impa_2", "aca_impa_3",
-                 "aca_impa_4", "dep_type_2", "dep_type_3", "dep_type_4", "dep_type_5",
-                 "anx_type_2", "anx_type_3", "anx_type_4", "persist_2", "persist_3",
-                 "persist_4", "persist_5", "persist_6", "dep_impa_2",
-                 "dep_impa_3", "dep_impa_4", "gad7_impa_2", "gad7_impa_3",
-                 "gad7_impa_4", "flourish_dum_2", "flourish_dum_3", "flourish_dum_4",
-                 "flourish_dum_5", "belong1_2", "belong1_3", "belong1_4",
-                 "belong1_5", "belong1_6"))
+fit_train <- sem(SI_model_tr, data=traindf_sem3,
+                 ordered =c("si_type", "age", "meds_count", "satisfied_overall",
+                 "gpa_sr", "aca_impa", "dep_type", "anx_type", "persist",
+                 "dep_impa", "gad7_impa", "flourish_dum", "belong1"))
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
 list(summary_train$coefficient,
       round(1-(summary_train$deviance/summary_train$null.deviance), 2))
+
+lavInspect(fit_train, "cov.lv")
 ```
 
 ## Model prediction
