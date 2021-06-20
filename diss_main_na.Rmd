@@ -3057,7 +3057,13 @@ results_tr_sem <- dummy_cols(traindf_sem2, select_columns = c(
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 results_tr_sem <- na.omit(results_tr_sem)
-head(results_tr_sem)
+results_tr_df <- as.data.frame(results_tr_sem)
+head(results_tr_df)
+
+#save full var set for SEM
+save(results_tr_df, file = "traindf_sem.RData")
+load("traindf_sem.RData")
+write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -3073,22 +3079,6 @@ var_desc <- describe(traindf_sem2) %>% view()
 save(var_desc, file = "var_desc.RData")
 load("var_desc.RData")
 write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = TRUE)
-
-# ## Missingness of each overall variable
-# # Create dataframe to store data
-# missing_rates <- data.frame("variable" = var_names,
-#            "total" = rep(999, length(var_names)),
-#            "prop_present" = rep(999, length(var_names)))
-# 
-# # loop to replicate row for all var
-# for (i in 1:nrow(missing_rates)) {
-#   missing_rates[i, 2] = sum(!is.na(traindf.v28[[i]]))
-#   missing_rates[i, 3] = missing_rates[i, 2] / nrow(traindf.v28)
-# }
-# # view matrix
-# view(missing_rates)
-# # save matrix
-# write_xlsx(missing_rates, path = "overall_missing.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Model w/ levels correlations
@@ -3111,23 +3101,13 @@ mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 
-## Create data matrix, save into files
-```{r save dataset}
-results_tr_df <- as.data.frame(results_tr_sem)
-view(results_tr_df)
-
-#save full var set for SEM
-save(results_tr_df, file = "traindf_sem.RData")
-load("traindf_sem.RData")
-write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_headers = TRUE)
-```
 
 
 # SEM ANALYSIS
 
 
-
-```{r}
+## Model specification
+```{r Model_spec}
 SI_model_tr <- ' # measurement model
                   si_sem =~  si_type
 
@@ -3161,20 +3141,21 @@ SI_model_tr <- ' # measurement model
                   drugs_yn ~~ drug_mar  '
 ```
 
-
 ## Model estimation
 ```{r SEM model estimation}
 traindf_sem3 <- as.data.frame(traindf_sem2)
 traindf_sem3 <- na.omit(traindf_sem3)
+view(traindf_sem3)
 
 fit_train <- sem(SI_model_tr, data=traindf_sem3,
-                 ordered =c("si_type", "age", "meds_count", "satisfied_overall",
-                 "gpa_sr", "aca_impa", "dep_type", "anx_type", "persist",
+                 ordered =c("si_type", "age", "sib_freq", "meds_count", "satisfied_overall",
+                 "religios", "gpa_sr", "aca_impa", "dep_type", "anx_type", "persist",
                  "dep_impa", "gad7_impa", "flourish_dum", "belong1"))
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
 list(summary_train$coefficient,
       round(1-(summary_train$deviance/summary_train$null.deviance), 2))
+lavInspect(fit_train, "cov.lv")
 ```
 
 ## Model prediction
