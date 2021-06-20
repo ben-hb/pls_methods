@@ -363,16 +363,15 @@ data.v2 <- data.v1 %>%
   mutate(si_type = case_when((sui_idea == 1 & suic_plan == 1 & suic_att == 1) ~ 4, # suicide attempt
                            (sui_idea == 1 & suic_plan == 1) ~ 3,                   # active SI
                            (sui_idea == 1) ~ 2,                                    # passive SI
-                           sui_idea == 0 ~ 1))                                     # no SI reported
-# tabulate and check output
+                           sui_idea == 0 ~ 1)) %>%                                 # no SI reported
+  filter(!is.na(si_type))   # filter for SI variable -- then rowwise deletion
+data.v2$si_type <- as.numeric(data.v2$si_type)  
+  # tabulate and check output
 table(data.v2$si_type)
 table(data.v2$sui_idea)
 
-data.v2 = subset(data.v2, select= -c(suic_plan, sui_plan, suic_att, sui_att)) # clean up vars/columns
+#data.v2 = subset(data.v2, select= -c(suic_plan, sui_plan, suic_att, sui_att)) # clean up vars/columns
 
-# select if SI variable is missing -- then rowwise deletion
-data.v2 <- data.v2 %>%
-  filter(!is.na(si_type))
 table(data.v2$si_type) # ensuring that all NAs are now clean
 data.v2$si_type <- as.factor(data.v2$si_type)
 ```
@@ -394,7 +393,6 @@ table(data.v3$age)
 ## Gender identity
 ```{r gender}
 data.v3 <- data.v3 %>%
-  filter(!is.na(gender)) %>% 
   # Create 'gender' subtypes into one category
   mutate(gender = case_when((gender == 3 | gender == 4) ~ 3,     # transgender
                             (gender == 5 | gender == 6) ~ 2,     # gender diverse
@@ -406,9 +404,11 @@ table(data.v3$gender)
 data.v3 <- data.v3 %>%  
   mutate(gender_tgd = case_when(gender == 2 ~ 1,
                                 gender == 3 ~ 1,
-                                gender == 1 ~ 0))
-data.v3$gender_tgd <- as.factor(data.v3$gender_tgd)
-table(data.v3$gender_tgd)
+                                gender == 1 ~ 0)) %>%
+  filter(!is.na(gender))
+data.v3$gender_tgd <- as.logical(data.v3$gender_tgd)
+
+table(data.v3$gender_tgd, useNA = "always")
 ```
 
 ### Reconcile 'gender_text' 
@@ -923,6 +923,8 @@ data.v7 <- data.v6 %>%
                               sib_freq == 5 ~ 2,
                               sib_freq == 6 ~ 2)) %>%
   filter(!is.na(sib_freq))
+data.v7$sib_freq <- as.numeric(data.v7$sib_freq)
+
 table(data.v7$sib_freq, useNA = "always")
 data.v7 = subset(data.v7, select= -c(sib_none:sib_oth)) # clean up vars/columns
 ```
@@ -974,7 +976,7 @@ data.v9 <- data.v8 %>%   # filters out any respondents who skipped the MH sectio
   mutate(dx_mh = case_when(dx_mh == 1 ~ 1,
                            dx_mh == 0 ~ 0,
                            is.na(dx_mh) ~ 0))
-data.v9$dx_dep <- as.logical(data.v9$dx_mh)
+data.v9$dx_mh <- as.logical(data.v9$dx_mh)
 
 # Check output
 table(data.v9$dx_mh, useNA = "always")
@@ -1045,6 +1047,8 @@ traindf.v10 <- traindf.v10 %>%
   filter(!is.na(ed_any)) %>%
   mutate(ed_any = case_when(ed_any == 1 ~ 1,
                             ed_any == 0 ~ 0))
+traindf.v10$ed_any <- as.logical(traindf.v10$ed_any)
+
 table(traindf.v10$ed_any, useNA = "always")
 ```
 
@@ -1295,8 +1299,6 @@ traindf.v11$meds_5[is.na(traindf.v11$meds_5)] <- 0
 traindf.v11$meds_6[is.na(traindf.v11$meds_6)] <- 0
 traindf.v11$meds_7[is.na(traindf.v11$meds_7)] <- 0
 
-
-
 # create meds_count var
 traindf.v11 <- traindf.v11 %>%
   mutate(meds_count = meds_1 + meds_2 + meds_3 + meds_4 + meds_5 + meds_6 + meds_7) %>%
@@ -1308,9 +1310,10 @@ traindf.v11 <- traindf.v11 %>%
                                 meds_count == 5 ~ 3,
                                 meds_count == 6 ~ 3))
 
-table(traindf.v11$meds_count, useNA = "always")  # check output
+traindf.v11$meds_count <- as.numeric(traindf.v11$meds_count)
 
-#traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
+table(traindf.v11$meds_count, useNA = "always")  # check output
+traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
 ```
 
 ## DIATHESIS ANALYSES
@@ -1480,8 +1483,9 @@ traindf.v13 <- traindf.v13 %>%
                              discrim == 4 ~ 4,
                              discrim == 5 ~ 5,
                              discrim == 6 ~ 6))
-table(traindf.v13$discrim, useNA = "always")
-traindf.v13$discrim <- as.numeric(traindf.v13$discrim)
+traindf.v13$discrim<- as.numeric(traindf.v13$discrim)
+
+table(traindf.v13$discrim, useNA = "always") # check output
 ```
 
 ## Religion
@@ -1496,8 +1500,8 @@ table(traindf.v10$religios, useNA = "always")       # Check output
 
 ## MH campus environment
 ```{r env_mh}
-table(traindf.v13$env_mh) 
 traindf.v13$env_mh <- as.factor(traindf.v13$env_mh)
+table(traindf.v13$env_mh, useNA = "always") 
 ```
 
 ## Total therapy visits
@@ -1513,8 +1517,10 @@ traindf.v14 <- traindf.v13 %>%
                               ther_vis == 2 ~ 2,
                               ther_vis == 3 ~ 3,
                               ther_vis == 4 ~ 4))
-table(traindf.v14$ther_vis)   # check output
 traindf.v14$ther_vis <- as.factor(traindf.v14$ther_vis)
+
+table(traindf.v14$ther_vis)   # check output
+
 ```
 
 ## Distress & social support
@@ -1543,6 +1549,7 @@ traindf.v14 <- traindf.v14 %>%
                           talk == 4 ~ 4)) %>%
   filter(!is.na(talk))
 traindf.v14$talk <- as.factor(traindf.v14$talk)
+
 table(traindf.v14$talk, useNA = "always") # check output
 
 traindf.v14 = subset(traindf.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, 
@@ -1551,14 +1558,14 @@ talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
 
 ## Military status
 ```{r military}
-table(traindf.v14$military)
 traindf.v14$military <- as.logical(traindf.v14$military)
+table(traindf.v14$military)
 ```
 
 ## International student
 ```{r international}
-table(traindf.v14$international)
 traindf.v14$international <- as.logical(traindf.v14$international)
+table(traindf.v14$international)
 ```
 
 ## Therapy + Medication Treatment
@@ -1584,6 +1591,7 @@ traindf.v14 <- traindf.v14 %>%
                                        satisfied_overall == 6 ~ 6)) %>% 
   filter(!is.na(satisfied_overall))
 traindf.v14$satisfied_overall <- as.numeric(traindf.v14$satisfied_overall)
+
 table(traindf.v14$satisfied_overall, useNA = "always")
 ```
 
@@ -1628,6 +1636,7 @@ traindf.v14 <- traindf.v14 %>%
                               activ_other == 1 ~ 1)) %>%
   filter(!is.na(activ_yn))
 traindf.v14$activ_yn <- as.logical(traindf.v14$activ_yn)
+
 table(traindf.v14$activ_yn, useNA = "always")     # tabulate and check output
 
 #traindf.v14 = subset(traindf.v14, select= -c(activ_none, activ_ac:activ_other))    # clean up vars
@@ -1755,7 +1764,8 @@ traindf.v14 <- traindf.v14 %>%
                                   school2_ad == TRUE ~ 3)) %>%
   filter(!is.na(school2_type))
 traindf.v14$school2_type <- as.factor(traindf.v14$school2_type)
-table(traindf.v14$school2_type, useNA = "always")
+
+table(traindf.v14$school2_type, useNA = "always") # check output
 
 # Clean-up school2 var
 traindf.v14 = subset(traindf.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain,
@@ -1893,11 +1903,10 @@ traindf.v16 <- traindf.v14
 ```{r ins_cover}
 # create one insurance var from related questions in 'ins_' module
 traindf.v16 <- traindf.v16 %>% 
-  mutate(ins_cover = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
-                               (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 2)) %>%
-  filter(!is.na(ins_cover))   # adequate MH coverage
-           #                    (is.na(ins_1) ~ 3)))       # non-response
-traindf.v16$ins_cover <- as.factor(traindf.v16$ins_cover)
+  mutate(ins_cover = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 0,   # inadequate coverage
+                               (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 1)) %>% # adequate MH coverage
+  filter(!is.na(ins_cover))   
+traindf.v16$ins_cover <- as.logical(traindf.v16$ins_cover)
 table(traindf.v16$ins_cover, useNA = "always")   # check output
 
 #traindf.v16 = subset(traindf.v16, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
@@ -2192,6 +2201,7 @@ traindf.v20 <- traindf.v20 %>%
                               dep_modsev == 1 ~ 4,
                               dep_sev == 1 ~ 5)) %>%
   filter(!is.na(dep_type)) # filters out all NAs
+traindf.v20$deprawsc <- as.numeric(traindf.v20$deprawsc)
 
 table(traindf.v20$dep_type, useNA = "always")
 ```
@@ -2207,6 +2217,8 @@ traindf.v20 <- traindf.v20 %>%
                               anx_score < 5 ~ 1,                       # anx none
                               anx_score < 10 ~ 2,                      # anx mild
                               anx_score < 15 ~ 3))                    # anx severe
+traindf.v20$anx_score <- as.numeric(traindf.v20$anx_score)
+
 table(traindf.v20$anx_type, useNA = "always") # check output
 ```
 
@@ -2219,6 +2231,7 @@ traindf.v20 <- traindf.v20 %>%
                               aca_impa == 3 ~ 3,
                               aca_impa == 4 ~ 4)) 
 traindf.v20$aca_impa <- as.numeric(traindf.v20$aca_impa)
+
 table(traindf.v20$aca_impa, useNA = "always")
 ```
 
@@ -2346,6 +2359,7 @@ traindf.v22 <- traindf.v22 %>%
                                 dep_secret == 5 ~ 5,
                                 dep_secret == 6 ~ 6))
   # filter(!is.na(dep_secret))
+traindf.v22$dep_secret <- as.numeric(traindf.v22$dep_secret)
 table(traindf.v22$dep_secret, useNA = "always")  # not sure what to do about this one.... NA = 7000+
 ```
 
@@ -2373,12 +2387,12 @@ table(traindf.v22$aaq_tot)
 
 # deem 'rs_df_arranged[1,1]' as SI cutoff
  traindf.v22 <- traindf.v22 %>%
-   mutate(aaq_dum = ifelse(aaq_tot > rs_df_arranged[1,1], 1, 2)) %>%
+   mutate(aaq_dum = ifelse(aaq_tot > rs_df_arranged[1,1], 1, 0)) %>%
    mutate(aaq_dum = case_when(aaq_dum == 1 ~ 1,
-                              aaq_dum == 2 ~ 2)) %>%
+                              aaq_dum == 0 ~ 0)) %>%
    filter(!is.na(aaq_dum))
+traindf.v22$aaq_dum <- as.logical(traindf.v22$aaq_dum)
 
-traindf.v22$aaq_dum <- as.factor(traindf.v22$aaq_dum)
 table(traindf.v22$aaq_dum, useNA = "always")
 ```
 
@@ -2392,8 +2406,8 @@ traindf.v22 <- traindf.v22 %>%
                              persist == 5 ~ 5, 
                              persist == 6 ~ 6))
 traindf.v22$persist <- as.numeric(traindf.v22$persist)
-table(traindf.v22$persist, useNA = "always")
 
+table(traindf.v22$persist, useNA = "always") # check output
 ```
 
 
@@ -2515,6 +2529,7 @@ traindf.v24 <- traindf.v24 %>%
                               dep_impa == 4 ~ 4)) %>%
   filter(!is.na(dep_impa))
 traindf.v24$dep_impa <- as.numeric(traindf.v24$dep_impa)
+
 table(traindf.v24$dep_impa, useNA = "always")
 
 ```
@@ -2529,6 +2544,7 @@ traindf.v24 <- traindf.v24 %>%
                                gad7_impa == 4 ~ 4)) %>%
   filter(!is.na(gad7_impa))
 traindf.v24$gad7_impa <- as.numeric(traindf.v24$gad7_impa)
+
 table(traindf.v24$gad7_impa, useNA = "always")
 ```
 
@@ -2542,6 +2558,7 @@ traindf.v24 <- traindf.v24 %>%
                                  percneed_cur == 5 ~ 5,
                                  percneed_cur == 6 ~ 6))
 traindf.v24$percneed_cur <- as.numeric(traindf.v24$percneed_cur)
+
 table(traindf.v24$percneed_cur, useNA = "always")
 ```
 
@@ -2687,6 +2704,8 @@ traindf.v26 <- traindf.v26 %>%
                                   flourish > 20 ~ 2,
                                   flourish < 14 ~ 1)) %>%
   filter(!is.na(flourish_dum))
+traindf.v26$flourish_dum <- as.numeric(traindf.v26$flourish_dum)
+
 table(traindf.v26$flourish_dum, useNA = "always")
 ```
 
@@ -2743,24 +2762,16 @@ rs_df_arranged <- rs_df %>%
 
 # deem 'rs_df_arranged[1,1]' as SI cutoff
 traindf.v26 <- traindf.v26 %>%
-  mutate(brs_dum = ifelse(brs_tot > rs_df_arranged[1,1], 1, 2)) %>%
+  mutate(brs_dum = ifelse(brs_tot > rs_df_arranged[1,1], 1, 0)) %>%
   mutate(brs_dum = case_when(brs_dum == 1 ~ 1,
-                             brs_dum == 2 ~ 2)) %>%
+                             brs_dum == 0 ~ 0)) %>%
   filter(!is.na(brs_dum))
 traindf.v26$brs_dum <- as.logical(traindf.v26$brs_dum)
 
 # output
 rs_df_arranged[1,1]
-table(traindf.v26$brs_tot)
-table(traindf.v26$brs_dum)
-```
-
-## Friendship development
-```{r friend_devel}
-table(traindf.v26$friend_devel)
-
-# sample too small in the elective, remove
-traindf.v26 = subset(traindf.v26, select= -c(friend_devel)) # clean up var
+table(traindf.v26$brs_tot, useNA = "always")
+table(traindf.v26$brs_dum, useNA = "always")
 ```
 
 ## Perceived MH as failure, stigma
@@ -2845,7 +2856,7 @@ traindf_mm <- traindf_mm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 traindf_mm   # check output
-results_mm <- dummy_cols(traindf_mm, select_columns = c("inf", "flourish_dum", "belong1", "mh_stigma"),
+results_mm <- dummy_cols(traindf_mm, select_columns = c("inf", "flourish_dum", "belong1"),
                          remove_first_dummy = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 eigval_mm <- get_eigenvalue(mm_pca)
@@ -3063,21 +3074,21 @@ save(var_desc, file = "var_desc.RData")
 load("var_desc.RData")
 write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = TRUE)
 
-## Missingness of each overall variable
-# Create dataframe to store data
-missing_rates <- data.frame("variable" = var_names,
-           "total" = rep(999, length(var_names)),
-           "prop_present" = rep(999, length(var_names)))
-
-# loop to replicate row for all var
-for (i in 1:nrow(missing_rates)) {
-  missing_rates[i, 2] = sum(!is.na(traindf.v28[[i]]))
-  missing_rates[i, 3] = missing_rates[i, 2] / nrow(traindf.v28)
-}
-# view matrix
-view(missing_rates)
-# save matrix
-write_xlsx(missing_rates, path = "overall_missing.xlsx", col_names = TRUE, format_headers = TRUE)
+# ## Missingness of each overall variable
+# # Create dataframe to store data
+# missing_rates <- data.frame("variable" = var_names,
+#            "total" = rep(999, length(var_names)),
+#            "prop_present" = rep(999, length(var_names)))
+# 
+# # loop to replicate row for all var
+# for (i in 1:nrow(missing_rates)) {
+#   missing_rates[i, 2] = sum(!is.na(traindf.v28[[i]]))
+#   missing_rates[i, 3] = missing_rates[i, 2] / nrow(traindf.v28)
+# }
+# # view matrix
+# view(missing_rates)
+# # save matrix
+# write_xlsx(missing_rates, path = "overall_missing.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Model w/ levels correlations
@@ -3214,15 +3225,6 @@ resid(fit_train)
 fitMeasures(fit_train, c("cfi","rmsea","srmr"))
 lavInspect(fit_train, what = "start")
 lavInspect(fit_train, what = "list")
-findRMSEApower(rmsea0, rmseaA, fit_train, n, alpha = 0.05, group = 1)
-
-# test
-parameterEstimates(fit_test)
-fitted(fit_test)
-resid(fit_test)
-fitMeasures(fit_test, c("cfi","rmsea","srmr"))
-lavInspect(fit_test, what = "start")
-lavInspect(fit_test, what = "list")
-
+#findRMSEApower(rmsea0, rmseaA, fit_train, n, alpha = 0.05, group = 1)
 ```
 
