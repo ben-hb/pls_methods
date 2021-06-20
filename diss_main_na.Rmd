@@ -216,6 +216,7 @@ data.v1 <- data.raw %>%
     exerc_changed_how, exerc_changed_how_text, height_ft, height_in, wgt_lbs, prov_A, prov_B, prov_C,  
     prov_loc, prov_olo, prov_oth, prov_dk, adjust_aca_1, adjust_aca_2, aca_imp1:aca_imp4, s_c_1_1:s_c_5_6, 
     s_n_1_1:s_n_5_6))
+
 ```
 
 # Call functions
@@ -365,7 +366,7 @@ data.v2 <- data.v1 %>%
                            (sui_idea == 1) ~ 2,                                    # passive SI
                            sui_idea == 0 ~ 1)) %>%                                 # no SI reported
   filter(!is.na(si_type))   # filter for SI variable -- then rowwise deletion
-data.v2$si_type <- as.numeric(data.v2$si_type)  
+data.v2$si_type <- as.factor(data.v2$si_type)  
   # tabulate and check output
 table(data.v2$si_type)
 table(data.v2$sui_idea)
@@ -3129,9 +3130,11 @@ SI_model_tr <- ' # measurement model
                   mm_sem =~  inf + flourish_dum + belong1
 
                # structural model - regressions
-                  def_sem ~ dia_sem + env_sem + le_sem
-                  entrap_sem ~ def_sem + tsm_sem + def_sem*tsm_sem
-                  si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem     
+                  # premotivational phase
+                  def_sem ~ dia_sem + env_sem + le_sem + dia_sem*env_sem + env_sem*le_sem + le_sem*dia_sem
+                  
+                  #motivational phase
+                  si_type ~ def_sem + tsm_sem + def_sem*tsm_sem + entrap_sem + mm_sem + entrap_sem*mm_sem  
 
                # covars
                   dx_mh ~~ ed_any
@@ -3143,9 +3146,9 @@ SI_model_tr <- ' # measurement model
 
 ## Model estimation
 ```{r SEM model estimation}
-traindf_sem3 <- as.data.frame(traindf_sem2)
+traindf_sem3 <- as.matrix(traindf_sem2)
 traindf_sem3 <- na.omit(traindf_sem3)
-view(traindf_sem3)
+head(traindf_sem3)
 
 fit_train <- sem(SI_model_tr, data=traindf_sem3,
                  ordered =c("si_type", "age", "sib_freq", "meds_count", "satisfied_overall",
