@@ -659,7 +659,8 @@ data.v5 <- data.v4 %>%
                              sexual == 1 ~ 1,  # heterosexual
                              sexual == 6 ~ 4)) %>%
   filter(!is.na(sexual))
-data.v4$sexual <- as.factor(data.v4$sexual)
+data.v4$sexual <- as.factor(data.v4$sexual) # convert into factors
+
 table(data.v5$sexual, useNA = "always") # tabulate and check outputs
 ```
 
@@ -955,7 +956,7 @@ data.v8$dx_sa[is.na(data.v8$dx_sa)] <- 0
 data.v8$dx_neurodev_1[is.na(data.v8$dx_neurodev_1)] <- 0
 data.v8$dx_pers[is.na(data.v8$dx_pers)] <- 0
 
-data.v8$dx_adhd = data.v8$dx_neurodev_1
+data.v8$dx_adhd <- data.v8$dx_neurodev_1
 data.v8$dx_adhd[is.na(data.v8$dx_adhd)] <- 0
 
 data.v9 <- data.v8 %>%   # filters out any respondents who skipped the MH section 
@@ -971,6 +972,7 @@ data.v9 <- data.v8 %>%   # filters out any respondents who skipped the MH sectio
                            dx_any == 1 ~ 1,
                            dx_none == 0 ~ 0)) %>%
   mutate(dx_mh = case_when(dx_mh == 1 ~ 1,
+                           dx_mh == 0 ~ 0,
                            is.na(dx_mh) ~ 0))
 data.v9$dx_dep <- as.logical(data.v9$dx_mh)
 
@@ -996,16 +998,6 @@ testdf.v10 <- subset(data.v10, split == FALSE)
 dim(data.v10)
 dim(traindf.v10)
 dim(testdf.v10)
-```
-
-## Religion
-```{r religios}
-# Label levels of religious importance
-traindf.v10 <- traindf.v10 %>%
-  filter(!is.na(religios))
-data.v10$religios <- as.numeric(data.v10$religios)
-
-table(traindf.v10$religios, useNA = "always")       # Check output
 ```
 
 ## AUDIT  
@@ -1492,6 +1484,16 @@ table(traindf.v13$discrim, useNA = "always")
 traindf.v13$discrim <- as.numeric(traindf.v13$discrim)
 ```
 
+## Religion
+```{r religios}
+# Label levels of religious importance
+traindf.v10 <- traindf.v10 %>%
+  filter(!is.na(religios))
+data.v10$religios <- as.numeric(data.v10$religios)
+
+table(traindf.v10$religios, useNA = "always")       # Check output
+```
+
 ## MH campus environment
 ```{r env_mh}
 table(traindf.v13$env_mh) 
@@ -1538,8 +1540,7 @@ traindf.v14 <- traindf.v14 %>%
   mutate(talk = case_when(talk == 1 ~ 1,
                           talk == 2 ~ 2,
                           talk == 3 ~ 3,
-                          talk == 4 ~ 4,
-                          talk == 0 ~ 0)) %>%
+                          talk == 4 ~ 4)) %>%
   filter(!is.na(talk))
 traindf.v14$talk <- as.factor(traindf.v14$talk)
 table(traindf.v14$talk, useNA = "always") # check output
@@ -1893,8 +1894,9 @@ traindf.v16 <- traindf.v14
 # create one insurance var from related questions in 'ins_' module
 traindf.v16 <- traindf.v16 %>% 
   mutate(ins_cover = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
-                               (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 2,   # adequate MH coverage
-                               (is.na(ins_1) ~ 3)))       # non-response
+                               (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 2)) %>%
+  filter(!is.na(ins_cover))   # adequate MH coverage
+           #                    (is.na(ins_1) ~ 3)))       # non-response
 traindf.v16$ins_cover <- as.factor(traindf.v16$ins_cover)
 table(traindf.v16$ins_cover, useNA = "always")   # check output
 
@@ -1941,13 +1943,12 @@ table(traindf.v16$drug_mar, useNA = "always")
 ## Current financial stressors
 ```{r fincur}
 traindf.v16 <- traindf.v16 %>%
-  mutate(fincur = case_when(fincur == 1 ~ 1,  # always or often stressful
-                            fincur == 2 ~ 1,  
-                            fincur == 3 ~ 0,  # sometimes
+  filter(!is.na(fincur)) %>%
+  mutate(fincur = case_when(fincur == 3 ~ 0,  # sometimes
                             fincur == 4 ~ 0,  # rarely or never
-                            fincur == 5 ~ 0)) %>%
-  filter(!is.na(fincur))
-
+                            fincur == 5 ~ 0,
+                            fincur == 1 ~ 1,  # always or often stressful
+                            fincur == 2 ~ 1))
 traindf.v16$fincur <- as.logical(traindf.v16$fincur)
 table(traindf.v16$fincur, useNA = "always")
 ```
@@ -2046,8 +2047,8 @@ traindf.v18 <- traindf.v18 %>%
                             gpa_sr == 7 ~ 3,   # C
                             gpa_sr == 8 ~ 3,   # C-
                             gpa_sr == 9 ~ 4,   # D+ and below
-                            gpa_sr == 10 ~ 0,  # Don't know
-                            is.na(gpa_sr) ~ 0))
+                            gpa_sr == 10 ~ 5,  # Don't know
+                            is.na(gpa_sr) ~ 5))
 traindf.v18$gpa_sr <- as.numeric(traindf.v18$gpa_sr)
 table(traindf.v18$gpa_sr, useNA = "always")
 ```
@@ -2680,8 +2681,7 @@ rs_df_arranged[1,1] # chi-squared high
 
 # create levels for scoring
 traindf.v26 <- traindf.v26 %>%
-  mutate(flourish_dum = case_when(is.na(flourish) ~ 0,
-                                  flourish > 50 ~ 5,
+  mutate(flourish_dum = case_when(flourish > 50 ~ 5,
                                   flourish > 40 ~ 4,
                                   flourish > 30 ~ 3,
                                   flourish > 20 ~ 2,
