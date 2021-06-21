@@ -1057,6 +1057,7 @@ table(traindf.v10$ed_any, useNA = "always")
 Combine wcs_1_f, wcs_1_m, wcs_1_o to create 'wcs_1'
 ** too small
 ```{r WCS data merge}
+
 table(traindf.v10$wcs_1_f)
 table(traindf.v10$wcs_1_m)
 table(traindf.v10$wcs_1_o)
@@ -1275,6 +1276,7 @@ table(traindf.v11$meds_mood)
 table(traindf.v11$meds_sle)
 table(traindf.v11$meds_oth)
 table(traindf.v11$meds_none)
+
 ```
 
 ## Psychopharm medication count
@@ -1565,12 +1567,6 @@ table(traindf.v14$military)
 ```{r international}
 traindf.v14$international <- as.logical(traindf.v14$international)
 table(traindf.v14$international)
-```
-
-## Therapy + Medication Treatment
-```{r medtherc}
-table(traindf.v14$medther)  # med or therapy
-table(traindf.v14$medtherc) # meds + therapy
 ```
 
 ## Family support
@@ -1881,11 +1877,11 @@ coef(clm_env2)
 ci_env2 <- confint(clm_env2)
 ci_env2
 
-model.dia <- tidy(clm_env2)  # Convert model to dataframe for easy manipulation
+model.dia <- tidy(clm_env2)  # Convert model to dataframe
 model.dia
 model.dia  %>%
    mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_env2)),  # Variance of each coefficient
+          var.diag = diag(vcov(clm_env2)),  # Coefficient variances
           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
@@ -2533,7 +2529,6 @@ table(traindf.v24$dep_impa, useNA = "always")
 
 ```
 
-
 ## Anxiety impact
 ```{r gad7_impa}
 traindf.v24 <- traindf.v24 %>%
@@ -2708,6 +2703,20 @@ traindf.v26$flourish_dum <- as.numeric(traindf.v26$flourish_dum)
 table(traindf.v26$flourish_dum, useNA = "always")
 ```
 
+## Therapy + Medication Treatment
+```{r medtherc}
+# traindf.v26 <- traindf.v26 %>%
+#   mutate(medther = case_when(medther = 1 ~ 1,
+#                              medther = 2 ~ 0,
+#                               is.na(medther) ~0))
+# traindf.v26$medther <- as.logical(traindf.v26$medther)
+table(traindf.v26$medther)  # med or therapy
+
+traindf.v26$medtherc <- as.logical(traindf.v26$medtherc)
+table(traindf.v26$medtherc) # meds + therapy
+```
+
+
 ## Informal Mental Health Support
 ```{r inf}
 traindf.v26$inf_1[is.na(traindf.v26$inf_1)] <- 0
@@ -2802,7 +2811,6 @@ table(traindf.v26$stig_pcv3)  # Most people think less of a person who has recei
 table(traindf.v26$stig_per2)  # I feel that receiving MH tx is a sign of personal failure.
 table(traindf.v26$stig_per3)  # I would think less of a person who has received MH tx.
 
-
 # combine scales
 traindf.v26 <- traindf.v26 %>%
   mutate(mh_stigma = case_when(stig_pcv2 == 1 ~ 1,
@@ -2812,8 +2820,7 @@ traindf.v26 <- traindf.v26 %>%
                                stig_pcv2 == 0 ~ 0,
                                stig_pcv3 == 0 ~ 0,
                                stig_per2 == 0 ~ 0,
-                               stig_per3 == 0 ~ 0)) %>%
-  filter(!is.na(mh_stigma))
+                               stig_per3 == 0 ~ 0))
 traindf.v26$mh_stigma <- as.logical(traindf.v26$mh_stigma)
 
 table(traindf.v26$mh_stigma, useNA = "always")
