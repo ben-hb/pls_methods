@@ -3215,8 +3215,7 @@ SI_model_tr <- '
                   dx_mh_1 ~~ anx_type_2
                   dx_mh_1 ~~ anx_type_3
                   dx_mh_1 ~~ anx_type_4
-                  drugs_yn_1 ~~ drug_mar_1  
-                  aca_impa_3 ~~ aca_impa_2
+                  drugs_yn_1 ~~ drug_mar_1
                   dep_impa_3 ~~ dep_impa_2
                   satisfied_overall_5 ~~ satisfied_overall_4
                   aca_impa_3 ~~ aca_impa_2
