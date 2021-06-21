@@ -3231,19 +3231,7 @@ SI_model_tr <- '
 results_tr_sem2 <- as.matrix(results_tr_sem)
 results_tr_sem2 <- na.omit(results_tr_sem2)
 
-fit_train <- sem(SI_model_tr, data=results_tr_sem2,
-                 ordered =c("si_type_2", "si_type_3", "si_type_4", 
-                 "age_19", "age_20", "age_21", "age_22", "age_23", "age_24", "age_25",
-                 "sib_freq_1", "sib_freq_2", "meds_count_1", "meds_count_2", "meds_count_3",
-                 "satisfied_overall_2", "satisfied_overall_3", "satisfied_overall_4", 
-                 "satisfied_overall_5", "satisfied_overall_6", "religios_2", "religios_3", 
-                 "religios_4", "religios_5", "gpa_sr_2", "gpa_sr_3", "gpa_sr_4", " gpa_sr_5", 
-                 "aca_impa_2", "aca_impa_3", "aca_impa_4", "dep_type_2", "dep_type_3", 
-                 "dep_type_4", "dep_type_5", "anx_type_2", "anx_type_3", "anx_type_4", 
-                 "persist", "persist_2", "persist_3", "persist_4", "persist_5", "persist_6", 
-                 "dep_impa_2", "dep_impa_3", "dep_impa_4", "gad7_impa_2", "gad7_impa_3",
-                 "gad7_impa_4", "flourish_dum_2", "flourish_dum_3", "flourish_dum_4", 
-                 "flourish_dum_5", "belong1_2", "belong1_3", "belong1_4", "belong1_5", "belong1_6"))
+fit_train <- sem(SI_model_tr, data=results_tr_sem2)
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 ```
 
