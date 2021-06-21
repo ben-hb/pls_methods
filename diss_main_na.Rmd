@@ -1057,7 +1057,6 @@ table(traindf.v10$ed_any, useNA = "always")
 Combine wcs_1_f, wcs_1_m, wcs_1_o to create 'wcs_1'
 ** too small
 ```{r WCS data merge}
-
 table(traindf.v10$wcs_1_f)
 table(traindf.v10$wcs_1_m)
 table(traindf.v10$wcs_1_o)
@@ -1276,7 +1275,6 @@ table(traindf.v11$meds_mood)
 table(traindf.v11$meds_sle)
 table(traindf.v11$meds_oth)
 table(traindf.v11$meds_none)
-
 ```
 
 ## Psychopharm medication count
@@ -3225,7 +3223,6 @@ SI_model_tr <- '
 ```{r dummy spec model}
 results_tr_sem2 <- as.matrix(results_tr_sem)
 results_tr_sem2 <- na.omit(results_tr_sem2)
-head(results_tr_sem2)
 
 fit_train <- sem(SI_model_tr, data=results_tr_sem2,
                  ordered =c("si_type_2", "si_type_3", "si_type_4", 
