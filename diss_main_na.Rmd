@@ -3155,10 +3155,10 @@ traindf_sem3 <- as.matrix(traindf_sem2)
 traindf_sem3 <- na.omit(traindf_sem3)
 head(traindf_sem3)
 
-fit_train <- sem(SI_model_tr, data=traindf_sem3,
-                 ordered =c("si_type", "age", "sib_freq", "meds_count", "satisfied_overall",
-                 "religios", "gpa_sr", "aca_impa", "dep_type", "anx_type", "persist",
-                 "dep_impa", "gad7_impa", "flourish_dum", "belong1"))
+fit_train <- sem(SI_model_tr, data=traindf_sem3)
+                 # ordered =c("si_type", "age", "sib_freq", "meds_count", "satisfied_overall",
+                 # "religios", "gpa_sr", "aca_impa", "dep_type", "anx_type", "persist",
+                 # "dep_impa", "gad7_impa", "flourish_dum", "belong1"))
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
 list(summary_train$coefficient,
@@ -3168,7 +3168,7 @@ lavInspect(fit_train, "cov.lv")
 
 ## Dummy col SEM
 ```{r dummy spec model}
-SI_model_tr <- '
+SI_model_tr_dummy <- '
                 # measurement model
                   si_sem =~  si_type_2 + si_type_3 + si_type_4
 
@@ -3202,7 +3202,7 @@ SI_model_tr <- '
                    def_sem ~ dia_sem + env_sem + le_sem + dia_sem*env_sem + env_sem*le_sem + le_sem*dia_sem
                    si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem + def_sem + tsm_sem + def_sem*tsm_sem
 
-                # covars
+                # residual covars
                   dx_mh_1 ~~ ed_any_1
                   dx_mh_1 ~~ meds_count_1
                   dx_mh_1 ~~ meds_count_2
@@ -3230,7 +3230,7 @@ SI_model_tr <- '
 results_tr_sem2 <- as.matrix(results_tr_sem)
 results_tr_sem2 <- na.omit(results_tr_sem2)
 
-fit_train <- sem(SI_model_tr, data=results_tr_sem2)
+fit_train <- sem(SI_model_tr_dummy, data=results_tr_sem2)
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 ```
 
