@@ -3108,7 +3108,6 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 
 
-
 # SEM ANALYSIS
 
 
@@ -3138,7 +3137,7 @@ SI_model_tr <- ' # measurement model
                   # premotivational phase
                     def_sem ~ dia_sem + env_sem + le_sem + dia_sem*env_sem + env_sem*le_sem + le_sem*dia_sem
                   
-                  #motivational phase
+                  # motivational phase
                     si_type ~ def_sem + tsm_sem + def_sem*tsm_sem + entrap_sem + mm_sem + entrap_sem*mm_sem  
 
                # covars
@@ -3163,6 +3162,7 @@ summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
 list(summary_train$coefficient,
       round(1-(summary_train$deviance/summary_train$null.deviance), 2))
+
 lavInspect(fit_train, "cov.lv")
 ```
 
@@ -3227,10 +3227,10 @@ SI_model_tr_dummy <- '
 
 ## Dummy col SEM estimation
 ```{r dummy spec model}
-results_tr_sem2 <- as.matrix(results_tr_sem)
-results_tr_sem2 <- na.omit(results_tr_sem2)
+results_tr_sem3 <- as.matrix(results_tr_sem)
+results_tr_sem3 <- na.omit(results_tr_sem3)
 
-fit_train <- sem(SI_model_tr_dummy, data=results_tr_sem2)
+fit_train <- sem(SI_model_tr_dummy, data=results_tr_sem3)
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 ```
 
