@@ -20,6 +20,7 @@ library(expss)
 library(FactoMineR)
 library(factoextra)
 library(fastDummies)
+library(graphics)
 library(haven)
 library(Hmisc)
 library(janitor)
@@ -44,6 +45,7 @@ library(stats)
 library(stringr)
 library(sure)
 library(tidyverse)
+library(tseries)
 library(validate)
 library(writexl)
 ```
@@ -216,7 +218,6 @@ data.v1 <- data.raw %>%
     exerc_changed_how, exerc_changed_how_text, height_ft, height_in, wgt_lbs, prov_A, prov_B, prov_C,  
     prov_loc, prov_olo, prov_oth, prov_dk, adjust_aca_1, adjust_aca_2, aca_imp1:aca_imp4, s_c_1_1:s_c_5_6, 
     s_n_1_1:s_n_5_6))
-
 ```
 
 # Call functions
@@ -716,6 +717,7 @@ table(data.v6$race) # check output
 data.v6 <- data.v6 %>%
   filter(!is.na(race))
 table(data.v6$race, useNA = "always")
+hist(data.v6$race)
 ```
 
 
@@ -913,6 +915,7 @@ data.v6$race[data.v6$race_other_text %in% c("Half Middle Eastern half white",
 # tabulate and check outputs
 table(data.v6$race, useNA = "always")
 data.v6 = subset(data.v6, select= -c(race_bla, race_asi, race_his, race_whi, race_other))   # clean up vars
+hist(data.v6$race)
 
 # consolidate race_ara, race_pi, race_ame --> other
 ```
@@ -932,12 +935,14 @@ data.v7$sib_freq <- as.numeric(data.v7$sib_freq)
 
 table(data.v7$sib_freq, useNA = "always")
 data.v7 = subset(data.v7, select= -c(sib_none:sib_oth)) # clean up vars/columns
+hist(data.v7$sib_freq)
 ```
 
 ## SCOFF scale
 ```{r SCOFF}
 data.v7$ed_scoff <- as.numeric(data.v7$ed_scoff)
 table(data.v7$ed_scoff)
+hist(data.v7$ed_scoff)
 
 data.v7 = subset(data.v7, select= -c(scoff_1:scoff_5)) # clean up vars/columns  
 ```
@@ -1319,6 +1324,7 @@ traindf.v11$meds_count <- as.numeric(traindf.v11$meds_count)
 
 table(traindf.v11$meds_count, useNA = "always")  # check output
 traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
+hist(traindf.v11$meds_count)
 ```
 
 ## DIATHESIS ANALYSES
@@ -1333,6 +1339,11 @@ traindf.v12 <- traindf.v11 # create new dataframe for summary stats. Will jump t
 traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, ed_scoff, body_sr,
                                 dx_mh, meds_count, ed_any, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood,
                                 meds_sle, meds_oth)
+
+describe(traindf_dia) %>% view()
+x <- rnorm(traindf_dia)
+jarque.bera.test(x)
+ks.test(x, "pnorm")
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_dia, sig=0.6){
@@ -1433,7 +1444,6 @@ fviz_cos2(dia_pca, choice = "var", axes = 1,
 ```{r clm_dia}
 clm_dia <- traindf.v12 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race,
                                   ed_any, dx_mh, meds_count)
-
 clm_dia <- na.omit(clm_dia)
 
 view(clm_dia)
@@ -1796,6 +1806,11 @@ traindf.v15 <- traindf.v14  # new dataframe for analysis
 traindf_env <- traindf.v15 %>% select(discrim, religios, residenc, activ_yn, divers, 
                                 school2_type, satisfied_overall, talk, military, international)
 
+describe(traindf_env) %>% view()
+x <- rnorm(traindf_env)
+jarque.bera.test(x)
+ks.test(x, "pnorm")
+
  # Convert traindf to numeric in order to run correlations
 traindf_env <- traindf_env %>% mutate_if(is.character, as.factor)
 traindf_env <-  traindf_env %>% mutate_if(is.factor, as.numeric)
@@ -2071,6 +2086,11 @@ traindf.v19 <- traindf.v18
 traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, binge,
                                      assault, drugs_yn, drug_mar, psyhx)
 
+describe(traindf_le) %>% view()
+x <- rnorm(traindf_le)
+jarque.bera.test(x)
+ks.test(x, "pnorm")
+
 # convert traindf to numeric in order to run correlations
 traindf_le <- traindf_le %>% mutate_if(is.character, as.factor)
 traindf_le <-  traindf_le %>% mutate_if(is.factor, as.numeric)
@@ -2094,6 +2114,8 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 traindf_le <- traindf.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, 
                                      binge, drugs_yn, drug_mar, assault, psyhx)
 traindf_le <- na.omit(traindf_le)
+
+
 
 # create corr matrix, with dummy vars
 traindf_le <- traindf_le %>% 
@@ -2261,6 +2283,11 @@ traindf.v21 <- traindf.v20
 # Define defeat variable candidates for correlation matrix
 traindf_def <- traindf.v21 %>% select(aca_impa, dep_type, anx_type)
 
+describe(traindf_def) %>% view()
+x <- rnorm(traindf_def)
+jarque.bera.test(x)
+ks.test(x, "pnorm")
+
  # convert traindf to numeric in order to run correlations
 traindf_def <- traindf_def %>% mutate_if(is.character, as.factor)
 traindf_def <-  traindf_def %>% mutate_if(is.factor, as.numeric)
@@ -2419,6 +2446,11 @@ traindf.v23 <- traindf.v22
 # Define TSM variable candidates for correlation matrix
 traindf_tsm <- traindf.v23 %>% select(persist, aaq_dum)
 
+describe(traindf_tsm) %>% view()
+x <- rnorm(traindf_tsm)
+jarque.bera.test(x)
+ks.test(x, "pnorm")
+
 # convert data to numeric in order to run correlations 
 traindf_tsm <- traindf_tsm %>% mutate_if(is.character, as.factor)
 traindf_tsm <-  traindf_tsm %>% mutate_if(is.factor, as.numeric)
@@ -2570,6 +2602,11 @@ traindf.v25 <- traindf.v24
 ```{r Entrapment corr}
 # Define entrapment variable candidates for correlation matrix
 traindf_entrap <- traindf.v25 %>% select(dep_impa, gad7_impa)
+
+describe(traindf_entrap) %>% view()
+x <- rnorm(traindf_entrap)
+jarque.bera.test(x)
+ks.test(x, "pnorm")
 
  # convert data to numeric in order to run correlations
 traindf_entrap <- traindf_entrap %>% mutate_if(is.character, as.factor)
@@ -2840,6 +2877,11 @@ traindf.v27 <- traindf.v26
 # Define MM variable candidates for correlation matrix
 traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, mh_stigma)
 
+describe(traindf_mm) %>% view()
+x <- rnorm(traindf_mm)
+jarque.bera.test(x)
+ks.test(x, "pnorm")
+
  # convert traindf to numeric in order to run correlations
 traindf_mm <- traindf_mm %>% mutate_if(is.character, as.factor)
 traindf_mm <-  traindf_mm %>% mutate_if(is.factor, as.numeric)
@@ -3083,7 +3125,7 @@ write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_hea
 ## Descriptive stats
 ```{r Var_sum}
 # training data
-var_desc <- describe(traindf_sem2) %>% view()
+var_desc <- describe(traindf_sem2)
 
 # xlsx output
 save(var_desc, file = "var_desc.RData")
