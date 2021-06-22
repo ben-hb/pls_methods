@@ -33,7 +33,7 @@ library(mvord)
 library(ordinal)
 library(ordinalgmifs)
 library(ordinalNet)
-# library(plspm)
+library(plspm)
 library(pscl)
 library(psych)
 library(rcompanion)
@@ -3159,7 +3159,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 
 ```{r}
-SI_model_tr <- ' # measurement model
+SI_model_tr1 <- ' # measurement model
     si_sem =~  si_type
     prem_sem =~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + meds_count + satisfied_overall + 
         talk + religios + school2_type + activ_yn + ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + drug_mar + assault
@@ -3180,7 +3180,7 @@ SI_model_tr <- ' # measurement model
 
 traindf_sem3 <- as.matrix(traindf_sem2)
 traindf_sem3 <- na.omit(traindf_sem3)
-fit_train <- sem(SI_model_tr, data=traindf_sem3)
+fit_train <- sem(SI_model_tr1, data=traindf_sem3)
 
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 list(summary_train$coefficient,
@@ -3188,61 +3188,147 @@ list(summary_train$coefficient,
 ```
 
 
+```{r}
+# Prep SEM data vars
+traindf_sem5 <- traindf.v28 %>% select(
+  # outcome var
+  si_type,
+  # diathesis
+  age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
+  # environment
+  satisfied_overall, talk, religios, school2_type, activ_yn,
+  # life events
+  ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
+  # defeat
+  aca_impa, anx_type, dep_type,
+  # threats to self-moderation
+  persist, aaq_dum,
+  # entrapment
+  dep_impa, gad7_impa,
+  # motivational moderators
+  inf, flourish_dum, belong1)  #mh_stigma, 
 
-## Dummy col SEM
-```{r dummy spec model}
-SI_model_tr_dummy <- '
+# create sem matrix 
+traindf_sem5 <- traindf_sem5 %>% 
+  # mutate_if(is.numeric, as.factor) %>% 
+  data.matrix()
+traindf_sem5 <- na.omit(traindf_sem5)
+head(traindf_sem5)   # check output
+
+results_tr_com <- dummy_cols(traindf_sem5, select_columns = c("si_type", "sexual", "inf", "anx_type", "dep_type",
+                                                              "race", "talk", "school2_type"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+results_tr_com2 <- cbind(traindf_sem5, results_tr_com)
+                         
+## Dummy col SEM w/ continuous
+SI_model_tr2 <- '
                 # measurement model
                   si =~  si_type_2 + si_type_3 + si_type_4
+    
+                  prem  =~ age + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                           race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
+                           meds_count + satisfied_overall + talk_2 + talk_3 + talk_4 + religios + 
+                           school2_type_2 + school2_type_3 + activ_yn +
+                           ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar         
+
+                   def =~ aca_impa + dep_type + anx_type
                               
-                  prem  =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
-                             sexual_2 + sexual_3 + gender_tgd_1 + sib_freq_1 + sib_freq_2 +
-                             race_2 + race_3 + race_4 + race_5 + ed_any_1 + dx_mh_1 +
-                             meds_count_1 + meds_count_2 + meds_count_3 + satisfied_overall_2 + 
-                             satisfied_overall_3 + satisfied_overall_4 +
-                             satisfied_overall_5 + satisfied_overall_6 + talk_2 + talk_3 +
-                             talk_4 + religios_2 + religios_3 + religios_4 + religios_5 +
-                             school2_type_2 + school2_type_3 + activ_yn_1 +
-                             ins_cover_1 + gpa_sr_2 + gpa_sr_3 + gpa_sr_4 +  gpa_sr_5 + 
-                            binge_1 + psyhx_1 + fincur_1 + drugs_yn_1 + assault_1 + drug_mar_1         
+                   tsm =~ persist + aaq_dum
 
-                   def =~ aca_impa_2 + aca_impa_3 + aca_impa_4 +
-                              dep_type_2 + dep_type_3 + dep_type_4 + dep_type_5 +
-                              anx_type_2 + anx_type_3 + anx_type_4
-                              
-                   tsm =~ persist_2 + persist_3 + persist_4 + persist_5 + persist_6 + aaq_dum_1
+                   entrap =~ dep_impa + gad7_impa
 
-                   entrap =~ dep_impa_2 + dep_impa_3 + dep_impa_4 +
-                                 gad7_impa_2 + gad7_impa_3 + gad7_impa_4
-
-                   mm =~  inf_1 + flourish_dum_2 + flourish_dum_3 + flourish_dum_4 + flourish_dum_5 +
-                              belong1_2 + belong1_3 + belong1_4 + belong1_5 + belong1_6
+                   mm =~  inf + flourish_dum + belong1
 
                 # structural model - regressions
                    si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
 
                 # residual covars
-                  dx_mh_1 ~~ ed_any_1
-                  dx_mh_1 ~~ meds_count_1
-                  dx_mh_1 ~~ meds_count_2
-                  dx_mh_1 ~~ meds_count_3
-                  assault_1 ~~ dx_mh_1
-                  dx_mh_1 ~~ dep_type_2
-                  dx_mh_1 ~~ dep_type_3
-                  dx_mh_1 ~~ dep_type_4
-                  dx_mh_1 ~~ dep_type_5
-                  dx_mh_1 ~~ anx_type_2
-                  dx_mh_1 ~~ anx_type_3
-                  dx_mh_1 ~~ anx_type_4
-                  drugs_yn_1 ~~ drug_mar_1
-                  dep_impa_3 ~~ dep_impa_2
-                  satisfied_overall_5 ~~ satisfied_overall_4
-                  aca_impa_3 ~~ aca_impa_2
-                  gad7_impa_3 ~~ gad7_impa_2
-                  flourish_dum_4 ~~ flourish_dum_3
-                  flourish_dum_4 ~~ flourish_dum_5
-                  belong1_3 ~~ belong1_2   '
+                  dx_mh ~~ ed_any
+                  dx_mh ~~ meds_count
+                  assault ~~ dx_mh
+                  drugs_yn ~~ drug_mar '
+
+fit_train3 <- sem(SI_model_tr2, data=results_tr_com2)
+summary_train <- summary(fit_train3, fit.measures=TRUE, standardized = TRUE)
+
 ```
+
+
+## Plsssss-PM work
+```{r pls path}
+
+data.pls <- read_excel("~/Desktop/sem_combo.xlsx", range=cell_cols(1:46), col_types = "numeric")
+save("data.pls", file="~/Desktop/sem_combo.RData")
+load("~/Desktop/sem_combo.RData")
+
+# INNER MODEL
+# rows of path matrix
+prem =   c(0, 1, 0, 0, 0, 0)   # 47
+def =    c(0, 0, 1, 1, 0, 0)   # 10
+tsm =    c(0, 0, 0, 1, 0, 0)   # 5   
+entrap = c(0, 0, 0, 0, 1, 1)   # 6 
+mm =     c(0, 0, 0, 0, 0, 1)   # 10
+si =     c(0, 0, 0, 0, 0, 0)   # 3
+
+# matrix (by row binding)
+imv_path = rbind (prem, def, tsm, entrap, mm, si)
+
+imv_path = t(imv_path)
+View(imv_path)
+view(data.pls)
+
+# plot the inner matrix
+innerplot(imv_path, box.size = 0.1)
+
+# outer model
+imv_blocks = list(4:31, 32:39, 40:41, 42:43, 44:46, 1:3)
+ 
+# modes
+imv_modes = c("B", "A", "B", "A", "B", "B")
+
+# apply plspm
+imv_pls1 = plspm(data.pls, imv_path, imv_blocks, modes = imv_modes)
+
+# print diss_pls1
+imv_pls1
+
+## Partial Least Squares Path Modeling (PLS-PM)
+## ---------------------------------------------
+##    NAME                   DESCRIPTION
+## 1  $outer_model           outer model
+## 2  $inner_model           inner model
+## 3  $path_coefs            path coefficients matrix
+## 4  $scores                latent variable scores
+## 5  $crossloadings         cross-loadings
+## 6  $inner_summary         summary inner model
+## 7  $effects               total effects
+## 8  $unidim                uni-dimensionality
+## 9  $gof                   goodness-of-fit
+## 10 $boot                  bootstrap results
+## 11 $data                  data matrix
+## ---------------------------------------------
+
+# check unidimensionality
+imv_pls1$unidim
+
+# check coefs
+imv_pls1$path_coefs
+imv_pls1$inner_model
+
+# plotting the loadings
+plot(imv_pls1, what = "loadings")
+
+# check outer model
+imv_pls1$outer_model
+
+# summarized results
+summary(imv_pls1)
+plot(imv_pls1)
+plot(imv_pls1, what = "loadings", arr.width = 0.1)
+head(imv_pls1$scores, n = 5)
+tail(imv_pls1$scores, n = 5)
+```
+
 
 ## Dummy col SEM estimation
 ```{r dummy spec model}
@@ -3306,76 +3392,5 @@ fitMeasures(fit_train, c("cfi","rmsea","srmr"))
 lavInspect(fit_train, what = "start")
 lavInspect(fit_train, what = "list")
 #findRMSEApower(rmsea0, rmseaA, fit_train, n, alpha = 0.05, group = 1)
-```
-
-## Plsssss-PM work
-```{r pls path}
-
-# INNER MODEL
-# rows of path matrix
-prem =   c(0, 1, 0, 0, 0, 0)   # 47
-def =    c(0, 0, 1, 1, 0, 0)   # 10
-tsm =    c(0, 0, 0, 1, 0, 0)   # 5   
-entrap = c(0, 0, 0, 0, 1, 1)   # 6 
-mm =     c(0, 0, 0, 0, 0, 1)   # 10
-si =     c(0, 0, 0, 0, 0, 0)   # 3
-
-# matrix (by row binding)
-imv_path = rbind (prem, def, tsm, entrap, mm, si)
-
-imv_path = t(imv_path)
-View(imv_path)
-clipr::write_clip(results_tr_sem3)
-
-# plot the inner matrix
-innerplot(imv_path, box.size = 0.1)
-
-# outer model
-imv_blocks = list(4:50, 51:60, 61:66, 67:72, 73:82, 1:3)
- 
-# modes
-imv_modes = c("B", "A", "B", "A", "B", "B")
-
-# apply plspm
-imv_pls1 = plspm(results_tr_sem3, imv_path, imv_blocks, modes = imv_modes)
-
-# print diss_pls1
-imv_pls1
-
-## Partial Least Squares Path Modeling (PLS-PM)
-## ---------------------------------------------
-##    NAME                   DESCRIPTION
-## 1  $outer_model           outer model
-## 2  $inner_model           inner model
-## 3  $path_coefs            path coefficients matrix
-## 4  $scores                latent variable scores
-## 5  $crossloadings         cross-loadings
-## 6  $inner_summary         summary inner model
-## 7  $effects               total effects
-## 8  $unidim                uni-dimensionality
-## 9  $gof                   goodness-of-fit
-## 10 $boot                  bootstrap results
-## 11 $data                  data matrix
-## ---------------------------------------------
-
-# check unidimensionality
-imv_pls1$unidim
-
-# check coefs
-imv_pls1$path_coefs
-imv_pls1$inner_model
-
-# plotting the loadings
-plot(imv_pls1, what = "loadings")
-
-# check outer model
-imv_pls1$outer_model
-
-# summarized results
-summary(imv_pls1)
-plot(foot_pls)
-plot(foot_pls, what = "loadings", arr.width = 0.1)
-head(foot_pls$scores, n = 5)
-tail(foot_pls$scores, n = 5)
 ```
 
