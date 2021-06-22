@@ -3254,7 +3254,7 @@ summary_train <- summary(fit_train3, fit.measures=TRUE, standardized = TRUE)
 ```
 
 
-## Plsssss-PM work
+## PLS-PM
 ```{r pls path}
 
 data.pls <- read_excel("~/Desktop/sem_combo.xlsx", range=cell_cols(1:46), col_types = "numeric")
