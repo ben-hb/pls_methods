@@ -3250,9 +3250,40 @@ SI_model_tr2 <- '
 
 fit_train3 <- sem(SI_model_tr2, data=results_tr_com2)
 summary_train <- summary(fit_train3, fit.measures=TRUE, standardized = TRUE)
-
 ```
 
+
+## Model prediction
+```{r SEM test model}
+fitmeasures(fit_train3)
+
+# model diagnostics
+fitted(fit_train3)
+inspect(fit_train3, what="cor.all")
+
+# compare to observed
+lavCor(fit_train3)
+
+# residuals in coef unit
+resid(fit_train3, "cor")
+#plot_matrix(residuals(fit_train, type="cor")$cor)
+
+# modification indices
+modificationindices(fit_train3, minimum.value = 20)
+fit_train4 <- update(fit_train3)
+summary(fit_train4, fit.measures=TRUE)
+```
+
+## Parameter estimates
+```{r parameter_est}
+#train
+parameterEstimates(fit_train3)
+fitted(fit_train3)
+resid(fit_train3)
+fitMeasures(fit_train3, c("cfi","rmsea","srmr"))
+lavInspect(fit_train3, what = "start")
+lavInspect(fit_train3, what = "list")
+```
 
 ## PLS-PM
 ```{r pls path}
@@ -3330,67 +3361,4 @@ tail(imv_pls1$scores, n = 5)
 ```
 
 
-## Dummy col SEM estimation
-```{r dummy spec model}
-results_tr_sem3 <- as.matrix(results_tr_sem)
-results_tr_sem3 <- na.omit(results_tr_sem3)
-
-# psych::mardia(results_tr_sem3)
-# mvnormalTest::mardia(results_tr_sem3)
-
-fit_train <- sem(SI_model_tr_dummy, data=results_tr_sem3)
-summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
-```
-
-
-## Model prediction
-```{r SEM test model}
-fitmeasures(fit_train)
-
-# model diagnostics
-fitted(fit_train)
-inspect(fit_train, what="cor.all")
-
-# compare to observed
-lavCor(fit_train)
-
-# residuals in coef unit
-resid(fit_train, "cor")
-#plot_matrix(residuals(fit_train, type="cor")$cor)
-
-# model prediction
-#fit_train$prediction <- predict(SI_model_tr, newdata = traindf_sem2, type = "response")
-
-# distribution of the prediction score grouped by outcome
-# ggplot(fit_train, aes(prediction, color = as.factor(left) ) ) +
-# geom_density( size = 1 ) +
-# ggtitle( "Training Set's Predicted Score" ) +
-# scale_color_economist(name = "data", labels = c( "negative", "positive" ) ) +
-# theme_economist()
-
-# modification indices
-modificationindices(fit_train, minimum.value = 20)
-fit_train2 <- update(fit_train, add="si_type~.")
-summary(fit_train2, fit.measures=TRUE)
-
-```
-
-## SEM Path diagram
-```{r SEM path diagram}
-# pathway output
-semPaths(fit_train2, what='std', nCharNodes=6, sizeMan=10,
-         edge.label.cex=1.25, curvePivot = TRUE, fade=FALSE)
-```
-
-## Parameter estimates
-```{r parameter_est}
-#train
-parameterEstimates(fit_train)
-fitted(fit_train)
-resid(fit_train)
-fitMeasures(fit_train, c("cfi","rmsea","srmr"))
-lavInspect(fit_train, what = "start")
-lavInspect(fit_train, what = "list")
-#findRMSEApower(rmsea0, rmseaA, fit_train, n, alpha = 0.05, group = 1)
-```
 
