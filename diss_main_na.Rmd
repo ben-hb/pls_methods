@@ -33,6 +33,7 @@ library(mvord)
 library(ordinal)
 library(ordinalgmifs)
 library(ordinalNet)
+# library(plspm)
 library(pscl)
 library(psych)
 library(rcompanion)
@@ -3125,7 +3126,7 @@ write_xlsx(results_tr_df, path = "traindf_sem.xls", col_names = TRUE, format_hea
 ## Descriptive stats
 ```{r Var_sum}
 # training data
-var_desc <- describe(traindf_sem2)
+var_desc <- describe(traindf_sem2) %>% view()
 
 # xlsx output
 save(var_desc, file = "var_desc.RData")
@@ -3199,10 +3200,10 @@ SI_model_tr <- ' # measurement model
 traindf_sem3 <- as.matrix(traindf_sem2)
 traindf_sem3 <- na.omit(traindf_sem3)
 
-fit_train <- sem(SI_model_tr, data=traindf_sem3,
-                 ordered =c("si_type", "age", "sib_freq", "meds_count", "satisfied_overall",
-                 "religios", "gpa_sr", "aca_impa", "dep_type", "anx_type", "persist",
-                 "dep_impa", "gad7_impa", "flourish_dum", "belong1"))
+fit_train <- sem(SI_model_tr, data=traindf_sem3, estimator = "GLS")
+                 # ordered =c("si_type", "age", "sib_freq", "meds_count", "satisfied_overall",
+                 # "religios", "gpa_sr", "aca_impa", "dep_type", "anx_type", "persist",
+                 # "dep_impa", "gad7_impa", "flourish_dum", "belong1"))
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
 list(summary_train$coefficient,
@@ -3215,7 +3216,7 @@ lavInspect(fit_train, "cov.lv")
 ```{r dummy spec model}
 SI_model_tr_dummy <- '
                 # measurement model
-                  si_sem =~  si_type_2 + si_type_3 + si_type_4
+                  si_sem =~  si_type_2 + si_type_ + si_type_4
 
                   dia_sem =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
                              sexual_2 + sexual_3 + gender_tgd_1 + sib_freq_1 + sib_freq_2 +
@@ -3275,7 +3276,10 @@ SI_model_tr_dummy <- '
 results_tr_sem3 <- as.matrix(results_tr_sem)
 results_tr_sem3 <- na.omit(results_tr_sem3)
 
-fit_train <- sem(SI_model_tr_dummy, data=results_tr_sem3)
+psych::mardia(results_tr_sem3)
+mvnormalTest::mardia(results_tr_sem3)
+
+fit_train <- sem(SI_model_tr_dummy, data=results_tr_sem3, estimator = "GLS")
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 ```
 
@@ -3329,5 +3333,65 @@ fitMeasures(fit_train, c("cfi","rmsea","srmr"))
 lavInspect(fit_train, what = "start")
 lavInspect(fit_train, what = "list")
 #findRMSEApower(rmsea0, rmseaA, fit_train, n, alpha = 0.05, group = 1)
+```
+
+## Plsssss work
+```{r pls path}
+
+# INNER MODEL
+# rows of path matrix
+prem =   c(0, 1, 0, 0, 0, 0)   # 47
+def =    c(0, 0, 1, 1, 0, 0)   # 10
+tsm =    c(0, 0, 0, 1, 0, 0)   # 5   
+entrap = c(0, 0, 0, 0, 1, 1)   # 6 
+mm =     c(0, 0, 0, 0, 0, 1)   # 10
+si =     c(0, 0, 0, 0, 0, 0)   # 3
+
+# matrix (by row binding)
+imv_path = rbind (prem, def, tsm, entrap, mm, si)
+
+imv_path = t(imv_path)
+View(imv_path)
+clipr::write_clip(results_tr_sem3)
+
+# plot the inner matrix
+innerplot(imv_path, box.size = 0.1)
+
+# outer model
+imv_blocks = list(4:50, 51:60, 61:66, 67:72, 73:82, 1:3)
+ 
+# modes
+imv_modes = c("B", "A", "B", "A", "B", "B")
+
+# apply plspm
+imv_pls1 = plspm(results_tr_sem3, imv_path, imv_blocks, modes = imv_modes)
+
+# print diss_pls1
+imv_pls1
+
+## Partial Least Squares Path Modeling (PLS-PM)
+## ---------------------------------------------
+##    NAME                   DESCRIPTION
+## 1  $outer_model           outer model
+## 2  $inner_model           inner model
+## 3  $path_coefs            path coefficients matrix
+## 4  $scores                latent variable scores
+## 5  $crossloadings         cross-loadings
+## 6  $inner_summary         summary inner model
+## 7  $effects               total effects
+## 8  $unidim                unidimensionality
+## 9  $gof                   goodness-of-fit
+## 10 $boot                  bootstrap results
+## 11 $data                  data matrix
+## ---------------------------------------------
+
+# check unidimensionality
+imv_pls1$unidim
+
+# plotting the loadings
+plot(imv_pls1, what = "loadings")
+
+# check outer model
+imv_pls1$outer_model
 ```
 
