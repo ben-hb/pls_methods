@@ -341,8 +341,6 @@ corrplot::corrplot(matrix_toplot, is.corr = FALSE,
                tl.col='black', tl.cex=.75)
   }
 
-
-
 ```
 
 
@@ -375,6 +373,7 @@ table(data.v2$sui_idea)
 
 table(data.v2$si_type) # ensuring that all NAs are now clean
 data.v2$si_type <- as.factor(data.v2$si_type)
+plot(data.v2$si_type)
 ```
 
 
@@ -382,18 +381,19 @@ data.v2$si_type <- as.factor(data.v2$si_type)
 
 Candidate variables: age, sexual, gender, finpast, sib_freq, sib, bmi, race, ed_scoff, body_sr, audit_tot, dx_dep, dx_any, dx_bi, dx_psy, dx_ea, dx_tr, dx_sa, dx_adhd, dx_pers, dx_none, med_any, med_sti, med_dep, med_psy, med_anx, med_mood, med_sle, meds_other, meds_none, alc_tx, wcs_tot, med_count, dx_chronic, disab_1, disab_2
 ```{r Diathesis frame}
-data.v3 <- data.v2
+data.v2 <- data.v2
 ```
 
 ## Age
 ```{r age}
-data.v3$age <- as.numeric(data.v3$age)
-table(data.v3$age) 
+data.v2$age <- as.numeric(data.v2$age)
+hist(data.v2$age)
+table(data.v2$age)
 ```
 
 ## Gender identity
 ```{r gender}
-data.v3 <- data.v3 %>%
+data.v3 <- data.v2 %>% 
   # Create 'gender' subtypes into one category
   mutate(gender = case_when((gender == 3 | gender == 4) ~ 3,     # transgender
                             (gender == 5 | gender == 6) ~ 2,     # gender diverse
@@ -408,6 +408,7 @@ data.v3 <- data.v3 %>%
                                 gender == 1 ~ 0)) %>%
   filter(!is.na(gender))
 data.v3$gender_tgd <- as.logical(data.v3$gender_tgd)
+
 
 table(data.v3$gender_tgd, useNA = "always")
 ```
@@ -669,6 +670,7 @@ table(data.v5$sexual, useNA = "always") # tabulate and check outputs
 ```{r bmi}
 data.v5$bmi <- as.integer(data.v5$bmi)
 table(data.v5$bmi)
+scatter.smooth(data.v5$bmi)
 ```
 
 ## Chronic conditions
@@ -692,7 +694,9 @@ data.v5 = subset(data.v5, select= -c(dx_chronic_1:dx_chronic_13)) # drop chronic
 
 ## Subjective weight and body image
 ```{r body_sr}
+data.v5$body_sr <- as.numeric(data.v5$body_sr)
 table(data.v5$body_sr)
+hist(data.v5$body_sr)
 ```
 
 ## Race
@@ -985,6 +989,7 @@ table(data.v9$dx_mh, useNA = "always")
 
 
 # DATA DIVISION for final sample
+
 
 ## Data div and stats
 ```{r Data_div}
@@ -1310,7 +1315,6 @@ traindf.v11 <- traindf.v11 %>%
                                 meds_count == 4 ~ 3,
                                 meds_count == 5 ~ 3,
                                 meds_count == 6 ~ 3))
-
 traindf.v11$meds_count <- as.numeric(traindf.v11$meds_count)
 
 table(traindf.v11$meds_count, useNA = "always")  # check output
@@ -3152,12 +3156,11 @@ SI_model_tr <- ' # measurement model
 ```{r SEM model estimation}
 traindf_sem3 <- as.matrix(traindf_sem2)
 traindf_sem3 <- na.omit(traindf_sem3)
-head(traindf_sem3)
 
-fit_train <- sem(SI_model_tr, data=traindf_sem3)
-                 # ordered =c("si_type", "age", "sib_freq", "meds_count", "satisfied_overall",
-                 # "religios", "gpa_sr", "aca_impa", "dep_type", "anx_type", "persist",
-                 # "dep_impa", "gad7_impa", "flourish_dum", "belong1"))
+fit_train <- sem(SI_model_tr, data=traindf_sem3,
+                 ordered =c("si_type", "age", "sib_freq", "meds_count", "satisfied_overall",
+                 "religios", "gpa_sr", "aca_impa", "dep_type", "anx_type", "persist",
+                 "dep_impa", "gad7_impa", "flourish_dum", "belong1"))
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 
 list(summary_train$coefficient,
