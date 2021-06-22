@@ -3158,95 +3158,68 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 # SEM ANALYSIS
 
 
-## Model specification
-```{r Model_spec}
+```{r}
 SI_model_tr <- ' # measurement model
-                  si_sem =~  si_type
+    si_sem =~  si_type
+    prem_sem =~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + meds_count + satisfied_overall + 
+        talk + religios + school2_type + activ_yn + ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + drug_mar + assault
+    def_sem =~ aca_impa + dep_type + anx_type
+    tsm_sem =~ persist + aaq_dum
+    entrap_sem =~ dep_impa + gad7_impa
+    mm_sem =~  inf + flourish_dum + belong1
+    
+    # structural model - regression
+      si_sem ~ prem_sem + def_sem + tsm_sem + def_sem*tsm_sem + entrap_sem + mm_sem + entrap_sem*mm_sem  
+    
+    # covars
+        dx_mh ~~ ed_any
+        dx_mh ~~ meds_count
+        assault ~~ dx_mh
+        dx_mh ~~ dep_type
+        drugs_yn ~~ drug_mar  '
 
-                  dia_sem =~ age + sexual + gender_tgd + sib_freq + race + 
-                             ed_any + dx_mh + meds_count
-
-                  env_sem =~ satisfied_overall + talk + religios + school2_type +
-                             + activ_yn
-
-                  le_sem =~  ins_cover + gpa_sr + binge + psyhx + fincur + 
-                             drugs_yn + drug_mar + assault
-
-                  def_sem =~ aca_impa + dep_type + anx_type
-
-                  tsm_sem =~ persist + aaq_dum
-                             
-                  entrap_sem =~ dep_impa + gad7_impa
-                  
-                  mm_sem =~  inf + flourish_dum + belong1
-
-               # structural model - regressions
-                  # premotivational phase
-                    def_sem ~ dia_sem + env_sem + le_sem + dia_sem*env_sem + env_sem*le_sem + le_sem*dia_sem
-                  
-                  # motivational phase
-                    si_type ~ def_sem + tsm_sem + def_sem*tsm_sem + entrap_sem + mm_sem + entrap_sem*mm_sem  
-
-               # covars
-                  dx_mh ~~ ed_any
-                  dx_mh ~~ meds_count
-                  assault ~~ dx_mh
-                  dx_mh ~~ dep_type
-                  drugs_yn ~~ drug_mar  '
-```
-
-## Model estimation (non-dummy)
-```{r SEM model estimation}
 traindf_sem3 <- as.matrix(traindf_sem2)
 traindf_sem3 <- na.omit(traindf_sem3)
+fit_train <- sem(SI_model_tr, data=traindf_sem3)
 
-fit_train <- sem(SI_model_tr, data=traindf_sem3, estimator = "GLS")
-                 # ordered =c("si_type", "age", "sib_freq", "meds_count", "satisfied_overall",
-                 # "religios", "gpa_sr", "aca_impa", "dep_type", "anx_type", "persist",
-                 # "dep_impa", "gad7_impa", "flourish_dum", "belong1"))
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
-
 list(summary_train$coefficient,
-      round(1-(summary_train$deviance/summary_train$null.deviance), 2))
-
-lavInspect(fit_train, "cov.lv")
+    round(1-(summary_train$deviance/summary_train$null.deviance), 2))
 ```
+
+
 
 ## Dummy col SEM
 ```{r dummy spec model}
 SI_model_tr_dummy <- '
                 # measurement model
-                  si_sem =~  si_type_2 + si_type_ + si_type_4
-
-                  dia_sem =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
+                  si =~  si_type_2 + si_type_3 + si_type_4
+                              
+                  prem  =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
                              sexual_2 + sexual_3 + gender_tgd_1 + sib_freq_1 + sib_freq_2 +
                              race_2 + race_3 + race_4 + race_5 + ed_any_1 + dx_mh_1 +
-                             meds_count_1 + meds_count_2 + meds_count_3
-
-                  env_sem =~ satisfied_overall_2 + satisfied_overall_3 + satisfied_overall_4 +
+                             meds_count_1 + meds_count_2 + meds_count_3 + satisfied_overall_2 + 
+                             satisfied_overall_3 + satisfied_overall_4 +
                              satisfied_overall_5 + satisfied_overall_6 + talk_2 + talk_3 +
                              talk_4 + religios_2 + religios_3 + religios_4 + religios_5 +
-                             school2_type_2 + school2_type_3 + activ_yn_1
+                             school2_type_2 + school2_type_3 + activ_yn_1 +
+                             ins_cover_1 + gpa_sr_2 + gpa_sr_3 + gpa_sr_4 +  gpa_sr_5 + 
+                            binge_1 + psyhx_1 + fincur_1 + drugs_yn_1 + assault_1 + drug_mar_1         
 
-                   le_sem =~  ins_cover_1 + gpa_sr_2 + gpa_sr_3 + gpa_sr_4 +  gpa_sr_5 + 
-                              binge_1 + psyhx_1 + fincur_1 + drugs_yn_1 + assault_1 + drug_mar_1
-
-                   def_sem =~ aca_impa_2 + aca_impa_3 + aca_impa_4 +
+                   def =~ aca_impa_2 + aca_impa_3 + aca_impa_4 +
                               dep_type_2 + dep_type_3 + dep_type_4 + dep_type_5 +
                               anx_type_2 + anx_type_3 + anx_type_4
                               
-                   tsm_sem =~ persist_2 + persist_3 + persist_4 + persist_5 + persist_6 + aaq_dum_1
+                   tsm =~ persist_2 + persist_3 + persist_4 + persist_5 + persist_6 + aaq_dum_1
 
-                   entrap_sem =~ dep_impa_2 + dep_impa_3 + dep_impa_4 +
+                   entrap =~ dep_impa_2 + dep_impa_3 + dep_impa_4 +
                                  gad7_impa_2 + gad7_impa_3 + gad7_impa_4
 
-                   mm_sem =~  inf_1 +
-                              flourish_dum_2 + flourish_dum_3 + flourish_dum_4 + flourish_dum_5 +
+                   mm =~  inf_1 + flourish_dum_2 + flourish_dum_3 + flourish_dum_4 + flourish_dum_5 +
                               belong1_2 + belong1_3 + belong1_4 + belong1_5 + belong1_6
 
                 # structural model - regressions
-                   def_sem ~ dia_sem + env_sem + le_sem + dia_sem*env_sem + env_sem*le_sem + le_sem*dia_sem
-                   si_sem ~ entrap_sem + mm_sem + entrap_sem*mm_sem + def_sem + tsm_sem + def_sem*tsm_sem
+                   si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
 
                 # residual covars
                   dx_mh_1 ~~ ed_any_1
@@ -3276,10 +3249,10 @@ SI_model_tr_dummy <- '
 results_tr_sem3 <- as.matrix(results_tr_sem)
 results_tr_sem3 <- na.omit(results_tr_sem3)
 
-psych::mardia(results_tr_sem3)
-mvnormalTest::mardia(results_tr_sem3)
+# psych::mardia(results_tr_sem3)
+# mvnormalTest::mardia(results_tr_sem3)
 
-fit_train <- sem(SI_model_tr_dummy, data=results_tr_sem3, estimator = "GLS")
+fit_train <- sem(SI_model_tr_dummy, data=results_tr_sem3)
 summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
 ```
 
@@ -3335,7 +3308,7 @@ lavInspect(fit_train, what = "list")
 #findRMSEApower(rmsea0, rmseaA, fit_train, n, alpha = 0.05, group = 1)
 ```
 
-## Plsssss work
+## Plsssss-PM work
 ```{r pls path}
 
 # INNER MODEL
@@ -3379,7 +3352,7 @@ imv_pls1
 ## 5  $crossloadings         cross-loadings
 ## 6  $inner_summary         summary inner model
 ## 7  $effects               total effects
-## 8  $unidim                unidimensionality
+## 8  $unidim                uni-dimensionality
 ## 9  $gof                   goodness-of-fit
 ## 10 $boot                  bootstrap results
 ## 11 $data                  data matrix
@@ -3388,10 +3361,21 @@ imv_pls1
 # check unidimensionality
 imv_pls1$unidim
 
+# check coefs
+imv_pls1$path_coefs
+imv_pls1$inner_model
+
 # plotting the loadings
 plot(imv_pls1, what = "loadings")
 
 # check outer model
 imv_pls1$outer_model
+
+# summarized results
+summary(imv_pls1)
+plot(foot_pls)
+plot(foot_pls, what = "loadings", arr.width = 0.1)
+head(foot_pls$scores, n = 5)
+tail(foot_pls$scores, n = 5)
 ```
 
