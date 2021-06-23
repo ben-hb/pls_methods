@@ -11,7 +11,6 @@ output:
 # LOAD PACKAGES
 ```{r Call packages}
 library(assertive)
-library(bdma)
 library(broom)
 library(bmem)
 library(car)
@@ -65,10 +64,10 @@ library(writexl)
 ```{r Filter sample, cache = TRUE}
 
 #IMPORT file
-data.raw18 <- read_excel("~/Desktop/Sisler_dissertation_HMS1819_audit.xlsx",
-                       range=cell_cols(1:1820), col_types = "text")
- 
-save("data.raw18", file="~/Desktop/Sisler_dissertation_HMS1819_audit.RData")
+# data.raw18 <- read_excel("~/Desktop/Sisler_dissertation_HMS1819_audit.xlsx",
+#                        range=cell_cols(1:1820), col_types = "text")
+#  
+# save("data.raw18", file="~/Desktop/Sisler_dissertation_HMS1819_audit.RData")
 load("~/Desktop/Sisler_dissertation_HMS1819_audit.RData")
  # source("dissertation_fx.R")
    
@@ -939,7 +938,7 @@ table(data.v9$dx_mh, useNA = "always")
 
 ## Eating disorder, any type
 ```{r ed_any}
-data.v10 <- data.v10 %>%
+data.v10 <- data.v9 %>%
   filter(!is.na(ed_any)) %>%
   mutate(ed_any = case_when(ed_any == 1 ~ 1,
                             ed_any == 0 ~ 0))
@@ -1340,27 +1339,27 @@ data.v13 <- data.v11
 ## Religion
 ```{r religios}
 # Label levels of religious importance
-data.v10 <- data.v10 %>%
+data.v13 <- data.v13 %>%
   filter(!is.na(religios))
-data.v10$religios <- as.numeric(data.v10$religios)
+data.v13$religios <- as.numeric(data.v13$religios)
 
-table(data.v10$religios, useNA = "always")       # Check output
+table(data.v13$religios, useNA = "always")       # Check output
 ```
 
 ## Distress & social support
 Group talk var into subcategories of (1) none,  (2) formal, (3) informal, or (4) combo of support
 ```{r talk}
-data.v14$talk1_1[is.na(data.v14$talk1_1)] <- 0
-data.v14$talk1_2[is.na(data.v14$talk1_2)] <- 0
-data.v14$talk1_3[is.na(data.v14$talk1_3)] <- 0
-data.v14$talk1_4[is.na(data.v14$talk1_4)] <- 0
-data.v14$talk1_5[is.na(data.v14$talk1_5)] <- 0
-data.v14$talk1_6[is.na(data.v14$talk1_6)] <- 0
-data.v14$talk1_7[is.na(data.v14$talk1_7)] <- 0
-data.v14$talk1_8[is.na(data.v14$talk1_8)] <- 0
+data.v13$talk1_1[is.na(data.v13$talk1_1)] <- 0
+data.v13$talk1_2[is.na(data.v13$talk1_2)] <- 0
+data.v13$talk1_3[is.na(data.v13$talk1_3)] <- 0
+data.v13$talk1_4[is.na(data.v13$talk1_4)] <- 0
+data.v13$talk1_5[is.na(data.v13$talk1_5)] <- 0
+data.v13$talk1_6[is.na(data.v13$talk1_6)] <- 0
+data.v13$talk1_7[is.na(data.v13$talk1_7)] <- 0
+data.v13$talk1_8[is.na(data.v13$talk1_8)] <- 0
 
 # change talk_ var to numeric
-data.v14 <- data.v14 %>% 
+data.v14 <- data.v13 %>% 
   # aggregate all talk vars under 3 'talk' categories -- none, informal help, formal help, formal+informal help
   mutate(talk = case_when(((talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) &        # combined
                              (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1)) ~ 4,
@@ -1597,11 +1596,6 @@ data.v15 <- data.v14  # new dataframe for analysis
 data_env <- data.v15 %>% select(discrim, religios, residenc, activ_yn, divers, 
                                 school2_type, satisfied_overall, talk, military, international)
 
-describe(data_env) %>% view()
-x <- rnorm(data_env)
-jarque.bera.test(x)
-ks.test(x, "pnorm")
-
  # Convert data to numeric in order to run correlations
 data_env <- data_env %>% mutate_if(is.character, as.factor)
 data_env <-  data_env %>% mutate_if(is.factor, as.numeric)
@@ -1679,20 +1673,10 @@ clm_env <- clm_env %>%
 view(clm_env)
 
 clm_env2 <- clm(si_type ~ religios + residenc + activ_yn +
-                  school2_type + satisfied_overall + talk, 
+                  school2_type + satisfied_overall + talk,
                 data = clm_env)
 summary(clm_env2)
 coef(clm_env2)
-
-ci_env2 <- confint(clm_env2)
-ci_env2
-
-model.dia <- tidy(clm_env2)  # Convert model to dataframe
-model.dia
-model.dia  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_env2)),  # Coefficient variances
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -1870,11 +1854,6 @@ data.v19 <- data.v18
 data_le <- data.v19 %>% select(ins_cover, gpa_sr, aca_impa, fincur, binge,
                                      assault, drugs_yn, drug_mar, psyhx)
 
-describe(data_le) %>% view()
-x <- rnorm(data_le)
-jarque.bera.test(x)
-ks.test(x, "pnorm")
-
 # convert data to numeric in order to run correlations
 data_le <- data_le %>% mutate_if(is.character, as.factor)
 data_le <-  data_le %>% mutate_if(is.factor, as.numeric)
@@ -2050,11 +2029,6 @@ data.v21 <- data.v20
 # Define defeat variable candidates for correlation matrix
 data_def <- data.v21 %>% select(aca_impa, dep_type, anx_type)
 
-describe(data_def) %>% view()
-x <- rnorm(data_def)
-jarque.bera.test(x)
-ks.test(x, "pnorm")
-
  # convert data to numeric in order to run correlations
 data_def <- data_def %>% mutate_if(is.character, as.factor)
 data_def <-  data_def %>% mutate_if(is.factor, as.numeric)
@@ -2213,11 +2187,6 @@ data.v23 <- data.v22
 # Define TSM variable candidates for correlation matrix
 data_tsm <- data.v23 %>% select(persist, aaq_dum)
 
-describe(data_tsm) %>% view()
-x <- rnorm(data_tsm)
-jarque.bera.test(x)
-ks.test(x, "pnorm")
-
 # convert data to numeric in order to run correlations 
 data_tsm <- data_tsm %>% mutate_if(is.character, as.factor)
 data_tsm <-  data_tsm %>% mutate_if(is.factor, as.numeric)
@@ -2368,11 +2337,6 @@ data.v25 <- data.v24
 ```{r Entrapment corr}
 # Define entrapment variable candidates for correlation matrix
 data_entrap <- data.v25 %>% select(dep_impa, gad7_impa)
-
-describe(data_entrap) %>% view()
-x <- rnorm(data_entrap)
-jarque.bera.test(x)
-ks.test(x, "pnorm")
 
  # convert data to numeric in order to run correlations
 data_entrap <- data_entrap %>% mutate_if(is.character, as.factor)
@@ -2592,11 +2556,6 @@ data.v27 <- data.v26
 ```{r MM_corr}
 # Define MM variable candidates for correlation matrix
 data_mm <- data.v27 %>% select(inf, flourish_dum, belong1, mh_stigma)
-
-describe(data_mm) %>% view()
-x <- rnorm(data_mm)
-jarque.bera.test(x)
-ks.test(x, "pnorm")
 
  # convert data to numeric in order to run correlations
 data_mm <- data_mm %>% mutate_if(is.character, as.factor)
@@ -2841,12 +2800,8 @@ write_xlsx(results_tr_df, path = "data_sem.xls", col_names = TRUE, format_header
 ## Descriptive stats
 ```{r Var_sum}
 # training data
-var_desc <- describe(data_sem2) %>% view()
-
-# xlsx output
-save(var_desc, file = "var_desc.RData")
-load("var_desc.RData")
-write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = TRUE)
+var_desc18 <- describe(data_sem2)
+var_desc18
 ```
 
 ## Model w/ levels correlations
