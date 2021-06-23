@@ -1520,11 +1520,11 @@ table(traindf.v13$discrim, useNA = "always") # check output
 ## Religion
 ```{r religios}
 # Label levels of religious importance
-traindf.v10 <- traindf.v10 %>%
+traindf.v13 <- traindf.v13 %>%
   filter(!is.na(religios))
-data.v10$religios <- as.numeric(data.v10$religios)
+data.v13$religios <- as.numeric(data.v13$religios)
 
-table(traindf.v10$religios, useNA = "always")       # Check output
+table(traindf.v13$religios, useNA = "always")       # Check output
 ```
 
 ## MH campus environment
