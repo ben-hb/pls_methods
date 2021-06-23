@@ -3020,15 +3020,15 @@ summary(fit.mediator)
 fit.dv <- lm(entrap~def+tsm, results_tr_com2)
 summary(fit.dv)
 
-results = mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
-summary(results)
-sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
-plot(sens.bout, sens.par = "rho")
-plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
-
-# TSM as a moderator
-xz<-def*tsm
-summary(lm(entrap~def+tsm+xz))
+# results = mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
+# summary(results)
+# sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
+# plot(sens.bout, sens.par = "rho")
+# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+# 
+# # TSM as a moderator
+# xz<-def*tsm
+# summary(lm(entrap~def+tsm+xz))
 
 
 # ENTRAPMENT AS A MEDIATOR

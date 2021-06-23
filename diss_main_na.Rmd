@@ -3323,16 +3323,16 @@ fit.mediator <- lm(tsm~def, results_tr_com2)
 summary(fit.mediator)
 fit.dv <- lm(entrap~def+tsm, results_tr_com2)
 summary(fit.dv)
-
-results = mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
-summary(results)
-sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
-plot(sens.bout, sens.par = "rho")
-plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+# 
+# results = mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
+# summary(results)
+# sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
+# plot(sens.bout, sens.par = "rho")
+# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
 
 # TSM as a moderator
-xz<-def*tsm
-summary(lm(entrap~def+tsm+xz))
+# xz<-def*tsm
+# summary(lm(entrap~def+tsm+xz))
 
 
 # # ENTRAPMENT AS A MEDIATOR
@@ -4134,12 +4134,12 @@ clm_le <- clm(si_type ~ ins_cover + gpa_sr + aca_impa + fincur + assault + binge
 summary(clm_le)
 coef(clm_le)
 
-ci_le <- confint(clm_le)
-ci_le
+ci_le_test <- confint(clm_le)
+ci_le_test
 
-model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
-model.le
-model.le  %>%
+model.le2 <- tidy(clm_le_test)  # Convert model to dataframe for easy manipulation
+model.le2
+model.le2  %>%
    mutate(or = exp(estimate),  # Odds ratio/gradient
           var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
@@ -4588,53 +4588,13 @@ model.mm  %>%
 ```
 
 
-# MISSINGNESS
-
-
-## Missingness of each var w/in each var
-```{r Missingness between vars}
-missing_dfs <- list()
-for (k in 1:length(var_names)) {
-
-#create skeleton of missingness matrix
-var <- count(testdf.v28, testdf.v28[var_names[k]])
-var_ncol <- ncol(var)
-
-for (j in 1:length(var_names)) {
-  var[, var_ncol + j] <- 999
-}
-# create column headers and vectors for school, total students, then each variable count
-names <- c(paste0(var_names[k], "_values"), "total", var_names)
-names(var) <- names
-
-# input values for each school missingness across all variables
-for (j in 1:(length(var_names))) {
-for (i in 1:nrow(var)) {   # i corresponds to rows, j to columns
-  var[i, 2 + j] <- sum(!is.na(testdf.v28[testdf.v28[[var_names[k]]] == var[[i,1]], var_names[j]]))
-}
-}
-# add percentage in each column
-var_m <- as.matrix(var[-1]) 
-props <- var_m[,2:ncol(var_m)] / var_m[,1]
-var <- data.frame(var[, 1:2], props)
-replace_na("NA")
-missing_dfs[[k]] <- var
-}
-
-names(missing_dfs) <- var_names
-save(missing_dfs, file = "missing_dfs.RData")
-load("missing_dfs.RData")
-write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers = TRUE)
-```
-
-
 # DATA PREP
 
 
 ## Select all vars for SEM
 ```{r test_df_sem2}
 # Prep SEM data vars
-testdf_sem <- testdf.v28 %>% select(
+testdf_sem <- testdf.v27 %>% select(
   # outcome var
   si_type,
   # diathesis
@@ -4738,7 +4698,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ## Prep for SEM dummy cols
 ```{r results_tr_com2}
 # Prep SEM data vars
-testdf_sem5 <- testdf.v28 %>% select(
+testdf_sem5 <- testdf.v27 %>% select(
   # outcome var
   si_type,
   # diathesis
@@ -4770,7 +4730,7 @@ results_test_com2 <- cbind(testdf_sem5, results_test_com)
 ```
 
 # SEM model
-```{r si_model_tr2}
+```{r si_model_test}
 ## Dummy col SEM w/ continuous
 SI_model_test <- '
                 # measurement model
@@ -4802,7 +4762,6 @@ SI_model_test <- '
 fit_test3 <- sem(SI_model_test, data=results_test_com2)
 summary_test <- summary(fit_test3, fit.measures=TRUE, standardized = TRUE)
 ```
-
 
 ## Model prediction
 ```{r SEM test model}
@@ -4853,16 +4812,16 @@ fit.mediator <- lm(tsm~def, results_tr_com2)
 summary(fit.mediator)
 fit.dv <- lm(entrap~def+tsm, results_tr_com2)
 summary(fit.dv)
-
-results = mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
-summary(results)
-sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
-plot(sens.bout, sens.par = "rho")
-plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
-
-# TSM as a moderator
-xz<-def*tsm
-summary(lm(entrap~def+tsm+xz))
+# 
+# results = mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
+# summary(results)
+# sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
+# plot(sens.bout, sens.par = "rho")
+# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+# 
+# # TSM as a moderator
+# xz<-def*tsm
+# summary(lm(entrap~def+tsm+xz))
 
 
 # # ENTRAPMENT AS A MEDIATOR
@@ -4917,26 +4876,26 @@ mm =     c(0, 0, 0, 0, 0, 1)
 si =     c(0, 0, 0, 0, 0, 0)
 
 # matrix (by row binding)
-imv_path = rbind (prem, def, tsm, entrap, mm, si)
+imv_path2 = rbind (prem, def, tsm, entrap, mm, si)
 
-imv_path = t(imv_path)
-View(imv_path)
+imv_path2 = t(imv_path2)
+View(imv_path2)
 view(data.pls)
 
 # plot the inner matrix
-innerplot(imv_path, box.size = 0.1)
+innerplot(imv_path2, box.size = 0.1)
 
 # outer model
-imv_blocks = list(4:31, 32:39, 40:41, 42:43, 44:46, 1:3)
+imv_blocks2 = list(4:31, 32:39, 40:41, 42:43, 44:46, 1:3)
  
 # modes
-imv_modes = c("B", "A", "B", "A", "B", "B")
+imv_modes2 = c("B", "A", "B", "A", "B", "B")
 
 # apply plspm
-imv_pls1 = plspm(data.pls, imv_path, imv_blocks, modes = imv_modes)
+imv_pls2 = plspm(data.pls, imv_path2, imv_blocks2, modes = imv_modes2)
 
 # print diss_pls1
-imv_pls1
+imv_pls2
 
 ## Partial Least Squares Path Modeling (PLS-PM)
 ## ---------------------------------------------
@@ -4955,24 +4914,24 @@ imv_pls1
 ## ---------------------------------------------
 
 # check unidimensionality
-imv_pls1$unidim
+imv_pls2$unidim
 
 # check coefs
-imv_pls1$path_coefs
-imv_pls1$inner_model
+imv_pls2$path_coefs
+imv_pls2$inner_model
 
 # plotting the loadings
-plot(imv_pls1, what = "loadings")
+plot(imv_pls2, what = "loadings")
 
 # check outer model
-imv_pls1$outer_model
+imv_pls2$outer_model
 
 # summarized results
-summary(imv_pls1)
-plot(imv_pls1)
-plot(imv_pls1, what = "loadings", arr.width = 0.1)
-head(imv_pls1$scores, n = 5)
-tail(imv_pls1$scores, n = 5)
+summary(imv_pls2)
+plot(imv_pls2)
+plot(imv_pls2, what = "loadings", arr.width = 0.1)
+head(imv_pls2$scores, n = 5)
+tail(imv_pls2$scores, n = 5)
 ```
 
 
