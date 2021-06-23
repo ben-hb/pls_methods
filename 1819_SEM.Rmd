@@ -2896,7 +2896,6 @@ fit_train3 <- sem(SI_model_tr2, data=results_tr_com2)
 summary_train <- summary(fit_train3, fit.measures=TRUE, standardized = TRUE)
 ```
 
-
 ## Model prediction
 ```{r SEM test model}
 # model diagnostics
@@ -2934,63 +2933,6 @@ print(fitMeasures(fit_train3, c("chisq", "df", "pvalue", "cfi", "rmsea"),
 
 lavInspect(fit_train3, what = "start")
 lavInspect(fit_train3, what = "list")
-```
-
-
-```{r mediation}
-
-# TSM as a mediator?
-fit.totaleffect=lm(entrap~def, results_tr_com2)
-summary(fit.totaleffect)
-fit.mediator <- lm(tsm~def, results_tr_com2)
-summary(fit.mediator)
-fit.dv <- lm(entrap~def+tsm, results_tr_com2)
-summary(fit.dv)
-
-results = mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
-summary(results)
-sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
-plot(sens.bout, sens.par = "rho")
-plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
-
-# TSM as a moderator
-xz<-def*tsm
-summary(lm(entrap~def+tsm+xz))
-
-
-# # ENTRAPMENT AS A MEDIATOR
-# fit.totaleffect2 <- lm(si~def, results_tr_com2)
-# summary(fit.totaleffect2)
-# 
-# fit.mediator2 <- lm(entrap~def, results_tr_com2)
-# summary(fit.mediator2)
-# 
-# fit.dv2 <- lm(si~def+entrap, results_tr_com2)
-# summary(fit.dv2)
-# 
-# results2 <- mediate(fit.mediator2, fit.dv2, sims = 1000, boot= FALSE, treat = "def", mediator = "entrap")
-# summary(results2)
-# sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
-# plot(sens.bout, sens.par = "rho")
-# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
-
-
-# # MM as a mediator or moderator?
-# fit.totaleffect3 <- lm(si~entrap, results_tr_com2)
-# summary(fit.totaleffect3)
-# 
-# fit.mediator3 <- lm(mm~entrap, results_tr_com2)
-# summary(fit.mediator3)
-# 
-# fit.dv3 <- lm(si~entrap+mm, results_tr_com2)
-# summary(fit.dv3)
-# 
-# results3 = mediate(fit.mediator3, fit.dv2, sims = 1000, boot=F, treat = "entrap", mediator = "mm", robustSE=T)
-# summary(results3)
-# sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
-# plot(sens.bout, sens.par = "rho")
-# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
-
 ```
 
 ## PLS-PM
@@ -3066,6 +3008,62 @@ plot(imv_pls1)
 plot(imv_pls1, what = "loadings", arr.width = 0.1)
 head(imv_pls1$scores, n = 5)
 tail(imv_pls1$scores, n = 5)
+```
+
+```{r}
+
+# TSM as a mediator?
+fit.totaleffect=lm(entrap~def, results_tr_com2)
+summary(fit.totaleffect)
+fit.mediator <- lm(tsm~def, results_tr_com2)
+summary(fit.mediator)
+fit.dv <- lm(entrap~def+tsm, results_tr_com2)
+summary(fit.dv)
+
+results = mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
+summary(results)
+sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
+plot(sens.bout, sens.par = "rho")
+plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+
+# TSM as a moderator
+xz<-def*tsm
+summary(lm(entrap~def+tsm+xz))
+
+
+# ENTRAPMENT AS A MEDIATOR
+# fit.totaleffect2 <- lm(si~def, results_tr_com2)
+# summary(fit.totaleffect2)
+# 
+# fit.mediator2 <- lm(entrap~def, results_tr_com2)
+# summary(fit.mediator2)
+# 
+# fit.dv2 <- lm(si~def+entrap, results_tr_com2)
+# summary(fit.dv2)
+# 
+# results2 <- mediate(fit.mediator2, fit.dv2, sims = 1000, boot= FALSE, treat = "def", mediator = "entrap")
+# summary(results2)
+# sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
+# plot(sens.bout, sens.par = "rho")
+# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+# 
+# 
+# # MM as a mediator or moderator?
+# fit.totaleffect3 <- lm(si~entrap, results_tr_com2)
+# summary(fit.totaleffect3)
+# 
+# fit.mediator3 <- lm(mm~entrap, results_tr_com2)
+# summary(fit.mediator3)
+# 
+# fit.dv3 <- lm(si~entrap+mm, results_tr_com2)
+# summary(fit.dv3)
+# 
+# results3 = mediate(fit.mediator3, fit.dv2, sims = 1000, boot=F, treat = "entrap", mediator = "mm", robustSE=T)
+# summary(results3)
+# sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
+# plot(sens.bout, sens.par = "rho")
+# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+
 ```
 
 
