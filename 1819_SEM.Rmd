@@ -64,14 +64,14 @@ library(writexl)
 ```{r Filter sample, cache = TRUE}
 
 #IMPORT file
-# data.raw18 <- read_excel("~/Desktop/Sisler_dissertation_HMS1819_audit.xlsx",
-#                        range=cell_cols(1:1820), col_types = "text")
-#  
-# save("data.raw18", file="~/Desktop/Sisler_dissertation_HMS1819_audit.RData")
+data.raw <- read_excel("~/Desktop/Sisler_dissertation_HMS1819_audit.xlsx",
+                       range=cell_cols(1:1820), col_types = "text")
+
+save("data.raw", file="~/Desktop/Sisler_dissertation_HMS1819_audit.RData")
 load("~/Desktop/Sisler_dissertation_HMS1819_audit.RData")
  # source("dissertation_fx.R")
    
-data.v1 <- data.raw18 %>%
+data.v1 <- data.raw %>%
   mutate(age = as.numeric(age)) %>%
   filter(age < 20 & age >= 18) %>%
   select(-c(
