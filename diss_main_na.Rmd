@@ -3158,37 +3158,8 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 # SEM ANALYSIS
 
 
-```{r}
-SI_model_tr1 <- ' # measurement model
-    si_sem =~  si_type
-    prem_sem =~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + meds_count + satisfied_overall + 
-        talk + religios + school2_type + activ_yn + ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + drug_mar + assault
-    def_sem =~ aca_impa + dep_type + anx_type
-    tsm_sem =~ persist + aaq_dum
-    entrap_sem =~ dep_impa + gad7_impa
-    mm_sem =~  inf + flourish_dum + belong1
-    
-    # structural model - regression
-      si_sem ~ prem_sem + def_sem + tsm_sem + def_sem*tsm_sem + entrap_sem + mm_sem + entrap_sem*mm_sem  
-    
-    # covars
-        dx_mh ~~ ed_any
-        dx_mh ~~ meds_count
-        assault ~~ dx_mh
-        dx_mh ~~ dep_type
-        drugs_yn ~~ drug_mar  '
-
-traindf_sem3 <- as.matrix(traindf_sem2)
-traindf_sem3 <- na.omit(traindf_sem3)
-fit_train <- sem(SI_model_tr1, data=traindf_sem3)
-
-summary_train <- summary(fit_train, fit.measures=TRUE, standardized = TRUE)
-list(summary_train$coefficient,
-    round(1-(summary_train$deviance/summary_train$null.deviance), 2))
-```
-
-
-```{r}
+## Prep for SEM dummy cols
+```{r results_tr_com2}
 # Prep SEM data vars
 traindf_sem5 <- traindf.v28 %>% select(
   # outcome var
@@ -3219,7 +3190,10 @@ results_tr_com <- dummy_cols(traindf_sem5, select_columns = c("si_type", "sexual
                                                               "race", "talk", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 results_tr_com2 <- cbind(traindf_sem5, results_tr_com)
-                         
+```
+
+# SEM model
+```{r si_model_tr2}
 ## Dummy col SEM w/ continuous
 SI_model_tr2 <- '
                 # measurement model
@@ -3255,9 +3229,8 @@ summary_train <- summary(fit_train3, fit.measures=TRUE, standardized = TRUE)
 
 ## Model prediction
 ```{r SEM test model}
-fitmeasures(fit_train3)
-
 # model diagnostics
+fitmeasures(fit_train3)
 fitted(fit_train3)
 inspect(fit_train3, what="cor.all")
 
@@ -3266,7 +3239,6 @@ lavCor(fit_train3)
 
 # residuals in coef unit
 resid(fit_train3, "cor")
-#plot_matrix(residuals(fit_train, type="cor")$cor)
 
 # modification indices
 modificationindices(fit_train3, minimum.value = 20)
@@ -3277,10 +3249,18 @@ summary(fit_train4, fit.measures=TRUE)
 ## Parameter estimates
 ```{r parameter_est}
 #train
+semPaths(fit_train3, "model", "est", layout = "circle", curvePivot = FALSE, edge.label.cex = 0.5)
+summary(fit_train3, fit.measures = T)
+
 parameterEstimates(fit_train3)
 fitted(fit_train3)
 resid(fit_train3)
-fitMeasures(fit_train3, c("cfi","rmsea","srmr"))
+fitMeasures(fit_train3, c("cfi","chisq", "df", "pvalue","rmsea","srmr"), output = "matrix")
+
+print(fitMeasures(fit, c("chisq", "df", "pvalue", "cfi", "rmsea"),
+                  output = "text"), add.h0 = TRUE)
+
+
 lavInspect(fit_train3, what = "start")
 lavInspect(fit_train3, what = "list")
 ```
@@ -3294,12 +3274,12 @@ load("~/Desktop/sem_combo.RData")
 
 # INNER MODEL
 # rows of path matrix
-prem =   c(0, 1, 0, 0, 0, 0)   # 47
-def =    c(0, 0, 1, 1, 0, 0)   # 10
-tsm =    c(0, 0, 0, 1, 0, 0)   # 5   
-entrap = c(0, 0, 0, 0, 1, 1)   # 6 
-mm =     c(0, 0, 0, 0, 0, 1)   # 10
-si =     c(0, 0, 0, 0, 0, 0)   # 3
+prem =   c(0, 1, 0, 0, 0, 0)
+def =    c(0, 0, 1, 1, 0, 0)
+tsm =    c(0, 0, 0, 1, 0, 0)
+entrap = c(0, 0, 0, 0, 1, 1)
+mm =     c(0, 0, 0, 0, 0, 1)
+si =     c(0, 0, 0, 0, 0, 0)
 
 # matrix (by row binding)
 imv_path = rbind (prem, def, tsm, entrap, mm, si)
@@ -3358,6 +3338,54 @@ plot(imv_pls1)
 plot(imv_pls1, what = "loadings", arr.width = 0.1)
 head(imv_pls1$scores, n = 5)
 tail(imv_pls1$scores, n = 5)
+```
+
+## Mediation analysis
+```{r}
+set.seed(1000)
+
+X <- rnorm(100)
+M <- 0.5 * X + rnorm(100)
+Y <- 0.7 * M + rnorm(100)
+
+M2 <- 0.6 * X + rnorm(100)
+Y2 <- 0.6 * X + rnorm(100)
+
+Data <- data.frame(X = X, Y = Y, M = M)
+Data2 <- data.frame(X = X, Y = Y2, M = M2)
+
+pairs(Data)
+pairs(Data2)
+
+cor(Data1)
+cor(Data2)
+
+# specify mediation model
+med_model <- " # direct effect
+Y ~ c*X
+# mediator
+M ~ a*X
+Y ~ b*M
+# indirect effect (a*b)
+ab := a*b
+# total effect
+total := c + (a*b)
+"
+
+# fitted mediation model
+fitmed <- sem(med_model, data = Data)
+summary(fitmed)
+
+# path analysis
+semPaths(fitmed, title = F, curvePilot = T, "par", weighted = FALSE, nCharNodes = 7, 
+    shapeMan = "rectangle", sizeMan = 15, sizeMan2 = 10)
+
+fitmed2 <- sem(model, data = Data2)
+summary(fitmed2)
+
+# lavaan.diagram(fit2)
+semPaths(fitmed2, title = F, curvePilot = T, "par", weighted = FALSE, nCharNodes = 7, 
+    shapeMan = "rectangle", sizeMan = 8, sizeMan2 = 5)
 ```
 
 
