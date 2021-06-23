@@ -3255,6 +3255,7 @@ resid(fit_train3, "cor")
 
 # modification indices
 modificationindices(fit_train3, minimum.value = 20)
+
 fit_train4 <- update(fit_train3)
 summary(fit_train4, fit.measures=TRUE)
 ```
