@@ -9,7 +9,6 @@ output:
 # LOAD PACKAGES
 ```{r Call packages}
 library(assertive)
-library(bda) # Sobel Test option
 library(broom)
 library(bmem)
 library(car)
@@ -25,7 +24,7 @@ library(FactoMineR)
 library(factoextra)
 library(fastDummies)
 library(graphics)
-library(gvlma) #Testing Model Assumptions 
+library(gvlma)
 library(haven)
 library(Hmisc)
 library(janitor)
@@ -36,7 +35,8 @@ library(magrittr)
 library(MBESS)
 library(mediation)
 library(missMDA)
-library(multilevel) #Sobel Test
+library(multilevel) 
+library(MVN)
 library(mvord)
 library(ordinal)
 library(ordinalgmifs)
@@ -47,11 +47,11 @@ library(psych)
 library(rcompanion)
 library(readxl)
 library(reshape2)
-library(rockchalk) #Graphing simple slopes; moderation
+library(rockchalk)
 library(rstatix)
 library(semPlot)
 library(semTools)
-library(stargazer) #Handy regression tables
+library(stargazer) 
 library(stats)
 library(stringr)
 library(sure)
@@ -2414,12 +2414,12 @@ table(traindf.v22$aaq_dum, useNA = "always")
 ## Persist
 ```{r persist}
 traindf.v22 <- traindf.v22 %>%
-  mutate(persist = case_when(persist == 1 ~ 1,
+  mutate(persist = case_when(persist == 1 ~ 1,   # confident
                              persist == 2 ~ 2, 
                              persist == 3 ~ 3, 
                              persist == 4 ~ 4, 
                              persist == 5 ~ 5, 
-                             persist == 6 ~ 6))
+                             persist == 6 ~ 6))  # not
 traindf.v22$persist <- as.numeric(traindf.v22$persist)
 
 table(traindf.v22$persist, useNA = "always") # check output
@@ -3160,10 +3160,8 @@ traindf_sem5 <- traindf_sem5 %>%
 traindf_sem5 <- na.omit(traindf_sem5)
 head(traindf_sem5)   # check output
 
-results_tr_com <- dummy_cols(traindf_sem5, select_columns = c("si_type", "sexual", "inf", "anx_type", "dep_type",
-                                                              "race", "talk", "school2_type"),
+results_tr_com2 <- dummy_cols(traindf_sem5, select_columns = c("si_type", "sexual", "inf", "race", "talk", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-results_tr_com2 <- cbind(traindf_sem5, results_tr_com)
 ```
 
 # SEM model
@@ -3185,7 +3183,7 @@ SI_model_tr2 <- '
 
                    entrap =~ dep_impa + gad7_impa
 
-                   mm =~  inf + flourish_dum + belong1
+                   mm =~  inf_1 + flourish_dum + belong1
 
                 # structural model - regressions
                    si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
@@ -3197,9 +3195,11 @@ SI_model_tr2 <- '
                   drugs_yn ~~ drug_mar '
 
 fit_train3 <- sem(SI_model_tr2, data=results_tr_com2)
+                  ordered = c("si_type", "sib_freq", "satisfied_overall", "religios",
+                              "gpa_sr", "aca_impa", "persist",
+                              "flourish_dum", "belong1", "dep_impa", "gad7_impa"))
 summary_train <- summary(fit_train3, fit.measures=TRUE, standardized = TRUE)
 ```
-
 
 ## Model prediction
 ```{r SEM test model}
@@ -3207,6 +3207,9 @@ summary_train <- summary(fit_train3, fit.measures=TRUE, standardized = TRUE)
 fitmeasures(fit_train3)
 fitted(fit_train3)
 inspect(fit_train3, what="cor.all")
+
+# running NULL model, baseline model's RMSEA = 0.1107675 
+nullRMSEA(fit_train3, scaled = FALSE, silent = FALSE)
 
 # compare to observed
 lavCor(fit_train3)
@@ -3217,8 +3220,10 @@ resid(fit_train3, "cor")
 # modification indices
 modificationindices(fit_train3, minimum.value = 20)
 
-fit_train4 <- update(fit_train3)
-summary(fit_train4, fit.measures=TRUE)
+mod_fit <- cfa(SI_model_tr2, data = results_tr_com2)
+mi <- modindices(mod_fit, sort = TRUE, maximum.number = 10)
+View(mi)
+mi[mi$op == "=~",] %>% View()
 ```
 
 ## Parameter estimates
@@ -3232,12 +3237,75 @@ parameterEstimates(fit_train3)
 fitted(fit_train3)
 resid(fit_train3)
 fitMeasures(fit_train3, c("cfi","chisq", "df", "pvalue","rmsea","srmr"), output = "matrix")
-
 print(fitMeasures(fit_train3, c("chisq", "df", "pvalue", "cfi", "rmsea"),
                   output = "text"), add.h0 = TRUE)
 
 lavInspect(fit_train3, what = "start")
 lavInspect(fit_train3, what = "list")
+
+mvnormalTest::mvnTest(results_tr_com2)
+
+ggplot(results_tr_com2, aes(sample = value)) +
+  stat_qq() 
+
+qqplot(results_tr_com2, age)
+```
+
+# SEM model -- mod indices
+```{r si_model_tr2}
+## Dummy col SEM w/ continuous
+SI_model_tr2 <- '
+                # measurement model
+                   si =~  si_type_2 + si_type_3 + si_type_4
+    
+                   prem  =~ age + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                           race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
+                           meds_count + talk_2 + talk_3 + talk_4 + religios + 
+                           school2_type_2 + school2_type_3 + activ_yn +
+                           ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar         
+
+                   def =~ aca_impa + dep_type + anx_type
+                   tsm =~ persist + aaq_dum
+                   entrap =~ dep_impa + gad7_impa
+                   mm =~  inf + flourish_dum + belong1 + satisfied_overall
+                  
+                # structural model - regressions
+                   si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
+
+                # residual covars
+                  dx_mh ~~ ed_any
+                  dx_mh ~~ meds_count
+                  assault ~~ dx_mh
+                  
+                  sexual_3 ~~ gender_tgd
+                  talk_3 ~~ talk_2
+                  talk_2 ~~ talk_4
+                  talk_3 ~~ talk_4
+                  race_2 ~~ race_4
+                  race_3 ~~ race_4
+                  race_4 ~~ race_5
+                  talk_4 ~~ inf
+                  talk_3 ~~ inf
+                  activ_yn ~~ belong1
+                  satisfied_overall ~~ belong1
+                  anx_type ~~ gad7_impa
+                  anx_type ~~ dep_impa
+                  drugs_yn ~~ drug_mar   
+                  si_type_4 ~~ psyhx'
+
+fit_train4 <- sem(SI_model_tr2, data=results_tr_com2)
+summary_train <- summary(fit_train4, fit.measures=TRUE, standardized = TRUE)
+
+mod_fit <- cfa(SI_model_tr2, data = results_tr_com2)
+mi <- modindices(mod_fit, sort = TRUE, maximum.number = 10)
+View(mi)
+mi[mi$op == "=~",] %>% View()
+
+fitMeasures(fit_train4, c("cfi","chisq", "df", "pvalue","rmsea","srmr"), output = "matrix")
+
+print(fitMeasures(fit_train4, c("chisq", "df", "pvalue", "cfi", "rmsea"),
+                  output = "text"), add.h0 = TRUE)
+
 ```
 
 ## PLS-PM
@@ -3271,8 +3339,19 @@ imv_blocks = list(4:31, 32:39, 40:41, 42:43, 44:46, 1:3)
 # modes
 imv_modes = c("B", "A", "B", "A", "B", "B")
 
+#scales
+imv_scales = list(
+  c(rep("num", 16), "ord", rep("num", 10), "ord"),
+  rep("ord", 8),
+  c("ord", "num"),
+  rep("ord", 2),
+  c("num", rep("ord", 2)),
+  rep("ord", 3)
+)
+# ordinal variable column numbers  1, 2, 3, 20, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 45, 46)
+
 # apply plspm
-imv_pls1 = plspm(data.pls, imv_path, imv_blocks, modes = imv_modes)
+imv_pls1 = plspm(data.pls, imv_path, imv_blocks, modes = imv_modes, scaling = imv_scales)
 
 # print diss_pls1
 imv_pls1
@@ -3314,6 +3393,27 @@ head(imv_pls1$scores, n = 5)
 tail(imv_pls1$scores, n = 5)
 ```
 
+
+```{r}
+imv_pls1$outer_model     #outer model
+imv_pls1$inner_model     #inner model
+imv_pls1$path_coefs      #path coefficients matrix
+imv_pls1$scores          #latent variable scores
+imv_pls1$crossloadings   #cross-loadings
+imv_pls1$inner_summary   #summary inner model
+imv_pls1$effects         #total effects
+imv_pls1$unidim          #uni-dimensionality
+imv_pls1$gof             #goodness-of-fit
+imv_pls1$boot            #bootstrap results
+imv_pls1$data            #data matrix
+```
+
+
+
+
+
+
+
 ### Mediation and moderation analysis
 ```{r mediation}
 # TSM as a mediator?
@@ -3323,16 +3423,15 @@ fit.mediator <- lm(tsm~def, results_tr_com2)
 summary(fit.mediator)
 fit.dv <- lm(entrap~def+tsm, results_tr_com2)
 summary(fit.dv)
-# 
-# results = mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
-# summary(results)
-# sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
-# plot(sens.bout, sens.par = "rho")
-# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+
+results = mediation::mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
+summary(results)
+sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
+plot(sens.bout, sens.par = "rho")
+plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
 
 # TSM as a moderator
-# xz<-def*tsm
-# summary(lm(entrap~def+tsm+xz))
+summary(lm(entrap~def+tsm+ def*tsm))
 
 
 # # ENTRAPMENT AS A MEDIATOR
@@ -3368,6 +3467,78 @@ summary(fit.dv)
 # plot(sens.bout, sens.par = "rho")
 # plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
 ```
+
+
+```{r}
+
+# Prep SEM data vars
+traindf_semB <- traindf.v28 %>% select(
+  # outcome var
+  si_type,
+  # diathesis
+  age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
+  # environment
+  satisfied_overall, talk, religios, school2_type, activ_yn,
+  # life events
+  ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
+  # defeat
+  aca_impa, anx_type, dep_type,
+  # threats to self-moderation
+  persist, aaq_dum,
+  # entrapment
+  dep_impa, gad7_impa,
+  # motivational moderators
+  inf, flourish_dum, belong1)  #mh_stigma, 
+
+# create sem matrix 
+traindf_semB <- traindf_semB %>% 
+  # mutate_if(is.numeric, as.factor) %>% 
+  data.matrix()
+traindf_semB <- na.omit(traindf_semB)
+head(traindf_semB)   # check output
+
+results_tr_com2 <- dummy_cols(traindf_semB, remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+
+
+## Dummy col SEM w/ continuous
+SI_model_tr2 <- '
+                # measurement model
+                  si =~  si_type_2 + si_type_3 + si_type_4
+    
+                  prem  =~ age + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                           race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
+                           meds_count + satisfied_overall + talk_2 + talk_3 + talk_4 + religios + 
+                           school2_type_2 + school2_type_3 + activ_yn +
+                           ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar         
+
+                   def =~ aca_impa + dep_type + anx_type
+                              
+                   tsm =~ persist + aaq_dum
+
+                   entrap =~ dep_impa + gad7_impa
+
+                   mm =~  inf_1 + flourish_dum + belong1
+
+                # structural model - regressions
+                   si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
+
+                # residual covars
+                  dx_mh ~~ ed_any
+                  dx_mh ~~ meds_count
+                  assault ~~ dx_mh
+                  drugs_yn ~~ drug_mar '
+
+fit_train3 <- sem(SI_model_tr2, data=results_tr_com2)
+                  # ordered = c("dep_type", "anx_type", "age", "sib_freq", "meds_count",
+                  #             "satisfied_overall", "religios", "gpa_sr", "aca_impa", "persist",
+                  #             "flourish_dum", "belong1", "dep_impa", "gad7_impa"))
+summary_train <- summary(fit_train3, fit.measures=TRUE, standardized = TRUE)
+```
+
+
+
+
+
 
 
 
@@ -3907,23 +4078,22 @@ testdf.v14$school2_type <- as.factor(testdf.v14$school2_type)
 
 table(testdf.v14$school2_type, useNA = "always") # check output
 
-# Clean-up school2 var
-testdf.v14 = subset(testdf.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain,
-                                       var_Delaware, var_DetroitMercy, var_Emerson, var_GeorgeMason,
-                                       var_GeorgiaTech, var_Kalamazoo, var_Kansas, var_Merrimack, 
-                                       var_MichiganState, var_MontclairState, var_NevadaReno,
-                                       var_PennCollegeTech, var_RhodeIsland, var_Rollins, var_Sewanee, var_Smith,
-                                       var_SouthernNazarene, var_SouthwesternOklahomaState, var_StJohns,
-                                       var_StMarys, var_StRose, var_TrumanState, var_TuftsHealthSciences,
-                                       var_TuftsMainCampus, var_UChicago, var_UFlorida, var_UMDearborn, var_UMich,
-                                       var_UTKnoxville, var_UniversityofSouthernCalifornia, var_Utah, var_VATech,
-                                       var_VirginiaCommonwealth, var_WakeForest, var_WestVirginia,
-                                       var_WesternCarolina, var_WesternMichigan, var_WesternWA, var_Xavier,
-                                       var_OaklandCC, var_OklahomaCityCC, var_PaloAltoCollege,
-                                       var_RedlandsCC, var_AlbertaCAD, var_CIA, var_ColumbusCAD, 
-                                       var_MDInstituteCollegeArt, var_MassArt, var_MinnesotaCAD, 
-                                       var_NHInstituteArt, var_Pratt, var_Ringling, var_SAIC,
-                                       var_UNCSchoolArt, var_Watkins))
+# var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain,
+# var_Delaware, var_DetroitMercy, var_Emerson, var_GeorgeMason,
+# var_GeorgiaTech, var_Kalamazoo, var_Kansas, var_Merrimack, 
+#                                        var_MichiganState, var_MontclairState, var_NevadaReno,
+#                                        var_PennCollegeTech, var_RhodeIsland, var_Rollins, var_Sewanee, var_Smith,
+#                                        var_SouthernNazarene, var_SouthwesternOklahomaState, var_StJohns,
+#                                        var_StMarys, var_StRose, var_TrumanState, var_TuftsHealthSciences,
+#                                        var_TuftsMainCampus, var_UChicago, var_UFlorida, var_UMDearborn, var_UMich,
+#                                        var_UTKnoxville, var_UniversityofSouthernCalifornia, var_Utah, var_VATech,
+#                                        var_VirginiaCommonwealth, var_WakeForest, var_WestVirginia,
+#                                        var_WesternCarolina, var_WesternMichigan, var_WesternWA, var_Xavier,
+#                                        var_OaklandCC, var_OklahomaCityCC, var_PaloAltoCollege,
+#                                        var_RedlandsCC, var_AlbertaCAD, var_CIA, var_ColumbusCAD, 
+#                                        var_MDInstituteCollegeArt, var_MassArt, var_MinnesotaCAD, 
+#                                        var_NHInstituteArt, var_Pratt, var_Ringling, var_SAIC,
+#                                        var_UNCSchoolArt, var_Watkins))
 ```
 
 ## CLM environmental regression
@@ -4802,7 +4972,7 @@ lavInspect(fit_test3, what = "start")
 lavInspect(fit_test3, what = "list")
 ```
 
-
+## mediation analysis
 ```{r mediation}
 
 # TSM as a mediator?
@@ -4812,16 +4982,16 @@ fit.mediator <- lm(tsm~def, results_tr_com2)
 summary(fit.mediator)
 fit.dv <- lm(entrap~def+tsm, results_tr_com2)
 summary(fit.dv)
-# 
-# results = mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
-# summary(results)
-# sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
-# plot(sens.bout, sens.par = "rho")
-# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
-# 
-# # TSM as a moderator
-# xz<-def*tsm
-# summary(lm(entrap~def+tsm+xz))
+
+results = mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
+summary(results)
+sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
+plot(sens.bout, sens.par = "rho")
+plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+
+# TSM as a moderator
+xz<-def*tsm
+summary(lm(entrap~def+tsm+xz))
 
 
 # # ENTRAPMENT AS A MEDIATOR
@@ -4935,4 +5105,48 @@ tail(imv_pls2$scores, n = 5)
 ```
 
 
+# SEM model -- mod indices
+```{r si_model_tr2}
+## Dummy col SEM w/ continuous
+SI_model_test2 <- '
+                # measurement model
+                   si =~  si_type_2 + si_type_3 + si_type_4
+    
+                   prem  =~ age + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                           race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
+                           meds_count + talk_2 + talk_3 + talk_4 + religios + 
+                           school2_type_2 + school2_type_3 + activ_yn + assault +
+                           ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + drug_mar         
+
+                   def =~ aca_impa + dep_type + anx_type
+                   tsm =~ persist + aaq_dum
+                   entrap =~ dep_impa + gad7_impa
+                   mm =~  inf + flourish + belong1 + satisfied_overall
+                  
+                # structural model - regressions
+                   si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
+
+                # residual covars
+                  dx_mh ~~ ed_any
+                  dx_mh ~~ meds_count
+                  assault ~~ dx_mh
+                  
+                  sexual_3 ~~ gender_tgd
+                  talk_3 ~~ talk_2
+                  talk_2 ~~ talk_4
+                  talk_3 ~~ talk_4
+                  race_2 ~~ race_4
+                  race_3 ~~ race_4
+                  race_4 ~~ race_5
+                  talk_4 ~~ inf
+                  talk_3 ~~ inf
+                  activ_yn ~~ belong1
+                  satisfied_overall ~~ belong1
+                  anx_type ~~ gad7_impa
+                  anx_type ~~ dep_impa
+                  drugs_yn ~~ drug_mar   '
+
+fit_test4 <- sem(SI_model_test2, data=results_test_com2)
+summary_test4 <- summary(fit_test4, fit.measures=TRUE, standardized = TRUE)
+```
 
