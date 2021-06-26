@@ -3139,7 +3139,7 @@ write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = T
 
 ## Model w/ levels correlations
 ```{r model_lev_corr}
-results_corr <- NA_preproc(traindf_sem2)
+results_corr <- NA_preproc(traindf_sem)
 sig <- 0.4
 
 # run a correlation and drop the insignificant ones 
@@ -3210,11 +3210,15 @@ head(traindf_sem1)   # check output
 # SEM model with partial cont and dummy
 ```{r si_model_tr2}
 ## Dummy col SEM w/ continuous
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "age", "sexual", "inf", "race", "talk", "school2_type"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+view(results_tr_com1)
+
 SI_model_tr1 <- '
                 # measurement model
                   si =~    si_type_2 + si_type_3 + si_type_4
     
-                  prem  =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age 25 +
+                  prem  =~ age_2 + age_3 +
                            sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                            race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
                            meds_count + satisfied_overall + talk_2 + talk_3 + talk_4 + religios + 
@@ -3238,9 +3242,6 @@ SI_model_tr1 <- '
                   assault ~~ dx_mh
                   drugs_yn ~~ drug_mar '
 
-
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual", "inf", "race", "talk", "school2_type"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 fit_train1 <- sem(SI_model_tr1, data=results_tr_com1)
                   # ordered = c("si_type", "sib_freq", "satisfied_overall", "religios", "dep_impa",
@@ -3285,7 +3286,7 @@ SI_model_tr_M <- '
                 # measurement model
                    si =~  si_type_2 + si_type_3 + si_type_4
     
-                   prem  =~ age + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                   prem  =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                            race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
                            meds_count + talk_2 + talk_3 + talk_4 + religios + 
                            school2_type_2 + school2_type_3 + activ_yn +
@@ -3393,9 +3394,9 @@ head(results_tr_d)
 
 ## Dummy col SEM 
 SI_model_trD <- '# measurement model
-                  si =~  si_type_2
-    
-                  prem  =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
+                  si =~  si_type_2 + si_type_3 + si_type_4
+     
+                  prem  =~ age_2+ age_3 +
                            sexual_2 + sexual_3 +
                            gender_tgd_1 + 
                            sib_freq_1 + sib_freq_2 +
@@ -3470,7 +3471,7 @@ SI_model_tr3 <- '
                 # measurement model
                    si =~  si_type_2 + si_type_3 + si_type_4
     
-                   prem  =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
+                   prem  =~ age_2 + age_3 +
                             sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                             race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
                             meds_count + talk_2 + talk_3 + talk_4 + religios + 
