@@ -4260,16 +4260,6 @@ clm_le <- clm(si_type ~ ins_cover + gpa_sr + aca_impa + fincur + assault + binge
               data = clm_le)
 summary(clm_le)
 coef(clm_le)
-
-ci_le_test <- confint(clm_le)
-ci_le_test
-
-model.le2 <- tidy(clm_le_test)  # Convert model to dataframe for easy manipulation
-model.le2
-model.le2  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -4774,14 +4764,9 @@ results_test_sem <- dummy_cols(testdf_sem2, select_columns = c(
     "inf", "flourish_dum", "belong1"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
-results_tr_sem <- na.omit(results_tr_sem)
-results_tr_df <- as.data.frame(results_tr_sem)
-head(results_tr_df)
-
-#save full var set for SEM
-save(results_tr_df, file = "testdf_sem.RData")
-load("testdf_sem.RData")
-write_xlsx(results_tr_df, path = "testdf_sem.xls", col_names = TRUE, format_headers = TRUE)
+results_test_sem <- na.omit(results_test_sem)
+results_test_df <- as.data.frame(results_test_sem)
+head(results_test_df)
 ```
 
 
@@ -4795,7 +4780,7 @@ var_desc2 <- describe(testdf_sem2)
 # xlsx output
 save(var_desc2, file = "var_desc2.RData")
 load("var_desc2.RData")
-#write_xlsx(var_desc2, path = "var_desc2.xls", col_names = TRUE, format_headers = TRUE)
+write_xlsx(var_desc2, path = "var_desc2.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Model w/ levels correlations
@@ -4850,7 +4835,7 @@ testdf_sem5 <- testdf_sem5 %>%
 testdf_sem5 <- na.omit(testdf_sem5)
 head(testdf_sem5)   # check output
 
-results_test_com <- dummy_cols(testdf_sem5, select_columns = c("si_type", "sexual", "inf", "anx_type", "dep_type",
+results_test_com <- dummy_cols(testdf_sem5, select_columns = c("si_type", "age", "sexual", "inf", "anx_type", "dep_type",
                                                               "race", "talk", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 results_test_com2 <- cbind(testdf_sem5, results_test_com)
@@ -4895,8 +4880,7 @@ SI_model_test1 <- '
 fit_test1 <- sem(SI_model_test1, data=results_test_com2)
                   # ordered = c("sib_freq", "satisfied_overall", "religios", "dep_impa",
                   #             "gpa_sr", "aca_impa", "persist", "flourish_dum", "belong1", "gad7_impa"))
-summary_testn <- summary(fit_test1, fit.measures=TRUE, standardized = TRUE)
-
+summary_test1 <- summary(fit_test1, fit.measures=TRUE, standardized = TRUE)
 
 # MODEL PREDICTION
     ## model diagnostics
@@ -4908,193 +4892,10 @@ parameterEstimates(fit_test1)
     ## running NULL model, baseline model's RMSEA = 0.1107675 
 nullRMSEA(fit_test1, scaled = FALSE, silent = FALSE)
 
-    ## modification indices
-modificationindices(fit_test1, minimum.value = 20)
-
-mod_testfit1 <- cfa(SI_model_test1, data = results_test_com2)
-mi <- modindices(mod_testfit1, sort = TRUE, maximum.number = 10)
-View(mi)
-mi[mi$op == "=~",] %>% View()
-
 # MODEL ESTIMATES
 semPaths(fit_test1, what = "col", whatLabels = "std", style = "mx", rotation = 1, layout = "spring", 
     nCharNodes = 8, shapeMan = "rectangle", sizeMan = 8, sizeMan2 = 8)
-
-fit_test3 <- sem(SI_model_test1, data=results_test_com2)
-summary_test <- summary(fit_test3, fit.measures=TRUE, standardized = TRUE)
 ```
-
-## Model prediction
-```{r SEM test model}
-# model diagnostics
-fitmeasures(fit_test3)
-fitted(fit_test3)
-inspect(fit_test3, what="cor.all")
-
-# compare to observed
-lavCor(fit_test3)
-
-# residuals in coef unit
-resid(fit_test3, "cor")
-
-# modification indices
-modificationindices(fit_test3, minimum.value = 20)
-
-fit_test4 <- update(fit_test3)
-summary(fit_test4, fit.measures=TRUE)
-```
-
-## Parameter estimates
-```{r parameter_est}
-#test
-# semPaths(fit_test3, "model", "est", layout = "circle", curvePivot = FALSE, edge.label.cex = 0.5)
-semPaths(fit_test3, what = "col", whatLabels = "std", style = "mx", rotation = 1, layout = "spring", 
-    nCharNodes = 8, shapeMan = "rectangle", sizeMan = 8, sizeMan2 = 8)
-
-parameterEstimates(fit_test3)
-fitted(fit_test3)
-resid(fit_test3)
-fitMeasures(fit_test3, c("cfi","chisq", "df", "pvalue","rmsea","srmr"), output = "matrix")
-
-print(fitMeasures(fit_test3, c("chisq", "df", "pvalue", "cfi", "rmsea"),
-                  output = "text"), add.h0 = TRUE)
-
-lavInspect(fit_test3, what = "start")
-lavInspect(fit_test3, what = "list")
-```
-
-## mediation analysis
-```{r mediation}
-
-# TSM as a mediator?
-fit.totaleffect=lm(entrap~def, results_tr_com2)
-summary(fit.totaleffect)
-fit.mediator <- lm(tsm~def, results_tr_com2)
-summary(fit.mediator)
-fit.dv <- lm(entrap~def+tsm, results_tr_com2)
-summary(fit.dv)
-
-results = mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
-summary(results)
-sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
-plot(sens.bout, sens.par = "rho")
-plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
-
-# TSM as a moderator
-xz<-def*tsm
-summary(lm(entrap~def+tsm+xz))
-
-
-# # ENTRAPMENT AS A MEDIATOR
-# fit.totaleffect2 <- lm(si~def, results_tr_com2)
-# summary(fit.totaleffect2)
-# 
-# fit.mediator2 <- lm(entrap~def, results_tr_com2)
-# summary(fit.mediator2)
-# 
-# fit.dv2 <- lm(si~def+entrap, results_tr_com2)
-# summary(fit.dv2)
-# 
-# results2 <- mediate(fit.mediator2, fit.dv2, sims = 1000, boot= FALSE, treat = "def", mediator = "entrap")
-# summary(results2)
-# sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
-# plot(sens.bout, sens.par = "rho")
-# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
-
-
-# # MM as a mediator or moderator?
-# fit.totaleffect3 <- lm(si~entrap, results_tr_com2)
-# summary(fit.totaleffect3)
-# 
-# fit.mediator3 <- lm(mm~entrap, results_tr_com2)
-# summary(fit.mediator3)
-# 
-# fit.dv3 <- lm(si~entrap+mm, results_tr_com2)
-# summary(fit.dv3)
-# 
-# results3 = mediate(fit.mediator3, fit.dv2, sims = 1000, boot=F, treat = "entrap", mediator = "mm", robustSE=T)
-# summary(results3)
-# sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
-# plot(sens.bout, sens.par = "rho")
-# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
-
-```
-
-## PLS-PM
-```{r pls test path}
-
-data.pls <- read_excel("~/Desktop/sem_combo.xlsx", range=cell_cols(1:46), col_types = "numeric")
-save("data.pls", file="~/Desktop/sem_combo.RData")
-load("~/Desktop/sem_combo.RData")
-
-# INNER MODEL
-# rows of path matrix
-prem =   c(0, 1, 0, 0, 0, 0)
-def =    c(0, 0, 1, 1, 0, 0)
-tsm =    c(0, 0, 0, 1, 0, 0)
-entrap = c(0, 0, 0, 0, 1, 1)
-mm =     c(0, 0, 0, 0, 0, 1)
-si =     c(0, 0, 0, 0, 0, 0)
-
-# matrix (by row binding)
-imv_path2 = rbind (prem, def, tsm, entrap, mm, si)
-
-imv_path2 = t(imv_path2)
-View(imv_path2)
-view(data.pls)
-
-# plot the inner matrix
-innerplot(imv_path2, box.size = 0.1)
-
-# outer model
-imv_blocks2 = list(4:31, 32:39, 40:41, 42:43, 44:46, 1:3)
- 
-# modes
-imv_modes2 = c("B", "A", "B", "A", "B", "B")
-
-# apply plspm
-imv_pls2 = plspm(data.pls, imv_path2, imv_blocks2, modes = imv_modes2)
-
-# print diss_pls1
-imv_pls2
-
-## Partial Least Squares Path Modeling (PLS-PM)
-## ---------------------------------------------
-##    NAME                   DESCRIPTION
-## 1  $outer_model           outer model
-## 2  $inner_model           inner model
-## 3  $path_coefs            path coefficients matrix
-## 4  $scores                latent variable scores
-## 5  $crossloadings         cross-loadings
-## 6  $inner_summary         summary inner model
-## 7  $effects               total effects
-## 8  $unidim                uni-dimensionality
-## 9  $gof                   goodness-of-fit
-## 10 $boot                  bootstrap results
-## 11 $data                  data matrix
-## ---------------------------------------------
-
-# check unidimensionality
-imv_pls2$unidim
-
-# check coefs
-imv_pls2$path_coefs
-imv_pls2$inner_model
-
-# plotting the loadings
-plot(imv_pls2, what = "loadings")
-
-# check outer model
-imv_pls2$outer_model
-
-# summarized results
-summary(imv_pls2)
-plot(imv_pls2)
-plot(imv_pls2, what = "loadings", arr.width = 0.1)
-head(imv_pls2$scores, n = 5)
-tail(imv_pls2$scores, n = 5)
-```
-
 
 # SEM model -- mod indices
 ```{r si_model_test2}
