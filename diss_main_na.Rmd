@@ -3202,9 +3202,10 @@ head(traindf_sem1)   # check output
 ## Dummy col SEM w/ continuous
 SI_model_tr1 <- '
                 # measurement model
-                  si =~  si_type_2 + si_type_3 + si_type_4
+                  si =~    si_type_2 + si_type_3 + si_type_4
     
-                  prem  =~ age + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                  prem  =~ age+
+                           sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                            race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
                            meds_count + satisfied_overall + talk_2 + talk_3 + talk_4 + religios + 
                            school2_type_2 + school2_type_3 + activ_yn +
@@ -3232,35 +3233,29 @@ results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexua
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 fit_train1 <- sem(SI_model_tr1, data=results_tr_com1)
-                  # ordered = c("si_type", "sib_freq", "satisfied_overall", "religios",
-                  #             "gpa_sr", "aca_impa", "persist",
-                  #             "flourish_dum", "belong1", "dep_impa", "gad7_impa"))
+                  # ordered = c("si_type", "sib_freq", "satisfied_overall", "religios", "dep_impa",
+                  #             "gpa_sr", "aca_impa", "persist", "flourish_dum", "belong1", "gad7_impa"))
 summary_train <- summary(fit_train1, fit.measures=TRUE, standardized = TRUE)
 
 
 
 # MODEL PREDICTION
-
-## model diagnostics
+    ## model diagnostics
 fitmeasures(fit_train1)
 fitted(fit_train1)
 inspect(fit_train1, what="cor.all")
 parameterEstimates(fit_train1)
 
-# fitMeasures(fit_train1, c("cfi","chisq", "df", "pvalue","rmsea","srmr"), output = "matrix")
-# print(fitMeasures(fit_train1, c("chisq", "df", "pvalue", "cfi", "rmsea"),
-#                   output = "text"), add.h0 = TRUE)
-
-## running NULL model, baseline model's RMSEA = 0.1107675 
+    ## running NULL model, baseline model's RMSEA = 0.1107675 
 nullRMSEA(fit_train1, scaled = FALSE, silent = FALSE)
 
-## compare to observed
+    ## compare to observed
 lavCor(fit_train1)
 
-## residuals in coef unit
+    ## residuals in coef unit
 resid(fit_train1, "cor")
 
-## modification indices
+    ## modification indices
 modificationindices(fit_train1, minimum.value = 20)
 
 mod_fit1 <- cfa(SI_model_tr1, data = results_tr_com1)
@@ -3318,10 +3313,21 @@ SI_model_tr_M <- '
 fit_train_M <- sem(SI_model_tr_M, data=results_tr_com1)
 summary_mod_train <- summary(fit_train_M, fit.measures=TRUE, standardized = TRUE)
 
-fitMeasures(fit_train_M, c("cfi","chisq", "df", "pvalue","rmsea","srmr"), output = "matrix")
+    ## residuals in coef unit
+resid(fit_train_M, "cor")
 
-print(fitMeasures(fit_train_M, c("chisq", "df", "pvalue", "cfi", "rmsea"),
-                  output = "text"), add.h0 = TRUE)
+    ## modification indices
+modificationindices(fit_train_M, minimum.value = 20)
+
+mod_fit1 <- cfa(fit_train_M, data = results_tr_com1)
+mi <- modindices(mod_fit1, sort = TRUE, maximum.number = 10)
+View(mi)
+mi[mi$op == "=~",] %>% View()
+
+# MODEL ESTIMATES
+semPaths(fit_train_M, what = "col", whatLabels = "std", style = "mx", rotation = 1, layout = "spring", 
+    nCharNodes = 8, shapeMan = "rectangle", sizeMan = 8, sizeMan2 = 8)
+
 ```
 
 # SEM -- all dummies
@@ -3404,11 +3410,11 @@ view(results_tr_sem1)
 # mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
 # corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
-fit_train_d <- sem(SI_model_trD, data=results_tr_sem1)
+fit_train_d <- sem(SI_model_trD, data=results_tr_df1)
 
 summary_train <- summary(fit_train_d, fit.measures=TRUE, standardized = TRUE)
 
-mod_fit_D <- cfa(SI_model_trD, data = results_tr_sem1)
+mod_fit_D <- cfa(SI_model_trD, data = results_tr_df1)
 mi <- modindices(mod_fit_D, sort = TRUE, maximum.number = 10)
 View(mi)
 mi[mi$op == "=~",] %>% View()
