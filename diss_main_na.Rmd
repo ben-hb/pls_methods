@@ -3210,8 +3210,8 @@ head(traindf_sem1)   # check output
 # SEM model with partial cont and dummy
 ```{r si_model_tr2}
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "age", "sexual", "inf", "race", "talk", "school2_type"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "age", "sexual", "talk", "inf", "race", "school2_type"),
+                         remove_first_dummy = TRUE, remove_selected_columns = FALSE)
 view(results_tr_com1)
 
 SI_model_tr1 <- '
@@ -3221,8 +3221,8 @@ SI_model_tr1 <- '
                   prem  =~ age_2 + age_3 +
                            sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                            race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
-                           meds_count + satisfied_overall + talk_2 + talk_3 + talk_4 + religios + 
-                           school2_type_2 + school2_type_3 + activ_yn +
+                           meds_count + satisfied_overall +  religios + 
+                           school2_type_2 + school2_type_3 + activ_yn + talk_2 + talk_3 + talk_4 +
                            ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
 
                    def =~ aca_impa + dep_type + anx_type
@@ -3240,11 +3240,13 @@ SI_model_tr1 <- '
                   dx_mh ~~ ed_any
                   dx_mh ~~ meds_count
                   assault ~~ dx_mh
-                  drugs_yn ~~ drug_mar '
+                  drugs_yn ~~ drug_mar
+                  talk_2 ~~ talk_4
+                  talk_3 ~~ talk_4   '
 
 
 fit_train1 <- sem(SI_model_tr1, data=results_tr_com1)
-                  # ordered = c("si_type", "sib_freq", "satisfied_overall", "religios", "dep_impa",
+                  # ordered = c("sib_freq", "satisfied_overall", "religios", "dep_impa",
                   #             "gpa_sr", "aca_impa", "persist", "flourish_dum", "belong1", "gad7_impa"))
 summary_train <- summary(fit_train1, fit.measures=TRUE, standardized = TRUE)
 
@@ -3259,12 +3261,6 @@ parameterEstimates(fit_train1)
 
     ## running NULL model, baseline model's RMSEA = 0.1107675 
 nullRMSEA(fit_train1, scaled = FALSE, silent = FALSE)
-
-    ## compare to observed
-lavCor(fit_train1)
-
-    ## residuals in coef unit
-resid(fit_train1, "cor")
 
     ## modification indices
 modificationindices(fit_train1, minimum.value = 20)
