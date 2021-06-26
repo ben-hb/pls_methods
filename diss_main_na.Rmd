@@ -412,7 +412,7 @@ data.v2 <- data.v2 %>%
                         age == 25 ~ 3)) %>%
   filter(!is.na(age))
 table(data.v2$age, useNA = "always")
-
+jarque.bera.test(data.v2$age)
 ```
 
 ## Gender identity
@@ -435,6 +435,7 @@ data.v3$gender_tgd <- as.logical(data.v3$gender_tgd)
 
 
 table(data.v3$gender_tgd, useNA = "always")
+jarque.bera.test(data.v3$gender_tgd)
 ```
 
 ### Reconcile 'gender_text' 
@@ -525,6 +526,7 @@ data.v3$gender[data.v3$gender_text %in% c("I am me. A human.", "I'm not yet sure
 data.v3 <- data.v3 %>%
   filter(!is.na(gender_tgd))
 table(data.v3$gender_tgd, useNA = "always")   # check output
+jarque.bera.test(data.v3$gender_tgd)
 ```
 
 ## Sexual Identity
@@ -688,6 +690,7 @@ data.v5 <- data.v4 %>%
 data.v4$sexual <- as.factor(data.v4$sexual) # convert into factors
 
 table(data.v5$sexual, useNA = "always") # tabulate and check outputs
+jarque.bera.test(data.v5$sexual)
 ```
 
 ## BMI
@@ -741,6 +744,7 @@ data.v6 <- data.v6 %>%
   filter(!is.na(race))
 table(data.v6$race, useNA = "always")
 hist(data.v6$race)
+jarque.bera.test(data.v6$race)
 ```
 
 
@@ -939,6 +943,7 @@ data.v6$race[data.v6$race_other_text %in% c("Half Middle Eastern half white",
 table(data.v6$race, useNA = "always")
 data.v6 = subset(data.v6, select= -c(race_bla, race_asi, race_his, race_whi, race_other))   # clean up vars
 hist(data.v6$race)
+jarque.bera.test(data.v6$race)
 
 # consolidate race_ara, race_pi, race_ame --> other
 ```
@@ -1013,6 +1018,7 @@ data.v9$dx_mh <- as.logical(data.v9$dx_mh)
 
 # Check output
 table(data.v9$dx_mh, useNA = "always")
+jarque.bera.test(data.v9$dx_mh)
 ```
 
 
@@ -1064,8 +1070,8 @@ traindf.v10 <- traindf.v10 %>%
            as.numeric(audit_8) + as.numeric(audit_9) + as.numeric(audit_10))
 table(traindf.v10$audit_tot)
 
-traindf.v10 = subset(traindf.v10, select= -c(audit_1:audit_10, audit_3_m, audit_3_f, audit_3_o)) # clean up vars/columns
-
+traindf.v10 = subset(traindf.v10, select= -c(audit_1:audit_10, audit_3_m, 
+                                             audit_3_f, audit_3_o)) # clean up vars/columns
 ```
 
 ## ETOH treatment
@@ -1084,6 +1090,7 @@ traindf.v10 <- traindf.v10 %>%
 traindf.v10$ed_any <- as.logical(traindf.v10$ed_any)
 
 table(traindf.v10$ed_any, useNA = "always")
+jarque.bera.test(traindf.v10$ed_any)
 ```
 
 ## WCS
@@ -1101,7 +1108,7 @@ table(traindf.v10$wcs_4)
 table(traindf.v10$wcs_5)
 
 traindf.v10 = subset(traindf.v10, select= -c(wcs_1_f, wcs_1_m, wcs_1_o, 
-                                           wcs_2, wcs_3, wcs_4, wcs_5)) # clean up vars/columns
+                                           wcs_2, wcs_3, wcs_4, wcs_5))
 ```
 
 ## Medication use
@@ -1309,7 +1316,6 @@ table(traindf.v11$meds_mood)
 table(traindf.v11$meds_sle)
 table(traindf.v11$meds_oth)
 table(traindf.v11$meds_none)
-
 ```
 
 ## Psychopharm medication count
@@ -1348,6 +1354,7 @@ traindf.v11$meds_count <- as.numeric(traindf.v11$meds_count)
 table(traindf.v11$meds_count, useNA = "always")  # check output
 traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
 hist(traindf.v11$meds_count)
+jarque.bera.test(traindf.v11$meds_count)
 ```
 
 ## DIATHESIS ANALYSES
@@ -1529,6 +1536,7 @@ traindf.v13 <- traindf.v13 %>%
 traindf.v13$religios <- as.numeric(traindf.v13$religios)
 
 table(traindf.v13$religios, useNA = "always")       # Check output
+jarque.bera.test(traindf.v13$religios)
 ```
 
 ## MH campus environment
@@ -1551,9 +1559,7 @@ traindf.v14 <- traindf.v13 %>%
                               ther_vis == 3 ~ 3,
                               ther_vis == 4 ~ 4))
 traindf.v14$ther_vis <- as.factor(traindf.v14$ther_vis)
-
 table(traindf.v14$ther_vis)   # check output
-
 ```
 
 ## Distress & social support
@@ -1620,6 +1626,7 @@ traindf.v14 <- traindf.v14 %>%
 traindf.v14$satisfied_overall <- as.numeric(traindf.v14$satisfied_overall)
 
 table(traindf.v14$satisfied_overall, useNA = "always")
+jarque.bera.test(traindf.v14$satisfied_overall)
 ```
 
 ## Activity Involvement
@@ -1665,7 +1672,7 @@ traindf.v14 <- traindf.v14 %>%
 traindf.v14$activ_yn <- as.logical(traindf.v14$activ_yn)
 
 table(traindf.v14$activ_yn, useNA = "always")     # tabulate and check output
-
+jarque.bera.test(traindf.v14$activ_yn)
 #traindf.v14 = subset(traindf.v14, select= -c(activ_none, activ_ac:activ_other))    # clean up vars
 ```
 
@@ -1935,6 +1942,7 @@ traindf.v16 <- traindf.v16 %>%
   filter(!is.na(ins_cover))   
 traindf.v16$ins_cover <- as.logical(traindf.v16$ins_cover)
 table(traindf.v16$ins_cover, useNA = "always")   # check output
+jarque.bera.test(traindf.v16$ins_cover)
 
 #traindf.v16 = subset(traindf.v16, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
 ```
@@ -1973,7 +1981,10 @@ traindf.v16$drug_mar <- as.logical(traindf.v16$drug_mar)
 traindf.v16$drugs_yn <- as.logical(traindf.v16$drugs_yn)
   
 table(traindf.v16$drugs_yn, useNA = "always")
+jarque.bera.test(traindf.v16$drugs_yn)
+
 table(traindf.v16$drug_mar, useNA = "always")
+jarque.bera.test(traindf.v16$drug_mar)
 ```
 
 ## Current financial stressors
@@ -1986,7 +1997,9 @@ traindf.v16 <- traindf.v16 %>%
                             fincur == 1 ~ 1,  # always or often stressful
                             fincur == 2 ~ 1))
 traindf.v16$fincur <- as.logical(traindf.v16$fincur)
+
 table(traindf.v16$fincur, useNA = "always")
+jarque.bera.test(traindf.v16$fincur)
 ```
 
 ## ISI scale
@@ -2030,6 +2043,7 @@ traindf.v17$assault <- as.logical(traindf.v17$assault)
 
 # tabulate and check output
 table(traindf.v17$assault, useNA = "always") 
+jarque.bera.test(traindf.v17$assault)
                                          
 traindf.v17 = subset(traindf.v17, select= -c(abuse_life, abuse_recent)) # clean up var
 ```
@@ -2051,7 +2065,9 @@ traindf.v18 <- traindf.v18 %>%
                            binge_fr < 4 ~ 0)) %>%
   filter(!is.na(binge))
 traindf.v18$binge <-as.logical(traindf.v18$binge)
+
 table(traindf.v18$binge, useNA = "always") # check output
+jarque.bera.test(traindf.v18$binge)
 
 traindf.v18 = subset(traindf.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)) # clean up var
 ```
@@ -2067,6 +2083,8 @@ traindf.v18 <- traindf.v18 %>%
 traindf.v18$psyhx <- as.logical(traindf.v18$psyhx)
 
 table(traindf.v18$psyhx, useNA = "always")   # check output
+jarque.bera.test(traindf.v18$psyhx)
+
 traindf.v18 = subset(traindf.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up var
 ```
 
@@ -2086,7 +2104,9 @@ traindf.v18 <- traindf.v18 %>%
                             gpa_sr == 10 ~ 5,  # Don't know
                             is.na(gpa_sr) ~ 5))
 traindf.v18$gpa_sr <- as.numeric(traindf.v18$gpa_sr)
+
 table(traindf.v18$gpa_sr, useNA = "always")
+jarque.bera.test(traindf.v18$gpa_sr)
 ```
  
 ```{r LE traindf analysis}
@@ -2212,6 +2232,7 @@ traindf.v20 <- traindf.v20 %>%
                              deprawsc < 20 ~ 0)) %>%
   mutate(dep_na = case_when(is.na(deprawsc) ~ 1,
                             !is.na(deprawsc) ~ 0))
+traindf.v20$deprawsc <- as.numeric(traindf.v20$deprawsc)
 
 # Check outputs
 table(traindf.v20$dep_none)
@@ -2228,7 +2249,6 @@ traindf.v20 <- traindf.v20 %>%
                               dep_modsev == 1 ~ 4,
                               dep_sev == 1 ~ 5)) %>%
   filter(!is.na(dep_type)) # filters out all NAs
-traindf.v20$deprawsc <- as.numeric(traindf.v20$deprawsc)
 
 table(traindf.v20$dep_type, useNA = "always")
 ```
@@ -2245,6 +2265,7 @@ traindf.v20 <- traindf.v20 %>%
                               anx_score < 10 ~ 2,                      # anx mild
                               anx_score < 15 ~ 3))                    # anx severe
 traindf.v20$anx_score <- as.numeric(traindf.v20$anx_score)
+jarque.bera.test(traindf.v20$anx_score)
 
 table(traindf.v20$anx_type, useNA = "always") # check output
 ```
@@ -2260,6 +2281,7 @@ traindf.v20 <- traindf.v20 %>%
 traindf.v20$aca_impa <- as.numeric(traindf.v20$aca_impa)
 
 table(traindf.v20$aca_impa, useNA = "always")
+jarque.bera.test(traindf.v20$aca_impa)
 ```
 
 ## Academic failure
@@ -2435,6 +2457,7 @@ traindf.v22 <- traindf.v22 %>%
 traindf.v22$persist <- as.numeric(traindf.v22$persist)
 
 table(traindf.v22$persist, useNA = "always") # check output
+jarque.bera.test(traindf.v22$persist)
 ```
 
 
@@ -2558,7 +2581,7 @@ traindf.v24 <- traindf.v24 %>%
 traindf.v24$dep_impa <- as.numeric(traindf.v24$dep_impa)
 
 table(traindf.v24$dep_impa, useNA = "always")
-
+jarque.bera.test(traindf.v24$dep_impa)
 ```
 
 ## Anxiety impact
@@ -2572,6 +2595,7 @@ traindf.v24 <- traindf.v24 %>%
 traindf.v24$gad7_impa <- as.numeric(traindf.v24$gad7_impa)
 
 table(traindf.v24$gad7_impa, useNA = "always")
+jarque.bera.test(traindf.v24$gad7_impa)
 ```
 
 ## Current needs
@@ -2584,7 +2608,6 @@ traindf.v24 <- traindf.v24 %>%
                                  percneed_cur == 5 ~ 5,
                                  percneed_cur == 6 ~ 6))
 traindf.v24$percneed_cur <- as.numeric(traindf.v24$percneed_cur)
-
 table(traindf.v24$percneed_cur, useNA = "always")
 ```
 
@@ -2698,6 +2721,7 @@ table(traindf.v26$belong1, useNA = "always")
 
 traindf.v26$belong1 <- as.numeric(traindf.v26$belong1)
 summary(traindf.v26$belong1)
+jarque.bera.test(traindf.v26$belong1)
 
 table(traindf.v26$belong2)  # elective question, but common
 table(traindf.v26$belong8)  # nested x 2
@@ -2708,6 +2732,7 @@ table(traindf.v26$belong9)  # not as good of a proxy
 ```{r flourish}
 traindf.v26$flourish <- as.numeric(traindf.v26$flourish)
 table(traindf.v26$flourish)
+
 
 #  for loop for predictive cutoff point needed
 rs_df <- data.frame("cutoff" = c(), "rs" = c())
@@ -2773,6 +2798,7 @@ traindf.v26 <- traindf.v26 %>%
   filter(!is.na(inf))
 traindf.v26$inf <- as.logical(traindf.v26$inf)
 table(traindf.v26$inf, useNA ="always")
+jarque.bera.test(traindf.v26$inf)
 
 # clean up vars
 #traindf.v26 = subset(traindf.v26, select= -c(inf_1:inf_help))
@@ -3127,9 +3153,24 @@ write_xlsx(results_tr_df1, path = "traindf_sem1.xls", col_names = TRUE, format_h
 
 ## Descriptive stats
 ```{r Var_sum}
+data <- traindf_sem_out %>% 
+  pivot_longer(cols = everything())
+
+ggplot(data, aes(x = value)) + 
+  geom_density() +
+  facet_wrap(~name)
+
+ggplot(data, aes(x = value)) + 
+  geom_histogram() +
+  facet_wrap(~name)
+
+ggplot(data, aes(sample = value)) + 
+  geom_qq() +
+  facet_wrap(~name)
+
 # training data
 var_desc <- describe(traindf_sem)
-var_desc
+view(var_desc)
 
 # xlsx output
 save(var_desc, file = "var_desc.RData")
@@ -3252,8 +3293,6 @@ fit_train1 <- sem(SI_model_tr1, data=results_tr_com1)
                   #             "gpa_sr", "aca_impa", "persist", "flourish_dum", "belong1", "gad7_impa"))
 summary_train <- summary(fit_train1, fit.measures=TRUE, standardized = TRUE)
 
-
-
 # MODEL PREDICTION
     ## model diagnostics
 fitmeasures(fit_train1)
@@ -3323,16 +3362,8 @@ SI_model_tr_M <- '
 fit_train_M <- sem(SI_model_tr_M, data=results_tr_com1)
 summary_mod_train <- summary(fit_train_M, fit.measures=TRUE, standardized = TRUE)
 
-    ## residuals in coef unit
 resid(fit_train_M, "cor")
 
-    ## modification indices
-modificationindices(fit_train_M, minimum.value = 20)
-
-mod_fit1 <- cfa(fit_train_M, data = results_tr_com1)
-mi <- modindices(mod_fit1, sort = TRUE, maximum.number = 10)
-View(mi)
-mi[mi$op == "=~",] %>% View()
 
 # MODEL ESTIMATES
 semPaths(fit_train_M, what = "col", whatLabels = "std", style = "mx", rotation = 1, layout = "spring", 
@@ -3341,9 +3372,9 @@ semPaths(fit_train_M, what = "col", whatLabels = "std", style = "mx", rotation =
 ```
 
 ## PLS-PM
-```{r si_model_tr2}
-data.pls <- read_excel("~/Desktop/sem_combo.xlsx", range=cell_cols(1:46), col_types = "numeric")
-save("data.pls", file="~/Desktop/sem_combo.RData")
+```{r si_model_pls}
+# data.pls <- read_excel("~/Desktop/sem_combo.xlsx", range=cell_cols(1:46), col_types = "numeric")
+# save("data.pls", file="~/Desktop/sem_combo.RData")
 load("~/Desktop/sem_combo.RData")
 
 # INNER MODEL
@@ -3364,8 +3395,6 @@ view(data.pls)
 
 # plot the inner matrix
 innerplot(imv_path, box.size = 0.1)
-
-colnames(imv_path) = rownames(imv_path) # rename path
 
 # outer model
 imv_blocks = list(4:31, 32:39, 40:41, 42:43, 44:46, 1:3)
