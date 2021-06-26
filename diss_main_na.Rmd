@@ -3326,17 +3326,30 @@ print(fitMeasures(fit_train_M, c("chisq", "df", "pvalue", "cfi", "rmsea"),
 
 # SEM -- all dummies
 ```{r SEM, all dummies}
-## Dummy col SEM w/ continuous
+## Dummy col SEM 
 SI_model_trD <- '# measurement model
                   si =~  si_type_2 + si_type_3 + si_type_4
     
                   prem  =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
-                           sexual_2 + sexual_3 + gender_tgd_1 + sib_freq_1 + sib_freq_2 +
-                           race_2 + race_3 + race_4 + race_5 + ed_any_1 + dx_mh_1 +
-                           meds_count_1 + meds_count_2 + meds_count_3 + talk_2 + talk_3 + talk_4 + 
-                           religios_2 + religios_3 + religios_4 + religios_5 + school2_type_2 + school2_type_3 + 
-                           activ_yn_1 + ins_cover_1 + gpa_sr_2 + gpa_sr_3 + gpa_sr_4 + gpa_sr_5 +
-                           binge_1 + psyhx_1 + fincur_1 + drugs_yn_1 + assault_1 + drug_mar_1   
+                           sexual_2 + sexual_3 + g
+                           ender_tgd_1 + 
+                           sib_freq_1 + sib_freq_2 +
+                           race_2 + race_3 + race_4 + race_5 + 
+                           ed_any_1 + 
+                           dx_mh_1 +
+                           meds_count_1 + meds_count_2 + meds_count_3 + 
+                           talk_2 + talk_3 + talk_4 + 
+                           religios_2 + religios_3 + religios_4 + religios_5 + 
+                           school2_type_2 + school2_type_3 + 
+                           activ_yn_1 + 
+                           ins_cover_1 + 
+                           gpa_sr_2 + gpa_sr_3 + gpa_sr_4 + gpa_sr_5 +
+                           binge_1 + 
+                           psyhx_1 + 
+                           fincur_1 + 
+                           drugs_yn_1 + 
+                           assault_1 + 
+                           drug_mar_1   
 
                    def =~ aca_impa_2 + aca_impa_3 + aca_impa_4 + 
                           dep_type_2 + dep_type_3 + dep_type_4 + dep_type_5 + 
@@ -3364,29 +3377,41 @@ SI_model_trD <- '# measurement model
                   sexual_3 ~~ gender_tgd_1
                   talk_3 ~~ talk_2
                   talk_2 ~~ talk_4
+                  dep_impa_4 ~~	gad7_impa_4
                   talk_3 ~~ talk_4
                   race_2 ~~ race_4
                   race_3 ~~ race_4
                   race_4 ~~ race_5
                   talk_4 ~~ inf_1
                   talk_3 ~~ inf_1
-                  drugs_yn_1 ~~ drug_mar_1   
                   si_type_4 ~~ psyhx_1  '
 
 view(results_tr_sem1)
+results_corr <- NA_preproc(results_tr_sem1)
+sig <- 0.4
+
+# run a correlation and drop the insignificant ones 
+corr <- cor(results_corr, use = "pairwise.complete.obs")                               
+corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
+corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
+corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
+corr <- na.omit(corr)                                   # remove the NA values from above  
+corr <- subset(corr, abs(Freq) > sig)                   # select significant values  
+corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
+print(corr)
+  
+#turn corr back into matrix in order to plot with corrplot
+mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
+corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 fit_train_d <- sem(SI_model_trD, data=results_tr_sem1)
+
 summary_train <- summary(fit_train_d, fit.measures=TRUE, standardized = TRUE)
 
 mod_fit_D <- cfa(SI_model_trD, data = results_tr_sem1)
 mi <- modindices(mod_fit_D, sort = TRUE, maximum.number = 10)
 View(mi)
 mi[mi$op == "=~",] %>% View()
-
-fitMeasures(mod_fit_D, c("cfi","chisq", "df", "pvalue","rmsea","srmr"), output = "matrix")
-
-print(fitMeasures(mod_fit_D, c("chisq", "df", "pvalue", "cfi", "rmsea"),
-                  output = "text"), add.h0 = TRUE)
 ```
 
 
