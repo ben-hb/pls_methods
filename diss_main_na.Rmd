@@ -3074,23 +3074,23 @@ results_tr_sem1 <- dummy_cols(traindf_sem2, select_columns = c(
     "satisfied_overall", "talk", "religios", "school2_type", "activ_yn",
     # life events
     "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
-    # schools
-    "var_Boston", "var_CalPoly", "var_ColoradoCollege", "var_ColoradoMountain",
-    "var_Delaware", "var_DetroitMercy", "var_Emerson", "var_GeorgeMason",
-    "var_GeorgiaTech", "var_Kalamazoo", "var_Kansas", "var_Merrimack",
-    "var_MichiganState", "var_MontclairState", "var_NevadaReno",
-    "var_PennCollegeTech", "var_RhodeIsland", "var_Rollins", "var_Sewanee", "var_Smith",
-    "var_SouthernNazarene", "var_SouthwesternOklahomaState", "var_StJohns",
-    "var_StMarys", "var_StRose", "var_TrumanState", "var_TuftsHealthSciences",
-    "var_TuftsMainCampus", "var_UChicago", "var_UFlorida", "var_UMDearborn", "var_UMich",
-    "var_UTKnoxville", "var_UniversityofSouthernCalifornia", "var_Utah", "var_VATech",
-    "var_VirginiaCommonwealth", "var_WakeForest", "var_WestVirginia",
-    "var_WesternCarolina", "var_WesternMichigan", "var_WesternWA", "var_Xavier",
-    "var_OaklandCC", "var_OklahomaCityCC", "var_PaloAltoCollege",
-    "var_RedlandsCC", "var_AlbertaCAD", "var_CIA", "var_ColumbusCAD",
-    "var_MDInstituteCollegeArt", "var_MassArt", "var_MinnesotaCAD",
-    "var_NHInstituteArt", "var_Pratt", "var_Ringling", "var_SAIC",
-    "var_UNCSchoolArt", "var_Watkins",
+    # # schools
+    # "var_Boston", "var_CalPoly", "var_ColoradoCollege", "var_ColoradoMountain",
+    # "var_Delaware", "var_DetroitMercy", "var_Emerson", "var_GeorgeMason",
+    # "var_GeorgiaTech", "var_Kalamazoo", "var_Kansas", "var_Merrimack",
+    # "var_MichiganState", "var_MontclairState", "var_NevadaReno",
+    # "var_PennCollegeTech", "var_RhodeIsland", "var_Rollins", "var_Sewanee", "var_Smith",
+    # "var_SouthernNazarene", "var_SouthwesternOklahomaState", "var_StJohns",
+    # "var_StMarys", "var_StRose", "var_TrumanState", "var_TuftsHealthSciences",
+    # "var_TuftsMainCampus", "var_UChicago", "var_UFlorida", "var_UMDearborn", "var_UMich",
+    # "var_UTKnoxville", "var_UniversityofSouthernCalifornia", "var_Utah", "var_VATech",
+    # "var_VirginiaCommonwealth", "var_WakeForest", "var_WestVirginia",
+    # "var_WesternCarolina", "var_WesternMichigan", "var_WesternWA", "var_Xavier",
+    # "var_OaklandCC", "var_OklahomaCityCC", "var_PaloAltoCollege",
+    # "var_RedlandsCC", "var_AlbertaCAD", "var_CIA", "var_ColumbusCAD",
+    # "var_MDInstituteCollegeArt", "var_MassArt", "var_MinnesotaCAD",
+    # "var_NHInstituteArt", "var_Pratt", "var_Ringling", "var_SAIC",
+    # "var_UNCSchoolArt", "var_Watkins",
     # defeat
     "aca_impa", "dep_type", "anx_type",
     # threats to self-moderation
@@ -3163,23 +3163,23 @@ traindf_sem1 <- traindf.v28 %>% select(
   satisfied_overall, talk, religios, school2_type, activ_yn,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
-  # school
-  var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain,
-  var_Delaware, var_DetroitMercy, var_Emerson, var_GeorgeMason,
-  var_GeorgiaTech, var_Kalamazoo, var_Kansas, var_Merrimack,
-  var_MichiganState, var_MontclairState, var_NevadaReno,
-  var_PennCollegeTech, var_RhodeIsland, var_Rollins, var_Sewanee, var_Smith,
-  var_SouthernNazarene, var_SouthwesternOklahomaState, var_StJohns,
-  var_StMarys, var_StRose, var_TrumanState, var_TuftsHealthSciences,
-  var_TuftsMainCampus, var_UChicago, var_UFlorida, var_UMDearborn, var_UMich,
-  var_UTKnoxville, var_UniversityofSouthernCalifornia, var_Utah, var_VATech,
-  var_VirginiaCommonwealth, var_WakeForest, var_WestVirginia,
-  var_WesternCarolina, var_WesternMichigan, var_WesternWA, var_Xavier,
-  var_OaklandCC, var_OklahomaCityCC, var_PaloAltoCollege,
-  var_RedlandsCC, var_AlbertaCAD, var_CIA, var_ColumbusCAD,
-  var_MDInstituteCollegeArt, var_MassArt, var_MinnesotaCAD,
-  var_NHInstituteArt, var_Pratt, var_Ringling, var_SAIC,
-  var_UNCSchoolArt, var_Watkins,
+  # # school
+  # var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain,
+  # var_Delaware, var_DetroitMercy, var_Emerson, var_GeorgeMason,
+  # var_GeorgiaTech, var_Kalamazoo, var_Kansas, var_Merrimack,
+  # var_MichiganState, var_MontclairState, var_NevadaReno,
+  # var_PennCollegeTech, var_RhodeIsland, var_Rollins, var_Sewanee, var_Smith,
+  # var_SouthernNazarene, var_SouthwesternOklahomaState, var_StJohns,
+  # var_StMarys, var_StRose, var_TrumanState, var_TuftsHealthSciences,
+  # var_TuftsMainCampus, var_UChicago, var_UFlorida, var_UMDearborn, var_UMich,
+  # var_UTKnoxville, var_UniversityofSouthernCalifornia, var_Utah, var_VATech,
+  # var_VirginiaCommonwealth, var_WakeForest, var_WestVirginia,
+  # var_WesternCarolina, var_WesternMichigan, var_WesternWA, var_Xavier,
+  # var_OaklandCC, var_OklahomaCityCC, var_PaloAltoCollege,
+  # var_RedlandsCC, var_AlbertaCAD, var_CIA, var_ColumbusCAD,
+  # var_MDInstituteCollegeArt, var_MassArt, var_MinnesotaCAD,
+  # var_NHInstituteArt, var_Pratt, var_Ringling, var_SAIC,
+  # var_UNCSchoolArt, var_Watkins,
   # defeat
   aca_impa, anx_type, dep_type,
   # threats to self-moderation
@@ -3333,18 +3333,19 @@ SI_model_trD <- '# measurement model
                   prem  =~ age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25 +
                            sexual_2 + sexual_3 + gender_tgd_1 + sib_freq_1 + sib_freq_2 +
                            race_2 + race_3 + race_4 + race_5 + ed_any_1 + dx_mh_1 +
-                           meds_count_1 + meds_count_2 + meds_count_3 + talk_2 + talk_3 + talk_4 + religios_2 + 
-                           religios_3 + religios_4 + religios_5 + school2_type_2 + school2_type_3 + 
+                           meds_count_1 + meds_count_2 + meds_count_3 + talk_2 + talk_3 + talk_4 + 
+                           religios_2 + religios_3 + religios_4 + religios_5 + school2_type_2 + school2_type_3 + 
                            activ_yn_1 + ins_cover_1 + gpa_sr_2 + gpa_sr_3 + gpa_sr_4 + gpa_sr_5 +
-                           + binge_1 + psyhx_1 + fincur_1 + drugs_yn_1 + assault_1 + drug_mar_1   
+                           binge_1 + psyhx_1 + fincur_1 + drugs_yn_1 + assault_1 + drug_mar_1   
 
-                   def =~ aca_impa_2 + aca_impa_3 + aca_impa_4 + dep_type_2 + dep_type_3 + 
-                           dep_type_4 + dep_type_5 + anx_type_2 + anx_type_3 + anx_type_4
+                   def =~ aca_impa_2 + aca_impa_3 + aca_impa_4 + 
+                          dep_type_2 + dep_type_3 + dep_type_4 + dep_type_5 + 
+                          anx_type_2 + anx_type_3 + anx_type_4
 
                    tsm =~ persist_2 + persist_3 + persist_4 + persist_5 + persist_6 + aaq_dum_1
 
-                   entrap =~ dep_impa_2 + dep_impa_3 + dep_impa_4 + gad7_impa_2 + 
-                             gad7_impa_3 + gad7_impa_4
+                   entrap =~ dep_impa_2 + dep_impa_3 + dep_impa_4 + 
+                             gad7_impa_2 + gad7_impa_3 + gad7_impa_4
 
                    mm =~  inf_1 + flourish_dum_2 + flourish_dum_3 + flourish_dum_4 +
                           flourish_dum_5 + belong1_2 + belong1_3 + belong1_4 + belong1_5 + belong1_6 +
@@ -3358,7 +3359,7 @@ SI_model_trD <- '# measurement model
                   dx_mh_1 ~~ ed_any_1
                   dx_mh_1 ~~ meds_count_1
                   assault_1 ~~ dx_mh_1
-                  drugs_yn_1 ~~ drug_mar _1
+                  drugs_yn_1 ~~ drug_mar_1
 
                   sexual_3 ~~ gender_tgd_1
                   talk_3 ~~ talk_2
