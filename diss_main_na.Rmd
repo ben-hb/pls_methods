@@ -3309,9 +3309,6 @@ SI_model_tr_M <- '
                   talk_3 ~~ talk_2
                   talk_2 ~~ talk_4
                   talk_3 ~~ talk_4
-                  race_2 ~~ race_4
-                  race_3 ~~ race_4
-                  race_4 ~~ race_5
                   talk_4 ~~ inf_1
                   talk_3 ~~ inf_1
                   activ_yn ~~ belong1
@@ -3344,7 +3341,7 @@ semPaths(fit_train_M, what = "col", whatLabels = "std", style = "mx", rotation =
 # SEM -- all dummies
 ```{r SEM, all dummies}
 results_tr_sem_d <- dummy_cols(traindf_sem, select_columns = c(
-    # outcome var
+    # # outcome var
     "si_type",
     # diathesis
     "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_mh", "meds_count",
@@ -3379,7 +3376,7 @@ SI_model_trD <- '# measurement model
                            ed_any_1 + 
                            dx_mh_1 +
                            meds_count_1 + meds_count_2 + meds_count_3 + 
-                           # talk_2 + talk_3 + talk_4 + 
+                           talk_2 + talk_3 + talk_4 + 
                            religios_2 + religios_3 + religios_4 + religios_5 + 
                            school2_type_2 + school2_type_3 + 
                            activ_yn_1 + 
@@ -3414,20 +3411,15 @@ SI_model_trD <- '# measurement model
                   dx_mh_1 ~~ meds_count_1
                   assault_1 ~~ dx_mh_1
                   drugs_yn_1 ~~ drug_mar_1
-
+                  si_type_4 ~~ psyhx_1
                   sexual_3 ~~ gender_tgd_1
                   talk_2 ~~ talk_4
                   talk_3 ~~ talk_4
-                  dep_impa_4 ~~	gad7_impa_4
-                  race_2 ~~ race_4
-                  race_3 ~~ race_4
-                  race_4 ~~ race_5
-                  talk_4 ~~ inf_1
-                  talk_3 ~~ inf_1'
+                  dep_impa_4 ~~	gad7_impa_4   '
 
 view(results_tr_d)
 
-fit_train_d <- sem(SI_model_trD, data=results_tr_d)
+fit_train_d <- sem(SI_model_trD, data=results_tr_sem_d)
 
 summary_train <- summary(fit_train_d, fit.measures=TRUE, standardized = TRUE)
 
