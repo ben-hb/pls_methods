@@ -2205,6 +2205,62 @@ model.le  %>%
 ```
 
 
+# Full Premotivational Analysis
+```{r}
+# Define diathesis vars for correlation matrix
+traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
+                                religios, activ_yn, school2_type, ins_cover, gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx)
+
+# Corr_simple function
+corr_simple <- function(traindf=traindf_prem, sig=0.6){
+  # convert traindf to numeric in order to run correlations 
+  traindf_prem <- traindf_prem %>% mutate_if(is.character, as.factor)
+  traindf_prem <-  traindf_prem %>% mutate_if(is.factor, as.numeric)
+  # run a correlation and drop the insignificant ones
+  corr <- cor(traindf_prem, use = "pairwise.complete.obs")                               
+  corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
+  corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
+  corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
+  corr <- na.omit(corr)                                   # remove the NA values from above 
+  corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
+  print(corr)
+  
+  #turn corr back into matrix in order to plot with corrplot
+  mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
+  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+}
+corr_simple()
+
+# run regression
+
+results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", 
+                                                          "dx_mh", "meds_count","religios", "activ_yn", "school2_type", 
+                                                          "ins_cover", "gpa_sr", "fincur", "assault", "binge", "drugs_yn", 
+                                                          "drug_mar", "psyhx"),
+                         remove_first_dummy = TRUE)
+
+clm_prem <- clm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + meds_count +
+                religios + activ_yn + school2_type + ins_cover + gpa_sr + fincur + assault + binge + 
+                drugs_yn + drug_mar + psyhx,
+              data = results_prem)
+summary(clm_prem)
+coef(clm_prem)
+
+ci_prem <- confint(clm_prem)
+ci_prem
+
+model.prem <- tidy(clm_prem)  # Convert model to dataframe for easy manipulation
+model.prem
+model.prem  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+          var.diag = diag(vcov(clm_prem)),  # Variance of each coefficient
+          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+
+```
+
+
+
+
 # DEFEAT
 Candidate variables: aca_impa, failed, men_ill_ash, deprawsc
 
@@ -4687,7 +4743,7 @@ testdf_sem <- testdf.v27 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
   # environment
-  satisfied_overall, talk, religios, school2_type, activ_yn,
+  satisfied_overall, religios, school2_type, activ_yn,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
@@ -4721,7 +4777,7 @@ results_test_sem <- dummy_cols(testdf_sem2, select_columns = c(
     # diathesis
     "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_mh", "meds_count",
     # environment
-    "satisfied_overall", "talk", "religios", "school2_type", "activ_yn",
+    "satisfied_overall", "religios", "school2_type", "activ_yn",
     # life events
     "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
     # defeat
