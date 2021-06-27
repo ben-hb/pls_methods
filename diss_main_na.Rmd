@@ -2981,7 +2981,7 @@ var_names <- c(
   # diathesis
   "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_mh", "meds_count",
   # environment
-  "satisfied_overall", "talk", "religios", "school2_type", "activ_yn",
+  "satisfied_overall", "religios", "school2_type", "activ_yn",
   # life events
   "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
   # defeat
@@ -3073,7 +3073,7 @@ traindf_sem <- traindf.v28 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
   # environment
-  satisfied_overall, talk, religios, school2_type, activ_yn,
+  satisfied_overall, religios, school2_type, activ_yn,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
@@ -3107,26 +3107,9 @@ results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # diathesis
     "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_mh", "meds_count",
     # environment
-    "satisfied_overall", "talk", "religios", "school2_type", "activ_yn",
+    "satisfied_overall", "religios", "school2_type", "activ_yn",
     # life events
     "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
-    # # schools
-    # "var_Boston", "var_CalPoly", "var_ColoradoCollege", "var_ColoradoMountain",
-    # "var_Delaware", "var_DetroitMercy", "var_Emerson", "var_GeorgeMason",
-    # "var_GeorgiaTech", "var_Kalamazoo", "var_Kansas", "var_Merrimack",
-    # "var_MichiganState", "var_MontclairState", "var_NevadaReno",
-    # "var_PennCollegeTech", "var_RhodeIsland", "var_Rollins", "var_Sewanee", "var_Smith",
-    # "var_SouthernNazarene", "var_SouthwesternOklahomaState", "var_StJohns",
-    # "var_StMarys", "var_StRose", "var_TrumanState", "var_TuftsHealthSciences",
-    # "var_TuftsMainCampus", "var_UChicago", "var_UFlorida", "var_UMDearborn", "var_UMich",
-    # "var_UTKnoxville", "var_UniversityofSouthernCalifornia", "var_Utah", "var_VATech",
-    # "var_VirginiaCommonwealth", "var_WakeForest", "var_WestVirginia",
-    # "var_WesternCarolina", "var_WesternMichigan", "var_WesternWA", "var_Xavier",
-    # "var_OaklandCC", "var_OklahomaCityCC", "var_PaloAltoCollege",
-    # "var_RedlandsCC", "var_AlbertaCAD", "var_CIA", "var_ColumbusCAD",
-    # "var_MDInstituteCollegeArt", "var_MassArt", "var_MinnesotaCAD",
-    # "var_NHInstituteArt", "var_Pratt", "var_Ringling", "var_SAIC",
-    # "var_UNCSchoolArt", "var_Watkins",
     # defeat
     "aca_impa", "dep_type", "anx_type",
     # threats to self-moderation
@@ -3211,26 +3194,9 @@ traindf_sem1 <- traindf.v28 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
   # environment
-  satisfied_overall, talk, religios, school2_type, activ_yn,
+  satisfied_overall, religios, school2_type, activ_yn,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
-  # # school
-  # var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain,
-  # var_Delaware, var_DetroitMercy, var_Emerson, var_GeorgeMason,
-  # var_GeorgiaTech, var_Kalamazoo, var_Kansas, var_Merrimack,
-  # var_MichiganState, var_MontclairState, var_NevadaReno,
-  # var_PennCollegeTech, var_RhodeIsland, var_Rollins, var_Sewanee, var_Smith,
-  # var_SouthernNazarene, var_SouthwesternOklahomaState, var_StJohns,
-  # var_StMarys, var_StRose, var_TrumanState, var_TuftsHealthSciences,
-  # var_TuftsMainCampus, var_UChicago, var_UFlorida, var_UMDearborn, var_UMich,
-  # var_UTKnoxville, var_UniversityofSouthernCalifornia, var_Utah, var_VATech,
-  # var_VirginiaCommonwealth, var_WakeForest, var_WestVirginia,
-  # var_WesternCarolina, var_WesternMichigan, var_WesternWA, var_Xavier,
-  # var_OaklandCC, var_OklahomaCityCC, var_PaloAltoCollege,
-  # var_RedlandsCC, var_AlbertaCAD, var_CIA, var_ColumbusCAD,
-  # var_MDInstituteCollegeArt, var_MassArt, var_MinnesotaCAD,
-  # var_NHInstituteArt, var_Pratt, var_Ringling, var_SAIC,
-  # var_UNCSchoolArt, var_Watkins,
   # defeat
   aca_impa, anx_type, dep_type,
   # threats to self-moderation
@@ -3251,7 +3217,7 @@ head(traindf_sem1)   # check output
 # SEM model with partial cont and dummy
 ```{r si_model_tr2}
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "age", "sexual", "talk", "inf", "race", "school2_type"),
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "age", "sexual", "inf", "race", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = FALSE)
 view(results_tr_com1)
 
@@ -3263,7 +3229,7 @@ SI_model_tr1 <- '
                            sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                            race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
                            meds_count + satisfied_overall +  religios + 
-                           school2_type_2 + school2_type_3 + activ_yn + talk_2 + talk_3 + talk_4 +
+                           school2_type_2 + school2_type_3 + activ_yn + 
                            ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
 
                    def =~ aca_impa + dep_type + anx_type
@@ -3272,7 +3238,7 @@ SI_model_tr1 <- '
 
                    entrap =~ dep_impa + gad7_impa
 
-                   mm =~  inf_1 + flourish_dum + belong1
+                   mm =~ inf_1 + flourish_dum + belong1
 
                 # structural model - regressions
                    si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
@@ -3281,24 +3247,11 @@ SI_model_tr1 <- '
                   dx_mh ~~ ed_any
                   dx_mh ~~ meds_count
                   assault ~~ dx_mh
-                  drugs_yn ~~ drug_mar
-                  talk_2 ~~ talk_4
-                  talk_3 ~~ talk_4   
-                  talk_4 ~~ inf_1
-                  talk_3 ~~ inf_1  '
+                  drugs_yn ~~ drug_mar  '
 
 
-fit_train1 <- sem(SI_model_tr1, data=results_tr_com1)
-                  # ordered = c("sib_freq", "satisfied_overall", "religios", "dep_impa",
-                  #             "gpa_sr", "aca_impa", "persist", "flourish_dum", "belong1", "gad7_impa"))
+fit_train1 <- sem(SI_model_tr1, data=results_tr_com1, ordered = TRUE)
 summary_train <- summary(fit_train1, fit.measures=TRUE, standardized = TRUE)
-
-# MODEL PREDICTION
-    ## model diagnostics
-fitmeasures(fit_train1)
-fitted(fit_train1)
-inspect(fit_train1, what="cor.all")
-parameterEstimates(fit_train1)
 
     ## running NULL model, baseline model's RMSEA = 0.1107675 
 nullRMSEA(fit_train1, scaled = FALSE, silent = FALSE)
@@ -3310,10 +3263,6 @@ mod_fit1 <- cfa(SI_model_tr1, data = results_tr_com1)
 mi <- modindices(mod_fit1, sort = TRUE, maximum.number = 10)
 View(mi)
 mi[mi$op == "=~",] %>% View()
-
-# MODEL ESTIMATES
-semPaths(fit_train1, what = "col", whatLabels = "std", style = "mx", rotation = 1, layout = "spring", 
-    nCharNodes = 8, shapeMan = "rectangle", sizeMan = 8, sizeMan2 = 8)
 ```
 
 # SEM model -- mod indices
@@ -3325,7 +3274,7 @@ SI_model_tr_M <- '
     
                    prem  =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                            race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
-                           meds_count + talk_2 + talk_3 + talk_4 + religios + 
+                           meds_count + religios + 
                            school2_type_2 + school2_type_3 + activ_yn +
                            ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
 
@@ -3342,10 +3291,6 @@ SI_model_tr_M <- '
                   dx_mh ~~ meds_count
                   assault ~~ dx_mh
                   sexual_3 ~~ gender_tgd
-                  talk_2 ~~ talk_4
-                  talk_3 ~~ talk_4
-                  talk_4 ~~ inf_1
-                  talk_3 ~~ inf_1
                   activ_yn ~~ belong1
                   satisfied_overall ~~ belong1
                   anx_type ~~ gad7_impa
@@ -3361,9 +3306,6 @@ SI_model_tr_M <- '
 
 fit_train_M <- sem(SI_model_tr_M, data=results_tr_com1)
 summary_mod_train <- summary(fit_train_M, fit.measures=TRUE, standardized = TRUE)
-
-resid(fit_train_M, "cor")
-
 
 # MODEL ESTIMATES
 semPaths(fit_train_M, what = "col", whatLabels = "std", style = "mx", rotation = 1, layout = "spring", 
@@ -3490,7 +3432,6 @@ plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
 # TSM as a moderator
 summary(lm(entrap~def+tsm+ def*tsm))
 
-
 # # ENTRAPMENT AS A MEDIATOR
 fit.totaleffect2 <- lm(si~def, results_tr_com1)
 summary(fit.totaleffect2)
@@ -3501,11 +3442,11 @@ summary(fit.mediator2)
 fit.dv2 <- lm(si~def+entrap, results_tr_com1)
 summary(fit.dv2)
 
-results2 <- mediate(fit.mediator2, fit.dv2, sims = 1000, boot= FALSE, treat = "def", mediator = "entrap")
-summary(results2)
-sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
-plot(sens.bout, sens.par = "rho")
-plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+# results2 <- mediate(fit.mediator2, fit.dv2, sims = 1000, boot= FALSE, treat = "def", mediator = "entrap")
+# summary(results2)
+# sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
+# plot(sens.bout, sens.par = "rho")
+# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
 
 
 # # MM as a mediator or moderator?
@@ -3518,11 +3459,11 @@ summary(fit.mediator3)
 fit.dv3 <- lm(si~entrap+mm, results_tr_com1)
 summary(fit.dv3)
 
-results3 <- mediate(fit.mediator3, fit.dv2, sims = 1000, boot=F, treat = "entrap", mediator = "mm", robustSE=T)
-summary(results3)
-sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
-plot(sens.bout, sens.par = "rho")
-plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+# results3 <- mediate(fit.mediator3, fit.dv2, sims = 1000, boot=F, treat = "entrap", mediator = "mm", robustSE=T)
+# summary(results3)
+# sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
+# plot(sens.bout, sens.par = "rho")
+# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
 ```
 
 
@@ -3572,7 +3513,7 @@ testdf.v11 <- testdf.v11 %>%
       testdf.v11$meds_sti[str_detect(testdf.v11$meds_7_text, "ADHD")] <- 1
       testdf.v11$meds_sti[str_detect(testdf.v11$meds_7_text, "[M|m]odafinil")] <- 1
       testdf.v11$meds_sti[testdf.v11$meds_7_text %in% c("Vyance", "Vivance adhd", "Stratera", "Aderol", "Aderal", "Adderal",
-                                                    "Adderrall (for ADHD)", "Adderal, vyvance",  "Celltech")] <- 1
+                                                    "Adderrall (for ADHD)", "Adderal, vyvance", "Celltech")] <- 1
       
 # Create antidepressant
 testdf.v11 <- testdf.v11 %>%
@@ -4837,7 +4778,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 
 ## Prep for SEM dummy cols
-```{r results_tr_com2}
+```{r results_test_com2}
 # Prep SEM data vars
 testdf_sem5 <- testdf.v27 %>% select(
   # outcome var
@@ -4845,7 +4786,7 @@ testdf_sem5 <- testdf.v27 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
   # environment
-  satisfied_overall, talk, religios, school2_type, activ_yn,
+  satisfied_overall, religios, school2_type, activ_yn,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
@@ -4863,16 +4804,17 @@ testdf_sem5 <- testdf_sem5 %>%
   data.matrix()
 testdf_sem5 <- na.omit(testdf_sem5)
 head(testdf_sem5)   # check output
-
-results_test_com <- dummy_cols(testdf_sem5, select_columns = c("si_type", "age", "sexual", "inf", "anx_type", "dep_type",
-                                                              "race", "talk", "school2_type"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-results_test_com2 <- cbind(testdf_sem5, results_test_com)
 ```
 
 # SEM model
 ```{r si_model_test}
 ## Dummy col SEM w/ continuous
+
+results_test_com1 <- dummy_cols(testdf_sem5, select_columns = c("si_type", "age", "sexual",
+                                                                "inf", "race", "school2_type"),
+                         remove_first_dummy = TRUE, remove_selected_columns = FALSE)
+view(results_test_com1)
+
 SI_model_test1 <- '
                 # measurement model
                   si =~    si_type_2 + si_type_3 + si_type_4
@@ -4880,9 +4822,9 @@ SI_model_test1 <- '
                   prem  =~ age_2 + age_3 +
                            sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                            race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
-                           meds_count + satisfied_overall +  religios + 
-                           school2_type_2 + school2_type_3 + activ_yn + talk_2 + talk_3 + talk_4 +
-                           ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
+                           meds_count + satisfied_overall +  religios + drug_mar +
+                           school2_type_2 + school2_type_3 + activ_yn + assault + 
+                           ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn
 
                    def =~ aca_impa + dep_type + anx_type
                               
@@ -4899,17 +4841,13 @@ SI_model_test1 <- '
                   dx_mh ~~ ed_any
                   dx_mh ~~ meds_count
                   assault ~~ dx_mh
-                  drugs_yn ~~ drug_mar
-                  talk_2 ~~ talk_4
-                  talk_3 ~~ talk_4   
-                  talk_4 ~~ inf_1
-                  talk_3 ~~ inf_1  '
+                  drugs_yn ~~ drug_mar    '
 
 
-fit_test1 <- sem(SI_model_test1, data=results_test_com2)
+fit_test1 <- sem(SI_model_test1, data=results_test_com1, ordered = TRUE)
                   # ordered = c("sib_freq", "satisfied_overall", "religios", "dep_impa",
                   #             "gpa_sr", "aca_impa", "persist", "flourish_dum", "belong1", "gad7_impa"))
-summary_test1 <- summary(fit_test1, fit.measures=TRUE, standardized = TRUE)
+summary_train <- summary(fit_test1, fit.measures=TRUE, standardized = TRUE)
 
 # MODEL PREDICTION
     ## model diagnostics
@@ -4920,25 +4858,19 @@ parameterEstimates(fit_test1)
 
     ## running NULL model, baseline model's RMSEA = 0.1107675 
 nullRMSEA(fit_test1, scaled = FALSE, silent = FALSE)
-
-# MODEL ESTIMATES
-semPaths(fit_test1, what = "col", whatLabels = "std", style = "mx", rotation = 1, layout = "spring", 
-    nCharNodes = 8, shapeMan = "rectangle", sizeMan = 8, sizeMan2 = 8)
 ```
 
 # SEM model -- mod indices
-```{r si_model_test2}
+```{r si_model_tr2}
 ## Dummy col SEM w/ continuous
-SI_model_test2 <- '
+SI_model_test_M <- '
                 # measurement model
                    si =~  si_type_2 + si_type_3 + si_type_4
     
                    prem  =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                            race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
-                           meds_count + talk_2 + talk_3 + talk_4 + religios + 
-                           school2_type_2 + school2_type_3 + activ_yn +
+                           meds_count + religios + school2_type_2 + school2_type_3 + activ_yn +
                            ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
-
                    def =~ aca_impa + dep_type + anx_type
                    tsm =~ persist + aaq_dum
                    entrap =~ dep_impa + gad7_impa
@@ -4952,10 +4884,7 @@ SI_model_test2 <- '
                   dx_mh ~~ meds_count
                   assault ~~ dx_mh
                   sexual_3 ~~ gender_tgd
-                  talk_2 ~~ talk_4
-                  talk_3 ~~ talk_4
-                  talk_4 ~~ inf_1
-                  talk_3 ~~ inf_1
+
                   activ_yn ~~ belong1
                   satisfied_overall ~~ belong1
                   anx_type ~~ gad7_impa
@@ -4968,7 +4897,8 @@ SI_model_test2 <- '
                   race_4 ~~ race_5
                   age_2 ~~ age_3
 '
-fit_test4 <- sem(SI_model_test2, data=results_test_com2)
-summary_test4 <- summary(fit_test4, fit.measures=TRUE, standardized = TRUE)
+
+fit_train_M <- sem(SI_model_tr_M, data=results_tr_com1)
+summary_mod_train <- summary(fit_train_M, fit.measures=TRUE, standardized = TRUE)
 ```
 
