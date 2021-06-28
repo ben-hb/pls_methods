@@ -1632,22 +1632,6 @@ traindf.v14$fam_support_aca <- as.numeric(traindf.v14$fam_support_aca)
 table(traindf.v14$fam_support_aca)
 ```
 
-## Overall school satisfaction
-```{r satisfied_overall}
-traindf.v14 <- traindf.v14 %>%
-  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 1,
-                                       satisfied_overall == 2 ~ 2,
-                                       satisfied_overall == 3 ~ 3,
-                                       satisfied_overall == 4 ~ 4,
-                                       satisfied_overall == 5 ~ 5,
-                                       satisfied_overall == 6 ~ 6)) %>% 
-  filter(!is.na(satisfied_overall))
-traindf.v14$satisfied_overall <- as.numeric(traindf.v14$satisfied_overall)
-
-table(traindf.v14$satisfied_overall, useNA = "always")
-jarque.bera.test(traindf.v14$satisfied_overall)
-```
-
 ## Activity Involvement
 ```{r Activities}
 # set all NAs in actvities equal to 0
@@ -2795,6 +2779,22 @@ table(traindf.v26$belong8)  # nested x 2
 table(traindf.v26$belong9)  # not as good of a proxy
 ```
 
+## Overall school satisfaction
+```{r satisfied_overall}
+traindf.v26 <- traindf.v26 %>%
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 1,
+                                       satisfied_overall == 2 ~ 2,
+                                       satisfied_overall == 3 ~ 3,
+                                       satisfied_overall == 4 ~ 4,
+                                       satisfied_overall == 5 ~ 5,
+                                       satisfied_overall == 6 ~ 6)) %>% 
+  filter(!is.na(satisfied_overall))
+traindf.v26$satisfied_overall <- as.numeric(traindf.v26$satisfied_overall)
+
+table(traindf.v26$satisfied_overall, useNA = "always")
+jarque.bera.test(traindf.v26$satisfied_overall)
+```
+
 ## Flourishing Scale
 ```{r flourish}
 traindf.v26$flourish <- as.numeric(traindf.v26$flourish)
@@ -3263,7 +3263,7 @@ traindf_sem1 <- traindf.v28 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
   # environment
-  satisfied_overall, religios, school2_type, activ_yn, international,
+  religios, school2_type, activ_yn, international,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
@@ -3273,7 +3273,7 @@ traindf_sem1 <- traindf.v28 %>% select(
   # entrapment
   dep_impa, gad7_impa,
   # motivational moderators
-  inf, flourish_dum, belong1)  #mh_stigma, 
+  inf, flourish_dum, belong1, satisfied_overall)  #mh_stigma, 
 
 # create sem matrix 
 traindf_sem1 <- traindf_sem1 %>% 
@@ -3294,11 +3294,10 @@ SI_model_tr1 <- '
                 # measurement model
                   si =~    si_type_2 + si_type_3 + si_type_4
     
-                  prem  =~ age_2 + age_3 +
-                           sexual_2 + sexual_3 + gender_tgd + sib_freq + ed_any + dx_mh +
-                           meds_count + religios + international +
-                           school2_type_2 + school2_type_3 + activ_yn + 
-                           ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
+                  prem  =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                           ed_any + dx_mh + meds_count + religios + international +
+                           school2_type_2 + school2_type_3 + activ_yn + ins_cover + gpa_sr + 
+                           binge + psyhx + fincur + drugs_yn + assault + drug_mar
 
                    def =~ aca_impa + dep_type + anx_type
                               
@@ -3343,12 +3342,10 @@ linear_combos <- caret::findLinearCombos(results_tr_com1)
 SI_model_tr_M <- '
                 # measurement model
                    si =~  si_type_2 + si_type_3 + si_type_4
-    
                    prem =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
-                           international + ed_any + dx_mh +
-                           meds_count + religios + school2_type_2 + school2_type_3 + activ_yn +
-                           ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
-
+                           international + ed_any + dx_mh + meds_count + religios + school2_type_2 + 
+                           school2_type_3 + activ_yn + ins_cover + gpa_sr + binge + psyhx + fincur + 
+                           drugs_yn + assault + drug_mar
                    def =~ aca_impa + dep_type + anx_type
                    tsm =~ persist + aaq_dum
                    entrap =~ dep_impa + gad7_impa
@@ -3885,21 +3882,6 @@ table(testdf.v14$talk, useNA = "always") # check output
 
 testdf.v14 = subset(testdf.v14, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, 
 talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
-```
-
-## Overall school satisfaction
-```{r satisfied_overall}
-testdf.v14 <- testdf.v14 %>%
-  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 1,
-                                       satisfied_overall == 2 ~ 2,
-                                       satisfied_overall == 3 ~ 3,
-                                       satisfied_overall == 4 ~ 4,
-                                       satisfied_overall == 5 ~ 5,
-                                       satisfied_overall == 6 ~ 6)) %>% 
-  filter(!is.na(satisfied_overall))
-testdf.v14$satisfied_overall <- as.numeric(testdf.v14$satisfied_overall)
-
-table(testdf.v14$satisfied_overall, useNA = "always")
 ```
 
 ## Activity Involvement
@@ -4614,6 +4596,21 @@ table(testdf.v26$belong8)  # nested x 2
 table(testdf.v26$belong9)  # not as good of a proxy
 ```
 
+## Overall school satisfaction
+```{r satisfied_overall}
+testdf.v26 <- testdf.v26 %>%
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 1,
+                                       satisfied_overall == 2 ~ 2,
+                                       satisfied_overall == 3 ~ 3,
+                                       satisfied_overall == 4 ~ 4,
+                                       satisfied_overall == 5 ~ 5,
+                                       satisfied_overall == 6 ~ 6)) %>% 
+  filter(!is.na(satisfied_overall))
+testdf.v26$satisfied_overall <- as.numeric(testdf.v26$satisfied_overall)
+
+table(testdf.v26$satisfied_overall, useNA = "always")
+```
+
 ## Flourishing Scale
 ```{r flourish}
 testdf.v26$flourish <- as.numeric(testdf.v26$flourish)
@@ -4788,7 +4785,7 @@ results_test_sem <- dummy_cols(testdf_sem2, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_mh", "meds_count",
+    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
     # environment
     "religios", "school2_type", "activ_yn", "international",
     # life events
@@ -4853,7 +4850,7 @@ testdf_sem5 <- testdf.v27 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
   # environment
   religios, school2_type, activ_yn, international,
   # life events
