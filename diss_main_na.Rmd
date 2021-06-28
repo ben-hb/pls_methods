@@ -728,6 +728,7 @@ hist(data.v5$body_sr)
 
 ## Race
 ```{r race}  
+table(data.v5$race)
 data.v6 <- data.v5 %>% 
 # 'race' subtypes combined into one variable
   mutate(race = case_when(race_bla == 1 ~ 1,
@@ -1436,9 +1437,8 @@ traindf_dia <- traindf_dia %>%
 traindf_dia   # check output
 
 results_dia <- dummy_cols(traindf_dia, select_columns = c("age", "sexual", "gender_tgd", "finpast", 
-                                                       "sib_freq", "race", "dx_mh", "ed_any",
-                                                       "meds_count"), 
-                          remove_first_dummy = TRUE)
+                                                       "sib_freq", "race", "dx_mh", "ed_any", "meds_count"), 
+                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # factoextra -- https://rpkgs.traindfnovia.com/factoextra/
 dia_pca <- PCA(results_dia, graph=FALSE)  # apply PCA
@@ -1539,6 +1539,22 @@ table(traindf.v13$religios, useNA = "always")       # Check output
 jarque.bera.test(traindf.v13$religios)
 ```
 
+## Residence type
+```{r residenc}
+traindf.v13 <- traindf.v13 %>%
+  mutate(residenc = case_when(residenc == 1 ~ 1,
+                              residenc == 2 ~ 1,
+                              residenc == 3 ~ 2, 
+                              residenc == 4 ~ 2, 
+                              residenc == 5 ~ 3,
+                              residenc == 6 ~ 4,
+                              residenc == 7 ~ 3)) %>%
+  filter(!is.na(residenc))
+
+table(traindf.v13$residenc, useNA = "always")
+jarque.bera.test(traindf.v13$residenc)
+```
+
 ## MH campus environment
 ```{r env_mh}
 traindf.v13$env_mh <- as.factor(traindf.v13$env_mh)
@@ -1597,14 +1613,17 @@ talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
 
 ## Military status
 ```{r military}
-traindf.v14$military <- as.logical(traindf.v14$military)
-table(traindf.v14$military)
+traindf.v14 <- traindf.v14 %>%
+  filter(!is.na(military))
+table(traindf.v14$military, useNA = "always")
 ```
 
 ## International student
 ```{r international}
-traindf.v14$international <- as.logical(traindf.v14$international)
-table(traindf.v14$international)
+traindf.v14 <- traindf.v14 %>%
+  filter(!is.na(international))
+
+table(traindf.v14$international, useNA = "always")
 ```
 
 ## Family support
@@ -1868,7 +1887,7 @@ traindf_env   # check output
 # PCA map with eigenvalues
 results_env <- dummy_cols(traindf_env, select_columns = c("religios", "residenc", "activ_yn",
                                                          "school2_type", "satisfied_overall", "talk"),
-                          remove_first_dummy = TRUE)
+                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
 names(env_pca)
@@ -2151,8 +2170,8 @@ traindf_le <- traindf_le %>%
 traindf_le   # check output
 
 results_le <- dummy_cols(traindf_le, select_columns = c("ins_cover", "gpa_sr", "aca_impa", "fincur",
-                                                        "binge","drugs_yn", "drug_mar", "assault", "psyhx"),
-                         remove_first_dummy = TRUE)
+                                                        "binge", "drugs_yn", "drug_mar", "assault", "psyhx"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
 le_pca$eig   # output matrix with eigenvalues
@@ -2206,10 +2225,11 @@ model.le  %>%
 
 
 # Full Premotivational Analysis
-```{r}
+```{r results_prem}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
-                                religios, activ_yn, school2_type, ins_cover, gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx)
+traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
+                                       meds_count, residenc, religios, activ_yn, school2_type, ins_cover, 
+                                       gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_prem, sig=0.6){
@@ -2232,29 +2252,20 @@ corr_simple <- function(traindf=traindf_prem, sig=0.6){
 corr_simple()
 
 # run regression
-
-results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", 
-                                                          "dx_mh", "meds_count","religios", "activ_yn", "school2_type", 
-                                                          "ins_cover", "gpa_sr", "fincur", "assault", "binge", "drugs_yn", 
-                                                          "drug_mar", "psyhx"),
-                         remove_first_dummy = TRUE)
-
-clm_prem <- clm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + meds_count +
-                religios + activ_yn + school2_type + ins_cover + gpa_sr + fincur + assault + binge + 
-                drugs_yn + drug_mar + psyhx,
-              data = results_prem)
+clm_prem <- clm(si_type ~ .,
+              data = traindf_prem)
 summary(clm_prem)
 coef(clm_prem)
 
-ci_prem <- confint(clm_prem)
-ci_prem
+# ci_prem <- confint(clm_prem)
+# ci_prem
 
-model.prem <- tidy(clm_prem)  # Convert model to dataframe for easy manipulation
-model.prem
-model.prem  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_prem)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+# model.prem <- tidy(clm_prem)  # Convert model to dataframe for easy manipulation
+# model.prem
+# model.prem  %>%
+#    mutate(or = exp(estimate),  # Odds ratio/gradient
+#           var.diag = diag(vcov(clm_prem)),  # Variance of each coefficient
+#           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 
 ```
 
@@ -2394,7 +2405,7 @@ traindf_def <- traindf_def %>%
 traindf_def   # check output
 
 results_def <- dummy_cols(traindf_def, select_columns = c("aca_impa", "dep_type", "anx_type"),
-                         remove_first_dummy = TRUE)
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
 def_pca$eig   # output matrix with eigenvalues
@@ -2569,7 +2580,7 @@ traindf_tsm <- traindf_tsm %>%
 traindf_tsm   # check output
 
 results_tsm <- dummy_cols(traindf_tsm, select_columns = c("persist", "aaq_dum"),
-                         remove_first_dummy = TRUE)
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
 eigval_tsm <- get_eigenvalue(tsm_pca)
@@ -2977,7 +2988,7 @@ traindf_mm <- traindf_mm %>%
   data.matrix()
 traindf_mm   # check output
 results_mm <- dummy_cols(traindf_mm, select_columns = c("inf", "flourish_dum", "belong1"),
-                         remove_first_dummy = TRUE)
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 eigval_mm <- get_eigenvalue(mm_pca)
 eigval_mm
@@ -3035,9 +3046,9 @@ traindf.v28 <- traindf.v26
 # school structural analysis
 var_names <- c(
   # diathesis
-  "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_mh", "meds_count",
+  "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
   # environment
-  "satisfied_overall", "religios", "school2_type", "activ_yn",
+  "religios", "school2_type", "activ_yn", "international",
   # life events
   "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
   # defeat
@@ -3047,7 +3058,7 @@ var_names <- c(
   # entrapment
   "dep_impa", "gad7_impa",
   # motivational moderators
-  "inf", "flourish_dum", "belong1")  
+  "inf", "flourish_dum", "belong1", "satisfied_overall")  
 var_names <- sort(var_names)
 
 # build table for absolute missingness based on school2
@@ -3122,14 +3133,16 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 
 ## Select all vars for SEM
 ```{r train_df_sem2}
+view(traindf.v28)
+
 # Prep SEM data vars
 traindf_sem <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
   # environment
-  satisfied_overall, religios, school2_type, activ_yn,
+  religios, school2_type, activ_yn, international,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
@@ -3139,14 +3152,14 @@ traindf_sem <- traindf.v28 %>% select(
   # entrapment
   dep_impa, gad7_impa,
   # motivational moderators
-  inf, flourish_dum, belong1)  #mh_stigma, 
+  inf, flourish_dum, belong1, satisfied_overall)  #mh_stigma, 
 
 # create sem matrix 
 traindf_sem <- traindf_sem %>% 
   # mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
-traindf_sem <- na.omit(traindf_sem)
-head(traindf_sem)   # check output
+# traindf_sem <- na.omit(traindf_sem)
+view(traindf_sem)   # check output
 
 # # xlsx output
 traindf_sem_out <- as.data.frame(traindf_sem)
@@ -3161,9 +3174,9 @@ results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_mh", "meds_count",
+    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
     # environment
-    "satisfied_overall", "religios", "school2_type", "activ_yn",
+    "religios", "school2_type", "activ_yn", "international",
     # life events
     "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
     # defeat
@@ -3173,7 +3186,7 @@ results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # entrapment
     "dep_impa", "gad7_impa",
     # motivational moderators
-    "inf", "flourish_dum", "belong1"), 
+    "inf", "flourish_dum", "belong1", "satisfied_overall"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 results_tr_sem1 <- na.omit(results_tr_sem1)
@@ -3248,9 +3261,9 @@ traindf_sem1 <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
   # environment
-  satisfied_overall, religios, school2_type, activ_yn,
+  satisfied_overall, religios, school2_type, activ_yn, international,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
@@ -3273,8 +3286,8 @@ head(traindf_sem1)   # check output
 # SEM model with partial cont and dummy
 ```{r si_model_tr2}
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "age", "sexual", "inf", "race", "school2_type"),
-                         remove_first_dummy = TRUE, remove_selected_columns = FALSE)
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "age", "sexual", "school2_type"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 view(results_tr_com1)
 
 SI_model_tr1 <- '
@@ -3282,9 +3295,8 @@ SI_model_tr1 <- '
                   si =~    si_type_2 + si_type_3 + si_type_4
     
                   prem  =~ age_2 + age_3 +
-                           sexual_2 + sexual_3 + gender_tgd + sib_freq + 
-                           race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
-                           meds_count + satisfied_overall +  religios + 
+                           sexual_2 + sexual_3 + gender_tgd + sib_freq + ed_any + dx_mh +
+                           meds_count + religios + international +
                            school2_type_2 + school2_type_3 + activ_yn + 
                            ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
 
@@ -3294,7 +3306,7 @@ SI_model_tr1 <- '
 
                    entrap =~ dep_impa + gad7_impa
 
-                   mm =~ inf_1 + flourish_dum + belong1
+                   mm =~ inf + flourish_dum + belong1 + satisfied_overall
 
                 # structural model - regressions
                    si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
@@ -3306,19 +3318,23 @@ SI_model_tr1 <- '
                   drugs_yn ~~ drug_mar  '
 
 
-fit_train1 <- sem(SI_model_tr1, data=results_tr_com1, ordered = TRUE)
+fit_train1 <- sem(SI_model_tr1, data=results_tr_com1, ordered=T)
 summary_train <- summary(fit_train1, fit.measures=TRUE, standardized = TRUE)
 
-    ## running NULL model, baseline model's RMSEA = 0.1107675 
+    ## running NULL model, baseline model RMSEA
 nullRMSEA(fit_train1, scaled = FALSE, silent = FALSE)
 
     ## modification indices
 modificationindices(fit_train1, minimum.value = 20)
 
-mod_fit1 <- cfa(SI_model_tr1, data = results_tr_com1)
-mi <- modindices(mod_fit1, sort = TRUE, maximum.number = 10)
-View(mi)
-mi[mi$op == "=~",] %>% View()
+# Matrix math
+lavaan_cov <- cov(results_tr_com1)
+lavaan_det <- det(lavaan_cov)
+lavaan_eig <- eigen(lavaan_cov)
+eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
+eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
+
+linear_combos <- caret::findLinearCombos(results_tr_com1)
 ```
 
 # SEM model -- mod indices
@@ -3328,16 +3344,15 @@ SI_model_tr_M <- '
                 # measurement model
                    si =~  si_type_2 + si_type_3 + si_type_4
     
-                   prem  =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
-                           race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
-                           meds_count + religios + 
-                           school2_type_2 + school2_type_3 + activ_yn +
+                   prem =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                           international + ed_any + dx_mh +
+                           meds_count + religios + school2_type_2 + school2_type_3 + activ_yn +
                            ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
 
                    def =~ aca_impa + dep_type + anx_type
                    tsm =~ persist + aaq_dum
                    entrap =~ dep_impa + gad7_impa
-                   mm =~ inf_1 + flourish_dum + belong1 + satisfied_overall
+                   mm =~ inf + flourish_dum + belong1 + satisfied_overall
                   
                 # structural model - regressions
                    si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
@@ -3353,20 +3368,18 @@ SI_model_tr_M <- '
                   anx_type ~~ dep_impa
                   drugs_yn ~~ drug_mar   
                   si_type_4 ~~ psyhx  
-
-                  race_2 ~~ race_4
-                  race_3 ~~ race_4
-                  race_4 ~~ race_5
                   age_2 ~~ age_3
 '
 
-fit_train_M <- sem(SI_model_tr_M, data=results_tr_com1)
-summary_mod_train <- summary(fit_train_M, fit.measures=TRUE, standardized = TRUE)
+fit_train_M <- sem(SI_model_tr_M, data=results_tr_com1, ordered=T)
+summary_mod_train <- summary(fit_train_M, fit.measures=TRUE, standardized=TRUE)
 
-# MODEL ESTIMATES
-semPaths(fit_train_M, what = "col", whatLabels = "std", style = "mx", rotation = 1, layout = "spring", 
-    nCharNodes = 8, shapeMan = "rectangle", sizeMan = 8, sizeMan2 = 8)
-
+# Matrix math
+lavaan_cov <- cov(results_tr_com1)
+lavaan_det <- det(lavaan_cov)
+lavaan_eig <- eigen(lavaan_cov)
+eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
+eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
 ```
 
 ## PLS-PM
@@ -4867,8 +4880,8 @@ head(testdf_sem5)   # check output
 ## Dummy col SEM w/ continuous
 
 results_test_com1 <- dummy_cols(testdf_sem5, select_columns = c("si_type", "age", "sexual",
-                                                                "inf", "race", "school2_type"),
-                         remove_first_dummy = TRUE, remove_selected_columns = FALSE)
+                                                                "race", "school2_type"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 view(results_test_com1)
 
 SI_model_test1 <- '
@@ -4878,7 +4891,7 @@ SI_model_test1 <- '
                   prem  =~ age_2 + age_3 +
                            sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                            race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
-                           meds_count + satisfied_overall +  religios + drug_mar +
+                           meds_count + religios + drug_mar +
                            school2_type_2 + school2_type_3 + activ_yn + assault + 
                            ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn
 
@@ -4888,7 +4901,7 @@ SI_model_test1 <- '
 
                    entrap =~ dep_impa + gad7_impa
 
-                   mm =~  inf_1 + flourish_dum + belong1
+                   mm =~  inf + flourish_dum + belong1 + satisfied_overall
 
                 # structural model - regressions
                    si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
@@ -4900,20 +4913,27 @@ SI_model_test1 <- '
                   drugs_yn ~~ drug_mar    '
 
 
-fit_test1 <- sem(SI_model_test1, data=results_test_com1, ordered = TRUE)
-                  # ordered = c("sib_freq", "satisfied_overall", "religios", "dep_impa",
-                  #             "gpa_sr", "aca_impa", "persist", "flourish_dum", "belong1", "gad7_impa"))
+fit_test1 <- sem(SI_model_test1, data=results_test_com1, ordered=T)
 summary_train <- summary(fit_test1, fit.measures=TRUE, standardized = TRUE)
 
-# MODEL PREDICTION
-    ## model diagnostics
-fitmeasures(fit_test1)
-fitted(fit_test1)
-inspect(fit_test1, what="cor.all")
-parameterEstimates(fit_test1)
-
-    ## running NULL model, baseline model's RMSEA = 0.1107675 
+    ## running NULL model, baseline model's RMSEA 
 nullRMSEA(fit_test1, scaled = FALSE, silent = FALSE)
+
+# Matrix math
+
+lavaan_cov <- cov(results_test_com1)
+lavaan_det <- det(lavaan_cov)
+lavaan_eig <- eigen(lavaan_cov)
+eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
+eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
+linear_combos <- caret::findLinearCombos(results_test_com1)
+
+rankifremoved <- sapply(1:ncol(results_test_com1), function (x) qr(results_test_com1[, -x])$rank)
+which(rankifremoved == max(rankifremoved))
+
+corr_matrix <- stats::cor(results_test_com1)
+diag(corr_matrix) <- 0
+which(corr_matrix == max(corr_matrix), arr.ind = TRUE)
 ```
 
 # SEM model -- mod indices
@@ -4922,7 +4942,6 @@ nullRMSEA(fit_test1, scaled = FALSE, silent = FALSE)
 SI_model_test_M <- '
                 # measurement model
                    si =~  si_type_2 + si_type_3 + si_type_4
-    
                    prem  =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                            race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
                            meds_count + religios + school2_type_2 + school2_type_3 + activ_yn +
@@ -4952,9 +4971,16 @@ SI_model_test_M <- '
                   race_3 ~~ race_4
                   race_4 ~~ race_5
                   age_2 ~~ age_3
-'
+                  '
 
 fit_train_M <- sem(SI_model_tr_M, data=results_tr_com1)
 summary_mod_train <- summary(fit_train_M, fit.measures=TRUE, standardized = TRUE)
+
+matrix_dummied <- results_tr_com1 %>% as.matrix()
+
+matrix_dummied <- matrix_dummied[, c("race_2", "race_4")]
+
+boot::corr(matrix_dummied)
+
 ```
 
