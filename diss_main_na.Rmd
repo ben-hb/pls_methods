@@ -1919,7 +1919,7 @@ fviz_cos2(env_pca, choice = "var", axes = 1,
 
 ### CLM environmental regression
 ```{r CLM environment}
-clm_env <- traindf.v15 %>% select(si_type, religios, residenc, activ_yn, military,
+clm_env <- traindf.v15 %>% select(si_type, religios, residenc, activ_yn,
                                   school2_type, international)
 
 clm_env <- clm_env %>% 
@@ -1927,8 +1927,7 @@ clm_env <- clm_env %>%
   as.data.frame()
 view(clm_env)
 
-clm_env2 <- clm(si_type ~ religios + residenc + activ_yn + military +
-                  school2_type + international, 
+clm_env2 <- clm(si_type ~ religios + residenc + activ_yn + school2_type + international, 
                 data = clm_env)
 summary(clm_env2)
 coef(clm_env2)
