@@ -3574,3 +3574,1256 @@ summary(fit.dv3)
 
 
 
+
+
+
+
+
+
+
+
+TESTING DATA
+
+
+
+
+# DATA DIVISION for final sample
+
+
+## Eating disorder, any type
+```{r ed_any}
+testdf.v11 <- testdf.v10 %>%
+  filter(!is.na(ed_any)) %>%
+  mutate(ed_any = case_when(ed_any == 1 ~ 1,
+                            ed_any == 0 ~ 0))
+testdf.v11$ed_any <- as.logical(testdf.v11$ed_any)
+
+table(testdf.v11$ed_any, useNA = "always")
+jarque.bera.test(testdf.v11$ed_any)
+```
+
+## Psychopharm medication count
+Create 'meds_count' to be used in future regression to capture quantity and diversity of medications 
+to see what is associated (i.e. the count is meant to find the common meds in suicidality)
+```{r med_count}
+testdf.v11$meds_1 <- as.numeric(testdf.v11$meds_1)
+testdf.v11$meds_2 <- as.numeric(testdf.v11$meds_2)
+testdf.v11$meds_3 <- as.numeric(testdf.v11$meds_3)
+testdf.v11$meds_4 <- as.numeric(testdf.v11$meds_4)
+testdf.v11$meds_5 <- as.numeric(testdf.v11$meds_5)
+testdf.v11$meds_6 <- as.numeric(testdf.v11$meds_6)
+testdf.v11$meds_7 <- as.numeric(testdf.v11$meds_7)
+testdf.v11$meds_8 <- as.numeric(testdf.v11$meds_8)
+
+testdf.v11$meds_1[is.na(testdf.v11$meds_1)] <- 0
+testdf.v11$meds_2[is.na(testdf.v11$meds_2)] <- 0
+testdf.v11$meds_3[is.na(testdf.v11$meds_3)] <- 0
+testdf.v11$meds_4[is.na(testdf.v11$meds_4)] <- 0
+testdf.v11$meds_5[is.na(testdf.v11$meds_5)] <- 0
+testdf.v11$meds_6[is.na(testdf.v11$meds_6)] <- 0
+testdf.v11$meds_7[is.na(testdf.v11$meds_7)] <- 0
+
+# create meds_count var
+testdf.v11 <- testdf.v11 %>%
+  mutate(meds_count = meds_1 + meds_2 + meds_3 + meds_4 + meds_5 + meds_6 + meds_7) %>%
+  mutate(meds_count = case_when(meds_count == 0 ~ 0,
+                                meds_count == 1 ~ 1,
+                                meds_count == 2 ~ 2, 
+                                meds_count == 3 ~ 3,
+                                meds_count == 4 ~ 3,
+                                meds_count == 5 ~ 3,
+                                meds_count == 6 ~ 3))
+testdf.v11$meds_count <- as.numeric(testdf.v11$meds_count)
+
+table(testdf.v11$meds_count, useNA = "always")  # check output
+testdf.v11 = subset(testdf.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
+hist(testdf.v11$meds_count)
+jarque.bera.test(testdf.v11$meds_count)
+```
+
+## Religion
+```{r religios}
+# Label levels of religious importance
+testdf.v13 <- testdf.v11 %>%
+  filter(!is.na(religios))
+testdf.v13$religios <- as.numeric(testdf.v13$religios)
+
+table(testdf.v13$religios, useNA = "always")       # Check output
+jarque.bera.test(testdf.v13$religios)
+```
+
+## Residence type
+```{r residenc}
+testdf.v13 <- testdf.v13 %>%
+  mutate(residenc = case_when(residenc == 1 ~ 1,  # on-campus
+                              residenc == 2 ~ 1,
+                              residenc == 3 ~ 2,  # coopr
+                              residenc == 4 ~ 2, 
+                              residenc == 5 ~ 3,  # off-campus
+                              residenc == 6 ~ 4,  # with family
+                              residenc == 7 ~ 3)) %>%
+  filter(!is.na(residenc))
+
+table(testdf.v13$residenc, useNA = "always")
+jarque.bera.test(testdf.v13$residenc)
+```
+
+## International student
+```{r international}
+testdf.v14 <- testdf.v13 %>%
+  mutate(international = case_when(international == 1 ~ 1,
+                                   international == 0 ~ 0)) %>%
+  filter(!is.na(international))
+testdf.v14$international <- as.logical(testdf.v14$international)
+
+table(testdf.v14$international, useNA = "always")
+```
+
+## Activity Involvement
+```{r Activities}
+# set all NAs in actvities equal to 0
+testdf.v14$activ_ac[is.na(testdf.v14$activ_ac)] <- 0
+testdf.v14$activ_athc[is.na(testdf.v14$activ_athc)] <- 0
+testdf.v14$activ_athv[is.na(testdf.v14$activ_athv)] <- 0
+testdf.v14$activ_athi[is.na(testdf.v14$activ_athi)] <- 0
+testdf.v14$activ_cs[is.na(testdf.v14$activ_cs)] <- 0
+testdf.v14$activ_cu[is.na(testdf.v14$activ_cu)] <- 0
+testdf.v14$activ_da[is.na(testdf.v14$activ_da)] <- 0
+testdf.v14$activ_fs[is.na(testdf.v14$activ_fs)] <- 0
+testdf.v14$activ_gs[is.na(testdf.v14$activ_gs)] <- 0
+testdf.v14$activ_gov[is.na(testdf.v14$activ_gov)] <- 0
+testdf.v14$activ_mp[is.na(testdf.v14$activ_md)] <- 0
+testdf.v14$activ_md[is.na(testdf.v14$activ_none)] <- 0
+testdf.v14$activ_soc[is.na(testdf.v14$activ_soc)] <- 0
+testdf.v14$activ_rel[is.na(testdf.v14$activ_rel)] <- 0
+testdf.v14$activ_art[is.na(testdf.v14$activ_art)] <- 0
+testdf.v14$activ_other[is.na(testdf.v14$activ_other)] <- 0
+
+# Create one activity variable (dichotomous) based on involment in campus activities
+testdf.v14 <- testdf.v14 %>% 
+  mutate(activ_yn = case_when(activ_none == 1 ~ 0,
+                              activ_ac == 1 ~ 1,
+                              activ_athc == 1 ~ 1,
+                              activ_athv == 1 ~ 1,
+                              activ_athi == 1 ~ 1,
+                              activ_cs == 1 ~ 1,
+                              activ_cu == 1 ~ 1,
+                              activ_da == 1 ~ 1,
+                              activ_fs == 1 ~ 1,
+                              activ_gs == 1 ~ 1,
+                              activ_gov == 1 ~ 1,
+                              activ_mp == 1 ~ 1,
+                              activ_md == 1 ~ 1,
+                              activ_rel == 1 ~ 1,
+                              activ_soc == 1 ~ 1,
+                              activ_art == 1 ~ 1,
+                              activ_other == 1 ~ 1)) %>%
+  filter(!is.na(activ_yn))
+testdf.v14$activ_yn <- as.logical(testdf.v14$activ_yn)
+
+table(testdf.v14$activ_yn, useNA = "always")     # tabulate and check output
+jarque.bera.test(testdf.v14$activ_yn)
+#testdf.v14 = subset(testdf.v14, select= -c(activ_none, activ_ac:activ_other))    # clean up vars
+```
+
+## School variable
+```{r school2}
+# insert each school as a dichotomous var
+testdf.v14 <- testdf.v14 %>%
+  mutate(var_AlbertaCAD = ifelse((school2 == "AlbertaCAD"), 1, 0)) %>%
+  mutate(var_Boston = ifelse((school2 == "Boston"), 1, 0)) %>%
+  mutate(var_CIA = ifelse((school2 == "CIA"), 1, 0)) %>%
+  mutate(var_CalPoly = ifelse((school2 == "CalPoly"), 1, 0)) %>%
+  mutate(var_ColoradoCollege = ifelse((school2 == "ColoradoCollege"), 1, 0)) %>%
+  mutate(var_ColoradoMountain = ifelse((school2 == "ColoradoMountain"), 1, 0)) %>%
+  mutate(var_ColumbusCAD = ifelse((school2 == "ColumbusCAD"), 1, 0)) %>%
+  mutate(var_Delaware = ifelse((school2 == "Delaware"), 1, 0)) %>%
+  mutate(var_DetroitMercy = ifelse((school2 == "DetroitMercy"), 1, 0)) %>%
+  mutate(var_Emerson = ifelse((school2 == "Emerson"), 1, 0)) %>%
+  mutate(var_GeorgeMason = ifelse((school2 == "GeorgeMason"), 1, 0)) %>%
+  mutate(var_GeorgiaTech = ifelse((school2 == "GeorgiaTech"), 1, 0)) %>%
+  mutate(var_Kalamazoo = ifelse((school2 == "Kalamazoo"), 1, 0)) %>%
+  mutate(var_Kansas = ifelse((school2 == "Kansas"), 1, 0)) %>%
+  mutate(var_MDInstituteCollegeArt = ifelse((school2 == "MDInstituteCollegeArt"), 1, 0)) %>%
+  mutate(var_MassArt = ifelse((school2 == "MassArt"), 1, 0)) %>%
+  mutate(var_Merrimack = ifelse((school2 == "Merrimack"), 1, 0)) %>%
+  mutate(var_MichiganState = ifelse((school2 == "MichiganState"), 1, 0)) %>%
+  mutate(var_MinnesotaCAD = ifelse((school2 == "MinnesotaCAD"), 1, 0)) %>%
+  mutate(var_MontclairState = ifelse((school2 == "MontclairState"), 1, 0)) %>%
+  mutate(var_NHInstituteArt = ifelse((school2 == "NHInstituteArt"), 1, 0)) %>%
+  mutate(var_NevadaReno = ifelse((school2 == "NevadaReno"), 1, 0)) %>%
+  mutate(var_OaklandCC = ifelse((school2 == "OaklandCC"), 1, 0)) %>%
+  mutate(var_OklahomaCityCC = ifelse((school2 == "OklahomaCityCC"), 1, 0)) %>%
+  mutate(var_PaloAltoCollege = ifelse((school2 == "PaloAltoCollege"), 1, 0)) %>%
+  mutate(var_PennCollegeTech = ifelse((school2 == "PennCollegeTech"), 1, 0)) %>%
+  mutate(var_Pratt = ifelse((school2 == "RedlandsCC"), 1, 0)) %>%
+  mutate(var_RhodeIsland = ifelse((school2 == "RhodeIsland"), 1, 0)) %>%
+  mutate(var_RedlandsCC = ifelse((school2 == "RedlandsCC"), 1, 0)) %>%
+  mutate(var_Ringling = ifelse((school2 == "Ringling"), 1, 0)) %>%
+  mutate(var_Rollins = ifelse((school2 == "Rollins"), 1, 0)) %>%
+  mutate(var_SAIC = ifelse((school2 == "SAIC"), 1, 0)) %>%
+  mutate(var_Sewanee = ifelse((school2 == "Sewanee"), 1, 0)) %>%
+  mutate(var_Smith = ifelse((school2 == "Smith"), 1, 0)) %>%
+  mutate(var_SouthernNazarene = ifelse((school2 == "SouthernNazarene"), 1, 0)) %>%
+  mutate(var_SouthwesternOklahomaState = ifelse((school2 == "SouthwesternOklahomaState"), 1, 0)) %>%
+  mutate(var_StJohns = ifelse((school2 == "StJohns"), 1, 0)) %>%
+  mutate(var_StMarys = ifelse((school2 == "StMarys"), 1, 0)) %>%
+  mutate(var_StRose = ifelse((school2 == "StRose"), 1, 0)) %>%
+  mutate(var_TrumanState = ifelse((school2 == "TrumanState"), 1, 0)) %>%
+  mutate(var_TuftsHealthSciences = ifelse((school2 == "TuftsHealthSciences"), 1, 0)) %>%
+  mutate(var_TuftsMainCampus = ifelse((school2 == "TuftsMainCampus"), 1, 0)) %>%
+  mutate(var_UChicago = ifelse((school2 == "UChicago"), 1, 0)) %>%
+  mutate(var_UFlorida = ifelse((school2 == "UFlorida"), 1, 0)) %>%
+  mutate(var_UMDearborn = ifelse((school2 == "UMDearborn"), 1, 0)) %>%
+  mutate(var_UMich = ifelse((school2 == "UMich"), 1, 0)) %>%
+  mutate(var_UNCSchoolArt = ifelse((school2 == "UNCSchoolArt"), 1, 0)) %>%
+  mutate(var_UTKnoxville = ifelse((school2 == "UTKnoxville"), 1, 0)) %>%
+  mutate(var_UniversityofSouthernCalifornia = ifelse((school2 == "UniversityofSouthernCalifornia"), 1, 0)) %>%  
+  mutate(var_Utah = ifelse((school2 == "Utah"), 1, 0)) %>%
+  mutate(var_VATech = ifelse((school2 == "VATech"), 1, 0)) %>%
+  mutate(var_VirginiaCommonwealth = ifelse((school2 == "VirginiaCommonwealth"), 1, 0)) %>%
+  mutate(var_WakeForest = ifelse((school2 == "WakeForest"), 1, 0)) %>%
+  mutate(var_Watkins = ifelse((school2 == "Watkins"), 1, 0)) %>%
+  mutate(var_WestVirginia = ifelse((school2 == "WestVirginia"), 1, 0)) %>%
+  mutate(var_WesternCarolina = ifelse((school2 == "WesternCarolina"), 1, 0)) %>%
+  mutate(var_WesternMichigan = ifelse((school2 == "WesternMichigan"), 1, 0)) %>%
+  mutate(var_WesternWA = ifelse((school2 == "WesternWA"), 1, 0)) %>%
+  mutate(var_Xavier = ifelse((school2 == "Xavier"), 1, 0))
+```
+
+### School type levels
+```{r school2_type}
+testdf.v14 <- testdf.v14 %>%
+  # 4 year college
+  mutate(school2_4yr = ifelse(var_Boston + var_CalPoly + var_ColoradoCollege + var_ColoradoMountain + var_Delaware +
+                                var_DetroitMercy + var_Emerson + var_GeorgeMason + var_GeorgiaTech + var_Kalamazoo + 
+                                var_Kansas + var_Merrimack + var_MichiganState + var_MontclairState + var_NevadaReno +
+                                var_PennCollegeTech + var_RhodeIsland + var_Rollins + var_Sewanee + var_Smith +
+                                var_SouthernNazarene + var_SouthwesternOklahomaState + var_StJohns + var_StMarys + var_StRose +
+                                var_TrumanState + var_TuftsHealthSciences + var_TuftsMainCampus + var_UChicago + var_UFlorida +
+                                var_UMDearborn + var_UMich + var_UTKnoxville + var_UniversityofSouthernCalifornia + var_Utah +
+                                var_VATech + var_VirginiaCommonwealth + var_WakeForest + var_WestVirginia + 
+                                var_WesternCarolina + var_WesternMichigan + var_WesternWA + var_Xavier == 1, TRUE,
+                              ifelse(
+                                var_Boston + var_CalPoly + var_ColoradoCollege + var_ColoradoMountain + var_Delaware +
+                                  var_DetroitMercy + var_Emerson + var_GeorgeMason + var_GeorgiaTech + var_Kalamazoo +
+                                  var_Kansas + var_Merrimack + var_MichiganState + var_MontclairState + var_NevadaReno +
+                                  var_PennCollegeTech + var_RhodeIsland + var_Rollins + var_Sewanee + var_Smith +
+                                  var_SouthernNazarene + var_SouthwesternOklahomaState + var_StJohns + var_StMarys + 
+                                  var_StRose + var_TrumanState + var_TuftsHealthSciences + var_TuftsMainCampus + var_UChicago +
+                                  var_UFlorida + var_UMDearborn + var_UMich + var_UTKnoxville +
+                                  var_UniversityofSouthernCalifornia + var_Utah + var_VATech + var_VirginiaCommonwealth +
+                                  var_WakeForest + var_WestVirginia + var_WesternCarolina + var_WesternMichigan +
+                                  var_WesternWA + var_Xavier == 0, FALSE, NA))) %>%
+    
+  # Community colleges
+    mutate(school2_cc = ifelse(var_OaklandCC + var_OklahomaCityCC + var_PaloAltoCollege + var_RedlandsCC == 1, TRUE, 
+                               ifelse(var_OaklandCC + var_OklahomaCityCC + var_PaloAltoCollege + var_RedlandsCC == 0, FALSE, NA))) %>%
+    
+  # Art, design, culinary
+    mutate(school2_ad = ifelse(var_AlbertaCAD + var_CIA + var_ColumbusCAD + var_MDInstituteCollegeArt + 
+                                 var_MassArt + var_MinnesotaCAD + var_NHInstituteArt + var_Pratt + var_Ringling +
+                                 var_SAIC + var_UNCSchoolArt + var_Watkins == 1, TRUE, 
+                               ifelse(
+                                 var_AlbertaCAD + var_CIA + var_ColumbusCAD + var_MDInstituteCollegeArt +
+                                   var_MassArt + var_MinnesotaCAD + var_NHInstituteArt + var_Pratt + 
+                                   var_Ringling + var_SAIC + var_UNCSchoolArt + var_Watkins == 0, FALSE, NA)))
+
+# Binary variable for school type
+table(testdf.v14$school2_4yr)
+table(testdf.v14$school2_cc)
+table(testdf.v14$school2_ad)
+
+#  create one school type variables
+testdf.v14 <- testdf.v14 %>%
+  mutate(school2_type = case_when(school2_4yr == TRUE ~ 1,
+                                  school2_cc == TRUE ~ 2,
+                                  school2_ad == TRUE ~ 3)) %>%
+  filter(!is.na(school2_type))
+testdf.v14$school2_type <- as.factor(testdf.v14$school2_type)
+
+table(testdf.v14$school2_type, useNA = "always") # check output
+
+# # Clean-up school2 var
+# testdf.v14 = subset(testdf.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain,
+#                                        var_Delaware, var_DetroitMercy, var_Emerson, var_GeorgeMason,
+#                                        var_GeorgiaTech, var_Kalamazoo, var_Kansas, var_Merrimack,
+#                                        var_MichiganState, var_MontclairState, var_NevadaReno,
+#                                        var_PennCollegeTech, var_RhodeIsland, var_Rollins, var_Sewanee, var_Smith,
+#                                        var_SouthernNazarene, var_SouthwesternOklahomaState, var_StJohns,
+#                                        var_StMarys, var_StRose, var_TrumanState, var_TuftsHealthSciences,
+#                                        var_TuftsMainCampus, var_UChicago, var_UFlorida, var_UMDearborn, var_UMich,
+#                                        var_UTKnoxville, var_UniversityofSouthernCalifornia, var_Utah, var_VATech,
+#                                        var_VirginiaCommonwealth, var_WakeForest, var_WestVirginia,
+#                                        var_WesternCarolina, var_WesternMichigan, var_WesternWA, var_Xavier,
+#                                        var_OaklandCC, var_OklahomaCityCC, var_PaloAltoCollege,
+#                                        var_RedlandsCC, var_AlbertaCAD, var_CIA, var_ColumbusCAD,
+#                                        var_MDInstituteCollegeArt, var_MassArt, var_MinnesotaCAD,
+#                                        var_NHInstituteArt, var_Pratt, var_Ringling, var_SAIC,
+#                                        var_UNCSchoolArt, var_Watkins))
+```
+
+## Insurance coverage
+```{r ins_cover}
+# create one insurance var from related questions in 'ins_' module
+testdf.v16 <- testdf.v14 %>% 
+  mutate(ins_cover = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 0,   # inadequate coverage
+                               (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 1)) %>% # adequate MH coverage
+  filter(!is.na(ins_cover))   
+testdf.v16$ins_cover <- as.logical(testdf.v16$ins_cover)
+table(testdf.v16$ins_cover, useNA = "always")   # check output
+jarque.bera.test(testdf.v16$ins_cover)
+
+#testdf.v16 = subset(testdf.v16, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
+```
+
+## Illicit drug use
+Creates illicit drug use var (limitation -- 30 days reflection)
+```{r drugs_yn}
+## add summary of each
+table(testdf.v16$drug_none)
+table(testdf.v16$drug_mar)  
+table(testdf.v16$drug_coc)
+table(testdf.v16$drug_her)  # too small
+table(testdf.v16$drug_met)  # too small
+table(testdf.v16$drug_stim)
+table(testdf.v16$drug_ect)  # too small
+table(testdf.v16$drug_opi)   # too small
+table(testdf.v16$drug_other)  # too vague, small
+
+# Sample is too small to analyze individual drugs, except for marijuana. Transform to illicit drug y/n
+testdf.v16 <- testdf.v16 %>%
+  mutate(drugs_yn = case_when(drug_none == 1 ~ 0,
+                              drug_coc == 1 ~ 1,
+                              drug_her == 1 ~ 1,
+                              drug_met == 1 ~ 1,
+                              drug_stim == 1 ~ 1,
+                              drug_ect == 1 ~ 1,
+                              drug_opi == 1 ~ 1,
+                              drug_other == 1 ~ 1)) %>%
+  mutate(drugs_yn = case_when(drugs_yn == 1 ~ 1,
+                              drugs_yn == 0 ~ 0,
+                              is.na(drugs_yn) ~ 0)) %>%
+  mutate(drug_mar = case_when(drug_mar == 1 ~ 1, 
+                              drug_mar == 0 ~ 0,
+                              is.na(drug_mar) ~ 0))
+testdf.v16$drug_mar <- as.logical(testdf.v16$drug_mar)
+testdf.v16$drugs_yn <- as.logical(testdf.v16$drugs_yn)
+  
+table(testdf.v16$drugs_yn, useNA = "always")
+jarque.bera.test(testdf.v16$drugs_yn)
+
+table(testdf.v16$drug_mar, useNA = "always")
+jarque.bera.test(testdf.v16$drug_mar)
+```
+
+## Current financial stressors
+```{r fincur}
+testdf.v16 <- testdf.v16 %>%
+  filter(!is.na(fincur)) %>%
+  mutate(fincur = case_when(fincur == 3 ~ 0,  # sometimes
+                            fincur == 4 ~ 0,  # rarely or never
+                            fincur == 5 ~ 0,
+                            fincur == 1 ~ 1,  # always or often stressful
+                            fincur == 2 ~ 1))
+testdf.v16$fincur <- as.logical(testdf.v16$fincur)
+
+table(testdf.v16$fincur, useNA = "always")
+jarque.bera.test(testdf.v16$fincur)
+```
+
+## Abuse or assault, in the last year only
+```{r assault}
+table(testdf.v16$abuse_life)
+table(testdf.v16$abuse_recent)
+
+# create dichotomous variable called 'abuse_year' to reflect abuse that occurred in last 12 months
+testdf.v17 <- testdf.v16 %>%
+  mutate(abuse_year = case_when(abuse_recent == 1 ~ 1,
+                                abuse_recent == 2 ~ 1,
+                                abuse_recent == 3 ~ 1,
+                                abuse_recent == 4 ~ 0,
+                                abuse_recent == 5 ~ 0,
+                                abuse_life == 0 ~ 0,
+                                is.na(abuse_life) ~ 0))
+table(testdf.v17$abuse_year)   # check output
+
+# restructure sexual assault var
+testdf.v17 <- testdf.v17 %>%
+  mutate(assault = case_when(
+                             assault_sex == 1 ~ 1,
+                             assault_emo == 1 ~ 1,
+                             assault_phys == 1 ~ 1, 
+                             abuse_year == 1 ~ 1,
+                             abuse_year == 0 ~ 0,
+                             assault_sex == 2 ~ 0,
+                             assault_emo == 0 ~ 0,
+                             assault_phys == 1 ~ 0)) %>%
+  mutate(assault = case_when(assault == 1 ~ 1,
+                             assault == 0 ~ 0,
+                             is.na(assault) ~ 0))
+testdf.v17$assault <- as.logical(testdf.v17$assault)
+
+# tabulate and check output
+table(testdf.v17$assault, useNA = "always") 
+jarque.bera.test(testdf.v17$assault)
+                                         
+testdf.v17 = subset(testdf.v17, select= -c(abuse_life, abuse_recent)) # clean up var
+```
+
+## Binging frequency
+```{r binge_fr}
+# set all binge_fr values equal to 0
+testdf.v17$binge_fr_f[is.na(testdf.v17$binge_fr_f)] <- 0
+testdf.v17$binge_fr_m[is.na(testdf.v17$binge_fr_m)] <- 0
+testdf.v17$binge_fr_o[is.na(testdf.v17$binge_fr_o)] <- 0
+
+# create one binge var
+testdf.v18 <- testdf.v17 %>% 
+  mutate(binge_fr = as.numeric(binge_fr_f) + as.numeric(binge_fr_m) + as.numeric(binge_fr_o))
+table(testdf.v18$binge_fr)
+
+testdf.v18 <- testdf.v18 %>%
+  mutate(binge = case_when(binge_fr >= 4 ~ 1,
+                           binge_fr < 4 ~ 0)) %>%
+  filter(!is.na(binge))
+testdf.v18$binge <-as.logical(testdf.v18$binge)
+
+table(testdf.v18$binge, useNA = "always") # check output
+jarque.bera.test(testdf.v18$binge)
+
+testdf.v18 = subset(testdf.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)) # clean up var
+```
+
+## Recent Psychiatric Hospitalization, last 12 months
+```{r psyhx}
+# Create variable for any psychiatric hospitalization in the last 12 months
+testdf.v18 <- testdf.v18 %>% 
+  mutate(psyhx = case_when((prov_pes == 1 | prov_inp == 1 | prov_par == 1) ~ 1, 
+                           (prov_pes == 0 & prov_inp == 0 & prov_par == 0) ~ 0,
+                           ther_ever == 0 ~ 0)) %>%
+  filter(!is.na(psyhx))
+testdf.v18$psyhx <- as.logical(testdf.v18$psyhx)
+
+table(testdf.v18$psyhx, useNA = "always")   # check output
+jarque.bera.test(testdf.v18$psyhx)
+
+testdf.v18 = subset(testdf.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up var
+```
+
+## Current GPA
+```{r gpa_sr}
+testdf.v18 <- testdf.v18 %>%
+  mutate(gpa_sr = case_when(gpa_sr == 0 ~ 1,   # A+
+                            gpa_sr == 1 ~ 1,   # A
+                            gpa_sr == 2 ~ 1,   # A-
+                            gpa_sr == 3 ~ 2,   # B+
+                            gpa_sr == 4 ~ 2,   # B
+                            gpa_sr == 5 ~ 2,   # B-
+                            gpa_sr == 6 ~ 3,   # C+
+                            gpa_sr == 7 ~ 3,   # C
+                            gpa_sr == 8 ~ 3,   # C-
+                            gpa_sr == 9 ~ 4,   # D+ and below
+                            gpa_sr == 10 ~ 5,  # Don't know
+                            is.na(gpa_sr) ~ 5))
+testdf.v18$gpa_sr <- as.numeric(testdf.v18$gpa_sr)
+
+table(testdf.v18$gpa_sr, useNA = "always")
+jarque.bera.test(testdf.v18$gpa_sr)
+```
+
+## PHQ risk/severity
+```{r deprawsc}
+table(testdf.v18$deprawsc)
+testdf.v18$deprawsc <- as.numeric(testdf.v18$deprawsc)
+
+# Categorize by clinical translation for later --
+testdf.v20 <- testdf.v18 %>%
+  mutate(dep_none = case_when(deprawsc < 5 ~ 1,
+                              deprawsc > 4 ~ 0)) %>%
+  mutate(dep_mild = case_when((deprawsc > 4 & deprawsc < 10) ~ 1,
+                              (deprawsc < 5 | deprawsc > 9) ~ 0)) %>%
+  mutate(dep_mod = case_when((deprawsc > 9 & deprawsc < 15) ~ 1,
+                             (deprawsc > 14 | deprawsc < 10) ~ 0)) %>%
+  mutate(dep_modsev = case_when((deprawsc > 14 & deprawsc < 20) ~ 1,
+                               (deprawsc > 19 | deprawsc < 15) ~ 0)) %>%
+  mutate(dep_sev = case_when(deprawsc > 19 ~ 1,
+                             deprawsc < 20 ~ 0)) %>%
+  mutate(dep_na = case_when(is.na(deprawsc) ~ 1,
+                            !is.na(deprawsc) ~ 0))
+testdf.v20$deprawsc <- as.numeric(testdf.v20$deprawsc)
+
+# Check outputs
+table(testdf.v20$dep_none)
+table(testdf.v20$dep_mild)
+table(testdf.v20$dep_mod)
+table(testdf.v20$dep_modsev)
+table(testdf.v20$dep_sev)
+table(testdf.v20$dep_na)
+
+testdf.v20 <- testdf.v20 %>%
+  mutate(dep_type = case_when(dep_none == 1 ~ 1,
+                              dep_mild == 1 ~ 2,
+                              dep_mod == 1 ~ 3,
+                              dep_modsev == 1 ~ 4,
+                              dep_sev == 1 ~ 5)) %>%
+  filter(!is.na(dep_type)) # filters out all NAs
+
+table(testdf.v20$dep_type, useNA = "always")
+```
+
+## GAD7 total
+```{r anx_score}
+testdf.v20$anx_score <- as.numeric(testdf.v20$anx_score)
+
+# Convert to severity
+testdf.v20 <- testdf.v20 %>%
+  filter(!is.na(anx_score)) %>% # filters out all NAs
+  mutate(anx_type = case_when(anx_score > 14 ~ 4,
+                              anx_score < 5 ~ 1,                       # anx none
+                              anx_score < 10 ~ 2,                      # anx mild
+                              anx_score < 15 ~ 3))                    # anx severe
+testdf.v20$anx_score <- as.numeric(testdf.v20$anx_score)
+jarque.bera.test(testdf.v20$anx_score)
+
+table(testdf.v20$anx_type, useNA = "always") # check output
+```
+
+## Academic impact
+```{r aca_impa}
+testdf.v20 <- testdf.v20 %>%
+  filter(!is.na(aca_impa)) %>%
+  mutate(aca_impa = case_when(aca_impa == 1 ~ 1,
+                              aca_impa == 2 ~ 2,
+                              aca_impa == 3 ~ 3,
+                              aca_impa == 4 ~ 4)) 
+testdf.v20$aca_impa <- as.numeric(testdf.v20$aca_impa)
+
+table(testdf.v20$aca_impa, useNA = "always")
+jarque.bera.test(testdf.v20$aca_impa)
+```
+
+## AAQ total (elective module)
+```{r aaq_dum}
+# create AAQ_tot variable to sum up imputed AAQ questions
+testdf.v22 <- testdf.v20 %>%
+  mutate(aaq_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
+           as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7))
+
+table(testdf.v22$aaq_tot)
+
+#  for loop for predictive cutoff point needed
+ rs_df <- data.frame("cutoff" = c(), "rs" = c())
+ for (i in 8:48) {
+   aaq_bin <- ifelse(testdf.v22$aaq_tot >= i, TRUE, FALSE)
+   model = lm(testdf.v22$sui_idea ~ aaq_bin)
+   rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
+
+ }
+ names(rs_df) <- c("cutoff", "rs")
+ rs_df_arranged <- rs_df %>%
+   arrange(desc(rs))
+ rs_df_arranged[1,1]
+
+# deem 'rs_df_arranged[1,1]' as SI cutoff
+ testdf.v22 <- testdf.v22 %>%
+   mutate(aaq_dum = ifelse(aaq_tot > rs_df_arranged[1,1], 1, 0)) %>%
+   mutate(aaq_dum = case_when(aaq_dum == 1 ~ 1,
+                              aaq_dum == 0 ~ 0)) %>%
+   filter(!is.na(aaq_dum))
+testdf.v22$aaq_dum <- as.logical(testdf.v22$aaq_dum)
+
+table(testdf.v22$aaq_dum, useNA = "always")
+```
+
+## Persist
+```{r persist}
+testdf.v22 <- testdf.v22 %>%
+  mutate(persist = case_when(persist == 1 ~ 1,   # confident
+                             persist == 2 ~ 2, 
+                             persist == 3 ~ 3, 
+                             persist == 4 ~ 4, 
+                             persist == 5 ~ 5, 
+                             persist == 6 ~ 6))  # not
+testdf.v22$persist <- as.numeric(testdf.v22$persist)
+
+table(testdf.v22$persist, useNA = "always") # check output
+jarque.bera.test(testdf.v22$persist)
+```
+
+## Depression impact
+```{r dep_impa}
+testdf.v24 <- testdf.v22 %>%
+  mutate(dep_impa = case_when(dep_impa == 1 ~ 1,
+                              dep_impa == 2 ~ 2,
+                              dep_impa == 3 ~ 3,
+                              dep_impa == 4 ~ 4)) %>%
+  filter(!is.na(dep_impa))
+testdf.v24$dep_impa <- as.numeric(testdf.v24$dep_impa)
+
+table(testdf.v24$dep_impa, useNA = "always")
+jarque.bera.test(testdf.v24$dep_impa)
+```
+
+## Anxiety impact
+```{r gad7_impa}
+testdf.v24 <- testdf.v24 %>%
+  mutate(gad7_impa = case_when(gad7_impa == 1 ~ 1,
+                               gad7_impa == 2 ~ 2,
+                               gad7_impa == 3 ~ 3,
+                               gad7_impa == 4 ~ 4)) %>%
+  filter(!is.na(gad7_impa))
+testdf.v24$gad7_impa <- as.numeric(testdf.v24$gad7_impa)
+
+table(testdf.v24$gad7_impa, useNA = "always")
+jarque.bera.test(testdf.v24$gad7_impa)
+```
+
+## Current needs
+```{r percneed_cur}
+testdf.v24 <- testdf.v24 %>%
+  mutate(percneed_cur = case_when(percneed_cur == 1 ~ 1,
+                                 percneed_cur == 2 ~ 2,
+                                 percneed_cur == 3 ~ 3,
+                                 percneed_cur == 4 ~ 4,
+                                 percneed_cur == 5 ~ 5,
+                                 percneed_cur == 6 ~ 6))
+testdf.v24$percneed_cur <- as.numeric(testdf.v24$percneed_cur)
+table(testdf.v24$percneed_cur, useNA = "always")
+```
+
+## Belonging
+```{r belong}
+testdf.v26 <- testdf.v24 %>%
+  mutate(belong1 = case_when(belong1 == 1 ~ 1,
+                             belong1 == 2 ~ 2,
+                             belong1 == 3 ~ 3,
+                             belong1 == 4 ~ 4,
+                             belong1 == 5 ~ 5,
+                             belong1 == 6 ~ 6)) %>%
+  filter(!is.na(belong1))
+table(testdf.v26$belong1, useNA = "always")
+
+testdf.v26$belong1 <- as.numeric(testdf.v26$belong1)
+summary(testdf.v26$belong1)
+jarque.bera.test(testdf.v26$belong1)
+
+table(testdf.v26$belong2)  # elective question, but common
+table(testdf.v26$belong8)  # nested x 2
+table(testdf.v26$belong9)  # not as good of a proxy
+```
+
+## Overall school satisfaction
+```{r satisfied_overall}
+testdf.v26 <- testdf.v26 %>%
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 1,
+                                       satisfied_overall == 2 ~ 2,
+                                       satisfied_overall == 3 ~ 3,
+                                       satisfied_overall == 4 ~ 4,
+                                       satisfied_overall == 5 ~ 5,
+                                       satisfied_overall == 6 ~ 6)) %>% 
+  filter(!is.na(satisfied_overall))
+testdf.v26$satisfied_overall <- as.numeric(testdf.v26$satisfied_overall)
+
+table(testdf.v26$satisfied_overall, useNA = "always")
+jarque.bera.test(testdf.v26$satisfied_overall)
+```
+
+## Flourishing Scale
+```{r flourish}
+testdf.v26$flourish <- as.numeric(testdf.v26$flourish)
+table(testdf.v26$flourish)
+
+
+#  for loop for predictive cutoff point needed
+rs_df <- data.frame("cutoff" = c(), "rs" = c())
+for (i in 9:55) {
+  flourish_bin <- ifelse(testdf.v26$flourish >= i, TRUE, FALSE)
+  model = lm(testdf.v26$sui_idea ~ flourish_bin)
+  rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
+
+}
+names(rs_df) <- c("cutoff", "rs")
+rs_df_arranged <- rs_df %>% 
+  arrange(desc(rs)) 
+rs_df_arranged[1,1] # chi-squared high
+
+# create levels for scoring
+testdf.v26 <- testdf.v26 %>%
+  mutate(flourish_dum = case_when(flourish > 50 ~ 5,
+                                  flourish > 40 ~ 4,
+                                  flourish > 30 ~ 3,
+                                  flourish > 20 ~ 2,
+                                  flourish < 14 ~ 1)) %>%
+  filter(!is.na(flourish_dum))
+testdf.v26$flourish_dum <- as.numeric(testdf.v26$flourish_dum)
+
+table(testdf.v26$flourish_dum, useNA = "always")
+```
+
+## Informal Mental Health Support
+```{r inf}
+testdf.v26$inf_1[is.na(testdf.v26$inf_1)] <- 0
+testdf.v26$inf_2[is.na(testdf.v26$inf_2)] <- 0
+testdf.v26$inf_3[is.na(testdf.v26$inf_3)] <- 0
+testdf.v26$inf_4[is.na(testdf.v26$inf_4)] <- 0
+testdf.v26$inf_5[is.na(testdf.v26$inf_5)] <- 0
+testdf.v26$inf_6[is.na(testdf.v26$inf_6)] <- 0
+testdf.v26$inf_7[is.na(testdf.v26$inf_7)] <- 0
+
+# change inf_ var to numeric
+testdf.v26 <- testdf.v26 %>% 
+  # merge all var into inf_type
+  mutate(inf = case_when(inf_8 == 1 ~ 1,
+                         inf_1 == 1 ~ 0,
+                         inf_2 == 1 ~ 0,
+                         inf_3 == 1 ~ 0,
+                         inf_4 == 1 ~ 0,
+                         inf_5 == 1 ~ 0,
+                         inf_6 == 1 ~ 0,
+                         inf_7 == 1 ~ 0)) %>%
+  filter(!is.na(inf))
+testdf.v26$inf <- as.logical(testdf.v26$inf)
+table(testdf.v26$inf, useNA ="always")
+jarque.bera.test(testdf.v26$inf)
+
+# clean up vars
+#testdf.v26 = subset(testdf.v26, select= -c(inf_1:inf_help))
+```
+
+## BRS
+```{r BRS_tot}
+testdf.v26 <- testdf.v26 %>%
+  mutate(brs_tot = as.integer(BRS_1) + as.integer(BRS_2) + as.integer(BRS_3) + as.integer(BRS_4) + as.integer(BRS_5))
+
+table(testdf.v26$brs_tot)
+testdf.v26$brs_tot <- as.numeric(testdf.v26$brs_tot)
+
+table(is.na(testdf.v26$brs_tot))
+
+#  for loop for predictive cutoff point needed
+rs_df <- data.frame("cutoff" = c(), "rs" = c())
+for (i in 6:24) {
+  brs_bin <- ifelse(testdf.v26$brs_tot >= i, TRUE, FALSE)
+  model = lm(testdf.v26$sui_idea ~ brs_bin)
+  rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
+}
+
+names(rs_df) <- c("cutoff", "rs")
+rs_df_arranged <- rs_df %>% 
+  arrange(desc(rs)) 
+
+# deem 'rs_df_arranged[1,1]' as SI cutoff
+testdf.v26 <- testdf.v26 %>%
+  mutate(brs_dum = ifelse(brs_tot > rs_df_arranged[1,1], 1, 0)) %>%
+  mutate(brs_dum = case_when(brs_dum == 1 ~ 1,
+                             brs_dum == 0 ~ 0)) %>%
+  filter(!is.na(brs_dum))
+testdf.v26$brs_dum <- as.logical(testdf.v26$brs_dum)
+
+# output
+rs_df_arranged[1,1]
+table(testdf.v26$brs_tot, useNA = "always")
+table(testdf.v26$brs_dum, useNA = "always")
+```
+
+
+# MISSINGNESS
+
+## Absolute missingness, by school
+```{r Structural missingness, by school}
+testdf.v28 <- testdf.v26
+# school structural analysis
+var_names <- c(
+  # diathesis
+  "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
+  # environment
+  "religios", "school2_type", "activ_yn", "international", "military", "residenc",
+  # life events
+  "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
+  # defeat
+  "aca_impa", "dep_type", "anx_type",
+  # threats to self-moderation
+  "persist", "aaq_dum",
+  # entrapment
+  "dep_impa", "gad7_impa",
+  # motivational moderators
+  "inf", "flourish_dum", "belong1", "satisfied_overall")  
+var_names <- sort(var_names)
+
+# build table for absolute missingness based on school2
+school2 <- count(testdf.v28, school2)
+school2_ncol <- ncol(school2)
+
+for (j in 1:length(var_names)) {
+  school2[, school2_ncol + j] <- 999
+}
+
+# create column headers and vectors for school, total students, then each variable count
+names <- c("school2_values", "total", var_names)
+names(school2) <- names
+
+# input values for each school missingness across all variables
+for (j in 1:(length(var_names))) {
+for (i in 1:nrow(school2)) {   # i corresponds to rows, j to columns
+  school2[i, 2 + j] <- sum(!is.na(testdf.v28[testdf.v28$school2 == school2[[i,1]], var_names[j]]))
+}
+}
+# add percentage in each column
+school2_m <- as.matrix(school2[-1]) 
+props <- school2_m[,2:ncol(school2_m)] / school2_m[,1]
+school2 <- data.frame(school2[, 1:2], props)
+
+# view missingness matrix
+view(school2)
+
+# save matrix
+write_xlsx(school2, path = "sch2_missing.xlsx", col_names = TRUE, format_headers = TRUE)
+```
+
+## Missingness of each var w/in each var
+```{r Missingness between vars}
+missing_dfs <- list()
+for (k in 1:length(var_names)) {
+
+#create skeleton of missingness matrix
+var <- count(testdf.v28, testdf.v28[var_names[k]])
+var_ncol <- ncol(var)
+
+for (j in 1:length(var_names)) {
+  var[, var_ncol + j] <- 999
+}
+# create column headers and vectors for school, total students, then each variable count
+names <- c(paste0(var_names[k], "_values"), "total", var_names)
+names(var) <- names
+
+# input values for each school missingness across all variables
+for (j in 1:(length(var_names))) {
+for (i in 1:nrow(var)) {   # i corresponds to rows, j to columns
+  var[i, 2 + j] <- sum(!is.na(testdf.v28[testdf.v28[[var_names[k]]] == var[[i,1]], var_names[j]]))
+}
+}
+# add percentage in each column
+var_m <- as.matrix(var[-1]) 
+props <- var_m[,2:ncol(var_m)] / var_m[,1]
+var <- data.frame(var[, 1:2], props)
+replace_na("NA")
+missing_dfs[[k]] <- var
+}
+
+names(missing_dfs) <- var_names
+save(missing_dfs, file = "missing_dfs.RData")
+load("missing_dfs.RData")
+write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers = TRUE)
+```
+
+
+# DATA PREP
+
+
+## Select all vars for SEM
+```{r test_df_sem2}
+view(testdf.v28)
+
+# Prep SEM data vars
+testdf_sem <- testdf.v28 %>% select(
+  # outcome var
+  si_type,
+  # diathesis
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
+  # environment
+  religios, school2_type, activ_yn, international, military, residenc,
+  # life events
+  ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
+  # defeat
+  aca_impa, dep_type, anx_type,
+  # threats to self-moderation
+  persist, aaq_dum,
+  # entrapment
+  dep_impa, gad7_impa,
+  # motivational moderators
+  inf, flourish_dum, belong1, satisfied_overall)  #mh_stigma, 
+
+# create sem matrix 
+testdf_sem <- testdf_sem %>% 
+  # mutate_if(is.numeric, as.factor) %>% 
+  data.matrix()
+# testdf_sem <- na.omit(testdf_sem)
+view(testdf_sem)   # check output
+
+# # xlsx output
+testdf_sem_out <- as.data.frame(testdf_sem)
+save(testdf_sem_out , file = "testdf_nondummy.RData")
+load("testdf_nondummy.RData")
+write_xlsx(testdf_sem_out, path = "testdf_nondummy.xls", col_names = TRUE, format_headers = TRUE)
+```
+
+## Create dummy vars
+```{r dummy_vars}
+results_tr_sem1 <- dummy_cols(testdf_sem, select_columns = c(
+    # outcome var
+    "si_type",
+    # diathesis
+    "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
+    # environment
+    "religios", "school2_type", "activ_yn", "international", "military", "residenc",
+    # life events
+    "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
+    # defeat
+    "aca_impa", "dep_type", "anx_type",
+    # threats to self-moderation
+    "persist", "aaq_dum",
+    # entrapment
+    "dep_impa", "gad7_impa",
+    # motivational moderators
+    "inf", "flourish_dum", "belong1", "satisfied_overall"), 
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+
+results_tr_sem1 <- na.omit(results_tr_sem1)
+results_tr_df1 <- as.data.frame(results_tr_sem1)
+head(results_tr_df1)
+
+#save full var set for SEM
+save(results_tr_df1, file = "testdf_sem1.RData")
+load("testdf_sem1.RData")
+write_xlsx(results_tr_df1, path = "testdf_sem1.xls", col_names = TRUE, format_headers = TRUE)
+```
+
+
+# SUMMARY STATISTICS
+
+
+## Descriptive stats
+```{r Var_sum}
+data <- testdf_sem_out %>% 
+  pivot_longer(cols = everything())
+
+ggplot(data, aes(x = value)) + 
+  geom_density() +
+  facet_wrap(~name)
+
+ggplot(data, aes(x = value)) + 
+  geom_histogram() +
+  facet_wrap(~name)
+
+ggplot(data, aes(sample = value)) + 
+  geom_qq() +
+  facet_wrap(~name)
+
+# testing data
+var_desc <- describe(testdf_sem)
+view(var_desc)
+
+# xlsx output
+save(var_desc, file = "var_desc.RData")
+load("var_desc.RData")
+write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = TRUE)
+```
+
+
+
+# SEM ANALYSIS
+
+
+## Prep for SEM dummy cols with partial continuous and dummy
+```{r results_tr_com2}
+# Prep SEM data vars
+testdf_sem1 <- testdf.v28 %>% select(
+  # outcome var
+  si_type,
+  # diathesis
+  sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
+  # environment
+  religios, school2_type, activ_yn, international,
+  # life events
+  ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
+  # defeat
+  aca_impa, anx_type, dep_type,
+  # threats to self-moderation
+  persist, aaq_dum,
+  # entrapment
+  dep_impa, gad7_impa,
+  # motivational moderators
+  inf, flourish_dum, belong1, satisfied_overall)  #mh_stigma, 
+
+# create sem matrix 
+testdf_sem1 <- testdf_sem1 %>% 
+  # mutate_if(is.numeric, as.factor) %>% 
+  data.matrix()
+testdf_sem1 <- na.omit(testdf_sem1)
+head(testdf_sem1)   # check output
+```
+
+# SEM model with partial cont and dummy
+```{r si_model_tr1}
+## Dummy col SEM w/ continuous
+results_test_com1 <- dummy_cols(testdf_sem1, select_columns = c("si_type", "sexual", "school2_type"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+#view(results_tr_com1)
+
+SI_model_tr1 <- '
+                # measurement model
+                
+                  si =~    si_type_2 + si_type_3 + si_type_4
+    
+                  prem  =~ sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                           ed_any + dx_mh + meds_count + religios + international +
+                           school2_type_2 + school2_type_3 + activ_yn + ins_cover + 
+                           gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
+                          
+
+                   def =~ aca_impa + dep_type + anx_type
+                              
+                   tsm =~ persist + aaq_dum
+
+                   entrap =~ dep_impa + gad7_impa
+
+                   mm =~ inf + flourish_dum + belong1 + satisfied_overall
+
+                # structural model - regressions
+                   si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
+
+                # residual covars
+                  dx_mh ~~ ed_any
+                  dx_mh ~~ meds_count
+                  assault ~~ dx_mh   '
+
+
+fit_test1 <- sem(SI_model_tr1, data=results_test_com1, ordered=T)
+summary_test <- summary(fit_test1, fit.measures=TRUE, standardized = TRUE)
+
+    ## running NULL model, baseline model RMSEA
+nullRMSEA(fit_test1, scaled = FALSE, silent = FALSE)
+
+    ## modification indices
+modificationindices(fit_test1, minimum.value = 20)
+
+# Matrix math
+lavaan_cov <- cov(results_tr_com1)
+lavaan_det <- det(lavaan_cov)
+lavaan_eig <- eigen(lavaan_cov)
+eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
+eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
+
+linear_combos <- caret::findLinearCombos(results_tr_com1)
+```
+
+# SEM model -- mod indices
+```{r si_model_tr2}
+## Dummy col SEM w/ continuous
+results_tr_com1 <- dummy_cols(testdf_sem1, select_columns = c("si_type", "sexual", "school2_type"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+#view(results_tr_com1)
+
+SI_model_trM <- '
+                # measurement model
+                
+                  si =~    si_type_2 + si_type_3 + si_type_4
+    
+                  prem  =~ sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                           ed_any + dx_mh + meds_count + religios + international +
+                           school2_type_2 + school2_type_3 + activ_yn + ins_cover + 
+                           gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
+                          
+                   def =~ aca_impa + dep_type + anx_type
+                              
+                   tsm =~ persist + aaq_dum
+
+                   entrap =~ dep_impa + gad7_impa
+
+                   mm =~ inf + flourish_dum + belong1 + satisfied_overall
+
+                # structural model - regressions
+                   si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
+
+                # residual covars
+                  dx_mh ~~ ed_any
+                  dx_mh ~~ meds_count
+                  assault ~~ dx_mh
+                  activ_yn	~~	belong1
+                  satisfied_overall ~ belong1
+                  belong1 ~~ satisfied_overall
+                  si_type_4 ~~ psyhx   
+                  drugs_yn ~~ drug_mar
+                  anx_type	~~	gad7_impa  
+                  dep_type	~~	dep_impa  '
+
+
+fit_testM <- sem(SI_model_trM, data=results_tr_com1, ordered=T)
+summary_test <- summary(fit_testM, fit.measures=TRUE, standardized = TRUE)
+
+    ## running NULL model, baseline model RMSEA
+nullRMSEA(fit_test1, scaled = FALSE, silent = FALSE)
+
+    ## modification indices
+modificationindices(fit_test1, minimum.value = 20)
+
+# mod_fit_tr <- cfa(SI_model_tr1, data = results_tr_com1)
+# mi <- modindices(mod_fit_tr, sort = TRUE, maximum.number = 10)
+# View(mi)
+# mi[mi$op == "=~",] %>% View()
+
+
+# Matrix math
+lavaan_cov <- cov(results_tr_com1)
+lavaan_det <- det(lavaan_cov)
+lavaan_eig <- eigen(lavaan_cov)
+eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
+eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
+
+linear_combos <- caret::findLinearCombos(results_tr_com1)
+```
+
+## PLS-PM
+```{r si_model_pls}
+# data.pls <- read_excel("~/Desktop/sem_combo.xlsx", range=cell_cols(1:46), col_types = "numeric")
+# save("data.pls", file="~/Desktop/sem_combo.RData")
+load("~/Desktop/sem_combo.RData")
+
+# INNER MODEL
+# rows of path matrix
+prem =   c(0, 1, 0, 0, 0, 0)
+def =    c(0, 0, 1, 1, 0, 0)
+tsm =    c(0, 0, 0, 1, 0, 0)
+entrap = c(0, 0, 0, 0, 1, 1)
+mm =     c(0, 0, 0, 0, 0, 1)
+si =     c(0, 0, 0, 0, 0, 0)
+
+# matrix (by row binding)
+imv_path = rbind (prem, def, tsm, entrap, mm, si)
+
+imv_path = t(imv_path)
+View(imv_path)
+view(data.pls)
+
+# plot the inner matrix
+innerplot(imv_path, box.size = 0.1)
+
+# outer model
+imv_blocks = list(4:31, 32:39, 40:41, 42:43, 44:46, 1:3)
+ 
+# modes
+imv_modes = c("B", "A", "B", "A", "B", "B")
+
+#scales
+imv_scales = list(
+  c(rep("num", 16), "ord", rep("num", 10), "ord"),
+  rep("ord", 8),
+  c("ord", "num"),
+  rep("ord", 2),
+  c("num", rep("ord", 2)),
+  rep("ord", 3)
+)
+# ordinal variable column numbers  1, 2, 3, 20, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 45, 46)
+
+# apply plspm
+imv_pls1 = plspm(data.pls, imv_path, imv_blocks, modes = imv_modes, scaling = imv_scales)
+
+# print diss_pls1
+imv_pls1
+
+## Partial Least Squares Path Modeling (PLS-PM)
+## ---------------------------------------------
+##    NAME                   DESCRIPTION
+## 1  $outer_model           outer model
+## 2  $inner_model           inner model
+## 3  $path_coefs            path coefficients matrix
+## 4  $scores                latent variable scores
+## 5  $crossloadings         cross-loadings
+## 6  $inner_summary         summary inner model
+## 7  $effects               total effects
+## 8  $unidim                uni-dimensionality
+## 9  $gof                   goodness-of-fit
+## 10 $boot                  bootstrap results
+## 11 $data                  data matrix
+## ---------------------------------------------
+
+# check unidimensionality
+imv_pls1$unidim
+
+# check coefs
+imv_pls1$path_coefs
+imv_pls1$inner_model
+
+# plotting the loadings
+plot(imv_pls1, what = "loadings")
+
+# check outer model
+imv_pls1$outer_model
+
+# summarized results
+summary(imv_pls1)
+plot(imv_pls1)
+plot(imv_pls1, what = "loadings", arr.width = 0.1)
+head(imv_pls1$scores, n = 5)
+tail(imv_pls1$scores, n = 5)
+```
+
+```{r PLS_indices}
+imv_pls1$outer_model     #outer model
+imv_pls1$inner_model     #inner model
+imv_pls1$path_coefs      #path coefficients matrix
+imv_pls1$scores          #latent variable scores
+imv_pls1$crossloadings   #cross-loadings
+imv_pls1$inner_summary   #summary inner model
+imv_pls1$effects         #total effects
+imv_pls1$unidim          #uni-dimensionality
+imv_pls1$gof             #goodness-of-fit
+imv_pls1$boot            #bootstrap results
+imv_pls1$data            #data matrix
+```
+
+
+### Mediation and moderation analysis
+```{r mediation}
+# TSM as a mediator?
+fit.totaleffect=lm(entrap~def, results_tr_com1)
+summary(fit.totaleffect)
+fit.mediator <- lm(tsm~def, results_tr_com1)
+summary(fit.mediator)
+fit.dv <- lm(entrap~def+tsm, results_tr_com1)
+summary(fit.dv)
+
+results = mediation::mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
+summary(results)
+sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
+plot(sens.bout, sens.par = "rho")
+plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+
+# TSM as a moderator
+summary(lm(entrap~def+tsm+ def*tsm))
+
+# # ENTRAPMENT AS A MEDIATOR
+fit.totaleffect2 <- lm(si~def, results_tr_com1)
+summary(fit.totaleffect2)
+
+fit.mediator2 <- lm(entrap~def, results_tr_com1)
+summary(fit.mediator2)
+
+fit.dv2 <- lm(si~def+entrap, results_tr_com1)
+summary(fit.dv2)
+
+# results2 <- mediate(fit.mediator2, fit.dv2, sims = 1000, boot= FALSE, treat = "def", mediator = "entrap")
+# summary(results2)
+# sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
+# plot(sens.bout, sens.par = "rho")
+# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+
+
+# # MM as a mediator or moderator?
+fit.totaleffect3 <- lm(si~entrap, results_tr_com1)
+summary(fit.totaleffect3)
+
+fit.mediator3 <- lm(mm~entrap, results_tr_com1)
+summary(fit.mediator3)
+
+fit.dv3 <- lm(si~entrap+mm, results_tr_com1)
+summary(fit.dv3)
+
+# results3 <- mediate(fit.mediator3, fit.dv2, sims = 1000, boot=F, treat = "entrap", mediator = "mm", robustSE=T)
+# summary(results3)
+# sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
+# plot(sens.bout, sens.par = "rho")
+# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
+```
+
