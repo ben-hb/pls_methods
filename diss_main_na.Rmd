@@ -1969,8 +1969,14 @@ jarque.bera.test(traindf.v16$ins_cover)
 Creates illicit drug use var (limitation -- 30 days reflection)
 ```{r drugs_yn}
 ## add summary of each
-table(traindf.v16$drug_none)
-table(traindf.v16$drug_mar)  
+traindf.v16$drug_coc[is.na(traindf.v16$drug_coc)] <- 0
+traindf.v16$drug_her[is.na(traindf.v16$drug_her)] <- 0
+traindf.v16$drug_met[is.na(traindf.v16$drug_met)] <- 0
+traindf.v16$drug_stim[is.na(traindf.v16$drug_stim)] <- 0
+traindf.v16$drug_ect[is.na(traindf.v16$drug_ect)] <- 0
+traindf.v16$drug_opi[is.na(traindf.v16$drug_opi)] <- 0
+traindf.v16$drug_other[is.na(traindf.v16$drug_other)] <- 0
+
 table(traindf.v16$drug_coc)
 table(traindf.v16$drug_her)  # too small
 table(traindf.v16$drug_met)  # too small
@@ -1981,25 +1987,31 @@ table(traindf.v16$drug_other)  # too vague, small
 
 # Sample is too small to analyze individual drugs, except for marijuana. Transform to illicit drug y/n
 traindf.v16 <- traindf.v16 %>%
-  mutate(drugs_yn = case_when(drug_none == 1 ~ 0,
-                              drug_coc == 1 ~ 1,
+  mutate(drugs_yn = case_when(drug_coc == 1 ~ 1,
                               drug_her == 1 ~ 1,
                               drug_met == 1 ~ 1,
                               drug_stim == 1 ~ 1,
                               drug_ect == 1 ~ 1,
                               drug_opi == 1 ~ 1,
-                              drug_other == 1 ~ 1)) %>%
-  mutate(drugs_yn = case_when(drugs_yn == 1 ~ 1,
-                              drugs_yn == 0 ~ 0,
-                              is.na(drugs_yn) ~ 0)) %>%
-  mutate(drug_mar = case_when(drug_mar == 1 ~ 1, 
-                              drug_mar == 0 ~ 0,
-                              is.na(drug_mar) ~ 0))
-traindf.v16$drug_mar <- as.logical(traindf.v16$drug_mar)
+                              drug_other == 1 ~ 1))
+traindf.v16$drugs_yn[is.na(traindf.v16$drugs_yn)] <- 0
 traindf.v16$drugs_yn <- as.logical(traindf.v16$drugs_yn)
-  
+
 table(traindf.v16$drugs_yn, useNA = "always")
 jarque.bera.test(traindf.v16$drugs_yn)
+```
+
+## Marijuana use
+```{r drug_mar}
+traindf.v16$drug_mar[is.na(traindf.v16$drug_mar)] <- 0
+table(traindf.v16$drug_mar)  
+
+traindf.v16 <- traindf.v16 %>%
+  mutate(drug_mar = case_when(drug_mar == 1 ~ 1, 
+                              drug_mar == 0 ~ 0)) %>%
+  filter(!is.na(drug_mar))
+
+traindf.v16$drug_mar <- as.logical(traindf.v16$drug_mar)
 
 table(traindf.v16$drug_mar, useNA = "always")
 jarque.bera.test(traindf.v16$drug_mar)
@@ -2055,8 +2067,8 @@ traindf.v17 <- traindf.v17 %>%
                              assault_emo == 0 ~ 0,
                              assault_phys == 1 ~ 0)) %>%
   mutate(assault = case_when(assault == 1 ~ 1,
-                             assault == 0 ~ 0,
-                             is.na(assault) ~ 0))
+                             assault == 0 ~ 0)) %>%
+  filter(!is.na(assault))
 traindf.v17$assault <- as.logical(traindf.v17$assault)
 
 # tabulate and check output
@@ -2119,8 +2131,8 @@ traindf.v18 <- traindf.v18 %>%
                             gpa_sr == 7 ~ 3,   # C
                             gpa_sr == 8 ~ 3,   # C-
                             gpa_sr == 9 ~ 4,   # D+ and below
-                            gpa_sr == 10 ~ 5,  # Don't know
-                            is.na(gpa_sr) ~ 5))
+                            gpa_sr == 10 ~ 5)) %>%  # Don't know
+      filter(!is.na(gpa_sr))
 traindf.v18$gpa_sr <- as.numeric(traindf.v18$gpa_sr)
 
 table(traindf.v18$gpa_sr, useNA = "always")
