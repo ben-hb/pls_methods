@@ -1875,7 +1875,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ##EFA Environment
 ```{r EFA Environment}
 traindf_env <- traindf.v15 %>% select(religios, residenc, activ_yn, school2_type, 
-                                      talk, military, international)
+                                      military, international)
 
 traindf_env <- na.omit(traindf_env)
 # create corr matrix, with dummy vars
@@ -2228,9 +2228,9 @@ model.le  %>%
 # Full Premotivational Analysis
 ```{r results_prem}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                       meds_count, residenc, religios, activ_yn, school2_type, ins_cover, 
-                                       gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx)
+traindf_prem <- traindf.v19 %>% select(si_type, undercls, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
+                                       meds_count, residenc, religios, activ_yn, school2_type, ins_cover, military,
+                                       gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx, international)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_prem, sig=0.6){
@@ -2976,7 +2976,7 @@ traindf.v27 <- traindf.v26
 ### Motivational Moderator correlation
 ```{r MM_corr}
 # Define MM variable candidates for correlation matrix
-traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1)
+traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, satisfied_overall)
 
  # convert traindf to numeric in order to run correlations
 traindf_mm <- traindf_mm %>% mutate_if(is.character, as.factor)
@@ -2995,7 +2995,7 @@ print(corr)
 
 ### EFA MM
 ```{r EFA MM}
-traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, mh_stigma)
+traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, satisfied_overall)
 traindf_mm <- na.omit(traindf_mm)
 
 # create corr matrix, with dummy vars 
@@ -3004,7 +3004,7 @@ traindf_mm <- traindf_mm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 traindf_mm   # check output
-results_mm <- dummy_cols(traindf_mm, select_columns = c("flourish_dum", "belong1", "inf"),
+results_mm <- dummy_cols(traindf_mm, select_columns = c("flourish_dum", "belong1", "inf", "satisfied_overall"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 eigval_mm <- get_eigenvalue(mm_pca)
@@ -3032,11 +3032,11 @@ fviz_cos2(mm_pca, choice = "var", axes = 1,
 
 ### CLM Motivational moderators regression
 ```{r CLM mm}
-clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1)
+clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1, satisfied_overall)
 clm_mm <- na.omit(clm_mm)
 
 # run MM regression
-clm_mm <- clm(si_type ~ inf + flourish_dum + belong1, data = clm_mm)
+clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + satisfied_overall, data = clm_mm)
 
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))
@@ -3063,9 +3063,9 @@ traindf.v28 <- traindf.v26
 # school structural analysis
 var_names <- c(
   # diathesis
-  "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
+  "undercls", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
   # environment
-  "religios", "school2_type", "activ_yn", "international",
+  "religios", "school2_type", "activ_yn", "international", "military",
   # life events
   "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
   # defeat
@@ -3159,7 +3159,7 @@ traindf_sem <- traindf.v28 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
   # environment
-  religios, school2_type, activ_yn, international,
+  religios, school2_type, activ_yn, international, military,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
