@@ -4756,7 +4756,7 @@ testdf_sem <- testdf.v27 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
   # environment
-  satisfied_overall, religios, school2_type, activ_yn,
+  religios, school2_type, activ_yn, international,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
@@ -4766,7 +4766,7 @@ testdf_sem <- testdf.v27 %>% select(
   # entrapment
   dep_impa, gad7_impa,
   # motivational moderators
-  inf, flourish_dum, belong1)  #mh_stigma, 
+  inf, flourish_dum, belong1, satisfied_overall)  #mh_stigma, 
 
 # create sem matrix 
 testdf_sem2 <- testdf_sem %>% 
@@ -4790,7 +4790,7 @@ results_test_sem <- dummy_cols(testdf_sem2, select_columns = c(
     # diathesis
     "age", "sexual", "gender_tgd", "sib_freq", "race", "ed_any", "dx_mh", "meds_count",
     # environment
-    "satisfied_overall", "religios", "school2_type", "activ_yn",
+    "religios", "school2_type", "activ_yn", "international",
     # life events
     "ins_cover", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
     # defeat
@@ -4800,7 +4800,7 @@ results_test_sem <- dummy_cols(testdf_sem2, select_columns = c(
     # entrapment
     "dep_impa", "gad7_impa",
     # motivational moderators
-    "inf", "flourish_dum", "belong1"), 
+    "inf", "flourish_dum", "belong1", "satisfied_overall"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 results_test_sem <- na.omit(results_test_sem)
@@ -4855,7 +4855,7 @@ testdf_sem5 <- testdf.v27 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, meds_count,
   # environment
-  satisfied_overall, religios, school2_type, activ_yn,
+  religios, school2_type, activ_yn, international,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
@@ -4865,7 +4865,7 @@ testdf_sem5 <- testdf.v27 %>% select(
   # entrapment
   dep_impa, gad7_impa,
   # motivational moderators
-  inf, flourish_dum, belong1)  #mh_stigma, 
+  inf, flourish_dum, belong1, satisfied_overall)  #mh_stigma, 
 
 # create sem matrix 
 testdf_sem5 <- testdf_sem5 %>% 
@@ -4879,8 +4879,7 @@ head(testdf_sem5)   # check output
 ```{r si_model_test}
 ## Dummy col SEM w/ continuous
 
-results_test_com1 <- dummy_cols(testdf_sem5, select_columns = c("si_type", "age", "sexual",
-                                                                "race", "school2_type"),
+results_test_com1 <- dummy_cols(testdf_sem5, select_columns = c("si_type", "age", "sexual", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 view(results_test_com1)
 
@@ -4888,12 +4887,11 @@ SI_model_test1 <- '
                 # measurement model
                   si =~    si_type_2 + si_type_3 + si_type_4
     
-                  prem  =~ age_2 + age_3 +
-                           sexual_2 + sexual_3 + gender_tgd + sib_freq + 
-                           race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
-                           meds_count + religios + drug_mar +
-                           school2_type_2 + school2_type_3 + activ_yn + assault + 
-                           ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn
+                  prem  =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + 
+                           sib_freq + ed_any + dx_mh + meds_count + religios + 
+                           drug_mar + international + school2_type_2 + school2_type_3 + 
+                           activ_yn + assault +  ins_cover + gpa_sr + binge + psyhx + 
+                           fincur + drugs_yn
 
                    def =~ aca_impa + dep_type + anx_type
                               
@@ -4916,7 +4914,7 @@ SI_model_test1 <- '
 fit_test1 <- sem(SI_model_test1, data=results_test_com1, ordered=T)
 summary_train <- summary(fit_test1, fit.measures=TRUE, standardized = TRUE)
 
-    ## running NULL model, baseline model's RMSEA 
+## running NULL model, baseline model's RMSEA 
 nullRMSEA(fit_test1, scaled = FALSE, silent = FALSE)
 
 # Matrix math
@@ -4937,15 +4935,15 @@ which(corr_matrix == max(corr_matrix), arr.ind = TRUE)
 ```
 
 # SEM model -- mod indices
-```{r si_model_tr2}
+```{r si_model_test2}
 ## Dummy col SEM w/ continuous
 SI_model_test_M <- '
                 # measurement model
                    si =~  si_type_2 + si_type_3 + si_type_4
                    prem  =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
-                           race_2 + race_3 + race_4 + race_5 + ed_any + dx_mh +
-                           meds_count + religios + school2_type_2 + school2_type_3 + activ_yn +
-                           ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
+                           ed_any + dx_mh + meds_count + religios + school2_type_2 + school2_type_3 + 
+                           activ_yn + ins_cover + gpa_sr + binge + psyhx + fincur + drugs_yn + 
+                           assault + drug_mar + international
                    def =~ aca_impa + dep_type + anx_type
                    tsm =~ persist + aaq_dum
                    entrap =~ dep_impa + gad7_impa
@@ -4959,28 +4957,20 @@ SI_model_test_M <- '
                   dx_mh ~~ meds_count
                   assault ~~ dx_mh
                   sexual_3 ~~ gender_tgd
-
                   activ_yn ~~ belong1
                   satisfied_overall ~~ belong1
                   anx_type ~~ gad7_impa
                   anx_type ~~ dep_impa
                   drugs_yn ~~ drug_mar   
                   si_type_4 ~~ psyhx  
-
-                  race_2 ~~ race_4
-                  race_3 ~~ race_4
-                  race_4 ~~ race_5
                   age_2 ~~ age_3
                   '
 
 fit_train_M <- sem(SI_model_tr_M, data=results_tr_com1)
 summary_mod_train <- summary(fit_train_M, fit.measures=TRUE, standardized = TRUE)
 
-matrix_dummied <- results_tr_com1 %>% as.matrix()
-
-matrix_dummied <- matrix_dummied[, c("race_2", "race_4")]
-
-boot::corr(matrix_dummied)
-
+# matrix_dummied <- results_tr_com1 %>% as.matrix()
+# matrix_dummied <- matrix_dummied[, c("race_2", "race_4")]
+# boot::corr(matrix_dummied)
 ```
 
