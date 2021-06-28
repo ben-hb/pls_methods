@@ -4494,7 +4494,7 @@ test1_sem1 <- test1.v28 %>% select(
   # entrapment
   dep_impa, gad7_impa,
   # motivational moderators
-  inf, flourish_dum, belong1, satisfied_overall)  #mh_stigma, 
+  inf, flourish_dum, belong1, satisfied_overall)
 
 # create sem matrix 
 test1_sem1 <- test1_sem1 %>% 
