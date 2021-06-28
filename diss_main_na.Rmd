@@ -3277,7 +3277,7 @@ traindf_sem1 <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
+  sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
   # environment
   religios, school2_type, activ_yn, international,
   # life events
@@ -3300,18 +3300,72 @@ head(traindf_sem1)   # check output
 ```
 
 # SEM model with partial cont and dummy
-```{r si_model_tr2}
+```{r si_model_tr1}
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "age","sexual", "school2_type"),
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-view(results_tr_com1)
+#view(results_tr_com1)
 
 SI_model_tr1 <- '
                 # measurement model
                 
                   si =~    si_type_2 + si_type_3 + si_type_4
     
-                  prem  =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                  prem  =~ sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                           ed_any + dx_mh + meds_count + religios + international +
+                           school2_type_2 + school2_type_3 + activ_yn + ins_cover + 
+                           gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
+                          
+
+                   def =~ aca_impa + dep_type + anx_type
+                              
+                   tsm =~ persist + aaq_dum
+
+                   entrap =~ dep_impa + gad7_impa
+
+                   mm =~ inf + flourish_dum + belong1 + satisfied_overall
+
+                # structural model - regressions
+                   si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
+
+                # residual covars
+                  dx_mh ~~ ed_any
+                  dx_mh ~~ meds_count
+                  assault ~~ dx_mh   '
+
+
+fit_train1 <- sem(SI_model_tr1, data=results_tr_com1, ordered=T)
+summary_train <- summary(fit_train1, fit.measures=TRUE, standardized = TRUE)
+
+    ## running NULL model, baseline model RMSEA
+nullRMSEA(fit_train1, scaled = FALSE, silent = FALSE)
+
+    ## modification indices
+modificationindices(fit_train1, minimum.value = 20)
+
+# Matrix math
+lavaan_cov <- cov(results_tr_com1)
+lavaan_det <- det(lavaan_cov)
+lavaan_eig <- eigen(lavaan_cov)
+eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
+eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
+
+linear_combos <- caret::findLinearCombos(results_tr_com1)
+```
+
+# SEM model -- mod indices
+```{r si_model_tr2}
+## Dummy col SEM w/ continuous
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual", "school2_type"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+#view(results_tr_com1)
+
+SI_model_trM <- '
+                # measurement model
+                
+                  si =~    si_type_2 + si_type_3 + si_type_4
+    
+                  prem  =~ sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                            ed_any + dx_mh + meds_count + religios + international +
                            school2_type_2 + school2_type_3 + activ_yn + ins_cover + 
                            gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
@@ -3332,11 +3386,12 @@ SI_model_tr1 <- '
                   dx_mh ~~ ed_any
                   dx_mh ~~ meds_count
                   assault ~~ dx_mh
-                  drugs_yn ~~ drug_mar    '
+                  activ_yn	~~	belong1
+                  satisfied_overall ~ belong1   '
 
 
-fit_train1 <- sem(SI_model_tr1, data=results_tr_com1, ordered=T)
-summary_train <- summary(fit_train1, fit.measures=TRUE, standardized = TRUE)
+fit_trainM <- sem(SI_model_trM, data=results_tr_com1, ordered=T)
+summary_train <- summary(fit_trainM, fit.measures=TRUE, standardized = TRUE)
 
     ## running NULL model, baseline model RMSEA
 nullRMSEA(fit_train1, scaled = FALSE, silent = FALSE)
@@ -3344,10 +3399,10 @@ nullRMSEA(fit_train1, scaled = FALSE, silent = FALSE)
     ## modification indices
 modificationindices(fit_train1, minimum.value = 20)
 
-mod_fit_tr <- cfa(SI_model_tr1, data = results_tr_com1)
-mi <- modindices(mod_fit_tr, sort = TRUE, maximum.number = 10)
-View(mi)
-mi[mi$op == "=~",] %>% View()
+# mod_fit_tr <- cfa(SI_model_tr1, data = results_tr_com1)
+# mi <- modindices(mod_fit_tr, sort = TRUE, maximum.number = 10)
+# View(mi)
+# mi[mi$op == "=~",] %>% View()
 
 
 # Matrix math
@@ -3358,43 +3413,6 @@ eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
 eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
 
 linear_combos <- caret::findLinearCombos(results_tr_com1)
-```
-
-# SEM model -- mod indices
-```{r si_model_tr2}
-## Dummy col SEM w/ continuous
-SI_model_tr_M <- '
-                # measurement model
-                   si =~  si_type_2 + si_type_3 + si_type_4
-                   prem =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq +
-                           international + ed_any + dx_mh + meds_count + religios + school2_type_2 + 
-                           school2_type_3 + activ_yn + ins_cover + gpa_sr + binge + psyhx + fincur + 
-                           drugs_yn + assault + drug_mar
-                   def =~ aca_impa + dep_type + anx_type
-                   tsm =~ persist + aaq_dum
-                   entrap =~ dep_impa + gad7_impa
-                   mm =~ inf + flourish_dum + belong1 + satisfied_overall
-                  
-                # structural model - regressions
-                   si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
-
-                # residual covars
-                  dx_mh ~~ ed_any
-                  dx_mh ~~ meds_count
-                  assault ~~ dx_mh
-                  anx_type ~~ gad7_impa
-                  age_3 ~~ age_2
-'
-
-fit_train_M <- sem(SI_model_tr_M, data=results_tr_com1, ordered=T)
-summary_mod_train <- summary(fit_train_M, fit.measures=TRUE, standardized=TRUE)
-
-# Matrix math
-lavaan_cov <- cov(results_tr_com1)
-lavaan_det <- det(lavaan_cov)
-lavaan_eig <- eigen(lavaan_cov)
-eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
-eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
 ```
 
 ## PLS-PM
