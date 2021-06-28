@@ -3063,7 +3063,7 @@ traindf.v28 <- traindf.v26
 # school structural analysis
 var_names <- c(
   # diathesis
-  "undercls", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
+  "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
   # environment
   "religios", "school2_type", "activ_yn", "international", "military", "residenc",
   # life events
@@ -3157,7 +3157,7 @@ traindf_sem <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  undercls, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
   # environment
   religios, school2_type, activ_yn, international, military, residenc,
   # life events
@@ -3191,7 +3191,7 @@ results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "undercls", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
+    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
     # environment
     "religios", "school2_type", "activ_yn", "international", "military", "residenc",
     # life events
@@ -3278,9 +3278,9 @@ traindf_sem1 <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  undercls, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
   # environment
-  religios, school2_type, activ_yn, international, military, residenc,
+  religios, school2_type, activ_yn, international,
   # life events
   ins_cover, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
@@ -3303,19 +3303,20 @@ head(traindf_sem1)   # check output
 # SEM model with partial cont and dummy
 ```{r si_model_tr2}
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "age", "sexual", "school2_type", "residenc"),
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "age","sexual", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 view(results_tr_com1)
 
 SI_model_tr1 <- '
                 # measurement model
+                
                   si =~    si_type_2 + si_type_3 + si_type_4
     
-                  prem  =~ undercls + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                  prem  =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
                            ed_any + dx_mh + meds_count + religios + international +
-                           school2_type_2 + school2_type_3 + activ_yn + ins_cover + gpa_sr + 
-                           binge + psyhx + fincur + drugs_yn + assault + drug_mar +
-                           residenc_2 + residenc_3 + residenc_4 + military
+                           school2_type_2 + school2_type_3 + activ_yn + ins_cover + 
+                           gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
+                          
 
                    def =~ aca_impa + dep_type + anx_type
                               
@@ -3332,7 +3333,7 @@ SI_model_tr1 <- '
                   dx_mh ~~ ed_any
                   dx_mh ~~ meds_count
                   assault ~~ dx_mh
-                  drugs_yn ~~ drug_mar  '
+                  drugs_yn ~~ drug_mar    '
 
 
 fit_train1 <- sem(SI_model_tr1, data=results_tr_com1, ordered=T)
@@ -3360,10 +3361,10 @@ linear_combos <- caret::findLinearCombos(results_tr_com1)
 SI_model_tr_M <- '
                 # measurement model
                    si =~  si_type_2 + si_type_3 + si_type_4
-                   prem =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + 
+                   prem =~ age_2 + age_3 + sexual_2 + sexual_3 + gender_tgd + sib_freq + military +
                            international + ed_any + dx_mh + meds_count + religios + school2_type_2 + 
                            school2_type_3 + activ_yn + ins_cover + gpa_sr + binge + psyhx + fincur + 
-                           drugs_yn + assault + drug_mar
+                           drugs_yn + assault + drug_mar + residenc_2 + residenc_3 + residenc_4
                    def =~ aca_impa + dep_type + anx_type
                    tsm =~ persist + aaq_dum
                    entrap =~ dep_impa + gad7_impa
