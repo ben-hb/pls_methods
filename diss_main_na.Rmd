@@ -3370,7 +3370,6 @@ SI_model_trM <- '
                            school2_type_2 + school2_type_3 + activ_yn + ins_cover + 
                            gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
                           
-
                    def =~ aca_impa + dep_type + anx_type
                               
                    tsm =~ persist + aaq_dum
@@ -3387,7 +3386,12 @@ SI_model_trM <- '
                   dx_mh ~~ meds_count
                   assault ~~ dx_mh
                   activ_yn	~~	belong1
-                  satisfied_overall ~ belong1   '
+                  satisfied_overall ~ belong1
+                  belong1 ~~ satisfied_overall
+                  si_type_4 ~~ psyhx   
+                  drugs_yn ~~ drug_mar
+                  anx_type	~~	gad7_impa  
+                  dep_type	~~	dep_impa  '
 
 
 fit_trainM <- sem(SI_model_trM, data=results_tr_com1, ordered=T)
