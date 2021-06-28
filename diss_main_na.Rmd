@@ -402,27 +402,26 @@ data.v2$age <- as.numeric(data.v2$age)
 hist(data.v2$age)
 
 data.v2 <- data.v2 %>%
-  mutate(undercls = case_when(age == 18 ~ 1,
-                        age == 19 ~ 1,
-                        age == 20 ~ 0,
-                        age == 21 ~ 0,
-                        age == 22 ~ 0,
-                        age == 23 ~ 0,
-                        age == 24 ~ 0,
-                        age == 25 ~ 0)) %>%
-    mutate(age = case_when(age == 18 ~ 1,
-                        age == 19 ~ 1,
-                        age == 20 ~ 2,
-                        age == 21 ~ 2,
-                        age == 22 ~ 3,
-                        age == 23 ~ 3,
-                        age == 24 ~ 3,
-                        age == 25 ~ 3)) %>%
-  filter(!is.na(undercls))
-data.v2$undercls <- as.logical(data.v2$undercls)
+  filter(!is.na(age))
+  # mutate(undercls = case_when(age == 18 ~ 1,
+  #                       age == 19 ~ 1,
+  #                       age == 20 ~ 0,
+  #                       age == 21 ~ 0,
+  #                       age == 22 ~ 0,
+  #                       age == 23 ~ 0,
+  #                       age == 24 ~ 0,
+  #                       age == 25 ~ 0)) %>%
+  #   mutate(age = case_when(age == 18 ~ 1,
+  #                       age == 19 ~ 1,
+  #                       age == 20 ~ 2,
+  #                       age == 21 ~ 2,
+  #                       age == 22 ~ 3,
+  #                       age == 23 ~ 3,
+  #                       age == 24 ~ 3,
+  #                       age == 25 ~ 3)) %>%
+  # filter(!is.na(undercls))
 
 table(data.v2$age, useNA = "always")
-table(data.v2$undercls, useNA = "always")
 jarque.bera.test(data.v2$age)
 
 ```
@@ -2227,7 +2226,7 @@ model.le  %>%
 # Full Premotivational Analysis
 ```{r results_prem}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v19 %>% select(si_type, undercls, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
+traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
                                        meds_count, residenc, religios, activ_yn, school2_type, ins_cover, military,
                                        gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx, international)
 
@@ -2257,15 +2256,15 @@ clm_prem <- clm(si_type ~ .,
 summary(clm_prem)
 coef(clm_prem)
 
-# ci_prem <- confint(clm_prem)
-# ci_prem
+ci_prem <- confint(clm_prem)
+ci_prem
 
-# model.prem <- tidy(clm_prem)  # Convert model to dataframe for easy manipulation
-# model.prem
-# model.prem  %>%
-#    mutate(or = exp(estimate),  # Odds ratio/gradient
-#           var.diag = diag(vcov(clm_prem)),  # Variance of each coefficient
-#           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+model.prem <- tidy(clm_prem)  # Convert model to dataframe for easy manipulation
+model.prem
+model.prem  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+          var.diag = diag(vcov(clm_prem)),  # Variance of each coefficient
+          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 
 ```
 
@@ -4623,9 +4622,9 @@ linear_combos <- caret::findLinearCombos(results_tr_com1)
 18 and 19 sub-population
 
 ```{r 18-19_frame}
-sub.v11 <- sub.v10 %>%
+sub18.v11 <- sub.v10 %>%
   filter(undercls)
-         
+
 table(sub.v11$undercls)
   
   
