@@ -64,25 +64,6 @@ library(writexl)
 
 # PREPARING FILES
 
-Notes: Preliminary variables for consideration
-
-Premotivational variables
-  - Diathesis: age, sexual, gender, finpast, sib_freq, race, body_sr, ed_scoff, audit_tot, dx_dep, dx_bi, 
-    dx_psy, dx_ea, dx_tr,  wcs_tot, dx_sa, dx_adhd, dx_pers, dx_none, meds_sti, meds_dep, meds_psy, meds_anx,
-    meds_mood, meds_sle, meds_oth, meds_none, meds_count, disab_1, alc_tx
-  - Environment: env_mh, fam_support_aca, ther_vis, divers, satisfied_overall, residenc, talk, activ_yn, religios, discrim
-  - Life Events: ins_cover, gpa_sr, abuse_year, assault_phys, binge_fr, assault_sex, assault_emo, psyhx, isi_tot, fincur,
-    drug_mar, drug_coc, drug_her, drug_met, drug_stim, drug_ect, drug_opi, drug_other, drug_none
-
-Motivational variables
-  - Defeat: aca_impac, men_ill_ash, deprawsc, anx_score
-  - Threats to Self-Moderation: persist, dep_secret, aaq_yn, achieve4
-  - Entrapment: dep_impa, gad7_impa, percneed_cur **
-  - Motivational Moderators: inf, flourish, belong1, belong2, belong8, belong9, stig_pcv_2, stig_pcv_3, BRS_tot 
-  
-* Will show demographics from original datasets with descriptive stats.
-demographic tables... show up on the survey - acknowledge diversity
-
 ```{r Filter sample, cache = TRUE}
 
 #IMPORT file
@@ -2258,8 +2239,6 @@ coef(clm_prem)
 ```
 
 
-
-
 # DEFEAT
 Candidate variables: aca_impa, failed, men_ill_ash, deprawsc
 
@@ -3297,7 +3276,7 @@ results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexua
 SI_model_tr1 <- '
                 # measurement model
                 
-                  si =~    si_type_2 + si_type_3 + si_type_4
+                  si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem =~  sib_freq + sexual_2 + sexual_3 + gender_tgd +  
                            ed_any + dx_mh + meds_count + religios + international +
@@ -4365,7 +4344,7 @@ test1_sem <- test1.v28 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
   # environment
-  religios, school2_type, activ_no, international, residenc,
+  religios, school2_type, activ_no, international,
   # life events
   ins_no, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
