@@ -2267,17 +2267,6 @@ clm_prem <- clm(si_type ~ .,
               data = traindf_prem)
 summary(clm_prem)
 coef(clm_prem)
-
-ci_prem <- confint(clm_prem)
-ci_prem
-
-model.prem <- tidy(clm_prem)  # Convert model to dataframe for easy manipulation
-model.prem
-model.prem  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_prem)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
-
 ```
 
 
