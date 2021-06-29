@@ -4403,51 +4403,6 @@ test1_sem1 <- na.omit(test1_sem1)
 head(test1_sem1)   # check output
 ```
 
-# SEM model with partial cont and dummy
-```{r si_model_tr1}
-## Dummy col SEM w/ continuous
-results_test_com1 <- dummy_cols(test1_sem1, select_columns = c("si_type", "sexual", "school2_type"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-#view(results_tr_com1)
-
-SI_model_test1 <- '
-                # measurement model
-                
-                  si =~    si_type_3 + si_type_2 + si_type_4
-    
-                  prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + 
-                           ed_any + dx_mh + meds_count + religios + international +
-                           school2_type_2 + school2_type_3 + activ_no + ins_no + 
-                           gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
-                          
-
-                   def =~ dep_type + aca_impa + anx_type
-                              
-                   tsm =~ aaq_dum + persist
-
-                   entrap =~ dep_impa + gad7_impa
-
-                   mm =~ flourish_dum + inf + belong1 + satisfied_overall
-
-                # structural model - regressions
-                   si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
-
-                # residual covars
-                  dx_mh ~~ ed_any
-                  dx_mh ~~ meds_count
-                  assault ~~ dx_mh   '
-
-
-fit_test1 <- sem(SI_model_test1, data=results_test_com1, ordered=T)
-summary_test <- summary(fit_test1, fit.measures=TRUE, standardized = TRUE)
-
-    ## running NULL model, baseline model RMSEA
-nullRMSEA(fit_test1, scaled = FALSE, silent = FALSE)
-
-    ## modification indices
-modificationindices(fit_test1, minimum.value = 20)
-```
-
 # SEM model -- mod indices
 ```{r si_model_testM}
 ## Dummy col SEM w/ continuous
@@ -4491,7 +4446,7 @@ SI_model_testM <- '
 
 fit_testM <- sem(SI_model_testM, data=results_test_com1, ordered=T)
 summary_test <- summary(fit_testM, fit.measures=TRUE, standardized = TRUE)
-fit_train1
+fitMeasures(fit_testM, fit.measures = "all")
 ```
 
 
@@ -5375,57 +5330,11 @@ sub18_sem <- na.omit(sub18_sem)
 head(sub18_sem)   # check output
 ```
 
-# SEM model with partial cont and dummy
-```{r si_model_tr1}
-## Dummy col SEM w/ continuous
-results_sub18_com <- dummy_cols(sub18_sem, select_columns = c("si_type", "sexual", "school2_type"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-#view(results_tr_com1)
-
-SI_model_sub18 <- '
-                # measurement model
-                
-                  si =~    si_type_3 + si_type_2 +  si_type_4
-    
-                  prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd +  
-                           ed_any + dx_mh + meds_count + religios + international +
-                           school2_type_2 + school2_type_3 + activ_no + ins_no + 
-                           gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
-                          
-
-                   def =~ dep_type + aca_impa + anx_type
-                              
-                   tsm =~ aaq_dum + persist
-
-                   entrap =~ dep_impa + gad7_impa
-
-                   mm =~ flourish_dum + inf + belong1 + satisfied_overall
-
-                # structural model - regressions
-                   si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
-
-                # residual covars
-                  dx_mh ~~ ed_any
-                  dx_mh ~~ meds_count
-                  assault ~~ dx_mh   '
-
-
-fit_sub18 <- sem(SI_model_sub18, data=results_sub18_com, ordered=T)
-summary_sub18 <- summary(fit_sub18, fit.measures=TRUE, standardized = TRUE)
-
-    ## running NULL model, baseline model RMSEA
-nullRMSEA(fit_sub18, scaled = FALSE, silent = FALSE)
-
-    ## modification indices
-modificationindices(fit_sub18, minimum.value = 20)
-```
-
 # SEM model -- mod indices
-```{r si_model_tr2}
+```{r si_model_subM}
 ## Dummy col SEM w/ continuous
 results_sub18_com <- dummy_cols(sub18_sem, select_columns = c("si_type", "sexual", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-#view(results_tr_com1)
 
 SI_model_subM <- '
                 # measurement model
@@ -5463,9 +5372,7 @@ SI_model_subM <- '
 
 fit_sub18M <- sem(SI_model_subM, data=results_sub18_com, ordered=T)
 summary_sub18M <- summary(fit_sub18M, fit.measures=TRUE, standardized = TRUE)
-
-    ## running NULL model, baseline model RMSEA
-nullRMSEA(fit_sub18M, scaled = FALSE, silent = FALSE)
+fitMeasures(fit_sub18M, fit.measures = "all")
 ```
 
 
