@@ -1,9 +1,9 @@
 ---
 title: "Sisler Initial Analysis"
 output:
-  pdf_document: default
-  html_document: default
   word_document: default
+  html_document: default
+  pdf_document: default
 ---
 
 # LOAD PACKAGES
@@ -1024,7 +1024,7 @@ dim(testdf.v10)
 
 ## AUDIT  
 ** too small for inclusion
-```{r audit_tot}
+```{r train audit_tot}
 traindf.v10 <- traindf.v10 %>%
   # Combine audit_3_f, audit_3_m, audit_3_o to create 'audit_3'
   mutate(audit_3 = case_when(audit_3_f == 1 ~ 1,
@@ -1056,13 +1056,13 @@ traindf.v10 = subset(traindf.v10, select= -c(audit_1:audit_10, audit_3_m,
 
 ## ETOH treatment
 n= 3885 ** sample is too small
-```{r alc_tx}
+```{r train alc_tx}
 table(traindf.v10$alc_tx)
 traindf.v10 = subset(traindf.v10, select= -c(alc_tx)) # clean up vars/columns
 ```
 
 ## Eating disorder, any type
-```{r ed_any}
+```{r train ed_any}
 traindf.v10 <- traindf.v10 %>%
   filter(!is.na(ed_any)) %>%
   mutate(ed_any = case_when(ed_any == 1 ~ 1,
@@ -1076,7 +1076,7 @@ jarque.bera.test(traindf.v10$ed_any)
 ## WCS
 Combine wcs_1_f, wcs_1_m, wcs_1_o to create 'wcs_1'
 ** too small
-```{r WCS data merge}
+```{r WCS train data merge}
 
 table(traindf.v10$wcs_1_f)
 table(traindf.v10$wcs_1_m)
@@ -1092,7 +1092,7 @@ traindf.v10 = subset(traindf.v10, select= -c(wcs_1_f, wcs_1_m, wcs_1_o,
 ```
 
 ## Medication use
-```{r meds}
+```{r train meds}
 # Create stimulant
 traindf.v11 <- traindf.v10 %>%
   mutate(meds_sti = case_when(meds_1 == 1 ~ 1,
@@ -1301,7 +1301,7 @@ table(traindf.v11$meds_none)
 ## Psychopharm medication count
 Create 'meds_count' to be used in future regression to capture quantity and diversity of medications 
 to see what is associated (i.e. the count is meant to find the common meds in suicidality)
-```{r med_count}
+```{r train med_count}
 traindf.v11$meds_1 <- as.numeric(traindf.v11$meds_1)
 traindf.v11$meds_2 <- as.numeric(traindf.v11$meds_2)
 traindf.v11$meds_3 <- as.numeric(traindf.v11$meds_3)
@@ -1338,12 +1338,12 @@ jarque.bera.test(traindf.v11$meds_count)
 ```
 
 ## DIATHESIS ANALYSES
-```{r Diathesis analyses}
+```{r train diathesis analyses}
 traindf.v12 <- traindf.v11 # create new dataframe for summary stats. Will jump to v13 for environmental
 ```
 
 ### Diathesis correlation matrix
-```{r Diathesis correlation}
+```{r train diathesis correlation}
 
 # Define diathesis vars for correlation matrix
 traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, ed_scoff, body_sr,
@@ -1398,7 +1398,7 @@ corr_simple()
 ```
 
 ### EFA diathesis
-```{r EFA diathesis}
+```{r train EFA diathesis}
 traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race,
                                 dx_mh, ed_any, meds_count)
 
@@ -1445,7 +1445,7 @@ fviz_cos2(dia_pca, choice = "var", axes = 1,
 ```
 
 ### CLM diathesis regression
-```{r clm_dia}
+```{r train clm_dia}
 clm_dia <- traindf.v12 %>% select(si_type, age,sexual, gender_tgd, sib_freq, race,
                                   ed_any, dx_mh, meds_count)
 clm_dia <- na.omit(clm_dia)
@@ -1475,13 +1475,13 @@ Candidate variables: res_status, military, activ_yn, residenc, discrim, env_mh,
 ther_vis, school2, medtherc, medther, talk, religios, residenc, satisfied_overall, firstgen
 
 
-```{r Env frame}
+```{r train env frame}
 traindf.v13 <- traindf.v11
 ```
 
 ## US resident status
 n = 942 ** too small to include
-```{r U.S. Resident Status}
+```{r train resident status}
 # aggregate all residency variables into 1 variable called 'res_status'
 traindf.v13 <- traindf.v13 %>% 
   mutate(res_status = case_when(citizen == 1 ~ 1,
@@ -1494,7 +1494,7 @@ data.v13 = subset(traindf.v12, select= -c(citizen, permanentres, visa, otherdoc,
 ```
 
 ## Discrimination
-```{r discrim}
+```{r train discrim}
 traindf.v13 <- traindf.v13 %>%
   mutate(discrim = case_when(discrim == 1 ~ 1,
                              discrim == 2 ~ 2,
@@ -1508,7 +1508,7 @@ table(traindf.v13$discrim, useNA = "always") # check output
 ```
 
 ## Religion
-```{r religios}
+```{r train religios}
 # Label levels of religious importance
 traindf.v13 <- traindf.v13 %>%
   filter(!is.na(religios))
@@ -1519,7 +1519,7 @@ jarque.bera.test(traindf.v13$religios)
 ```
 
 ## Residence type
-```{r residenc}
+```{r train residenc}
 traindf.v13 <- traindf.v13 %>%
   mutate(residenc = case_when(residenc == 1 ~ 1,  # on-campus
                               residenc == 2 ~ 1,
@@ -1535,13 +1535,13 @@ jarque.bera.test(traindf.v13$residenc)
 ```
 
 ## MH campus environment
-```{r env_mh}
+```{r train env_mh}
 traindf.v13$env_mh <- as.factor(traindf.v13$env_mh)
 table(traindf.v13$env_mh, useNA = "always") 
 ```
 
 ## Total therapy visits
-```{r ther_vis}
+```{r train ther_vis}
 table(traindf.v13$ther_ever)
 table(traindf.v13$ther_vis)
 
@@ -1559,7 +1559,7 @@ table(traindf.v14$ther_vis)   # check output
 
 ## Distress & social support
 Group talk var into subcategories of (1) none,  (2) formal, (3) informal, or (4) combo of support
-```{r talk}
+```{r train talk}
 traindf.v14$talk1_1[is.na(traindf.v14$talk1_1)] <- 0
 traindf.v14$talk1_2[is.na(traindf.v14$talk1_2)] <- 0
 traindf.v14$talk1_3[is.na(traindf.v14$talk1_3)] <- 0
@@ -1591,7 +1591,7 @@ talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
 ```
 
 ## Military status
-```{r military}
+```{r train military}
 traindf.v14 <- traindf.v14 %>%
   mutate(military = case_when(military == 1 ~ 1,
                               military == 0 ~ 0)) %>%
@@ -1602,7 +1602,7 @@ table(traindf.v14$military, useNA = "always")
 ```
 
 ## International student
-```{r international}
+```{r train international}
 traindf.v14 <- traindf.v14 %>%
   mutate(international = case_when(international == 1 ~ 1,
                                    international == 0 ~ 0)) %>%
@@ -1613,13 +1613,13 @@ table(traindf.v14$international, useNA = "always")
 ```
 
 ## Family support
-```{r fam_support_aca}
+```{r train fam_support_aca}
 traindf.v14$fam_support_aca <- as.numeric(traindf.v14$fam_support_aca)
 table(traindf.v14$fam_support_aca)
 ```
 
 ## Activity Involvement
-```{r Activities}
+```{r train activities}
 # set all NAs in actvities equal to 0
 traindf.v14$activ_ac[is.na(traindf.v14$activ_ac)] <- 1
 traindf.v14$activ_athc[is.na(traindf.v14$activ_athc)] <- 1
@@ -1666,7 +1666,7 @@ jarque.bera.test(traindf.v14$activ_no)
 ```
 
 ## School variable
-```{r school2}
+```{r train school2}
 # insert each school as a dichotomous var
 traindf.v14 <- traindf.v14 %>%
   mutate(var_AlbertaCAD = ifelse((school2 == "AlbertaCAD"), 1, 0)) %>%
@@ -1738,7 +1738,7 @@ traindf.v14 <- traindf.v14 %>%
 
 (3) Art & Design, Culinary: var_AlbertaCAD, var_CIA, var_ColumbusCAD, var_MDInstituteCollegeArt, var_MassArt, var_MinnesotaCAD, var_NHInstituteArt, var_Pratt, , var_Ringling, var_SAIC, var_UNCSchoolArt, var_Watkins, 
 
-```{r school2_type}
+```{r train school2_type}
 traindf.v14 <- traindf.v14 %>%
   # 4 year college
   mutate(school2_4yr = ifelse(var_Boston + var_CalPoly + var_ColoradoCollege + var_ColoradoMountain + var_Delaware +
@@ -1810,12 +1810,12 @@ table(traindf.v14$school2_type, useNA = "always") # check output
 ```
 
 ## ENVIRONMENT ANALYSES
-```{r}
+```{r train env analysis}
 traindf.v15 <- traindf.v14  # new dataframe for analysis
 ```
 
 ### Environmental correlation
-```{r}
+```{r train env correlation}
 # Define environment vars for correlation matrix
 traindf_env <- traindf.v15 %>% select(discrim, religios, residenc, activ_no, divers, 
                                 school2_type, talk, military, international)
@@ -1840,7 +1840,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 
 ##EFA Environment
-```{r EFA Environment}
+```{r train EFA Environment}
 traindf_env <- traindf.v15 %>% select(religios, residenc, activ_no, school2_type, 
                                       military, international)
 
@@ -1885,7 +1885,7 @@ fviz_cos2(env_pca, choice = "var", axes = 1,
 ```
 
 ### CLM environmental regression
-```{r CLM environment}
+```{r train CLM environment}
 clm_env <- traindf.v15 %>% select(si_type, religios, residenc, activ_none, school2_type, 
                                   international, military)
 
@@ -1916,12 +1916,12 @@ model.dia  %>%
 Candidate variables: ins_cover, gpa_sr, abuse_year, psyhx, isi_risk, binge_fr, fincur, drug_mar, drug_coc, drug_other, drug_met, drug_none, drug_opi, drug_her, drug_stim, drug_ect, assault_sex, assault_phys, assault_emo, isi_tot
 
 
-```{r LE frame}
+```{r train LE frame}
 traindf.v16 <- traindf.v14
 ```
 
 ## Insurance coverage
-```{r ins_cover}
+```{r train ins_cover}
 # create one insurance var from related questions in 'ins_' module
 traindf.v16 <- traindf.v16 %>% 
   mutate(ins_no = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
@@ -1936,7 +1936,7 @@ jarque.bera.test(traindf.v16$ins_no)
 
 ## Illicit drug use
 Creates illicit drug use var (limitation -- 30 days reflection)
-```{r drugs_yn}
+```{r train drugs_yn}
 ## add summary of each
 traindf.v16$drug_coc[is.na(traindf.v16$drug_coc)] <- 0
 traindf.v16$drug_her[is.na(traindf.v16$drug_her)] <- 0
@@ -1971,7 +1971,7 @@ jarque.bera.test(traindf.v16$drugs_yn)
 ```
 
 ## Marijuana use
-```{r drug_mar}
+```{r train drug_mar}
 traindf.v16$drug_mar[is.na(traindf.v16$drug_mar)] <- 0
 table(traindf.v16$drug_mar)  
 
@@ -1987,7 +1987,7 @@ jarque.bera.test(traindf.v16$drug_mar)
 ```
 
 ## Current financial stressors
-```{r fincur}
+```{r train fincur}
 traindf.v16 <- traindf.v16 %>%
   filter(!is.na(fincur)) %>%
   mutate(fincur = case_when(fincur == 3 ~ 0,  # sometimes
@@ -2003,13 +2003,13 @@ jarque.bera.test(traindf.v16$fincur)
 
 ## ISI scale
 ** too small
-```{r isi_tot}
+```{r train isi_tot}
 table(traindf.v16$isi_1)
 table(traindf.v16$isi_2)
 ```
 
 ## Abuse or assault, in the last year only
-```{r assault}
+```{r train assault}
 table(traindf.v16$abuse_life)
 table(traindf.v16$abuse_recent)
 
@@ -2048,7 +2048,7 @@ traindf.v17 = subset(traindf.v17, select= -c(abuse_life, abuse_recent)) # clean 
 ```
 
 ## Binging frequency
-```{r binge_fr}
+```{r train binge_fr}
 # set all binge_fr values equal to 0
 traindf.v17$binge_fr_f[is.na(traindf.v17$binge_fr_f)] <- 0
 traindf.v17$binge_fr_m[is.na(traindf.v17$binge_fr_m)] <- 0
@@ -2072,7 +2072,7 @@ traindf.v18 = subset(traindf.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)
 ```
 
 ## Recent Psychiatric Hospitalization, last 12 months
-```{r psyhx}
+```{r train psyhx}
 # Create variable for any psychiatric hospitalization in the last 12 months
 traindf.v18 <- traindf.v18 %>% 
   mutate(psyhx = case_when((prov_pes == 1 | prov_inp == 1 | prov_par == 1) ~ 1, 
@@ -2088,7 +2088,7 @@ traindf.v18 = subset(traindf.v18, select= -c(prov_pes, prov_inp, prov_par)) # cl
 ```
 
 ## Current GPA
-```{r gpa_sr}
+```{r train gpa_sr}
 traindf.v18 <- traindf.v18 %>%
   mutate(gpa_sr = case_when(gpa_sr == 0 ~ 1,   # A+
                             gpa_sr == 1 ~ 1,   # A
@@ -2108,12 +2108,12 @@ table(traindf.v18$gpa_sr, useNA = "always")
 jarque.bera.test(traindf.v18$gpa_sr)
 ```
  
-```{r LE traindf analysis}
+```{r train LE traindf analysis}
 traindf.v19 <- traindf.v18
 ```
  
 ## LE correlation
-```{r LE correlation}
+```{r train LE correlation}
 # Define life event var candidates for correlation matrix
 traindf_le <- traindf.v19 %>% select(ins_no, gpa_sr, aca_impa, fincur, binge,
                                      assault, drugs_yn, drug_mar, psyhx)
@@ -2137,7 +2137,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 
 ## EFA LE
-```{r le_pca}
+```{r train le_pca}
 traindf_le <- traindf.v19 %>% select(ins_no, gpa_sr, aca_impa, fincur, 
                                      binge, drugs_yn, drug_mar, assault, psyhx)
 traindf_le <- na.omit(traindf_le)
@@ -2180,7 +2180,7 @@ fviz_cos2(le_pca, choice = "var", axes = 1,
 ```
 
 ## CLM Life event regression
-```{r clm_LE}
+```{r train clm_LE}
 clm_le <- traindf.v19 %>% select(si_type, ins_no, gpa_sr, aca_impa, fincur, 
                                  assault, binge, drugs_yn, drug_mar, psyhx)
 clm_le <- na.omit(clm_le)
@@ -2205,7 +2205,7 @@ model.le  %>%
 
 
 # Full Premotivational Analysis
-```{r results_prem}
+```{r train results_prem}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
                                        meds_count, residenc, religios, activ_no, school2_type, ins_no, military,
@@ -2243,12 +2243,12 @@ coef(clm_prem)
 Candidate variables: aca_impa, failed, men_ill_ash, deprawsc
 
 
-```{r Defeat frame}
+```{r train Defeat frame}
 traindf.v20 <- traindf.v18
 ```
 
 ## PHQ risk/severity
-```{r deprawsc}
+```{r train deprawsc}
 table(traindf.v20$deprawsc)
 traindf.v20$deprawsc <- as.numeric(traindf.v20$deprawsc)
 
@@ -2288,7 +2288,7 @@ table(traindf.v20$dep_type, useNA = "always")
 ```
 
 ## GAD7 total
-```{r anx_score}
+```{r train anx_score}
 traindf.v20$anx_score <- as.numeric(traindf.v20$anx_score)
 
 # Convert to severity
@@ -2305,7 +2305,7 @@ table(traindf.v20$anx_type, useNA = "always") # check output
 ```
 
 ## Academic impact
-```{r aca_impa}
+```{r train aca_impa}
 traindf.v20 <- traindf.v20 %>%
   filter(!is.na(aca_impa)) %>%
   mutate(aca_impa = case_when(aca_impa == 1 ~ 1,
@@ -2319,7 +2319,7 @@ jarque.bera.test(traindf.v20$aca_impa)
 ```
 
 ## Academic failure
-```{r failed}
+```{r train failed}
 table(traindf.v20$failed)
 
 # sample too small in the elective, remove
@@ -2328,7 +2328,7 @@ traindf.v20 = subset(traindf.v20, select= -c(failed)) # clean up var
 
 ## Ashamed
 n= 8916 ** too small
-```{r men_ill_ash}
+```{r train men_ill_ash}
 table(traindf.v20$men_ill_ash)
 
 # sample too small in the elective, remove
@@ -2336,12 +2336,12 @@ traindf.v20 = subset(traindf.v20, select= -c(men_ill_ash)) # clean up var
 ```
 
 
-```{r Defeat analyses}
+```{r train defeat analyses}
 traindf.v21 <- traindf.v20
 ```
 
 ## Defeat correlation
-```{r Defeat cor}
+```{r train defeat cor}
 # Define defeat variable candidates for correlation matrix
 traindf_def <- traindf.v21 %>% select(aca_impa, dep_type, anx_type)
 
@@ -2360,7 +2360,7 @@ print(corr)
 ```
 
 ## EFA defeat
-```{r EFA_def}
+```{r train EFA_def}
 traindf_def <- traindf.v21 %>% select(aca_impa, dep_type, anx_type)
 traindf_def <- na.omit(traindf_def)
 
@@ -2401,7 +2401,7 @@ fviz_cos2(def_pca, choice = "var", axes = 1,
 ```
 
 ## CLM defeat
-```{r CLM defeat}
+```{r train CLM defeat}
 results2_def <- traindf.v21 %>% select(si_type, aca_impa, dep_type, anx_type)
 clm_def <- na.omit(results2_def)
 
@@ -2427,12 +2427,12 @@ model.def  %>%
 Candidate variables: persist, anx_score, dep_secret, aaq_yn, achieve4
 
 
-```{r TSM frame}
+```{r train TSM frame}
 traindf.v22 <- traindf.v20
 ```
 
 ## Depression secret
-```{r dep_secret}
+```{r train dep_secret}
 ## Secretive MH
 traindf.v22 <- traindf.v22 %>%
   mutate(dep_secret = case_when(dep_secret == 1 ~ 1,
@@ -2447,7 +2447,7 @@ table(traindf.v22$dep_secret, useNA = "always")  # not sure what to do about thi
 ```
 
 ## AAQ total (elective module)
-```{r aaq_dum}
+```{r train aaq_dum}
 # create AAQ_tot variable to sum up imputed AAQ questions
 traindf.v22 <- traindf.v22 %>%
   mutate(aaq_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
@@ -2480,7 +2480,7 @@ table(traindf.v22$aaq_dum, useNA = "always")
 ```
 
 ## Persist
-```{r persist}
+```{r train persist}
 traindf.v22 <- traindf.v22 %>%
   mutate(persist = case_when(persist == 1 ~ 1,   # confident
                              persist == 2 ~ 2, 
@@ -2495,12 +2495,12 @@ jarque.bera.test(traindf.v22$persist)
 ```
 
 
-```{r TSM var analyses}
+```{r train TSM var analyses}
 traindf.v23 <- traindf.v22
 ```
 
 ## Threats to self-moderation correlation
-```{r CORR TSM}
+```{r train tsm correlation}
 # Define TSM variable candidates for correlation matrix
 traindf_tsm <- traindf.v23 %>% select(persist, aaq_dum)
 
@@ -2535,7 +2535,7 @@ print(corr)
 ```
 
 ## EFA TSM
-```{r EFA TSM}
+```{r train EFA TSM}
 traindf_tsm <- traindf.v23 %>% select(persist, aaq_dum)
 traindf_tsm <- na.omit(traindf_tsm)
 
@@ -2574,7 +2574,7 @@ fviz_cos2(tsm_pca, choice = "var", axes = 1,
 ```
 
 ## CLM TSM
-```{r CLM TSM}
+```{r train CLM TSM}
 clm_tsm <- traindf.v23 %>% select(si_type, persist, aaq_dum)
 clm_tsm <- na.omit(clm_tsm)
 
@@ -2600,12 +2600,12 @@ model.tsm  %>%
 Candidate variables: dep_impa, gad7_impa, perneed_cur
 
 
-```{r Entrap frame}
+```{r train entrap frame}
 traindf.v24 <- traindf.v22
 ```
 
 ## Depression impact
-```{r dep_impa}
+```{r train dep_impa}
 traindf.v24 <- traindf.v24 %>%
   mutate(dep_impa = case_when(dep_impa == 1 ~ 1,
                               dep_impa == 2 ~ 2,
@@ -2619,7 +2619,7 @@ jarque.bera.test(traindf.v24$dep_impa)
 ```
 
 ## Anxiety impact
-```{r gad7_impa}
+```{r train gad7_impa}
 traindf.v24 <- traindf.v24 %>%
   mutate(gad7_impa = case_when(gad7_impa == 1 ~ 1,
                                gad7_impa == 2 ~ 2,
@@ -2633,7 +2633,7 @@ jarque.bera.test(traindf.v24$gad7_impa)
 ```
 
 ## Current needs
-```{r percneed_cur}
+```{r train percneed_cur}
 traindf.v24 <- traindf.v24 %>%
   mutate(percneed_cur = case_when(percneed_cur == 1 ~ 1,
                                  percneed_cur == 2 ~ 2,
@@ -2646,13 +2646,13 @@ table(traindf.v24$percneed_cur, useNA = "always")
 ```
 
 ## ENTRAPMENT ANALYSES
-```{r Entrapment analyses}
+```{r train entrapment analyses}
 traindf.v25 <- traindf.v24
 ```
 
 
 ### Entrapment correlation
-```{r Entrapment corr}
+```{r train entrapment corr}
 # Define entrapment variable candidates for correlation matrix
 traindf_entrap <- traindf.v25 %>% select(dep_impa, gad7_impa)
 
@@ -2671,7 +2671,7 @@ print(corr)
 ```
 
 ### EFA Entrapment
-```{r CFA entrap}
+```{r train CFA entrap}
 traindf_entrap <- traindf.v25 %>% select(dep_impa, gad7_impa)
 traindf_entrap <- na.omit(traindf_entrap)
 
@@ -2709,7 +2709,7 @@ fviz_cos2(entrap_pca, choice = "var", axes = 1,
 ```
 
 ###  CLM Entrapment regression
-```{r clm_entrap}
+```{r train clm_entrap}
 clm_entrap <- traindf.v25 %>% select(si_type, dep_impa, gad7_impa)
 clm_entrap <- na.omit(clm_entrap)
 
@@ -2737,12 +2737,12 @@ Candidate variables: flourish, belong2, belong8, belong9, achieve1, achieve14,
 achieve18, stig_pcv_2, stig_pcv_3, friend_devel, inf, brs_tot
 
 
-```{r MM frame}
+```{r train MM frame}
 traindf.v26 <- traindf.v24
 ```
 
 ## Belonging
-```{r belong}
+```{r train belong}
 traindf.v26 <- traindf.v26 %>%
   mutate(belong1 = case_when(belong1 == 1 ~ 1,
                              belong1 == 2 ~ 2,
@@ -2763,7 +2763,7 @@ table(traindf.v26$belong9)  # not as good of a proxy
 ```
 
 ## Overall school satisfaction
-```{r satisfied_overall}
+```{r train satisfied_overall}
 traindf.v26 <- traindf.v26 %>%
   mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,
                                        satisfied_overall == 2 ~ 5,
@@ -2779,7 +2779,7 @@ jarque.bera.test(traindf.v26$satisfied_overall)
 ```
 
 ## Flourishing Scale
-```{r flourish}
+```{r train flourish}
 traindf.v26$flourish <- as.numeric(traindf.v26$flourish)
 table(traindf.v26$flourish)
 
@@ -2811,7 +2811,7 @@ table(traindf.v26$flourish_dum, useNA = "always")
 ```
 
 ## Therapy + Medication Treatment
-```{r medtherc}
+```{r train medtherc}
 # traindf.v26 <- traindf.v26 %>%
 #   mutate(medther = case_when(medther = 1 ~ 1,
 #                              medther = 2 ~ 0,
@@ -2825,7 +2825,7 @@ table(traindf.v26$medtherc) # meds + therapy
 
 
 ## Informal Mental Health Support
-```{r inf}
+```{r train inf}
 traindf.v26$inf_1[is.na(traindf.v26$inf_1)] <- 1
 traindf.v26$inf_2[is.na(traindf.v26$inf_2)] <- 1
 traindf.v26$inf_3[is.na(traindf.v26$inf_3)] <- 1
@@ -2855,7 +2855,7 @@ jarque.bera.test(traindf.v26$inf)
 ```
 
 ## BRS
-```{r BRS_tot}
+```{r train BRS_tot}
 traindf.v26 <- traindf.v26 %>%
   mutate(brs_tot = as.integer(BRS_1) + as.integer(BRS_2) + as.integer(BRS_3) + as.integer(BRS_4) + as.integer(BRS_5))
 
@@ -2891,7 +2891,7 @@ table(traindf.v26$brs_dum, useNA = "always")
 ```
 
 ## Perceived MH as failure, stigma
-```{r stig_pcv_2}
+```{r train stig_pcv_2}
 # original likert
 table(traindf.v26$stig_pcv_2)
 table(traindf.v26$stig_pcv_3)
@@ -2935,12 +2935,12 @@ table(traindf.v26$mh_stigma, useNA = "always")
 ```
 
 ## Motivational moderator analyses
-```{r MM var analyses}
+```{r train MM var analyses}
 traindf.v27 <- traindf.v26
 ```
 
 ### Motivational Moderator correlation
-```{r MM_corr}
+```{r train MM_corr}
 # Define MM variable candidates for correlation matrix
 traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, satisfied_overall)
 
@@ -2960,7 +2960,7 @@ print(corr)
 ```
 
 ### EFA MM
-```{r EFA MM}
+```{r train EFA MM}
 traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, satisfied_overall)
 traindf_mm <- na.omit(traindf_mm)
 
@@ -2997,7 +2997,7 @@ fviz_cos2(mm_pca, choice = "var", axes = 1,
 ```
 
 ### CLM Motivational moderators regression
-```{r CLM mm}
+```{r train CLM mm}
 clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1, satisfied_overall)
 clm_mm <- na.omit(clm_mm)
 
@@ -3024,7 +3024,7 @@ model.mm  %>%
 
 
 ## Absolute missingness, by school
-```{r Structural missingness, by school}
+```{r train structural missingness, by school}
 traindf.v28 <- traindf.v26
 # school structural analysis
 var_names <- c(
@@ -3075,7 +3075,7 @@ write_xlsx(school2, path = "sch2_missing.xlsx", col_names = TRUE, format_headers
 ```
 
 ## Missingness of each var w/in each var
-```{r Missingness between vars}
+```{r train missingness between vars}
 missing_dfs <- list()
 for (k in 1:length(var_names)) {
 
@@ -3152,7 +3152,7 @@ write_xlsx(traindf_sem_out, path = "traindf_nondummy.xls", col_names = TRUE, for
 ```
 
 ## Create dummy vars
-```{r dummy_vars}
+```{r train dummy_vars}
 results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # outcome var
     "si_type",
@@ -3187,7 +3187,7 @@ write_xlsx(results_tr_df1, path = "traindf_sem1.xls", col_names = TRUE, format_h
 
 
 ## Descriptive stats
-```{r Var_sum}
+```{r train var_sum}
 data <- traindf_sem_out %>% 
   pivot_longer(cols = everything())
 
@@ -3214,7 +3214,7 @@ write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = T
 ```
 
 ## Model w/ levels correlations
-```{r model_lev_corr}
+```{r train model_lev_corr}
 results_corr <- NA_preproc(traindf_sem)
 sig <- 0.4
 
@@ -3372,7 +3372,7 @@ fitMeasures(fit_trainM, fit.measures = "all")
 ```
 
 ## PLS-PM
-```{r si_model_pls}
+```{r train si_model_pls}
 # data.pls <- read_excel("~/Desktop/sem_combo.xlsx", range=cell_cols(1:46), col_types = "numeric")
 # save("data.pls", file="~/Desktop/sem_combo.RData")
 load("~/Desktop/sem_combo.RData")
@@ -3456,7 +3456,7 @@ head(imv_pls1$scores, n = 5)
 tail(imv_pls1$scores, n = 5)
 ```
 
-```{r PLS_indices}
+```{r train PLS_indices}
 imv_pls1$outer_model     #outer model
 imv_pls1$inner_model     #inner model
 imv_pls1$path_coefs      #path coefficients matrix
@@ -3472,7 +3472,7 @@ imv_pls1$data            #data matrix
 
 
 ### Mediation and moderation analysis
-```{r mediation}
+```{r train mediation}
 # TSM as a mediator?
 fit.totaleffect=lm(entrap~def, results_tr_com1)
 summary(fit.totaleffect)
@@ -3559,7 +3559,7 @@ dim(sub.v10)
 
 
 ## Eating disorder, any type
-```{r ed_any}
+```{r test ed_any}
 test1.v11 <- test1.v10 %>%
   filter(!is.na(ed_any)) %>%
   mutate(ed_any = case_when(ed_any == 1 ~ 1,
@@ -3573,7 +3573,7 @@ jarque.bera.test(test1.v11$ed_any)
 ## Psychopharm medication count
 Create 'meds_count' to be used in future regression to capture quantity and diversity of medications 
 to see what is associated (i.e. the count is meant to find the common meds in suicidality)
-```{r med_count}
+```{r test med_count}
 test1.v11$meds_1 <- as.numeric(test1.v11$meds_1)
 test1.v11$meds_2 <- as.numeric(test1.v11$meds_2)
 test1.v11$meds_3 <- as.numeric(test1.v11$meds_3)
@@ -3610,7 +3610,7 @@ jarque.bera.test(test1.v11$meds_count)
 ```
 
 ## Religion
-```{r religios}
+```{r test religios}
 # Label levels of religious importance
 test1.v13 <- test1.v11 %>%
   filter(!is.na(religios))
@@ -3621,7 +3621,7 @@ jarque.bera.test(test1.v13$religios)
 ```
 
 ## Residence type
-```{r residenc}
+```{r test residenc}
 test1.v13 <- test1.v13 %>%
   mutate(residenc = case_when(residenc == 1 ~ 1,  # on-campus
                               residenc == 2 ~ 1,
@@ -3637,7 +3637,7 @@ jarque.bera.test(test1.v13$residenc)
 ```
 
 ## International student
-```{r international}
+```{r test international}
 test1.v14 <- test1.v13 %>%
   mutate(international = case_when(international == 1 ~ 1,
                                    international == 0 ~ 0)) %>%
@@ -3648,7 +3648,7 @@ table(test1.v14$international, useNA = "always")
 ```
 
 ## Activity Involvement
-```{r Activities}
+```{r test activities}
 # set all NAs in actvities equal to 0
 test1.v14$activ_ac[is.na(test1.v14$activ_ac)] <- 1
 test1.v14$activ_athc[is.na(test1.v14$activ_athc)] <- 1
@@ -3695,7 +3695,7 @@ jarque.bera.test(test1.v14$activ_no)
 ```
 
 ## School variable
-```{r school2}
+```{r test school2}
 # insert each school as a dichotomous var
 test1.v14 <- test1.v14 %>%
   mutate(var_AlbertaCAD = ifelse((school2 == "AlbertaCAD"), 1, 0)) %>%
@@ -3760,7 +3760,7 @@ test1.v14 <- test1.v14 %>%
 ```
 
 ### School type levels
-```{r school2_type}
+```{r test school2_type}
 test1.v14 <- test1.v14 %>%
   # 4 year college
   mutate(school2_4yr = ifelse(var_Boston + var_CalPoly + var_ColoradoCollege + var_ColoradoMountain + var_Delaware +
@@ -3814,7 +3814,7 @@ table(test1.v14$school2_type, useNA = "always") # check output
 ```
 
 ## Insurance coverage
-```{r ins_cover}
+```{r test ins_cover}
 # create one insurance var from related questions in 'ins_' module
 test1.v16 <- test1.v14 %>% 
   mutate(ins_no = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
@@ -3829,7 +3829,7 @@ jarque.bera.test(test1.v16$ins_no)
 
 ## Illicit drug use
 Creates illicit drug use var (limitation -- 30 days reflection)
-```{r drugs_yn}
+```{r test drugs_yn}
 ## add summary of each
 test1.v16$drug_coc[is.na(test1.v16$drug_coc)] <- 0
 test1.v16$drug_her[is.na(test1.v16$drug_her)] <- 0
@@ -3879,7 +3879,7 @@ jarque.bera.test(test1.v16$drug_mar)
 ```
 
 ## Current financial stressors
-```{r fincur}
+```{r test fincur}
 test1.v16 <- test1.v16 %>%
   filter(!is.na(fincur)) %>%
   mutate(fincur = case_when(fincur == 3 ~ 0,  # sometimes
@@ -3894,7 +3894,7 @@ jarque.bera.test(test1.v16$fincur)
 ```
 
 ## Abuse or assault, in the last year only
-```{r assault}
+```{r test assault}
 table(test1.v16$abuse_life)
 table(test1.v16$abuse_recent)
 
@@ -3933,7 +3933,7 @@ test1.v17 = subset(test1.v17, select= -c(abuse_life, abuse_recent)) # clean up v
 ```
 
 ## Binging frequency
-```{r binge_fr}
+```{r test binge_fr}
 # set all binge_fr values equal to 0
 test1.v17$binge_fr_f[is.na(test1.v17$binge_fr_f)] <- 0
 test1.v17$binge_fr_m[is.na(test1.v17$binge_fr_m)] <- 0
@@ -3957,7 +3957,7 @@ test1.v18 = subset(test1.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)) # 
 ```
 
 ## Recent Psychiatric Hospitalization, last 12 months
-```{r psyhx}
+```{r test psyhx}
 # Create variable for any psychiatric hospitalization in the last 12 months
 test1.v18 <- test1.v18 %>% 
   mutate(psyhx = case_when((prov_pes == 1 | prov_inp == 1 | prov_par == 1) ~ 1, 
@@ -3973,7 +3973,7 @@ test1.v18 = subset(test1.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean 
 ```
 
 ## Current GPA
-```{r gpa_sr}
+```{r test gpa_sr}
 test1.v18 <- test1.v18 %>%
   mutate(gpa_sr = case_when(gpa_sr == 0 ~ 1,   # A+
                             gpa_sr == 1 ~ 1,   # A
@@ -3994,7 +3994,7 @@ jarque.bera.test(test1.v18$gpa_sr)
 ```
 
 ## PHQ risk/severity
-```{r deprawsc}
+```{r test deprawsc}
 table(test1.v18$deprawsc)
 test1.v18$deprawsc <- as.numeric(test1.v18$deprawsc)
 
@@ -4034,7 +4034,7 @@ table(test1.v20$dep_type, useNA = "always")
 ```
 
 ## GAD7 total
-```{r anx_score}
+```{r test anx_score}
 test1.v20$anx_score <- as.numeric(test1.v20$anx_score)
 
 # Convert to severity
@@ -4051,7 +4051,7 @@ table(test1.v20$anx_type, useNA = "always") # check output
 ```
 
 ## Academic impact
-```{r aca_impa}
+```{r test aca_impa}
 test1.v20 <- test1.v20 %>%
   filter(!is.na(aca_impa)) %>%
   mutate(aca_impa = case_when(aca_impa == 1 ~ 1,
@@ -4065,7 +4065,7 @@ jarque.bera.test(test1.v20$aca_impa)
 ```
 
 ## AAQ total (elective module)
-```{r aaq_dum}
+```{r test aaq_dum}
 # create AAQ_tot variable to sum up imputed AAQ questions
 test1.v22 <- test1.v20 %>%
   mutate(aaq_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
@@ -4098,7 +4098,7 @@ table(test1.v22$aaq_dum, useNA = "always")
 ```
 
 ## Persist
-```{r persist}
+```{r test persist}
 test1.v22 <- test1.v22 %>%
   mutate(persist = case_when(persist == 1 ~ 1,   # confident
                              persist == 2 ~ 2, 
@@ -4113,7 +4113,7 @@ jarque.bera.test(test1.v22$persist)
 ```
 
 ## Depression impact
-```{r dep_impa}
+```{r test dep_impa}
 test1.v24 <- test1.v22 %>%
   mutate(dep_impa = case_when(dep_impa == 1 ~ 1,
                               dep_impa == 2 ~ 2,
@@ -4127,7 +4127,7 @@ jarque.bera.test(test1.v24$dep_impa)
 ```
 
 ## Anxiety impact
-```{r gad7_impa}
+```{r test gad7_impa}
 test1.v24 <- test1.v24 %>%
   mutate(gad7_impa = case_when(gad7_impa == 1 ~ 1,
                                gad7_impa == 2 ~ 2,
@@ -4141,7 +4141,7 @@ jarque.bera.test(test1.v24$gad7_impa)
 ```
 
 ## Belonging
-```{r belong}
+```{r test belong}
 test1.v26 <- test1.v24 %>%
   mutate(belong1 = case_when(belong1 == 1 ~ 1,
                              belong1 == 2 ~ 2,
@@ -4162,7 +4162,7 @@ table(test1.v26$belong9)  # not as good of a proxy
 ```
 
 ## Overall school satisfaction
-```{r satisfied_overall}
+```{r test satisfied_overall}
 test1.v26 <- test1.v26 %>%
   mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,
                                        satisfied_overall == 2 ~ 5,
@@ -4178,7 +4178,7 @@ jarque.bera.test(test1.v26$satisfied_overall)
 ```
 
 ## Flourishing Scale
-```{r flourish}
+```{r test flourish}
 test1.v26$flourish <- as.numeric(test1.v26$flourish)
 table(test1.v26$flourish)
 
@@ -4210,7 +4210,7 @@ table(test1.v26$flourish_dum, useNA = "always")
 ```
 
 ## Informal Mental Health Support
-```{r inf}
+```{r test inf}
 test1.v26$inf_1[is.na(test1.v26$inf_1)] <- 1
 test1.v26$inf_2[is.na(test1.v26$inf_2)] <- 1
 test1.v26$inf_3[is.na(test1.v26$inf_3)] <- 1
@@ -4240,7 +4240,7 @@ jarque.bera.test(test1.v26$inf)
 ```
 
 ## BRS
-```{r BRS_tot}
+```{r test BRS_tot}
 test1.v26 <- test1.v26 %>%
   mutate(brs_tot = as.integer(BRS_1) + as.integer(BRS_2) + as.integer(BRS_3) + as.integer(BRS_4) + as.integer(BRS_5))
 
@@ -4279,7 +4279,7 @@ table(test1.v26$brs_dum, useNA = "always")
 # MISSINGNESS
 
 ## Absolute missingness, by school
-```{r Structural missingness, by school}
+```{r test structural missingness}
 test1.v28 <- test1.v26
 # school structural analysis
 var_names <- c(
@@ -4375,7 +4375,7 @@ write_xlsx(test1_sem_out, path = "test1_nondummy.xls", col_names = TRUE, format_
 
 
 ## Prep for SEM dummy cols with partial continuous and dummy
-```{r results_tr_com2}
+```{r results_test}
 # Prep SEM data vars
 test1_sem1 <- test1.v28 %>% select(
   # outcome var
@@ -4453,9 +4453,12 @@ fitMeasures(fit_testM, fit.measures = "all")
 
 
 
+
+
+
 18 and 19 sub-population
 
-```{r 18-19_frame}
+```{r sub 18-19_frame}
 sub18.v11 <- sub.v10 %>%
   filter(undercls == 1)
 
@@ -4465,7 +4468,7 @@ dim(sub18.v11)
 
 
 ## Eating disorder, any type
-```{r ed_any}
+```{r sub ed_any}
 dim(sub18.v11)
 
 sub18.v11 <- sub18.v11 %>%
@@ -4481,7 +4484,7 @@ jarque.bera.test(sub18.v11$ed_any)
 ## Psychopharm medication count
 Create 'meds_count' to be used in future regression to capture quantity and diversity of medications 
 to see what is associated (i.e. the count is meant to find the common meds in suicidality)
-```{r med_count}
+```{r sub med_count}
 sub18.v11$meds_1 <- as.numeric(sub18.v11$meds_1)
 sub18.v11$meds_2 <- as.numeric(sub18.v11$meds_2)
 sub18.v11$meds_3 <- as.numeric(sub18.v11$meds_3)
@@ -4517,7 +4520,7 @@ jarque.bera.test(sub18.v11$meds_count)
 ```
 
 ## Religion
-```{r religios}
+```{r sub religios}
 # Label levels of religious importance
 sub18.v13 <- sub18.v11 %>%
   filter(!is.na(religios))
@@ -4528,7 +4531,7 @@ jarque.bera.test(sub18.v13$religios)
 ```
 
 ## Residence type
-```{r residenc}
+```{r sub residenc}
 sub18.v13 <- sub18.v13 %>%
   mutate(residenc = case_when(residenc == 1 ~ 1,  # on-campus
                               residenc == 2 ~ 1,
@@ -4544,7 +4547,7 @@ jarque.bera.test(sub18.v13$residenc)
 ```
 
 ## International student
-```{r international}
+```{r sub international}
 sub18.v14 <- sub18.v13 %>%
   mutate(international = case_when(international == 1 ~ 1,
                                    international == 0 ~ 0)) %>%
@@ -4555,7 +4558,7 @@ table(sub18.v14$international, useNA = "always")
 ```
 
 ## Activity Involvement
-```{r Activities}
+```{r sub activities}
 # set all NAs in actvities equal to 0
 sub18.v14$activ_ac[is.na(sub18.v14$activ_ac)] <- 1
 sub18.v14$activ_athc[is.na(sub18.v14$activ_athc)] <- 1
@@ -4601,7 +4604,7 @@ jarque.bera.test(sub18.v14$activ_no)
 ```
 
 ## School variable
-```{r school2}
+```{r sub school2}
 # insert each school as a dichotomous var
 sub18.v14 <- sub18.v14 %>%
   mutate(var_AlbertaCAD = ifelse((school2 == "AlbertaCAD"), 1, 0)) %>%
@@ -4666,7 +4669,7 @@ sub18.v14 <- sub18.v14 %>%
 ```
 
 ### School type levels
-```{r school2_type}
+```{r sub school2_type}
 sub18.v14 <- sub18.v14 %>%
   # 4 year college
   mutate(school2_4yr = ifelse(var_Boston + var_CalPoly + var_ColoradoCollege + var_ColoradoMountain + var_Delaware +
@@ -4720,7 +4723,7 @@ table(sub18.v14$school2_type, useNA = "always") # check output
 ```
 
 ## Insurance coverage
-```{r ins_cover}
+```{r sub ins_no}
 # create one insurance var from related questions in 'ins_' module
 sub18.v16 <- sub18.v14 %>% 
   mutate(ins_no = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
@@ -4734,7 +4737,7 @@ table(sub18.v16$ins_no, useNA = "always")   # check output
 
 ## Illicit drug use
 Creates illicit drug use var (limitation -- 30 days reflection)
-```{r drugs_yn}
+```{r sub drugs_yn}
 ## add summary of each
 sub18.v16$drug_coc[is.na(sub18.v16$drug_coc)] <- 0
 sub18.v16$drug_her[is.na(sub18.v16$drug_her)] <- 0
@@ -4768,7 +4771,7 @@ table(sub18.v16$drugs_yn, useNA = "always")
 ```
 
 ## Marijuana use
-```{r sub1818 drug_mar}
+```{r sub drug_mar}
 sub18.v16$drug_mar[is.na(sub18.v16$drug_mar)] <- 0
 table(sub18.v16$drug_mar)  
 
@@ -4783,7 +4786,7 @@ table(sub18.v16$drug_mar, useNA = "always")
 ```
 
 ## Current financial stressors
-```{r fincur}
+```{r sub fincur}
 sub18.v16 <- sub18.v16 %>%
   filter(!is.na(fincur)) %>%
   mutate(fincur = case_when(fincur == 3 ~ 0,  # sometimes
@@ -4797,7 +4800,7 @@ table(sub18.v16$fincur, useNA = "always")
 ```
 
 ## Abuse or assault, in the last year only
-```{r assault}
+```{r sub assault}
 table(sub18.v16$abuse_life)
 table(sub18.v16$abuse_recent)
 
@@ -4833,7 +4836,7 @@ table(sub18.v17$assault, useNA = "always")
 ```
 
 ## Binging frequency
-```{r binge_fr}
+```{r sub binge_fr}
 # set all binge_fr values equal to 0
 sub18.v17$binge_fr_f[is.na(sub18.v17$binge_fr_f)] <- 0
 sub18.v17$binge_fr_m[is.na(sub18.v17$binge_fr_m)] <- 0
@@ -4854,7 +4857,7 @@ table(sub18.v18$binge, useNA = "always") # check output
 ```
 
 ## Recent Psychiatric Hospitalization, last 12 months
-```{r psyhx}
+```{r sub psyhx}
 # Create variable for any psychiatric hospitalization in the last 12 months
 sub18.v18 <- sub18.v18 %>% 
   mutate(psyhx = case_when((prov_pes == 1 | prov_inp == 1 | prov_par == 1) ~ 1, 
@@ -4867,7 +4870,7 @@ table(sub18.v18$psyhx, useNA = "always")   # check output
 ```
 
 ## Current GPA
-```{r gpa_sr}
+```{r sub gpa_sr}
 sub18.v18 <- sub18.v18 %>%
   mutate(gpa_sr = case_when(gpa_sr == 0 ~ 1,   # A+
                             gpa_sr == 1 ~ 1,   # A
@@ -4887,7 +4890,7 @@ table(sub18.v18$gpa_sr, useNA = "always")
 ```
 
 ## PHQ risk/severity
-```{r deprawsc}
+```{r sub dep_type}
 table(sub18.v18$deprawsc)
 sub18.v18$deprawsc <- as.numeric(sub18.v18$deprawsc)
 
@@ -4927,7 +4930,7 @@ table(sub18.v20$dep_type, useNA = "always")
 ```
 
 ## GAD7 total
-```{r anx_score}
+```{r sub anx_type}
 sub18.v20$anx_score <- as.numeric(sub18.v20$anx_score)
 
 # Convert to severity
@@ -4956,7 +4959,7 @@ table(sub18.v20$aca_impa, useNA = "always")
 ```
 
 ## AAQ total (elective module)
-```{r aaq_dum}
+```{r sub aaq_dum}
 # create AAQ_tot variable to sum up imputed AAQ questions
 sub18.v22 <- sub18.v20 %>%
   mutate(aaq_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
@@ -4989,7 +4992,7 @@ table(sub18.v22$aaq_dum, useNA = "always")
 ```
 
 ## Persist
-```{r persist}
+```{r sub persist}
 sub18.v22 <- sub18.v22 %>%
   mutate(persist = case_when(persist == 1 ~ 1,   # confident
                              persist == 2 ~ 2, 
@@ -5003,7 +5006,7 @@ table(sub18.v22$persist, useNA = "always") # check output
 ```
 
 ## Depression impact
-```{r dep_impa}
+```{r sub dep_impa}
 sub18.v24 <- sub18.v22 %>%
   mutate(dep_impa = case_when(dep_impa == 1 ~ 1,  # minimal
                               dep_impa == 2 ~ 2,
@@ -5016,7 +5019,7 @@ table(sub18.v24$dep_impa, useNA = "always")
 ```
 
 ## Anxiety impact
-```{r gad7_impa}
+```{r sub gad7_impa}
 sub18.v24 <- sub18.v24 %>%
   mutate(gad7_impa = case_when(gad7_impa == 1 ~ 1,  # minimal
                                gad7_impa == 2 ~ 2,
@@ -5029,7 +5032,7 @@ table(sub18.v24$gad7_impa, useNA = "always")
 ```
 
 ## Current needs
-```{r percneed_cur}
+```{r sub percneed_cur}
 sub18.v24 <- sub18.v24 %>%
   mutate(percneed_cur = case_when(percneed_cur == 1 ~ 1,
                                  percneed_cur == 2 ~ 2,
@@ -5042,7 +5045,7 @@ table(sub18.v24$percneed_cur, useNA = "always")
 ```
 
 ## Belonging
-```{r belong}
+```{r sub belong}
 sub18.v26 <- sub18.v24 %>%
   mutate(belong1 = case_when(belong1 == 1 ~ 1,
                              belong1 == 2 ~ 2,
@@ -5057,7 +5060,7 @@ summary(sub18.v26$belong1)
 ```
 
 ## Overall school satisfaction
-```{r satisfied_overall}
+```{r sub satisfied_overall}
 sub18.v26 <- sub18.v26 %>%
   mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,
                                        satisfied_overall == 2 ~ 5,
@@ -5072,7 +5075,7 @@ table(sub18.v26$satisfied_overall, useNA = "always")
 ```
 
 ## Flourishing Scale
-```{r flourish}
+```{r sub flourish}
 sub18.v26$flourish <- as.numeric(sub18.v26$flourish)
 table(sub18.v26$flourish)
 
@@ -5104,7 +5107,7 @@ table(sub18.v26$flourish_dum, useNA = "always")
 ```
 
 ## Informal Mental Health Support
-```{r inf}
+```{r sub inf}
 sub18.v26$inf_1[is.na(sub18.v26$inf_1)] <- 1
 sub18.v26$inf_2[is.na(sub18.v26$inf_2)] <- 1
 sub18.v26$inf_3[is.na(sub18.v26$inf_3)] <- 1
@@ -5130,47 +5133,10 @@ sub18.v26$inf <- as.logical(sub18.v26$inf)
 table(sub18.v26$inf, useNA ="always")
 ```
 
-## BRS
-```{r BRS_tot}
-sub18.v26 <- sub18.v26 %>%
-  mutate(brs_tot = as.integer(BRS_1) + as.integer(BRS_2) + as.integer(BRS_3) + as.integer(BRS_4) + as.integer(BRS_5))
-
-table(sub18.v26$brs_tot)
-sub18.v26$brs_tot <- as.numeric(sub18.v26$brs_tot)
-
-table(is.na(sub18.v26$brs_tot))
-
-#  for loop for predictive cutoff point needed
-rs_df <- data.frame("cutoff" = c(), "rs" = c())
-for (i in 6:24) {
-  brs_bin <- ifelse(sub18.v26$brs_tot >= i, TRUE, FALSE)
-  model = lm(sub18.v26$sui_idea ~ brs_bin)
-  rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
-}
-
-names(rs_df) <- c("cutoff", "rs")
-rs_df_arranged <- rs_df %>% 
-  arrange(desc(rs)) 
-
-# deem 'rs_df_arranged[1,1]' as SI cutoff
-sub18.v26 <- sub18.v26 %>%
-  mutate(brs_dum = ifelse(brs_tot > rs_df_arranged[1,1], 1, 0)) %>%
-  mutate(brs_dum = case_when(brs_dum == 1 ~ 1,
-                             brs_dum == 0 ~ 0)) %>%
-  filter(!is.na(brs_dum))
-sub18.v26$brs_dum <- as.logical(sub18.v26$brs_dum)
-
-# output
-rs_df_arranged[1,1]
-table(sub18.v26$brs_tot, useNA = "always")
-table(sub18.v26$brs_dum, useNA = "always")
-```
-
-
 # MISSINGNESS
 
 ## Absolute missingness, by school
-```{r Structural missingness, by school}
+```{r sub structural missingness}
 sub18.v28 <- sub18.v26
 # school structural analysis
 var_names <- c(
@@ -5221,7 +5187,7 @@ write_xlsx(school2, path = "sch2_missing.xlsx", col_names = TRUE, format_headers
 ```
 
 ## Missingness of each var w/in each var
-```{r Missingness between vars}
+```{r sub missingness between vars}
 missing_dfs <- list()
 for (k in 1:length(var_names)) {
 
@@ -5261,7 +5227,7 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 
 
 ## Select all vars for SEM
-```{r sub1818_df_sem2}
+```{r sub18_df_sem2}
 view(sub18.v28)
 
 # Prep SEM data vars
@@ -5302,7 +5268,7 @@ write_xlsx(sub18_sem_out, path = "sub18_nondummy.xls", col_names = TRUE, format_
 
 
 ## Prep for SEM dummy cols with partial continuous and dummy
-```{r results_tr_com2}
+```{r results_sub18_com}
 # Prep SEM data vars
 sub18_sem <- sub18.v28 %>% select(
   # outcome var
