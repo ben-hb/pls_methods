@@ -403,23 +403,14 @@ hist(data.v2$age)
 
 data.v2 <- data.v2 %>%
   filter(!is.na(age))
-  # mutate(undercls = case_when(age == 18 ~ 1,
-  #                       age == 19 ~ 1,
-  #                       age == 20 ~ 0,
-  #                       age == 21 ~ 0,
-  #                       age == 22 ~ 0,
-  #                       age == 23 ~ 0,
-  #                       age == 24 ~ 0,
-  #                       age == 25 ~ 0)) %>%
-  #   mutate(age = case_when(age == 18 ~ 1,
-  #                       age == 19 ~ 1,
-  #                       age == 20 ~ 2,
-  #                       age == 21 ~ 2,
-  #                       age == 22 ~ 3,
-  #                       age == 23 ~ 3,
-  #                       age == 24 ~ 3,
-  #                       age == 25 ~ 3)) %>%
-  # filter(!is.na(undercls))
+  mutate(undercls = case_when(age == 18 ~ 1,
+                        age == 19 ~ 1,
+                        age == 20 ~ 0,
+                        age == 21 ~ 0,
+                        age == 22 ~ 0,
+                        age == 23 ~ 0,
+                        age == 24 ~ 0,
+                        age == 25 ~ 0)) 
 
 table(data.v2$age, useNA = "always")
 jarque.bera.test(data.v2$age)
@@ -4569,10 +4560,6 @@ nullRMSEA(fit_test1, scaled = FALSE, silent = FALSE)
 ```{r 18-19_frame}
 sub18.v11 <- sub.v10 %>%
   filter(undercls)
-
-table(sub.v11$undercls)
-  
-  
 ```
 
 
@@ -4852,8 +4839,14 @@ jarque.bera.test(sub.v16$ins_cover)
 Creates illicit drug use var (limitation -- 30 days reflection)
 ```{r drugs_yn}
 ## add summary of each
-table(sub.v16$drug_none)
-table(sub.v16$drug_mar)  
+sub.v16$drug_coc[is.na(sub.v16$drug_coc)] <- 0
+sub.v16$drug_her[is.na(sub.v16$drug_her)] <- 0
+sub.v16$drug_met[is.na(sub.v16$drug_met)] <- 0
+sub.v16$drug_stim[is.na(sub.v16$drug_stim)] <- 0
+sub.v16$drug_ect[is.na(sub.v16$drug_ect)] <- 0
+sub.v16$drug_opi[is.na(sub.v16$drug_opi)] <- 0
+sub.v16$drug_other[is.na(sub.v16$drug_other)] <- 0
+
 table(sub.v16$drug_coc)
 table(sub.v16$drug_her)  # too small
 table(sub.v16$drug_met)  # too small
@@ -4864,25 +4857,31 @@ table(sub.v16$drug_other)  # too vague, small
 
 # Sample is too small to analyze individual drugs, except for marijuana. Transform to illicit drug y/n
 sub.v16 <- sub.v16 %>%
-  mutate(drugs_yn = case_when(drug_none == 1 ~ 0,
-                              drug_coc == 1 ~ 1,
+  mutate(drugs_yn = case_when(drug_coc == 1 ~ 1,
                               drug_her == 1 ~ 1,
                               drug_met == 1 ~ 1,
                               drug_stim == 1 ~ 1,
                               drug_ect == 1 ~ 1,
                               drug_opi == 1 ~ 1,
-                              drug_other == 1 ~ 1)) %>%
-  mutate(drugs_yn = case_when(drugs_yn == 1 ~ 1,
-                              drugs_yn == 0 ~ 0,
-                              is.na(drugs_yn) ~ 0)) %>%
-  mutate(drug_mar = case_when(drug_mar == 1 ~ 1, 
-                              drug_mar == 0 ~ 0,
-                              is.na(drug_mar) ~ 0))
-sub.v16$drug_mar <- as.logical(sub.v16$drug_mar)
+                              drug_other == 1 ~ 1))
+sub.v16$drugs_yn[is.na(sub.v16$drugs_yn)] <- 0
 sub.v16$drugs_yn <- as.logical(sub.v16$drugs_yn)
-  
+
 table(sub.v16$drugs_yn, useNA = "always")
 jarque.bera.test(sub.v16$drugs_yn)
+```
+
+## Marijuana use
+```{r test drug_mar}
+sub.v16$drug_mar[is.na(sub.v16$drug_mar)] <- 0
+table(sub.v16$drug_mar)  
+
+sub.v16 <- sub.v16 %>%
+  mutate(drug_mar = case_when(drug_mar == 1 ~ 1, 
+                              drug_mar == 0 ~ 0)) %>%
+  filter(!is.na(drug_mar))
+
+sub.v16$drug_mar <- as.logical(sub.v16$drug_mar)
 
 table(sub.v16$drug_mar, useNA = "always")
 jarque.bera.test(sub.v16$drug_mar)
