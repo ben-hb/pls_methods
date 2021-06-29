@@ -3894,8 +3894,14 @@ jarque.bera.test(test1.v16$ins_cover)
 Creates illicit drug use var (limitation -- 30 days reflection)
 ```{r drugs_yn}
 ## add summary of each
-table(test1.v16$drug_none)
-table(test1.v16$drug_mar)  
+test1.v16$drug_coc[is.na(test1.v16$drug_coc)] <- 0
+test1.v16$drug_her[is.na(test1.v16$drug_her)] <- 0
+test1.v16$drug_met[is.na(test1.v16$drug_met)] <- 0
+test1.v16$drug_stim[is.na(test1.v16$drug_stim)] <- 0
+test1.v16$drug_ect[is.na(test1.v16$drug_ect)] <- 0
+test1.v16$drug_opi[is.na(test1.v16$drug_opi)] <- 0
+test1.v16$drug_other[is.na(test1.v16$drug_other)] <- 0
+
 table(test1.v16$drug_coc)
 table(test1.v16$drug_her)  # too small
 table(test1.v16$drug_met)  # too small
@@ -3906,29 +3912,35 @@ table(test1.v16$drug_other)  # too vague, small
 
 # Sample is too small to analyze individual drugs, except for marijuana. Transform to illicit drug y/n
 test1.v16 <- test1.v16 %>%
-  mutate(drugs_yn = case_when(drug_none == 1 ~ 0,
-                              drug_coc == 1 ~ 1,
+  mutate(drugs_yn = case_when(drug_coc == 1 ~ 1,
                               drug_her == 1 ~ 1,
                               drug_met == 1 ~ 1,
                               drug_stim == 1 ~ 1,
                               drug_ect == 1 ~ 1,
                               drug_opi == 1 ~ 1,
-                              drug_other == 1 ~ 1)) %>%
-  mutate(drugs_yn = case_when(drugs_yn == 1 ~ 1,
-                              drugs_yn == 0 ~ 0,
-                              is.na(drugs_yn) ~ 0)) %>%
-  mutate(drug_mar = case_when(drug_mar == 1 ~ 1, 
-                              drug_mar == 0 ~ 0,
-                              is.na(drug_mar) ~ 0))
-test1.v16$drug_mar <- as.logical(test1.v16$drug_mar)
+                              drug_other == 1 ~ 1))
+test1.v16$drugs_yn[is.na(test1.v16$drugs_yn)] <- 0
 test1.v16$drugs_yn <- as.logical(test1.v16$drugs_yn)
-  
+
 table(test1.v16$drugs_yn, useNA = "always")
 jarque.bera.test(test1.v16$drugs_yn)
+```
+
+```{r test drug_mar}
+test1.v16$drug_mar[is.na(test1.v16$drug_mar)] <- 0
+table(test1.v16$drug_mar)  
+
+test1.v16 <- test1.v16 %>%
+  mutate(drug_mar = case_when(drug_mar == 1 ~ 1, 
+                              drug_mar == 0 ~ 0)) %>%
+  filter(!is.na(drug_mar))
+
+test1.v16$drug_mar <- as.logical(test1.v16$drug_mar)
 
 table(test1.v16$drug_mar, useNA = "always")
 jarque.bera.test(test1.v16$drug_mar)
 ```
+
 
 ## Current financial stressors
 ```{r fincur}
@@ -4192,19 +4204,6 @@ table(test1.v24$gad7_impa, useNA = "always")
 jarque.bera.test(test1.v24$gad7_impa)
 ```
 
-## Current needs
-```{r percneed_cur}
-test1.v24 <- test1.v24 %>%
-  mutate(percneed_cur = case_when(percneed_cur == 1 ~ 1,
-                                 percneed_cur == 2 ~ 2,
-                                 percneed_cur == 3 ~ 3,
-                                 percneed_cur == 4 ~ 4,
-                                 percneed_cur == 5 ~ 5,
-                                 percneed_cur == 6 ~ 6))
-test1.v24$percneed_cur <- as.numeric(test1.v24$percneed_cur)
-table(test1.v24$percneed_cur, useNA = "always")
-```
-
 ## Belonging
 ```{r belong}
 test1.v26 <- test1.v24 %>%
@@ -4394,42 +4393,6 @@ view(school2)
 write_xlsx(school2, path = "sch2_missing.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
-## Missingness of each var w/in each var
-```{r Missingness between vars}
-missing_dfs <- list()
-for (k in 1:length(var_names)) {
-
-#create skeleton of missingness matrix
-var <- count(test1.v28, test1.v28[var_names[k]])
-var_ncol <- ncol(var)
-
-for (j in 1:length(var_names)) {
-  var[, var_ncol + j] <- 999
-}
-# create column headers and vectors for school, total students, then each variable count
-names <- c(paste0(var_names[k], "_values"), "total", var_names)
-names(var) <- names
-
-# input values for each school missingness across all variables
-for (j in 1:(length(var_names))) {
-for (i in 1:nrow(var)) {   # i corresponds to rows, j to columns
-  var[i, 2 + j] <- sum(!is.na(test1.v28[test1.v28[[var_names[k]]] == var[[i,1]], var_names[j]]))
-}
-}
-# add percentage in each column
-var_m <- as.matrix(var[-1]) 
-props <- var_m[,2:ncol(var_m)] / var_m[,1]
-var <- data.frame(var[, 1:2], props)
-replace_na("NA")
-missing_dfs[[k]] <- var
-}
-
-names(missing_dfs) <- var_names
-save(missing_dfs, file = "missing_dfs.RData")
-load("missing_dfs.RData")
-write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers = TRUE)
-```
-
 
 # DATA PREP
 
@@ -4511,7 +4474,7 @@ results_test_com1 <- dummy_cols(test1_sem1, select_columns = c("si_type", "sexua
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 #view(results_tr_com1)
 
-SI_model_tr1 <- '
+SI_model_test1 <- '
                 # measurement model
                 
                   si =~    si_type_2 + si_type_3 + si_type_4
@@ -4539,7 +4502,7 @@ SI_model_tr1 <- '
                   assault ~~ dx_mh   '
 
 
-fit_test1 <- sem(SI_model_tr1, data=results_test_com1, ordered=T)
+fit_test1 <- sem(SI_model_test1, data=results_test_com1, ordered=T)
 summary_test <- summary(fit_test1, fit.measures=TRUE, standardized = TRUE)
 
     ## running NULL model, baseline model RMSEA
@@ -4547,25 +4510,16 @@ nullRMSEA(fit_test1, scaled = FALSE, silent = FALSE)
 
     ## modification indices
 modificationindices(fit_test1, minimum.value = 20)
-
-# Matrix math
-lavaan_cov <- cov(results_tr_com1)
-lavaan_det <- det(lavaan_cov)
-lavaan_eig <- eigen(lavaan_cov)
-eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
-eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
-
-linear_combos <- caret::findLinearCombos(results_tr_com1)
 ```
 
 # SEM model -- mod indices
 ```{r si_model_tr2}
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(test1_sem1, select_columns = c("si_type", "sexual", "school2_type"),
+results_test_com1 <- dummy_cols(test1_sem1, select_columns = c("si_type", "sexual", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 #view(results_tr_com1)
 
-SI_model_trM <- '
+SI_model_testM <- '
                 # measurement model
                 
                   si =~    si_type_2 + si_type_3 + si_type_4
@@ -4599,21 +4553,11 @@ SI_model_trM <- '
                   dep_type	~~	dep_impa  '
 
 
-fit_testM <- sem(SI_model_trM, data=results_tr_com1, ordered=T)
+fit_testM <- sem(SI_model_testM, data=results_test_com1, ordered=T)
 summary_test <- summary(fit_testM, fit.measures=TRUE, standardized = TRUE)
 
     ## running NULL model, baseline model RMSEA
 nullRMSEA(fit_test1, scaled = FALSE, silent = FALSE)
-
-
-# Matrix math
-lavaan_cov <- cov(results_tr_com1)
-lavaan_det <- det(lavaan_cov)
-lavaan_eig <- eigen(lavaan_cov)
-eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
-eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
-
-linear_combos <- caret::findLinearCombos(results_tr_com1)
 ```
 
 
