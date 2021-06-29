@@ -4480,7 +4480,7 @@ modificationindices(fit_test1, minimum.value = 20)
 ```
 
 # SEM model -- mod indices
-```{r si_model_tr2}
+```{r si_model_testM}
 ## Dummy col SEM w/ continuous
 results_test_com1 <- dummy_cols(test1_sem1, select_columns = c("si_type", "sexual", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
@@ -5496,3 +5496,7 @@ summary_sub18M <- summary(fit_sub18M, fit.measures=TRUE, standardized = TRUE)
 
     ## running NULL model, baseline model RMSEA
 nullRMSEA(fit_sub18M, scaled = FALSE, silent = FALSE)
+```
+
+
+```{r END}
