@@ -1509,7 +1509,12 @@ table(traindf.v13$discrim, useNA = "always") # check output
 ```{r train religios}
 # Label levels of religious importance
 traindf.v13 <- traindf.v13 %>%
-  filter(!is.na(religios))
+  filter(!is.na(religios)) %>%
+  mutate(religios = case_when(religios == 1 ~ 5, 
+                              religios == 2 ~ 4,
+                              religios == 3 ~ 3,
+                              religios == 4 ~ 2,
+                              religios == 5 ~ 1))
 traindf.v13$religios <- as.numeric(traindf.v13$religios)
 
 table(traindf.v13$religios, useNA = "always")       # Check output
@@ -3274,7 +3279,6 @@ SI_model_tr1 <- '
                            school2_type_2 + school2_type_3 + activ_no + ins_no + 
                            gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
                           
-
                   def =~ dep_type + aca_impa + anx_type
                               
                   tsm =~ aaq_dum + persist
@@ -3688,7 +3692,12 @@ testdf.v13 <- testdf.v11
 
 # Label levels of religious importance
 testdf.v13 <- testdf.v13 %>%
-  filter(!is.na(religios))
+  filter(!is.na(religios)) %>%
+  mutate(religios = case_when(religios == 1 ~ 5,
+                              religios == 2 ~ 4,
+                              religios == 3 ~ 3,
+                              religios == 4 ~ 2,
+                              religios == 5 ~ 1))
 testdf.v13$religios <- as.numeric(testdf.v13$religios)
 
 table(testdf.v13$religios, useNA = "always")       # Check output
@@ -4442,7 +4451,7 @@ head(testdf_sem1)   # check output
 ```
 
 # SEM model with partial cont and dummy
-```{r si_model_tr1}
+```{r si_model_test1}
 ## Dummy col SEM w/ continuous
 results_test_com1 <- dummy_cols(testdf_sem1, select_columns = c("si_type", "sexual", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
@@ -4601,7 +4610,7 @@ test20.v26 <- testdf.v26 %>%
   filter(age == 20 | age == 21 | age == 22 | age == 23 | age == 24 | age == 25)
 
 # Prep SEM data vars
-test20_sem <- test20.v28 %>% select(
+test20_sem <- test20.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
@@ -4617,7 +4626,7 @@ test20_sem <- test20.v28 %>% select(
   # entrapment
   dep_impa, gad7_impa,
   # motivational moderators
-  inf, flourish_dum, belong1, satisfied_overall)
+  inf, flourish_dum, belong1, satisfied_overall, mh_stigma)
 
 # create sem matrix 
 test20_sem <- test20_sem %>% data.matrix()
