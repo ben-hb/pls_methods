@@ -1759,24 +1759,6 @@ traindf.v14 <- traindf.v14 %>%
 traindf.v14$school2_type <- as.factor(traindf.v14$school2_type)
 
 table(traindf.v14$school2_type, useNA = "always") # check output
-
-# # Clean-up school2 var
-# traindf.v14 = subset(traindf.v14, select= -c(var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain,
-#                                        var_Delaware, var_DetroitMercy, var_Emerson, var_GeorgeMason,
-#                                        var_GeorgiaTech, var_Kalamazoo, var_Kansas, var_Merrimack,
-#                                        var_MichiganState, var_MontclairState, var_NevadaReno,
-#                                        var_PennCollegeTech, var_RhodeIsland, var_Rollins, var_Sewanee, var_Smith,
-#                                        var_SouthernNazarene, var_SouthwesternOklahomaState, var_StJohns,
-#                                        var_StMarys, var_StRose, var_TrumanState, var_TuftsHealthSciences,
-#                                        var_TuftsMainCampus, var_UChicago, var_UFlorida, var_UMDearborn, var_UMich,
-#                                        var_UTKnoxville, var_UniversityofSouthernCalifornia, var_Utah, var_VATech,
-#                                        var_VirginiaCommonwealth, var_WakeForest, var_WestVirginia,
-#                                        var_WesternCarolina, var_WesternMichigan, var_WesternWA, var_Xavier,
-#                                        var_OaklandCC, var_OklahomaCityCC, var_PaloAltoCollege,
-#                                        var_RedlandsCC, var_AlbertaCAD, var_CIA, var_ColumbusCAD,
-#                                        var_MDInstituteCollegeArt, var_MassArt, var_MinnesotaCAD,
-#                                        var_NHInstituteArt, var_Pratt, var_Ringling, var_SAIC,
-#                                        var_UNCSchoolArt, var_Watkins))
 ```
 
 ## ENVIRONMENT ANALYSES
@@ -2177,7 +2159,7 @@ model.le  %>%
 ```{r train results_prem}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                       meds_count, residenc, religios, activ_no, school2_type, ins_no, military,
+                                       meds_count,  religios, activ_no, school2_type, ins_no,
                                        gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx, international)
 
 # Corr_simple function
@@ -2786,9 +2768,6 @@ table(traindf.v26$flourish_dum, useNA = "always")
 #                               is.na(medther) ~0))
 # traindf.v26$medther <- as.logical(traindf.v26$medther)
 table(traindf.v26$medther)  # med or therapy
-
-traindf.v26$medtherc <- as.logical(traindf.v26$medtherc)
-table(traindf.v26$medtherc) # meds + therapy
 ```
 
 ## Informal Mental Health Support
@@ -3165,7 +3144,7 @@ results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # entrapment
     "dep_impa", "gad7_impa",
     # motivational moderators
-    "inf", "flourish_dum", "belong1", "talk", "satisfied_overall", "mh_stigma"), 
+    "inf", "flourish_dum", "belong1", "satisfied_overall", "mh_stigma"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 results_tr_sem1 <- na.omit(results_tr_sem1)
@@ -3371,59 +3350,6 @@ fitMeasures(fit_trainM, fit.measures = "all")
 # eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
 # linear_combos <- caret::findLinearCombos(results_tr_com1) # find troublesome combos
 ```
-
-### Mediation and moderation analysis
-```{r train mediation}
-# TSM as a mediator?
-fit.totaleffect=lm(entrap~def, results_tr_com1)
-summary(fit.totaleffect)
-fit.mediator <- lm(tsm~def, results_tr_com1)
-summary(fit.mediator)
-fit.dv <- lm(entrap~def+tsm, results_tr_com1)
-summary(fit.dv)
-
-results = mediation::mediate(fit.mediator, fit.dv, sims = 1000, boot=F, treat = "def", mediator = "tsm")
-summary(results)
-sens.bout <- medsens(results, rho.by = 0.05, sims = 1000)
-plot(sens.bout, sens.par = "rho")
-plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
-
-# TSM as a moderator
-summary(lm(entrap~def+tsm+def*tsm, data=results_tr_com1))
-
-# # # ENTRAPMENT AS A MEDIATOR
-# fit.totaleffect2 <- clm(si~def, data=results_tr_com1)
-# summary(fit.totaleffect2)
-# 
-# fit.mediator2 <- lm(entrap~def, data=results_tr_com1)
-# summary(fit.mediator2)
-# 
-# fit.dv2 <- clm(si~def+entrap, data=results_tr_com1)
-# summary(fit.dv2)
-# 
-# results2 <- mediate(fit.mediator2, fit.dv2, sims = 1000, boot= FALSE, treat = "def", mediator = "entrap")
-# summary(results2)
-# sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
-# plot(sens.bout, sens.par = "rho")
-# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
-# 
-# # # MM as a mediator or moderator?
-# fit.totaleffect3 <- lm(si~entrap, results_tr_com1)
-# summary(fit.totaleffect3)
-# 
-# fit.mediator3 <- lm(mm~entrap, results_tr_com1)
-# summary(fit.mediator3)
-# 
-# fit.dv3 <- lm(si~entrap+mm, results_tr_com1)
-# summary(fit.dv3)
-
-# results3 <- mediate(fit.mediator3, fit.dv2, sims = 1000, boot=F, treat = "entrap", mediator = "mm", robustSE=T)
-# summary(results3)
-# sens.bout <- medsens(results2, rho.by = 0.05, sims = 1000)
-# plot(sens.bout, sens.par = "rho")
-# plot(sens.bout, sens.par = "R2", r.type = 2, sign.prod = 1)
-```
-
 
 
 
@@ -4136,7 +4062,7 @@ jarque.bera.test(testdf.v20$aca_impa)
 ## AAQ total
 ```{r test aaq_dum}
 # create AAQ_tot variable to sum up imputed AAQ questions
-testdf.v22 <- testdf.v22 %>%
+testdf.v22 <- testdf.v20 %>%
   mutate(aaq_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
            as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7))
 
@@ -4392,7 +4318,7 @@ write_xlsx(testdf_sem_out, path = "testdf_nondummy.xls", col_names = TRUE, forma
 
 ## Create dummy vars
 ```{r test dummy_vars}
-results_tr_sem1 <- dummy_cols(testdf_sem, select_columns = c(
+results_test_sem1 <- dummy_cols(testdf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
@@ -4411,14 +4337,14 @@ results_tr_sem1 <- dummy_cols(testdf_sem, select_columns = c(
     "inf", "flourish_dum", "belong1", "talk", "satisfied_overall", "mh_stigma"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
-results_tr_sem1 <- na.omit(results_tr_sem1)
-results_tr_df1 <- as.data.frame(results_tr_sem1)
+results_test_sem1 <- na.omit(results_test_sem1)
+results_test_df1 <- as.data.frame(results_test_sem1)
 head(results_tr_df1)
 
 #save full var set for SEM
-save(results_tr_df1, file = "testdf_sem1.RData")
+save(results_test_df1, file = "testdf_sem1.RData")
 load("testdf_sem1.RData")
-write_xlsx(results_tr_df1, path = "testdf_sem1.xls", col_names = TRUE, format_headers = TRUE)
+write_xlsx(results_test_df1, path = "testdf_sem1.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Prep for SEM dummy cols with partial continuous and dummy
