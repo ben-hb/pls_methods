@@ -3672,8 +3672,8 @@ jarque.bera.test(testdf.v13$religios)
 ## International student
 ```{r test international}
 testdf.v14 <- testdf.v13 %>%
-  mutate(international = case_when(international == 1 ~ 1,
-                                   international == 0 ~ 0)) %>%
+  mutate(international = case_when(international == 1 ~ 0,
+                                   international == 0 ~ 1)) %>%
   filter(!is.na(international))
 testdf.v14$international <- as.logical(testdf.v14$international)
 
@@ -4194,12 +4194,12 @@ jarque.bera.test(testdf.v25$belong1)
 ## Overall school satisfaction
 ```{r test satisfied_overall}
 testdf.v26 <- testdf.v25 %>%
-  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 1,
-                                       satisfied_overall == 2 ~ 2,
-                                       satisfied_overall == 3 ~ 3,
-                                       satisfied_overall == 4 ~ 4,
-                                       satisfied_overall == 5 ~ 5,
-                                       satisfied_overall == 6 ~ 6)) %>% 
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,
+                                       satisfied_overall == 2 ~ 5,
+                                       satisfied_overall == 3 ~ 4,
+                                       satisfied_overall == 4 ~ 3,
+                                       satisfied_overall == 5 ~ 2,
+                                       satisfied_overall == 6 ~ 1)) %>% 
   filter(!is.na(satisfied_overall))
 testdf.v26$satisfied_overall <- as.numeric(testdf.v26$satisfied_overall)
 
