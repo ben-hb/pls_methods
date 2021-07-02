@@ -27,6 +27,7 @@ library(semEff)
 library(graphics)
 library(gvlma)
 library(haven)
+library(h2o)
 library(Hmisc)
 library(janitor)
 library(lavaan)
@@ -724,7 +725,6 @@ table(data.v6$race, useNA = "always")
 hist(data.v6$race)
 jarque.bera.test(data.v6$race)
 ```
-
 
 ### Race write-in reconcilation
 Reconciles all 'other' answers vi race_other_text
@@ -1574,8 +1574,8 @@ table(traindf.v14$military, useNA = "always")
 ## International student
 ```{r train international}
 traindf.v14 <- traindf.v14 %>%
-  mutate(international = case_when(international == 1 ~ 1,
-                                   international == 0 ~ 0)) %>%
+  mutate(international = case_when(international == 1 ~ 0,
+                                   international == 0 ~ 1)) %>%
   filter(!is.na(international))
 traindf.v14$international <- as.logical(traindf.v14$international)
 
@@ -2154,7 +2154,6 @@ model.le  %>%
           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
-
 # Full Premotivational Analysis
 ```{r train results_prem}
 # Define diathesis vars for correlation matrix
@@ -2716,12 +2715,12 @@ table(traindf.v26$belong9)  # not as good of a proxy
 ## Overall school satisfaction
 ```{r train satisfied_overall}
 traindf.v26 <- traindf.v26 %>%
-  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,
-                                       satisfied_overall == 2 ~ 5,
-                                       satisfied_overall == 3 ~ 4,
-                                       satisfied_overall == 4 ~ 3,
-                                       satisfied_overall == 5 ~ 2,
-                                       satisfied_overall == 6 ~ 1)) %>% 
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 1,
+                                       satisfied_overall == 2 ~ 2,
+                                       satisfied_overall == 3 ~ 3,
+                                       satisfied_overall == 4 ~ 4,
+                                       satisfied_overall == 5 ~ 5,
+                                       satisfied_overall == 6 ~ 6)) %>% 
   filter(!is.na(satisfied_overall))
 traindf.v26$satisfied_overall <- as.numeric(traindf.v26$satisfied_overall)
 
@@ -3351,7 +3350,6 @@ fitMeasures(fit_trainM, fit.measures = "all")
 # linear_combos <- caret::findLinearCombos(results_tr_com1) # find troublesome combos
 ```
 
-
 # SEM model -- mod indices, second round w/ loading
 ```{r si_model_tr3}
 ## Dummy col SEM w/ continuous
@@ -3392,8 +3390,6 @@ summary_train3 <- summary(fit_trainM2, fit.measures=TRUE, standardized = TRUE, r
 fitMeasures(fit_trainM2, fit.measures = "all")
 parameterestimates(fit_trainM2, boot.ci.type = "bca.simple", standardized = TRUE) 
 ```
-
-
 
 
 TESTING DATA
@@ -4198,12 +4194,12 @@ jarque.bera.test(testdf.v25$belong1)
 ## Overall school satisfaction
 ```{r test satisfied_overall}
 testdf.v26 <- testdf.v25 %>%
-  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,
-                                       satisfied_overall == 2 ~ 5,
-                                       satisfied_overall == 3 ~ 4,
-                                       satisfied_overall == 4 ~ 3,
-                                       satisfied_overall == 5 ~ 2,
-                                       satisfied_overall == 6 ~ 1)) %>% 
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 1,
+                                       satisfied_overall == 2 ~ 2,
+                                       satisfied_overall == 3 ~ 3,
+                                       satisfied_overall == 4 ~ 4,
+                                       satisfied_overall == 5 ~ 5,
+                                       satisfied_overall == 6 ~ 6)) %>% 
   filter(!is.na(satisfied_overall))
 testdf.v26$satisfied_overall <- as.numeric(testdf.v26$satisfied_overall)
 
@@ -4550,21 +4546,15 @@ test20_sem <- test20_sem %>% data.matrix()
 test20_sem <- na.omit(test20_sem)
 
 ## Dummy col SEM w/ continuous
-results_20_com <- dummy_cols(test20_sem, select_columns = c("si_type", "sexual", "school2_type"),
+results_20_com <- dummy_cols(test20_sem, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 #Upper model
 fit_testUp <- sem(SI_model_test1, data=results_20_com, ordered=T)
 summary_testUp <- summary(fit_testUp, fit.measures=TRUE, standardized = TRUE)
 fitMeasures(fit_testUp, fit.measures = "all")
-``
+
 ```
 
-
-```{r 20-25 frame}
-lavTestLRT(fit_testUn, fit_testUp)
-lavTestLRT(fit_testUn, fit_test1)
-lavTestLRT(fit_testUp, fit_test1)
-```
 
 ```{r END}
