@@ -1574,8 +1574,8 @@ table(traindf.v14$military, useNA = "always")
 ## International student
 ```{r train international}
 traindf.v14 <- traindf.v14 %>%
-  mutate(international = case_when(international == 1 ~ 0,
-                                   international == 0 ~ 1)) %>%
+  mutate(international = case_when(international == 1 ~ 1,
+                                   international == 0 ~ 0)) %>%
   filter(!is.na(international))
 traindf.v14$international <- as.logical(traindf.v14$international)
 
@@ -2158,7 +2158,7 @@ model.le  %>%
 ```{r train results_prem}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                       meds_count,  religios, activ_no, school2_type, ins_no,
+                                       meds_count, religios, activ_no, school2_type, ins_no, residenc,
                                        gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx, international)
 
 # Corr_simple function
@@ -2187,6 +2187,81 @@ clm_prem <- clm(si_type ~ .,
 summary(clm_prem)
 coef(clm_prem)
 ```
+
+## EFA PREMOTIVATION
+```{r train le_pca}
+# Define diathesis vars for correlation matrix
+traindf_prem <- traindf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
+                                       meds_count, religios, activ_no, school2_type, ins_no, residenc,
+                                       gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx, international)
+traindf_prem <- na.omit(traindf_prem)
+
+# create corr matrix, with dummy vars
+traindf_prem <- traindf_prem %>% 
+  mutate_if(is.numeric, as.factor) %>% 
+  dummy_cols(remove_first_dummy = TRUE) %>% 
+  data.matrix()
+traindf_prem   # check output
+
+results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq",
+                                                            "race", "ed_any", "dx_mh", "meds_count", "religios",
+                                                            "activ_no", "school2_type", "ins_no", "residenc",
+                                                            "gpa_sr", "fincur", "assault", "binge", "drugs_yn",
+                                                            "drug_mar", "psyhx", "international"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+
+prem_pca <- PCA(results_prem, graph=FALSE)  # apply PCA
+prem_pca$eig   # output matrix with eigenvalues
+
+eigval_prem <- get_eigenvalue(prem_pca)
+eigval_prem
+
+# visualization for PCA, FAMD
+fviz_screeplot(prem_pca, addlabels = TRUE, ylim = c(0, 50))
+fviz_pca_var(prem_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_famd_var(prem_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_cos2(prem_pca, choice = "var", axes = 1,
+          fill = "steelblue", color = "steelblue",
+          sort.val = c("desc", "asc", "none"),
+          top = 40,
+          xtickslab.rt = 45,
+          ggtheme = theme_minimal())
+```
+
+## CLM Life event regression
+```{r train clm_LE}
+clm_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
+                                 meds_count, religios, activ_no, school2_type, ins_no, residenc,
+                                 gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx, international)
+clm_prem <- na.omit(clm_prem)
+
+# run regression
+clm_prem <- clm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any +dx_mh + meds_count +
+                religios + activ_no + school2_type + ins_no + residenc + gpa_sr + fincur + assault +
+                binge + drugs_yn + drug_mar + psyhx + international,
+              data = clm_prem)
+summary(clm_prem)
+coef(clm_prem)
+
+ci_prem <- confint(clm_prem)
+ci_prem
+
+model.prem <- tidy(clm_prem)  # Convert model to dataframe for easy manipulation
+model.prem
+model.prem  %>%
+   mutate(or = exp(estimate),  # Odds ratio/gradient
+          var.diag = diag(vcov(clm_prem)),  # Variance of each coefficient
+          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+```
+
 
 
 # DEFEAT
