@@ -1954,7 +1954,6 @@ jarque.bera.test(traindf.v16$fincur)
 ```
 
 ## ISI scale
-** too small
 ```{r train isi_tot}
 table(traindf.v16$isi_1)
 table(traindf.v16$isi_2)
@@ -2067,7 +2066,7 @@ traindf.v19 <- traindf.v18
 ## LE correlation
 ```{r train LE correlation}
 # Define life event var candidates for correlation matrix
-traindf_le <- traindf.v19 %>% select(ins_no, gpa_sr, aca_impa, fincur, binge,
+traindf_le <- traindf.v19 %>% select(ins_no, gpa_sr, fincur, binge,
                                      assault, drugs_yn, drug_mar, psyhx)
 
 # convert traindf to numeric in order to run correlations
@@ -2090,7 +2089,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ## EFA LE
 ```{r train le_pca}
-traindf_le <- traindf.v19 %>% select(ins_no, gpa_sr, aca_impa, fincur, 
+traindf_le <- traindf.v19 %>% select(ins_no, gpa_sr, fincur, 
                                      binge, drugs_yn, drug_mar, assault, psyhx)
 traindf_le <- na.omit(traindf_le)
 
@@ -2101,7 +2100,7 @@ traindf_le <- traindf_le %>%
   data.matrix()
 traindf_le   # check output
 
-results_le <- dummy_cols(traindf_le, select_columns = c("ins_no", "gpa_sr", "aca_impa", "fincur",
+results_le <- dummy_cols(traindf_le, select_columns = c("ins_no", "gpa_sr", "fincur",
                                                         "binge", "drugs_yn", "drug_mar", "assault", "psyhx"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
@@ -2133,12 +2132,12 @@ fviz_cos2(le_pca, choice = "var", axes = 1,
 
 ## CLM Life event regression
 ```{r train clm_LE}
-clm_le <- traindf.v19 %>% select(si_type, ins_no, gpa_sr, aca_impa, fincur, 
+clm_le <- traindf.v19 %>% select(si_type, ins_no, gpa_sr, fincur, 
                                  assault, binge, drugs_yn, drug_mar, psyhx)
 clm_le <- na.omit(clm_le)
 
 # run regression
-clm_le <- clm(si_type ~ ins_no + gpa_sr + aca_impa + fincur + assault + binge + 
+clm_le <- clm(si_type ~ ins_no + gpa_sr + fincur + assault + binge + 
                 drugs_yn + drug_mar + psyhx,
               data = clm_le)
 summary(clm_le)
@@ -2190,7 +2189,7 @@ coef(clm_prem)
 ```
 
 ## EFA PREMOTIVATION
-```{r train le_pca}
+```{r train prem_pca}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
                                        meds_count, religios, activ_no, school2_type, ins_no, residenc,
@@ -2237,15 +2236,15 @@ fviz_cos2(prem_pca, choice = "var", axes = 1,
           ggtheme = theme_minimal())
 ```
 
-## CLM Life event regression
-```{r train clm_LE}
+## CLM Premotivation regression
+```{r train clm_prem}
 clm_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
                                  meds_count, religios, activ_no, school2_type, ins_no, residenc,
                                  gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx, international)
 clm_prem <- na.omit(clm_prem)
 
 # run regression
-clm_prem <- clm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any +dx_mh + meds_count +
+clm_prem <- clm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + meds_count +
                 religios + activ_no + school2_type + ins_no + residenc + gpa_sr + fincur + assault +
                 binge + drugs_yn + drug_mar + psyhx + international,
               data = clm_prem)
@@ -2791,12 +2790,12 @@ table(traindf.v26$belong9)  # not as good of a proxy
 ## Overall school satisfaction
 ```{r train satisfied_overall}
 traindf.v26 <- traindf.v26 %>%
-  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 1,
-                                       satisfied_overall == 2 ~ 2,
-                                       satisfied_overall == 3 ~ 3,
-                                       satisfied_overall == 4 ~ 4,
-                                       satisfied_overall == 5 ~ 5,
-                                       satisfied_overall == 6 ~ 6)) %>% 
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,
+                                       satisfied_overall == 2 ~ 5,
+                                       satisfied_overall == 3 ~ 4,
+                                       satisfied_overall == 4 ~ 3,
+                                       satisfied_overall == 5 ~ 2,
+                                       satisfied_overall == 6 ~ 1)) %>% 
   filter(!is.na(satisfied_overall))
 traindf.v26$satisfied_overall <- as.numeric(traindf.v26$satisfied_overall)
 
@@ -3006,6 +3005,9 @@ corr <- na.omit(corr)                                   # remove the NA values f
 corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
 print(corr)
 
+mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
+corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
+
 ```
 
 ### EFA MM
@@ -3081,7 +3083,7 @@ var_names <- c(
   # diathesis
   "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
   # environment
-  "religios", "school2_type", "activ_no", "international", "residenc",
+  "religios", "school2_type", "activ_no", "residenc",
   # life events
   "ins_no", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
   # defeat
@@ -3175,7 +3177,7 @@ traindf_sem <- traindf.v28 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
   # environment
-  religios, school2_type, activ_no, international, residenc,
+  religios, school2_type, activ_no, residenc,
   # life events
   ins_no, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
@@ -3283,6 +3285,76 @@ mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 
+### EFA MM
+```{r train EFA MM}
+# Prep SEM data vars
+traindf_si <- traindf.v28 %>% select(
+  # outcome var
+  si_type,
+  # diathesis
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
+  # environment
+  religios, school2_type, activ_no, residenc,
+  # life events
+  ins_no, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
+  # defeat
+  aca_impa, dep_type, anx_type,
+  # threats to self-moderation
+  persist, aaq_dum,
+  # entrapment
+  dep_impa, gad7_impa,
+  # motivational moderators
+  inf, flourish_dum, belong1, satisfied_overall, mh_stigma) 
+
+traindf_si <- na.omit(traindf_si)
+
+# create corr matrix, with dummy vars 
+traindf_si <- traindf_si %>% 
+  mutate_if(is.numeric, as.factor) %>% 
+  dummy_cols(remove_first_dummy = TRUE) %>% 
+  data.matrix()
+traindf_si   # check output
+results_si <- dummy_cols(traindf_prem, select_columns = c(
+    # diathesis
+    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
+    # environment
+    "religios", "school2_type", "activ_no", "international", "residenc",
+    # life events
+    "ins_no", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
+    # defeat
+    "aca_impa", "dep_type", "anx_type",
+    # threats to self-moderation
+    "persist", "aaq_dum",
+    # entrapment
+    "dep_impa", "gad7_impa",
+    # motivational moderators
+    "inf", "flourish_dum", "belong1", "satisfied_overall", "mh_stigma"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+si_pca <- PCA(results_si, graph=FALSE)  # apply PCA
+eigval_si <- get_eigenvalue(si_pca)
+eigval_si
+
+# Visualization of PCA, FAMD
+fviz_screeplot(si_pca, addlabels = TRUE, ylim = c(0, 50))
+fviz_pca_var(si_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_famd_var(si_pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+fviz_cos2(si_pca, choice = "var", axes = 1, 
+          fill = "steelblue", color = "steelblue",
+          sort.val = c("desc", "asc", "none"),
+          top = 40,
+          xtickslab.rt = 45,
+          ggtheme = theme_minimal())
+```
+
+
 
 # SEM ANALYSIS
 
@@ -3329,8 +3401,7 @@ SI_model_tr1 <- '
                   si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem =~  sib_freq + sexual_2 + sexual_3 + gender_tgd +  
-                           ed_any + dx_mh + meds_count + religios + international +
-                           school2_type_2 + school2_type_3 + activ_no + ins_no + 
+                           ed_any + dx_mh + meds_count + activ_no + ins_no + 
                            gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
                           
                   def =~ dep_type + aca_impa + anx_type
