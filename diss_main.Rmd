@@ -1793,6 +1793,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ##EFA Environment
 ```{r train EFA Environment}
+# bring in environmental variables for analysis
 traindf_env <- traindf.v15 %>% select(religios, residenc, activ_no, school2_type, 
                                       military, international)
 
