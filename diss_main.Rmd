@@ -3351,46 +3351,7 @@ fviz_cos2(si_pca, choice = "var", axes = 1,
           xtickslab.rt = 45,
           ggtheme = theme_minimal())
 ```
-
-## OVERALL REGRESSION
-```{r train CLM mm}
-clm_mm <- traindf_si
-clm_mm <- na.omit(clm_si)
-
-# run MM regression
-clm_mm <- clm(si_type ~   
-  # diathesis
-  age + sexual + gender_tgd + sib_freq + ed_any + dx_mh + meds_count+
-  # environment
-  religios + school2_type + activ_no + residenc +
-  # life events
-  ins_no + gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar +
-  # defeat
-  aca_impa + dep_type + anx_type + 
-  # threats to self-moderation
-  persist + aaq_dum + 
-  # entrapment
-  dep_impa + gad7_impa + 
-  # motivational moderators
-  inf + flourish_dum + belong1 + satisfied_overall + mh_stigma,
-                data = clm_si)
-
-summary(clm_si)
-coef_si <- coef(summary(clm_si))
-
-ci_si <- confint(clm_si)
-ci_si
-
-model.si <- tidy(clm_si)  # Convert model to dataframe for easy manipulation
-model.si
-
-model.si  %>%
-  mutate(or = exp(estimate),  # Odds ratio/gradient
-        var.diag = diag(vcov(clm_mm)),  # Variance of each coefficient
-        or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
-```
-
-
+  
 
 # SEM ANALYSIS
 
