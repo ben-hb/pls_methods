@@ -3438,7 +3438,7 @@ parameterestimates(fit_trainM2, boot.ci.type = "bca.simple", standardized = TRUE
 
 ```{r new_model_base}
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual", "school2_type", "residenc"),
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 #view(results_tr_com1)
 
@@ -3447,21 +3447,18 @@ SI_model_new<- '
                 
                     si =~    si_type_3 + si_type_2 + si_type_4
     
-                    diaenv =~  sib_freq + sexual_2 + sexual_3 + gender_tgd + ed_any + dx_mh + medther + discrim 
+                    diaenv =~  sib_freq + sexual_2 + sexual_3 + gender_tgd + ed_any + dx_mh + medther  
                    
-                    le =~  psyhx + gpa_sr +  fincur + drugs_yn + assault + drug_mar + ins_no 
+                    le =~  psyhx + gpa_sr + fincur + drugs_yn + assault + ins_no 
                     
-                    def  =~ deprawsc + aca_impa + anx_score
+                    deftrap  =~ deprawsc + aca_impa + anx_score + percneed + dep_impa + gad7_impa
                               
-                    tsm =~ aaq_dum + flourish_dum + persist 
+                    mmtsm =~ aaq_dum + flourish_dum + persist + inf 
                     
-                    entrap =~ percneed + dep_impa + gad7_impa
-                    
-                    mm =~ talk + mh_stigma + inf + belong1 + satisfied_overall
 
                 # structural model - regressions
                 
-                    si ~ diaenv + le + def + def*tsm + entrap + entrap*mm
+                    si ~ diaenv + le + deftrap + deftrap*mmtsm 
 
                 #  residual covars '
 
