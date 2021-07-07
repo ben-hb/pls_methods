@@ -3290,7 +3290,7 @@ traindf_sem1 <- traindf.v28 %>% select(
   # entrapment
   dep_impa, gad7_impa, percneed,
   # motivational moderators
-  inf, flourish_dum, belong1, satisfied_overall, mh_stigma, talk, brs_tot)  #mh_stigma, 
+  inf, flourish_dum, belong1, flourish, satisfied_overall, mh_stigma, talk, brs_tot, brs_dum)  #mh_stigma, 
 
 # create sem matrix 
 traindf_sem1 <- traindf_sem1 %>% 
@@ -3445,14 +3445,13 @@ SI_model_new<- '
                 
                     si =~    si_type_3 + si_type_2 + si_type_4
     
-                    diaenv =~  sib_freq + sexual_2 + sexual_3 + gender_tgd + ed_any +
-                               dx_mh + medther + satisfied_overall + belong1 + international
-                   
-                    le =~  psyhx + gpa_sr + fincur + drugs_yn + assault + ins_no 
+                    diaenv =~  medther + dx_mh + sib_freq + sexual_2 + sexual_3 + gender_tgd + ed_any
+                               
+                    le =~  psyhx + fincur + drugs_yn + assault + ins_no
                     
-                    deftrap =~ percneed + anx_type + dep_type
-                    
-                    mmtsm =~ aaq_dum + flourish + persist + inf + brs_tot
+                    deftrap =~ dep_type + percneed + anx_type
+                  
+                    mmtsm =~ aaq_dum + flourish_dum + persist + inf
                     
 
                 # structural model - regressions
@@ -3468,8 +3467,6 @@ fitMeasures(fit_trainM3, fit.measures = "all")
 parameterestimates(fit_trainM3, boot.ci.type = "bca.simple", standardized = TRUE) 
 
 modificationindices(fit_trainM3, minimum.value = 20)
-
-# + dep_impa + gad7_impa 
 ```
 
 
