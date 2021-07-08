@@ -1445,7 +1445,6 @@ clm_dia <- traindf.v12 %>% select(si_type, age,sexual, gender_tgd, sib_freq, rac
                                   ed_any, dx_mh, meds_count)
 clm_dia <- na.omit(clm_dia)
 
-view(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
 
 dia_mod <- clm(si_type ~ ., data = dia_mod)
@@ -1542,7 +1541,7 @@ table(traindf.v13$env_mh, useNA = "always")
 
 ## Military status
 ```{r train military}
-traindf.v14 <- traindf.v14 %>%
+traindf.v14 <- traindf.v13 %>%
   mutate(military = case_when(military == 1 ~ 1,
                               military == 0 ~ 0)) %>%
   filter(!is.na(military))
@@ -1825,7 +1824,6 @@ clm_env <- traindf.v15 %>% select(si_type, religios, residenc, activ_no, school2
 clm_env <- clm_env %>% 
   NA_preproc() %>%
   as.data.frame()
-view(clm_env)
 
 clm_env2 <- clm(si_type ~ religios + residenc + activ_no + school2_type + international +
                         discrim + military,
@@ -3514,61 +3512,39 @@ modificationindices(fit_trainM3, minimum.value = 20)
 
 
 ```{r pls_new_model_base}
-## Dummy col SEM w/ continuous
-results_pls_tr <- traindf.v28 %>% select(
-  # outcome var
-  si_type,
-  # prem
-  sib_freq, sexual, gender_tgd, ed_any, dx_mh, medther, gpa_sr,
-  psyhx, fincur, drugs_yn, assault,
-  # deftrap
-  dep_type, aca_impa, anx_type, dep_impa, gad7_impa,
-  # tsm, motivational moderators
-  aaq_dum, persist,flourish_dum, inf, belong1, satisfied_overall, mh_stigma)
-
-results_pls_tr <- dummy_cols(results_pls_tr, select_columns = c("si_type", "sexual"),
-                         remove_first_dummy = TRUE, remove_selected_columns = F)
-# create sem matrix 
-results_pls_tr <- as.data.frame(results_pls_tr)
-
-#save full var set for SEM
-save(results_pls_tr, file = "results_pls_tr.RData")
-
-save("results_pls_tr", file="~/Desktop/results_pls_tr.RData")
+## Pull file
+data.pls <- read_excel("~/Desktop/results_pls_tr.xlsx",
+                       range=cell_cols(1:27))
+save("data.pls", file="~/Desktop/results_pls_tr.RData")
 load("~/Desktop/results_pls_tr.RData")
 
 # INNER MODEL
 # rows of path matrix
 prem =     c(0, 1, 0, 0)
 deftrap =  c(0, 0, 1, 0)
-mmtsm =    c(0, 0, 1, 0)
+mmtsm =    c(0, 0, 1, 1)
 si =       c(0, 0, 0, 0)
 
 # matrix (by row binding)
 imv_path = rbind (prem, deftrap, mmtsm, si)
 imv_path = t(imv_path)
 View(imv_path)
-view(data.pls)
 
 # plot the inner matrix
 innerplot(imv_path, box.size = 0.1)
 
 # outer model
-imv_blocks = list(2:12, 11:15, 32:39, 40:41, )
+imv_blocks = list(4:16, 17:21, 22:27, 1:3)
 
 # modes
-imv_modes = c("B", "A", "B", "A", "B", "B")
+imv_modes = c("B", "A", "A", "A")
 
 #scales
 imv_scales = list(
-    c(rep("num", 16), "ord", rep("num", 10), "ord"),
-    rep("ord", 8),
-    c("ord", "num"),
-    rep("ord", 2),
-    c("num", rep("ord", 2)),
-    rep("ord", 3)
+    c(rep("ord", 6), rep("num", 4), "ord", rep("num", 4),
+    rep("ord", 5), "num", rep("ord", 2),"num", rep("ord", 2), "num")
 )
-# ordinal variable column numbers  1, 2, 3, 20, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 45, 46)
+# ordinal variable column numbers 
   
 # apply plspm
 imv_pls1 = plspm(data.pls, imv_path, imv_blocks, modes = imv_modes, scaling = imv_scales)
