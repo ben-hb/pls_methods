@@ -3512,23 +3512,25 @@ modificationindices(fit_trainM3, minimum.value = 20)
 
 
 ```{r pls_new_model_base}
-## Pull file
+# Pull file
 data.pls <- read_excel("~/Desktop/results_pls_tr.xlsx",
-                       range=cell_cols(1:27))
-save("data.pls", file="~/Desktop/results_pls_tr.RData")
-load("~/Desktop/results_pls_tr.RData")
+                       range=cell_cols(1:27), col_types = "numeric")
+save("data.pls", file="~/Desktop/data.pls.RData")
+load("~/Desktop/data.pls.RData")
+
+data.pls <- as.data.frame(data.pls)
+data.pls <- na.omit(data.pls)
 
 # INNER MODEL
 # rows of path matrix
 prem =     c(0, 1, 0, 0)
 deftrap =  c(0, 0, 1, 0)
-mmtsm =    c(0, 0, 1, 1)
+mmtsm =    c(0, 0, 0, 1)
 si =       c(0, 0, 0, 0)
 
 # matrix (by row binding)
 imv_path = rbind (prem, deftrap, mmtsm, si)
 imv_path = t(imv_path)
-View(imv_path)
 
 # plot the inner matrix
 innerplot(imv_path, box.size = 0.1)
@@ -3541,10 +3543,17 @@ imv_modes = c("B", "A", "A", "A")
 
 #scales
 imv_scales = list(
-    c(rep("ord", 6), rep("num", 4), "ord", rep("num", 4),
-    rep("ord", 5), "num", rep("ord", 2),"num", rep("ord", 2), "num")
-)
-# ordinal variable column numbers 
+            # premotivation
+                  c("ord","ord","ord",
+                  "num", "num", "num", "num", "ord", 
+                  "num", "num", "num", "num", "ord"), 
+            # deftrap      
+                  c("ord", "ord", "ord", "ord", "num"),
+            # mmtsm    
+                  c("ord", "ord", "num", "ord", "ord","ord"),
+            # si     
+                  c("ord","ord","ord")
+                  )
   
 # apply plspm
 imv_pls1 = plspm(data.pls, imv_path, imv_blocks, modes = imv_modes, scaling = imv_scales)
@@ -3599,48 +3608,6 @@ imv_pls1$unidim          #uni-dimensionality
 imv_pls1$gof             #goodness-of-fit
 imv_pls1$boot            #bootstrap results
 imv_pls1$data            #data matrix
-
-
-
-    
-SI_model_new<- '
-        si =~      si_type_3 + si_type_2 + si_type_4
-    
-        prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
-                               ed_any + dx_mh + medther +
-                               gpa_sr + binge + psyhx + fincur + drugs_yn + assault
-                          
-        deftrap =~ dep_type + aca_impa + anx_type + dep_impa + gad7_impa
-                              
-        mmtsm =~   aaq_dum + persist + flourish_dum + inf + belong1 + satisfied_overall + mh_stigma 
-
- # structural model - regressions
-        si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm     '
-
-indProd(results_tr_com1, var1, var2, var3 = NULL, match = TRUE, meanC = TRUE,
-  residualC = FALSE, doubleMC = TRUE, namesProd = NULL)
-
-orthogonalize(data, var1, var2, var3 = NULL, match = TRUE, namesProd = NULL)
-
-
-model <- '
-#direct effects
-si ~ c*var1 + cw*interaction +b*var2
-var2 ~ a*var1+aw*interaction
-#covariates
-mem ~ age+sex+iq
-var1 ~ age+sex+iq
-var 2 ~ age+sex+iq
-#indirect effect
-ab := a*b
-#total effect
-total := c+(a*b)
-#conditional effects
-ab1 := a*b+aw*b
-total1 := a*b+c+cw'
-
-fit <- sem(model, data=mydata, se="robust.huber.white", test="bootstrap",bootstrap=1000)
-
 
 ```
 
