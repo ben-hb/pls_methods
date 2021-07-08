@@ -3490,10 +3490,6 @@ fit.totaleffect=lm(si~deftrap, results_tr_com1)
 
 
 ```{r new_model_base}
-## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
 SI_model_new<- '
                 # measurement model
                     si =~      si_type_3 + si_type_2 + si_type_4
@@ -3518,17 +3514,38 @@ modificationindices(fit_trainM3, minimum.value = 20)
 
 
 ```{r pls_new_model_base}
+## Dummy col SEM w/ continuous
+results_pls_tr <- traindf.v28 %>% select(
+  # outcome var
+  si_type,
+  # prem
+  sib_freq, sexual, gender_tgd, ed_any, dx_mh, medther, gpa_sr,
+  psyhx, fincur, drugs_yn, assault,
+  # deftrap
+  dep_type, aca_impa, anx_type, dep_impa, gad7_impa,
+  # tsm, motivational moderators
+  aaq_dum, persist,flourish_dum, inf, belong1, satisfied_overall, mh_stigma)
 
+results_pls_tr <- dummy_cols(results_pls_tr, select_columns = c("si_type", "sexual"),
+                         remove_first_dummy = TRUE, remove_selected_columns = F)
+# create sem matrix 
+results_pls_tr <- as.data.frame(results_pls_tr)
+
+#save full var set for SEM
+save(results_pls_tr, file = "results_pls_tr.RData")
+
+save("results_pls_tr", file="~/Desktop/results_pls_tr.RData")
+load("~/Desktop/results_pls_tr.RData")
 
 # INNER MODEL
 # rows of path matrix
 prem =     c(0, 1, 0, 0)
 deftrap =  c(0, 0, 1, 0)
-mmtsm =    c(0, 0, 0, 1)
+mmtsm =    c(0, 0, 1, 0)
 si =       c(0, 0, 0, 0)
 
 # matrix (by row binding)
-imv_path = rbind (prem, deftrap, mmstsm, si)
+imv_path = rbind (prem, deftrap, mmtsm, si)
 imv_path = t(imv_path)
 View(imv_path)
 view(data.pls)
@@ -3537,7 +3554,7 @@ view(data.pls)
 innerplot(imv_path, box.size = 0.1)
 
 # outer model
-imv_blocks = list(4:31, 32:39, 40:41, 42:43, 44:46, 1:3)
+imv_blocks = list(2:12, 11:15, 32:39, 40:41, )
 
 # modes
 imv_modes = c("B", "A", "B", "A", "B", "B")
