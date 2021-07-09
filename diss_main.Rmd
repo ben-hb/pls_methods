@@ -23,7 +23,6 @@ library(expss)
 library(FactoMineR)
 library(factoextra)
 library(fastDummies)
-library()
 library(graphics)
 library(gvlma)
 library(haven)
@@ -55,6 +54,7 @@ library(rosetta)
 library(rstatix)
 library(semEff)
 library(semPlot)
+library(semPLS)
 library(semTools)
 library(stargazer) 
 library(stats)
@@ -1560,6 +1560,17 @@ traindf.v14$international <- as.logical(traindf.v14$international)
 
 table(traindf.v14$international, useNA = "always")
 ```
+
+## Medication and/or therapy
+```{r}
+traindf.v14$ther
+
+traindf.v14 <- traindf.v14 %>%
+  mutate(no_medther = case_when(medther == 0 ~ 1,
+                                medther == 1 ~ 0))
+table(traindf.v14$no_medther)
+```
+
 
 ## Family support
 ```{r train fam_support_aca}
@@ -3268,7 +3279,6 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 
 
-
 # SEM ANALYSIS
 
 
@@ -3299,6 +3309,14 @@ traindf_sem1 <- traindf_sem1 %>%
   data.matrix()
 traindf_sem1 <- na.omit(traindf_sem1)
 head(traindf_sem1)   # check output
+
+
+traindf_sem2 <- as.data.frame(traindf_sem1)
+
+# xlsx output
+save(traindf_sem2, file = "traindf_sem2.RData")
+load("traindf_sem2.RData")
+write_xlsx(traindf_sem2, path = "traindf_sem2.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
 # SEM model with partial cont and dummy
@@ -3306,7 +3324,12 @@ head(traindf_sem1)   # check output
 ## Dummy col SEM w/ continuous
 results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual", "residenc"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-# view(results_tr_com1)
+
+# xlsx output
+save(results_tr_com1, file = "results_tr_com1.RData")
+load("results_tr_com1.RData")
+write_xlsx(results_tr_com1, path = "results_tr_com1.xlsx", col_names = TRUE, format_headers = TRUE)
+
 
 SI_model_tr1 <- '
                 # measurement model
@@ -3315,8 +3338,8 @@ SI_model_tr1 <- '
     
                   prem =~  sib_freq + sexual_2 + sexual_3 + gender_tgd + discrim +
                            ed_any + dx_mh + activ_no + ins_no + medther + residenc_2 +
-                           residenc_3 + residenc_4 +
-                           gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
+                           residenc_3 + residenc_4 +  gpa_sr + binge + psyhx + fincur + 
+                           drugs_yn + assault + drug_mar
                           
                   def =~ deprawsc + aca_impa + anx_score
                               
@@ -3389,6 +3412,8 @@ fit_trainM <- sem(SI_model_trM, data=results_tr_com1, ordered=T)
 summary_train <- summary(fit_trainM, fit.measures=TRUE, standardized = TRUE, rsquare=T)
 fitMeasures(fit_trainM, fit.measures = "all")
 
+semPaths(fit_trainM)
+
 # Matrix math
 # lavaan_cov <- cov(results_tr_com1)
 # lavaan_det <- det(lavaan_cov)
@@ -3437,8 +3462,6 @@ parameterestimates(fit_trainM2, boot.ci.type = "bca.simple", standardized = TRUE
 
 ```{r new_model_base}
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 SI_model_new<- '
                 # measurement model
@@ -3467,21 +3490,15 @@ SI_model_new<- '
                     norm := a1 * b1 + b1a3 * -0.5
                     fit := a1 * b1 + b1a3 * 0.5" '
 
-
 fit_trainM3 <- sem(SI_model_new, data=results_tr_com1, ordered=T)
 summary_train3 <- summary(fit_trainM3, fit.measures=T, standardized = T, rsquare=T)
 fitMeasures(fit_trainM3, fit.measures = "all")
 parameterestimates(fit_trainM3, boot.ci.type = "bca.simple", standardized = T) 
 
-# modificationindices(fit_trainM3, minimum.value = 20)
+modificationindices(fit_trainM3, minimum.value = 20)
 
 semPaths(fit_trainM3)
 fit.totaleffect=lm(si~deftrap, results_tr_com1)
-
-# model.M <- lm( ~ grades*gender, traindf_sem1)
-# model.Y <- lm(happiness ~ grades*gender + self.esteem*gender, myData)
-# results <- mediate(model.M, model.Y, treat='grades', mediator='self.esteem', sims=2)
-# test.modmed(results, covariates.1 = list(gender = "M"), covariates.2 = list(gender = "F"), sims = 500)
 
 ```
 
@@ -3513,13 +3530,21 @@ modificationindices(fit_trainM3, minimum.value = 20)
 
 ```{r pls_new_model_base}
 # Pull file
-data.pls <- read_excel("~/Desktop/results_pls_tr.xlsx",
-                       range=cell_cols(1:27), col_types = "numeric")
-save("data.pls", file="~/Desktop/data.pls.RData")
+# data.pls <- read_excel("~/Desktop/results_pls_tr.xlsx",
+#                        range=cell_cols(1:27), col_types = "numeric")
+# save("data.pls", file="~/Desktop/data.pls.RData")
 load("~/Desktop/data.pls.RData")
 
 data.pls <- as.data.frame(data.pls)
 data.pls <- na.omit(data.pls)
+
+result <- gemm(dat = data.pls,
+               xvar = "prem",
+               mvars = "deftrap",
+               yvar = "si",
+               mymod = "mmtsm" ,
+               cmvars = c("age"),
+nboot = 500)
 
 # INNER MODEL
 # rows of path matrix
@@ -4798,6 +4823,17 @@ compareFit(fit_testUp, fit_testUn)
 ```
 
 
+```{r}
+# Pull file
+pls.smart<-matrix(c(
+0.16163949996367077, 0.1600824364792433, 0.12246260719131866, 0.2001055276503943, 
+0.27273058735314276, 0.2755245671640549, 0.2325366159009812, 0.3125393099816209, 
+0.10711466802276036, 0.10939145633697993, 0.08236985229639898, 0.13749561201044452, 
+0.587796278447775, 0.5894708678437329, 0.5707703727628339, 0.6075641906353584
+), byrow=TRUE, nrow=4, ncol=4)
+rownames(pls.smart)<-c("DEF-ENTRAP -> SI","MM-TSM -> SI","Moderating Effect 1 -> SI","PREM -> DEF-ENTRAP")
+colnames(pls.smart)<-c("Original Sample (O)","Sample Mean (M)","2.5%","97.5%")
+```
 
 
 ```{r END}
