@@ -4582,10 +4582,10 @@ parameterestimates(fit_test2_un, boot.ci.type = "bca.simple", standardized = TRU
 
 modificationindices(fit_test2_un, minimum.value = 20)
 
-test18_sem2 <- as.data.frame(test18_sem)
-save(test18_sem2 , file = "test18_sem2.RData")
-load("test18_sem2.RData")
-write_xlsx(traindf_sem_out, path = "test18_sem2.xls", col_names = TRUE, format_headers = TRUE)
+results_18_com <- as.data.frame(results_18_com)
+save(results_18_com , file = "results_18_com.RData")
+load("results_18_com.RData")
+write_xlsx(traindf_sem_out, path = "results_18_com.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -4635,10 +4635,10 @@ parameterestimates(fit_test2_upp, boot.ci.type = "bca.simple", standardized = TR
 modificationindices(fit_test2_upp, minimum.value = 20)
 
 
-test20_sem2 <- as.data.frame(test20_sem)
-save(test20_sem2 , file = "test20_sem2.RData")
-load("test18_sem2.RData")
-write_xlsx(test20_sem2, path = "test20_sem2.xls", col_names = TRUE, format_headers = TRUE)
+results_20_com <- as.data.frame(results_20_com)
+save(results_20_com , file = "results_20_com.RData")
+load("results_20_com.RData")
+write_xlsx(results_20_com, path = "results_20_com.xls", col_names = TRUE, format_headers = TRUE)
 
 ```
 
