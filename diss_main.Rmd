@@ -1755,17 +1755,17 @@ traindf.v16 <- traindf.v16 %>%
   mutate(ins_no = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
                                (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 0)) %>% # adequate MH coverage
   filter(!is.na(ins_no))   
-traindf.v16$ins_no <- as.logical(traindf.v16$ins_no)
-table(traindf.v16$ins_no, useNA = "always")   # check output
+traindf.v16$ins_no <- as.logical(traindf.v16$ins_no) # switch class to boolean
+table(traindf.v16$ins_no, useNA = "always")   # check output, skew
 jarque.bera.test(traindf.v16$ins_no)
 
-#traindf.v16 = subset(traindf.v16, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
+traindf.v16 = subset(traindf.v16, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
 ```
 
 ## Illicit drug use
 Creates illicit drug use var (limitation -- 30 days reflection)
 ```{r train drugs_yn}
-## add summary of each
+## adjusted for nested question status
 traindf.v16$drug_coc[is.na(traindf.v16$drug_coc)] <- 0
 traindf.v16$drug_her[is.na(traindf.v16$drug_her)] <- 0
 traindf.v16$drug_met[is.na(traindf.v16$drug_met)] <- 0
@@ -1774,6 +1774,7 @@ traindf.v16$drug_ect[is.na(traindf.v16$drug_ect)] <- 0
 traindf.v16$drug_opi[is.na(traindf.v16$drug_opi)] <- 0
 traindf.v16$drug_other[is.na(traindf.v16$drug_other)] <- 0
 
+# visualize current output before transformation
 table(traindf.v16$drug_coc)
 table(traindf.v16$drug_her)  # too small
 table(traindf.v16$drug_met)  # too small
@@ -1806,8 +1807,7 @@ table(traindf.v16$drug_mar)
 traindf.v16 <- traindf.v16 %>%
   mutate(drug_mar = case_when(drug_mar == 1 ~ 1, 
                               drug_mar == 0 ~ 0)) %>%
-  filter(!is.na(drug_mar))
-
+  filter(!is.na(drug_mar))  # filters out NAs
 traindf.v16$drug_mar <- as.logical(traindf.v16$drug_mar)
 
 table(traindf.v16$drug_mar, useNA = "always")
@@ -1817,7 +1817,7 @@ jarque.bera.test(traindf.v16$drug_mar)
 ## Current financial stressors
 ```{r train fincur}
 traindf.v16 <- traindf.v16 %>%
-  filter(!is.na(fincur)) %>%
+  filter(!is.na(fincur)) %>%  # filters for NAs
   mutate(fincur = case_when(fincur == 3 ~ 0,  # sometimes
                             fincur == 4 ~ 0,  # rarely or never
                             fincur == 5 ~ 0,
@@ -1825,7 +1825,7 @@ traindf.v16 <- traindf.v16 %>%
                             fincur == 2 ~ 1))
 traindf.v16$fincur <- as.logical(traindf.v16$fincur)
 
-table(traindf.v16$fincur, useNA = "always")
+table(traindf.v16$fincur, useNA = "always")  # check output, skew
 jarque.bera.test(traindf.v16$fincur)
 ```
 
@@ -1833,6 +1833,8 @@ jarque.bera.test(traindf.v16$fincur)
 ```{r train isi_tot}
 table(traindf.v16$isi_1)
 table(traindf.v16$isi_2)
+traindf.v16 = subset(traindf.v16, select= -c(isi_1, isi_2, isi_3, isi_4, 
+                                             isi_5, isi_6, isi_7)) # clean up var
 ```
 
 ## Abuse or assault, in the last year only
@@ -1902,13 +1904,13 @@ traindf.v18 = subset(traindf.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)
 ```{r train psyhx}
 # Create variable for any psychiatric hospitalization in the last 12 months
 traindf.v18 <- traindf.v18 %>% 
-  mutate(psyhx = case_when((prov_pes == 1 | prov_inp == 1 | prov_par == 1) ~ 1, 
-                           (prov_pes == 0 & prov_inp == 0 & prov_par == 0) ~ 0,
+  mutate(psyhx = case_when((prov_pes == 1 | prov_inp == 1 | prov_par == 1) ~ 1, # inpatient, IOPs, etc.
+                           (prov_pes == 0 & prov_inp == 0 & prov_par == 0) ~ 0, # no crises intervened on
                            ther_ever == 0 ~ 0)) %>%
-  filter(!is.na(psyhx))
-traindf.v18$psyhx <- as.logical(traindf.v18$psyhx)
+  filter(!is.na(psyhx))  # filter out NAs
+traindf.v18$psyhx <- as.logical(traindf.v18$psyhx)  # change class to boolean
 
-table(traindf.v18$psyhx, useNA = "always")   # check output
+table(traindf.v18$psyhx, useNA = "always")   # check output, skew
 jarque.bera.test(traindf.v18$psyhx)
 
 traindf.v18 = subset(traindf.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up var
@@ -1917,6 +1919,7 @@ traindf.v18 = subset(traindf.v18, select= -c(prov_pes, prov_inp, prov_par)) # cl
 ## Current GPA
 ```{r train gpa_sr}
 traindf.v18 <- traindf.v18 %>%
+# bin grades to As, Bs, Cs, and D+ and below
   mutate(gpa_sr = case_when(gpa_sr == 0 ~ 1,   # A+
                             gpa_sr == 1 ~ 1,   # A
                             gpa_sr == 2 ~ 1,   # A-
@@ -1928,10 +1931,10 @@ traindf.v18 <- traindf.v18 %>%
                             gpa_sr == 8 ~ 3,   # C-
                             gpa_sr == 9 ~ 4,   # D+ and below
                             gpa_sr == 10 ~ 5)) %>%  # Don't know
-      filter(!is.na(gpa_sr))
-traindf.v18$gpa_sr <- as.numeric(traindf.v18$gpa_sr)
+      filter(!is.na(gpa_sr))  # filter out NAs
+traindf.v18$gpa_sr <- as.numeric(traindf.v18$gpa_sr) # change to numeric scale
 
-table(traindf.v18$gpa_sr, useNA = "always")
+table(traindf.v18$gpa_sr, useNA = "always")  # check output, skew
 jarque.bera.test(traindf.v18$gpa_sr)
 ```
  
@@ -2009,6 +2012,7 @@ fviz_cos2(le_pca, choice = "var", axes = 1,
 
 ## CLM Life event regression
 ```{r train clm_LE}
+# prepare dataframe for regression
 clm_le <- traindf.v19 %>% select(si_type, ins_no, gpa_sr, fincur, 
                                  assault, binge, drugs_yn, drug_mar, psyhx)
 clm_le <- na.omit(clm_le)
@@ -2035,7 +2039,7 @@ model.le  %>%
 ```{r train results_prem}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                       meds_count, religios, activ_no, school2_type, ins_no, residenc,
+                                       no_medther, religios, activ_no, school2_type, ins_no, residenc,
                                        gpa_sr, fincur, assault, drugs_yn, drug_mar, psyhx, international)
 
 # Corr_simple function
@@ -2069,7 +2073,7 @@ coef(clm_prem)
 ```{r train prem_pca}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                       meds_count, religios, activ_no, school2_type, ins_no, residenc,
+                                       no_medther, religios, activ_no, school2_type, ins_no, residenc,
                                        gpa_sr, fincur, assault, drugs_yn, drug_mar, psyhx, international)
 traindf_prem <- na.omit(traindf_prem)
 
@@ -2081,7 +2085,7 @@ traindf_prem <- traindf_prem %>%
 traindf_prem   # check output
 
 results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq",
-                                                            "race", "ed_any", "dx_mh", "meds_count", "religios",
+                                                            "race", "ed_any", "dx_mh", "no_medther", "religios",
                                                             "activ_no", "school2_type", "ins_no", "residenc",
                                                             "gpa_sr", "fincur", "assault", "drugs_yn",
                                                             "drug_mar", "psyhx", "international"),
@@ -2116,14 +2120,14 @@ fviz_cos2(prem_pca, choice = "var", axes = 1,
 ## CLM Premotivation regression
 ```{r train clm_prem}
 clm_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                 meds_count, religios, activ_no, school2_type, ins_no, residenc, medther,
+                                 meds_count, religios, activ_no, school2_type, ins_no, residenc, no_medther,
                                  gpa_sr, fincur, assault, drugs_yn, drug_mar, psyhx, international)
 clm_prem <- na.omit(clm_prem)
 
 # run regression
 clm_prem <- clm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + meds_count +
                 religios + activ_no + school2_type + ins_no + residenc + gpa_sr + fincur + assault +
-                drugs_yn + drug_mar + psyhx + international + medther,
+                drugs_yn + drug_mar + psyhx + international + no_medther,
               data = clm_prem)
 summary(clm_prem)
 coef(clm_prem)
@@ -2152,24 +2156,24 @@ traindf.v20 <- traindf.v18
 traindf.v20$deprawsc <- as.numeric(traindf.v20$deprawsc)
 
 traindf.v20 <- traindf.v20 %>%
-  filter(!is.na(deprawsc))
+  filter(!is.na(deprawsc))  # filters out NAs
 
 table(traindf.v20$deprawsc, useNA ="always")
 
 
 # Categorize by clinical translation for later --
 traindf.v20 <- traindf.v20 %>%
-  mutate(dep_none = case_when(deprawsc < 5 ~ 1,
+  mutate(dep_none = case_when(deprawsc < 5 ~ 1,   # creates bin for no/minimal depression
                               deprawsc > 4 ~ 0)) %>%
-  mutate(dep_mild = case_when((deprawsc > 4 & deprawsc < 10) ~ 1,
+  mutate(dep_mild = case_when((deprawsc > 4 & deprawsc < 10) ~ 1,  # bin for mild depression
                               (deprawsc < 5 | deprawsc > 9) ~ 0)) %>%
-  mutate(dep_mod = case_when((deprawsc > 9 & deprawsc < 15) ~ 1,
+  mutate(dep_mod = case_when((deprawsc > 9 & deprawsc < 15) ~ 1,    # bin for moderate depression
                              (deprawsc > 14 | deprawsc < 10) ~ 0)) %>%
-  mutate(dep_modsev = case_when((deprawsc > 14 & deprawsc < 20) ~ 1,
+  mutate(dep_modsev = case_when((deprawsc > 14 & deprawsc < 20) ~ 1,   # bin for mod-severe depression
                                (deprawsc > 19 | deprawsc < 15) ~ 0)) %>%
-  mutate(dep_sev = case_when(deprawsc > 19 ~ 1,
+  mutate(dep_sev = case_when(deprawsc > 19 ~ 1,    # bin for severe depression
                              deprawsc < 20 ~ 0)) %>%
-  mutate(dep_na = case_when(is.na(deprawsc) ~ 1,
+  mutate(dep_na = case_when(is.na(deprawsc) ~ 1,   #  filter out any NAs
                             !is.na(deprawsc) ~ 0))
 traindf.v20$deprawsc <- as.numeric(traindf.v20$deprawsc)
 
