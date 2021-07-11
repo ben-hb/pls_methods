@@ -2201,13 +2201,13 @@ traindf.v20$anx_score <- as.numeric(traindf.v20$anx_score)
 
 # Convert to severity
 traindf.v20 <- traindf.v20 %>%
-  filter(!is.na(anx_score)) %>% # filters out all NAs
   mutate(anx_type = case_when(anx_score > 14 ~ 4,
                               anx_score < 5 ~ 1,      # abing for no/minimal anxiety
                               anx_score < 10 ~ 2,     # bin for mild anxiety
-                              anx_score < 15 ~ 3))    # bin for severe anxiety
-traindf.v20$anx_score <- as.numeric(traindf.v20$anx_score)   # check output, skew
-jarque.bera.test(traindf.v20$anx_score)
+                              anx_score < 15 ~ 3))  %>%  # bin for severe anxiety
+  filter(!is.na(anx_type))   # filters out all NAs
+traindf.v20$anx_type <- as.numeric(traindf.v20$anx_type)   # check output, skew
+jarque.bera.test(traindf.v20$anx_type)
 
 table(traindf.v20$anx_type, useNA = "always") # check output
 ```
@@ -2246,7 +2246,7 @@ traindf.v21 <- traindf.v20
 ## Defeat correlation
 ```{r train defeat cor}
 # Define defeat variable candidates for correlation matrix
-traindf_def <- traindf.v21 %>% select(aca_impa, deprawsc, anx_score)
+traindf_def <- traindf.v21 %>% select(aca_impa, anx_type, dep_type)
 
  # convert traindf to numeric in order to run correlations
 traindf_def <- traindf_def %>% mutate_if(is.character, as.factor)
@@ -2264,7 +2264,7 @@ print(corr)
 
 ## EFA defeat
 ```{r train EFA_def}
-traindf_def <- traindf.v21 %>% select(aca_impa, deprawsc, anx_score)
+traindf_def <- traindf.v21 %>% select(aca_impa, dep_type, anx_type)
 traindf_def <- na.omit(traindf_def)
 
 # create corr matrix, with dummy vars 
@@ -2274,7 +2274,7 @@ traindf_def <- traindf_def %>%
   data.matrix()
 traindf_def   # check output
 
-results_def <- dummy_cols(traindf_def, select_columns = c("aca_impa", "deprawsc", "anx_score"),
+results_def <- dummy_cols(traindf_def, select_columns = c("aca_impa", "depr_type", "anx_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
@@ -2305,16 +2305,17 @@ fviz_cos2(def_pca, choice = "var", axes = 1,
 
 ## CLM defeat
 ```{r train CLM defeat}
-results2_def <- traindf.v21 %>% select(si_type, aca_impa, deprawsc, anx_score)
+# prepare regression analysis
+results2_def <- traindf.v21 %>% select(si_type, aca_impa, dep_type, anx_type)
 clm_def <- na.omit(results2_def)
 
 # run defeat regression
-clm_def <- clm(si_type ~ aca_impa + deprawsc + anx_score, data = clm_def)
+clm_def <- clm(si_type ~ aca_impa + dep_type + anx_type, data = clm_def)
 
 summary(clm_def)
-coef(clm_def)
+coef(clm_def)   # retrieve coefficients
 
-ci_def <- confint(clm_def)
+ci_def <- confint(clm_def) # retrieve confidence intervals
 ci_def
 
 model.def <- tidy(clm_def)  # Convert model to dataframe for easy manipulation
@@ -2920,7 +2921,6 @@ model.mm  %>%
 ```
 
 
-
 # MISSINGNESS
 
 
@@ -3242,10 +3242,10 @@ SI_model_trM <- '
                   si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + no_medther +
-                           ed_any + dx_mh + religios + international +  activ_no + ins_no + 
+                           ed_any + dx_mh + religios + international +activ_no + ins_no + 
                            gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
                           
-                   def =~ deprawsc + aca_impa + anx_score
+                   def =~ dep_type + aca_impa + anx_type
                               
                    tsm =~ aaq_dum + persist
 
@@ -3321,9 +3321,12 @@ SI_model_new<- '
                                ed_any + dx_mh + no_medther + gpa_sr + binge + psyhx + 
                                fincur + drugs_yn + assault
                           
-                    deftrap =~ dep_type + aca_impa + anx_type + dep_impa + gad7_impa
+                    deftrap =~ dep_type + aca_impa + anx_type + dep_impa
                               
-                    mmtsm =~   aaq_dum + persist + flourish_dum + inf + belong1 + satisfied_overall + mh_stigma '
+                    mmtsm =~   aaq_dum + persist + flourish_dum + inf + belong1 + satisfied_overall + mh_stigma 
+
+                 # structural model - regressions
+                   si ~ prem + deftrap + mmtsm + deftrap*mmtsm '
 
 fit_trainM3 <- sem(SI_model_new, data=results_tr_com1, ordered=T)
 summary_train3 <- summary(fit_trainM3, fit.measures=TRUE, standardized = TRUE, rsquare=T)
@@ -3434,8 +3437,6 @@ imv_pls1$data            #data matrix
 
 ```
 
-
-                 
 
 TESTING DATA
 
@@ -3694,14 +3695,24 @@ hist(testdf.v11$meds_count)
 jarque.bera.test(testdf.v11$meds_count)
 ```
 
+## Medication and/or therapy
+```{r}
+# create new var for medication and/or therapy utilization
+testdf.v11 <- testdf.v11 %>%
+  mutate(no_medther = case_when(medther == 0 ~ 1,        # flip coding fior medther
+                                medther == 1 ~ 0)) %>%
+  filter(!is.na(no_medther))
+testdf.v11$no_medther <- as.logical(testdf.v11$no_medther)  # boolean var
+
+table(testdf.v11$no_medther, useNA = "always")  # check output
+```
+
 ## Religion
 ```{r test religios}
 testdf.v13 <- testdf.v11
-
 # Label levels of religious importance
 testdf.v13 <- testdf.v13 %>%
-  filter(!is.na(religios)) %>%
-  mutate(religios = case_when(religios == 1 ~ 5,
+  mutate(religios = case_when(religios == 1 ~ 5,   # reverse coding
                               religios == 2 ~ 4,
                               religios == 3 ~ 3,
                               religios == 4 ~ 2,
@@ -3709,23 +3720,17 @@ testdf.v13 <- testdf.v13 %>%
 testdf.v13$religios <- as.numeric(testdf.v13$religios)
 
 table(testdf.v13$religios, useNA = "always")       # Check output
-jarque.bera.test(testdf.v13$religios)
 ```
 
 ## International student
 ```{r test international}
-testdf.v14 <- testdf.v13 %>%
-  mutate(international = case_when(international == 1 ~ 0,
-                                   international == 0 ~ 1)) %>%
-  filter(!is.na(international))
-testdf.v14$international <- as.logical(testdf.v14$international)
-
+testdf.v14 <- testdf.v13
 table(testdf.v14$international, useNA = "always")
 ```
 
 ## Activity Involvement
 ```{r test activities}
-# set all NAs in actvities equal to 0
+# set all NAs in actvities equal to default
 testdf.v14$activ_ac[is.na(testdf.v14$activ_ac)] <- 1
 testdf.v14$activ_athc[is.na(testdf.v14$activ_athc)] <- 1
 testdf.v14$activ_athv[is.na(testdf.v14$activ_athv)] <- 1
@@ -3761,13 +3766,12 @@ testdf.v14 <- testdf.v14 %>%
                               activ_rel == 1 ~ 0,
                               activ_soc == 1 ~ 0,
                               activ_art == 1 ~ 0,
-                              activ_other == 1 ~ 0)) %>%
-  filter(!is.na(activ_no))
+                              activ_other == 1 ~ 0))
 testdf.v14$activ_no <- as.logical(testdf.v14$activ_no)
 
 table(testdf.v14$activ_no, useNA = "always")     # tabulate and check output
 jarque.bera.test(testdf.v14$activ_no)
-#testdf.v14 = subset(testdf.v14, select= -c(activ_none, activ_ac:activ_other))    # clean up vars
+testdf.v14 = subset(testdf.v14, select= -c(activ_none, activ_ac:activ_other))    # clean up vars
 ```
 
 ## School variable
@@ -3900,7 +3904,7 @@ testdf.v16$ins_no <- as.logical(testdf.v16$ins_no)
 table(testdf.v16$ins_no, useNA = "always")   # check output
 jarque.bera.test(testdf.v16$ins_no)
 
-#testdf.v16 = subset(testdf.v16, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
+testdf.v16 = subset(testdf.v16, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
 ```
 
 ## Illicit drug use
@@ -3958,6 +3962,7 @@ jarque.bera.test(testdf.v16$drug_mar)
 ```{r test fincur}
 testdf.v16 <- testdf.v16 %>%
   filter(!is.na(fincur)) %>%
+  # transform into binary var
   mutate(fincur = case_when(fincur == 3 ~ 0,  # sometimes
                             fincur == 4 ~ 0,  # rarely or never
                             fincur == 5 ~ 0,
@@ -4051,6 +4056,7 @@ testdf.v18 = subset(testdf.v18, select= -c(prov_pes, prov_inp, prov_par)) # clea
 ## Current GPA
 ```{r test gpa_sr}
 testdf.v18 <- testdf.v18 %>%
+  # bin by As, Bs, Cs, then D+ and below
   mutate(gpa_sr = case_when(gpa_sr == 0 ~ 1,   # A+
                             gpa_sr == 1 ~ 1,   # A
                             gpa_sr == 2 ~ 1,   # A-
@@ -4062,7 +4068,7 @@ testdf.v18 <- testdf.v18 %>%
                             gpa_sr == 8 ~ 3,   # C-
                             gpa_sr == 9 ~ 4,   # D+ and below
                             gpa_sr == 10 ~ 5)) %>%  # Don't know
-      filter(!is.na(gpa_sr))
+      filter(!is.na(gpa_sr)) # fitlers out NAs
 testdf.v18$gpa_sr <- as.numeric(testdf.v18$gpa_sr)
 
 table(testdf.v18$gpa_sr, useNA = "always")
@@ -4075,20 +4081,18 @@ testdf.v20 <- testdf.v18
 table(testdf.v20$deprawsc)
 testdf.v20$deprawsc <- as.numeric(testdf.v20$deprawsc)
 
-# Categorize by clinical translation for later --
+# Categorize by clinical translation
 testdf.v20 <- testdf.v20 %>%
-  mutate(dep_none = case_when(deprawsc < 5 ~ 1,
+  mutate(dep_none = case_when(deprawsc < 5 ~ 1,  # no depression
                               deprawsc > 4 ~ 0)) %>%
-  mutate(dep_mild = case_when((deprawsc > 4 & deprawsc < 10) ~ 1,
+  mutate(dep_mild = case_when((deprawsc > 4 & deprawsc < 10) ~ 1,  # mild dep
                               (deprawsc < 5 | deprawsc > 9) ~ 0)) %>%
-  mutate(dep_mod = case_when((deprawsc > 9 & deprawsc < 15) ~ 1,
+  mutate(dep_mod = case_when((deprawsc > 9 & deprawsc < 15) ~ 1,  # mod dep
                              (deprawsc > 14 | deprawsc < 10) ~ 0)) %>%
-  mutate(dep_modsev = case_when((deprawsc > 14 & deprawsc < 20) ~ 1,
+  mutate(dep_modsev = case_when((deprawsc > 14 & deprawsc < 20) ~ 1, # mod-sev dep
                                (deprawsc > 19 | deprawsc < 15) ~ 0)) %>%
-  mutate(dep_sev = case_when(deprawsc > 19 ~ 1,
-                             deprawsc < 20 ~ 0)) %>%
-  mutate(dep_na = case_when(is.na(deprawsc) ~ 1,
-                            !is.na(deprawsc) ~ 0))
+  mutate(dep_sev = case_when(deprawsc > 19 ~ 1,   # severe dep
+                             deprawsc < 20 ~ 0)) 
 testdf.v20$deprawsc <- as.numeric(testdf.v20$deprawsc)
 
 # Check outputs
@@ -4116,13 +4120,14 @@ testdf.v20$anx_score <- as.numeric(testdf.v20$anx_score)
 
 # Convert to severity
 testdf.v20 <- testdf.v20 %>%
-  filter(!is.na(anx_score)) %>% # filters out all NAs
+  # bin according to severity
   mutate(anx_type = case_when(anx_score > 14 ~ 4,
-                              anx_score < 5 ~ 1,                       # anx none
-                              anx_score < 10 ~ 2,                      # anx mild
-                              anx_score < 15 ~ 3))                    # anx severe
-testdf.v20$anx_score <- as.numeric(testdf.v20$anx_score)
-jarque.bera.test(testdf.v20$anx_score)
+                              anx_score < 5 ~ 1,          # anx none
+                              anx_score < 10 ~ 2,         # anx mild
+                              anx_score < 15 ~ 3)) %>%    # anx severe
+    filter(!is.na(anx_type))  # filters out all NAs
+testdf.v20$anx_type <- as.numeric(testdf.v20$anx_type)
+jarque.bera.test(testdf.v20$anx_type)
 
 table(testdf.v20$anx_type, useNA = "always") # check output
 ```
@@ -4130,11 +4135,7 @@ table(testdf.v20$anx_type, useNA = "always") # check output
 ## Academic impact
 ```{r test aca_impa}
 testdf.v20 <- testdf.v20 %>%
-  filter(!is.na(aca_impa)) %>%
-  mutate(aca_impa = case_when(aca_impa == 1 ~ 1,
-                              aca_impa == 2 ~ 2,
-                              aca_impa == 3 ~ 3,
-                              aca_impa == 4 ~ 4)) 
+  filter(!is.na(aca_impa))
 testdf.v20$aca_impa <- as.numeric(testdf.v20$aca_impa)
 
 table(testdf.v20$aca_impa, useNA = "always")
@@ -4176,13 +4177,6 @@ table(testdf.v22$aaq_dum, useNA = "always")
 
 ## Persist
 ```{r test persist}
-testdf.v22 <- testdf.v22 %>%
-  mutate(persist = case_when(persist == 1 ~ 1,   # confident
-                             persist == 2 ~ 2, 
-                             persist == 3 ~ 3, 
-                             persist == 4 ~ 4, 
-                             persist == 5 ~ 5, 
-                             persist == 6 ~ 6))  # not
 testdf.v22$persist <- as.numeric(testdf.v22$persist)
 
 table(testdf.v22$persist, useNA = "always") # check output
@@ -4192,10 +4186,6 @@ jarque.bera.test(testdf.v22$persist)
 ## Depression impact
 ```{r test dep_impa}
 testdf.v24 <- testdf.v22 %>%
-  mutate(dep_impa = case_when(dep_impa == 1 ~ 1,
-                              dep_impa == 2 ~ 2,
-                              dep_impa == 3 ~ 3,
-                              dep_impa == 4 ~ 4)) %>%
   filter(!is.na(dep_impa))
 testdf.v24$dep_impa <- as.numeric(testdf.v24$dep_impa)
 
@@ -4206,10 +4196,6 @@ jarque.bera.test(testdf.v24$dep_impa)
 ## Anxiety impact
 ```{r test gad7_impa}
 testdf.v24 <- testdf.v24 %>%
-  mutate(gad7_impa = case_when(gad7_impa == 1 ~ 1,
-                               gad7_impa == 2 ~ 2,
-                               gad7_impa == 3 ~ 3,
-                               gad7_impa == 4 ~ 4)) %>%
   filter(!is.na(gad7_impa))
 testdf.v24$gad7_impa <- as.numeric(testdf.v24$gad7_impa)
 
@@ -4220,12 +4206,6 @@ jarque.bera.test(testdf.v24$gad7_impa)
 ## Belonging
 ```{r test belong}
 testdf.v25 <- testdf.v24 %>%
-  mutate(belong1 = case_when(belong1 == 1 ~ 1,
-                             belong1 == 2 ~ 2,
-                             belong1 == 3 ~ 3,
-                             belong1 == 4 ~ 4,
-                             belong1 == 5 ~ 5,
-                             belong1 == 6 ~ 6)) %>%
   filter(!is.na(belong1))
 table(testdf.v25$belong1, useNA = "always")
 
@@ -4237,7 +4217,7 @@ jarque.bera.test(testdf.v25$belong1)
 ## Overall school satisfaction
 ```{r test satisfied_overall}
 testdf.v26 <- testdf.v25 %>%
-  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,  #reverese coding
                                        satisfied_overall == 2 ~ 5,
                                        satisfied_overall == 3 ~ 4,
                                        satisfied_overall == 4 ~ 3,
@@ -4364,20 +4344,17 @@ nrow(traindf.v28)
 
 
 
-
 # TEST DATA PREP
 
 
 ## Select all vars for SEM
 ```{r test_df_sem2}
-view(testdf.v26)
-
 # Prep SEM data vars
 testdf_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, no_medther,
   # environment
   religios, school2_type, activ_no, international, residenc,
   # life events
@@ -4411,7 +4388,7 @@ results_test_sem1 <- dummy_cols(testdf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count",
+    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "no_medther",
     # environment
     "religios", "school2_type", "activ_no", "international", "residenc",
     # life events
@@ -4443,7 +4420,7 @@ testdf_sem1 <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
+  sexual, gender_tgd, sib_freq, ed_any, dx_mh, no_medther,
   # environment
   religios, school2_type, activ_no, international,
   # life events
@@ -4485,7 +4462,7 @@ SI_model_test1 <- '
                   si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + assault +
-                           ed_any + dx_mh + meds_count + psyhx + fincur + drugs_yn 
+                           ed_any + dx_mh + no_medther + psyhx + fincur + drugs_yn 
                           
                    def =~ dep_type + aca_impa + anx_type
                               
@@ -4500,7 +4477,6 @@ SI_model_test1 <- '
 
                 # residual covars
                   dx_mh ~~ ed_any
-                  dx_mh ~~ meds_count
                   assault ~~ dx_mh
                   activ_no	~~	belong1
                   drugs_yn ~~ drug_mar
@@ -4534,6 +4510,33 @@ modificationindices(fit_test1, minimum.value = 20)
 # write_clip(lav_resids$cov.z)
 ```
 
+
+```{r SI_test_new}
+SI_test_new<- '
+                # measurement model
+                    si =~      si_type_3 + si_type_2 + si_type_4
+    
+                    prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
+                               ed_any + dx_mh + no_medther + gpa_sr + binge + psyhx + 
+                               fincur + drugs_yn + assault
+                          
+                    deftrap =~ dep_type + aca_impa + anx_type + dep_impa
+                              
+                    mmtsm =~   aaq_dum + persist + flourish_dum + inf + belong1 + satisfied_overall + mh_stigma 
+
+                 # structural model - regressions
+                   si ~ prem + deftrap + mmtsm + deftrap*mmtsm '
+
+fit_testM4 <- sem(SI_test_new, data=results_tr_com1, ordered=T)
+summary_test4 <- summary(fit_testM4, fit.measures=TRUE, standardized = TRUE, rsquare=T)
+fitMeasures(fit_testM4, fit.measures = "all")
+parameterestimates(fit_testM4, boot.ci.type = "bca.simple", standardized = TRUE) 
+
+modificationindices(fit_testM4, minimum.value = 20)
+```
+
+
+
 # Running the test dataframe for 18 and 19 year olds
 ```{r sub 18-19_frame}
 test18.v26 <- testdf.v26 %>%
@@ -4544,7 +4547,7 @@ test18_sem <- test18.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, no_medther,
   # environment
   religios, school2_type, activ_no, international,
   # life events
@@ -4572,7 +4575,17 @@ results_18_com <- dummy_cols(test18_sem, select_columns = c("si_type", "sexual")
 fit_testUn <- sem(SI_model_test1, data=results_18_com, ordered=T)
 summary_testUn <- summary(fit_testUn, fit.measures=TRUE, standardized = TRUE)
 fitMeasures(fit_testUn, fit.measures = "all")
+
+
+# test new model
+fit_test2_un <- sem(SI_test_new, data=results_18_com, ordered=T)
+summary_test2_un <- summary(fit_test2_un, fit.measures=TRUE, standardized = TRUE, rsquare=T)
+fitMeasures(fit_test2_un, fit.measures = "all")
+parameterestimates(fit_test2_un, boot.ci.type = "bca.simple", standardized = TRUE) 
+
+modificationindices(fit_test2_un, minimum.value = 20)
 ```
+
 
 # Running test frame for 20-25 year olds
 ```{r 20-25 frame}
@@ -4584,7 +4597,7 @@ test20_sem <- test20.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, no_medther,
   # environment
   religios, school2_type, activ_no, international,
   # life events
@@ -4611,11 +4624,14 @@ fit_testUp <- sem(SI_model_test1, data=results_20_com, ordered=T)
 summary_testUp <- summary(fit_testUp, fit.measures=TRUE, standardized = TRUE)
 fitMeasures(fit_testUp, fit.measures = "all")
 
-```
+# test new model
+fit_test2_upp <- sem(SI_test_new, data=results_20_com, ordered=T)
+summary_test2_upp <- summary(fit_test2_upp, fit.measures=TRUE, standardized = TRUE, rsquare=T)
+fitMeasures(fit_test2_upp, fit.measures = "all")
+parameterestimates(fit_test2_upp, boot.ci.type = "bca.simple", standardized = TRUE) 
 
+modificationindices(fit_test2_upp, minimum.value = 20)
 
-```{r}
-compareFit(fit_testUp, fit_testUn)
 ```
 
 
