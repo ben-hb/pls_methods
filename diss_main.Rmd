@@ -4453,6 +4453,13 @@ write_xlsx(traindf_sem_out, path = "testdf_nondummy.xls", col_names = TRUE, form
 ## Dummy col SEM w/ continuous
 results_test_com1 <- dummy_cols(testdf_sem1, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+
+# xlsx output
+results_test_com2 <- as.data.frame(results_test_com1)
+save(results_test_com2, file = "results_test_com2.RData")
+load("results_test_com2.RData")
+write_xlsx(results_test_com2, path = "results_test_com2.xls", col_names = TRUE, format_headers = TRUE)
+
 # view(results_tr_com1)
 
 SI_model_test1 <- '
@@ -4525,14 +4532,7 @@ fit_testM4 <- sem(SI_test_new, data=results_test_com1, ordered=T)
 summary_test4 <- summary(fit_testM4, fit.measures=TRUE, standardized = TRUE, rsquare=T)
 fitMeasures(fit_testM4, fit.measures = "all")
 parameterestimates(fit_testM4, boot.ci.type = "bca.simple", standardized = TRUE) 
-
 modificationindices(fit_testM4, minimum.value = 20)
-
-# xlsx output
-results_test_com2 <- as.data.frame(results_test_com1)
-save(results_test_com2, file = "results_test_com2.RData")
-load("results_test_com2.RData")
-write_xlsx(results_test_com2, path = "results_test_com2.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 # Running the test dataframe for 18 and 19 year olds
@@ -4569,6 +4569,11 @@ test18_sem <- na.omit(test18_sem)
 results_18_com <- dummy_cols(test18_sem, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
+results_18_com <- as.data.frame(results_18_com)
+save(results_18_com, file = "results_18_com.RData")
+load("results_18_com.RData")
+write_xlsx(results_18_com, path = "results_18_com.xls", col_names = TRUE, format_headers = TRUE)
+
 # Under model
 fit_testUn <- sem(SI_model_test1, data=results_18_com, ordered=T)
 summary_testUn <- summary(fit_testUn, fit.measures=TRUE, standardized = TRUE)
@@ -4582,11 +4587,6 @@ fitMeasures(fit_test2_un, fit.measures = "all")
 parameterestimates(fit_test2_un, boot.ci.type = "bca.simple", standardized = TRUE) 
 
 modificationindices(fit_test2_un, minimum.value = 20)
-
-results_18_com <- as.data.frame(results_18_com)
-save(results_18_com , file = "results_18_com.RData")
-load("results_18_com.RData")
-write_xlsx(traindf_sem_out, path = "results_18_com.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -4622,6 +4622,11 @@ test20_sem <- na.omit(test20_sem)
 results_20_com <- dummy_cols(test20_sem, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
+results_20_com <- as.data.frame(results_20_com)
+save(results_20_com , file = "results_20_com.RData")
+load("results_20_com.RData")
+write_xlsx(results_20_com, path = "results_20_com.xls", col_names = TRUE, format_headers = TRUE)
+
 #Upper model
 fit_testUp <- sem(SI_model_test1, data=results_20_com, ordered=T)
 summary_testUp <- summary(fit_testUp, fit.measures=TRUE, standardized = TRUE)
@@ -4632,15 +4637,7 @@ fit_test2_upp <- sem(SI_test_new, data=results_20_com, ordered=T)
 summary_test2_upp <- summary(fit_test2_upp, fit.measures=TRUE, standardized = TRUE, rsquare=T)
 fitMeasures(fit_test2_upp, fit.measures = "all")
 parameterestimates(fit_test2_upp, boot.ci.type = "bca.simple", standardized = TRUE) 
-
 modificationindices(fit_test2_upp, minimum.value = 20)
-
-
-results_20_com <- as.data.frame(results_20_com)
-save(results_20_com , file = "results_20_com.RData")
-load("results_20_com.RData")
-write_xlsx(results_20_com, path = "results_20_com.xls", col_names = TRUE, format_headers = TRUE)
-
 ```
 
 # SMART PLS OUTPUT
