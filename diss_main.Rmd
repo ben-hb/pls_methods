@@ -1242,12 +1242,10 @@ traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/col
 ```{r}
 # create new var for medication and/or therapy utilization
 traindf.v11 <- traindf.v11 %>%
-  mutate(no_medther = case_when(medther == 0 ~ 1,        # flip coding fior medther
-                                medther == 1 ~ 0)) %>%
-  filter(!is.na(no_medther))
-traindf.v11$no_medther <- as.logical(traindf.v11$no_medther)  # boolean var
+  filter(!is.na(medther))
+traindf.v11$medther <- as.logical(traindf.v11$medther)  # boolean var
 
-table(traindf.v11$no_medther, useNA = "always")  # check output
+table(traindf.v11$medther, useNA = "always")  # check output
 ```
 
 
@@ -1262,7 +1260,7 @@ traindf.v12 <- traindf.v11 # create new dataframe for summary stats. Will jump t
 # Define diathesis vars for correlation matrix
 traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, ed_scoff, body_sr,
                                 dx_mh, meds_count, ed_any, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood,
-                                meds_sle, meds_oth, no_medther)
+                                meds_sle, meds_oth, medther)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_dia, sig=0.6){
@@ -1283,54 +1281,29 @@ corr_simple <- function(traindf=traindf_dia, sig=0.6){
   corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 }
 corr_simple()
-
-# Extracting overlapping vars to visualize correlation for regression
-traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, 
-                                      body_sr, ed_any, dx_mh, meds_count, meds_sti, meds_dep, 
-                                      meds_psy, meds_anx, meds_mood, meds_sle, meds_oth, no_medther)
-
-# Corr_simple function
-corr_simple <- function(traindf=traindf_dia, sig=0.6){
-  # convert traindf to numeric in order to run correlations 
-  traindf_dia <- traindf_dia %>% mutate_if(is.character, as.factor)
-  traindf_dia <-  traindf_dia %>% mutate_if(is.factor, as.numeric)
-  # run a correlation and drop the insignificant ones
-  corr <- cor(traindf_dia, use = "pairwise.complete.obs")                               
-  corr[lower.tri(corr,diag=TRUE)] <- NA                   # prep to drop duplicates and correlations of 1    
-  corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-  corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
-  corr <- na.omit(corr)                                   # remove the NA values from above 
-  corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
-  print(corr)
-  
-  #turn corr back into matrix in order to plot with corrplot
-  mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-}
-corr_simple()
-
 ```
 
 ### EFA diathesis
 ```{r train PCA diathesis}
 # ID columns to utilized in PCA
-traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race,
-                                      dx_mh, ed_any, no_medther)
-traindf_dia <- na.omit(traindf_dia)    # filters NAs out
+pca_dia <- traindf.v11 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race,
+                                dx_mh, ed_any, medther)
+pca_dia <- na.omit(pca_dia)    # filters NAs out
+view(pca_dia)
 
 # create corr matrix, with dummy vars
-traindf_dia <- traindf_dia %>% 
+pca_dia <- pca_dia %>% 
   mutate_if(is.numeric, as.factor) %>% 
   mutate(
     age = as.numeric(age)
   ) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
-traindf_dia   # check output
+pca_dia   # check output
 
 # create dummy columns for EFA analysis
-results_dia <- dummy_cols(traindf_dia, select_columns = c("age", "sexual", "gender_tgd", "finpast", 
-                                                       "sib_freq", "race", "dx_mh", "ed_any", "no_medther"), 
+results_dia <- dummy_cols(pca_dia, select_columns = c("age", "sexual", "gender_tgd", "finpast", 
+                                                       "sib_freq", "race", "dx_mh", "ed_any", "medther"), 
                           remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # factoextra -- https://rpkgs.traindfnovia.com/factoextra/
@@ -1362,7 +1335,7 @@ fviz_cos2(dia_pca, choice = "var", axes = 1,
 ```{r train clm_dia}
 # setting up dataframe for regression analysis
 clm_dia <- traindf.v12 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race,
-                                  ed_any, dx_mh, no_medther)
+                                  ed_any, dx_mh, medther)
 clm_dia <- na.omit(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
 
@@ -2039,7 +2012,7 @@ model.le  %>%
 ```{r train results_prem}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                       no_medther, religios, activ_no, school2_type, ins_no, residenc,
+                                       medther, religios, activ_no, school2_type, ins_no, residenc,
                                        gpa_sr, fincur, assault, drugs_yn, drug_mar, psyhx, international)
 
 # Corr_simple function
@@ -2073,7 +2046,7 @@ coef(clm_prem)
 ```{r train prem_pca}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                       no_medther, religios, activ_no, school2_type, ins_no, residenc,
+                                       medther, religios, activ_no, school2_type, ins_no, residenc,
                                        gpa_sr, fincur, assault, drugs_yn, drug_mar, psyhx, international)
 traindf_prem <- na.omit(traindf_prem)
 
@@ -2085,7 +2058,7 @@ traindf_prem <- traindf_prem %>%
 traindf_prem   # check output
 
 results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq",
-                                                            "race", "ed_any", "dx_mh", "no_medther", "religios",
+                                                            "race", "ed_any", "dx_mh", "medther", "religios",
                                                             "activ_no", "school2_type", "ins_no", "residenc",
                                                             "gpa_sr", "fincur", "assault", "drugs_yn",
                                                             "drug_mar", "psyhx", "international"),
@@ -2120,14 +2093,14 @@ fviz_cos2(prem_pca, choice = "var", axes = 1,
 ## CLM Premotivation regression
 ```{r train clm_prem}
 clm_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                 meds_count, religios, activ_no, school2_type, ins_no, residenc, no_medther,
+                                 meds_count, religios, activ_no, school2_type, ins_no, residenc, medther,
                                  gpa_sr, fincur, assault, drugs_yn, drug_mar, psyhx, international)
 clm_prem <- na.omit(clm_prem)
 
 # run regression
 clm_prem <- clm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + meds_count +
                 religios + activ_no + school2_type + ins_no + residenc + gpa_sr + fincur + assault +
-                drugs_yn + drug_mar + psyhx + international + no_medther,
+                drugs_yn + drug_mar + psyhx + international + medther,
               data = clm_prem)
 summary(clm_prem)
 coef(clm_prem)
@@ -2930,7 +2903,7 @@ traindf.v28 <- traindf.v26
 # school structural analysis
 var_names <- c(
   # diathesis
-  "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "no_medther",
+  "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "medther",
   # environment
   "religios", "school2_type", "activ_no", "residenc", "discrim", "international",
   # life events
@@ -3022,7 +2995,7 @@ traindf_sem <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count, no_medther,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count, medther,
   # environment
   religios, school2_type, activ_no, residenc, discrim, international,
   # life events
@@ -3056,7 +3029,7 @@ results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count", "no_medther",
+    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count", "medther",
     # environment
     "religios", "school2_type", "activ_no", "international", "residenc", "discrim",
     # life events
@@ -3143,7 +3116,7 @@ traindf_sem1 <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, no_medther,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, medther,
   # environment
   religios, school2_type, activ_no, international, discrim, residenc,
   # life events
@@ -3191,7 +3164,7 @@ SI_model_tr1 <- '
                   si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem =~  sib_freq + sexual_2 + sexual_3 + gender_tgd + discrim +
-                           ed_any + dx_mh + activ_no + ins_no + no_medther + residenc_2 +
+                           ed_any + dx_mh + activ_no + ins_no + medther + residenc_2 +
                            residenc_3 + residenc_4 +  gpa_sr + binge + psyhx + fincur + 
                            drugs_yn + assault + drug_mar
                           
@@ -3241,7 +3214,7 @@ SI_model_trM <- '
                 
                   si =~    si_type_3 + si_type_2 + si_type_4
     
-                  prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + no_medther +
+                  prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + medther +
                            ed_any + dx_mh + religios + international +activ_no + ins_no + 
                            gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
                           
@@ -3288,7 +3261,7 @@ SI_model_trM2 <- '
                   si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + assault +
-                           ed_any + dx_mh + psyhx + fincur + drugs_yn + no_medther
+                           ed_any + dx_mh + psyhx + fincur + drugs_yn + medther
                           
                   def =~ deprawsc + aca_impa + anx_score
                               
@@ -3318,7 +3291,7 @@ SI_model_new<- '
                     si =~      si_type_3 + si_type_2 + si_type_4
     
                     prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
-                               ed_any + dx_mh + no_medther + gpa_sr + binge + psyhx + 
+                               ed_any + dx_mh + medther + gpa_sr + binge + psyhx + 
                                fincur + drugs_yn + assault
                           
                     deftrap =~ dep_type + aca_impa + anx_type + dep_impa
@@ -3699,12 +3672,10 @@ jarque.bera.test(testdf.v11$meds_count)
 ```{r}
 # create new var for medication and/or therapy utilization
 testdf.v11 <- testdf.v11 %>%
-  mutate(no_medther = case_when(medther == 0 ~ 1,        # flip coding fior medther
-                                medther == 1 ~ 0)) %>%
-  filter(!is.na(no_medther))
-testdf.v11$no_medther <- as.logical(testdf.v11$no_medther)  # boolean var
+  filter(!is.na(medther))
+testdf.v11$medther <- as.logical(testdf.v11$medther)  # boolean var
 
-table(testdf.v11$no_medther, useNA = "always")  # check output
+table(testdf.v11$medther, useNA = "always")  # check output
 ```
 
 ## Religion
@@ -4354,7 +4325,7 @@ testdf_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, no_medther,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, medther,
   # environment
   religios, school2_type, activ_no, international, residenc,
   # life events
@@ -4388,7 +4359,7 @@ results_test_sem1 <- dummy_cols(testdf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "no_medther",
+    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "medther",
     # environment
     "religios", "school2_type", "activ_no", "international", "residenc",
     # life events
@@ -4420,7 +4391,7 @@ testdf_sem1 <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  sexual, gender_tgd, sib_freq, ed_any, dx_mh, no_medther,
+  sexual, gender_tgd, sib_freq, ed_any, dx_mh, medther,
   # environment
   religios, school2_type, activ_no, international,
   # life events
@@ -4468,7 +4439,7 @@ SI_model_test1 <- '
                   si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + assault +
-                           ed_any + dx_mh + no_medther + psyhx + fincur + drugs_yn 
+                           ed_any + dx_mh + medther + psyhx + fincur + drugs_yn 
                           
                    def =~ dep_type + aca_impa + anx_type
                               
@@ -4518,7 +4489,7 @@ SI_test_new<- '
                     si =~      si_type_3 + si_type_2 + si_type_4
     
                     prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
-                               ed_any + dx_mh + no_medther + gpa_sr + binge + psyhx + 
+                               ed_any + dx_mh + medther + gpa_sr + binge + psyhx + 
                                fincur + drugs_yn + assault
                           
                     deftrap =~ dep_type + aca_impa + anx_type + dep_impa
@@ -4545,7 +4516,7 @@ test18_sem <- test18.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, no_medther,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, medther,
   # environment
   religios, school2_type, activ_no, international,
   # life events
@@ -4600,7 +4571,7 @@ test20_sem <- test20.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, no_medther,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, medther,
   # environment
   religios, school2_type, activ_no, international,
   # life events
@@ -4643,14 +4614,17 @@ modificationindices(fit_test2_upp, minimum.value = 20)
 # SMART PLS OUTPUT
 ```{r}
 # Pull file
-pls.smart<-matrix(c(
-0.16163949996367077, 0.1600824364792433, 0.12246260719131866, 0.2001055276503943, 
-0.27273058735314276, 0.2755245671640549, 0.2325366159009812, 0.3125393099816209, 
-0.10711466802276036, 0.10939145633697993, 0.08236985229639898, 0.13749561201044452, 
-0.587796278447775, 0.5894708678437329, 0.5707703727628339, 0.6075641906353584
+
+
+# 18
+smart.pls18<-matrix(c(
+0.10676412749451619, 0.12108264502149285, 0.07531025680293642, 0.17217659197447677, 
+0.24998163183041647, 0.24205234302277726, 0.1793750365895833, 0.29953228359405426, 
+0.14215063168112282, 0.1441768183359829, 0.08751248257833301, 0.20077275559190547, 
+0.5827085521419574, 0.5864981538920709, 0.5559313613225414, 0.6178903356722308
 ), byrow=TRUE, nrow=4, ncol=4)
-rownames(pls.smart)<-c("DEF-ENTRAP -> SI","MM-TSM -> SI","Moderating Effect 1 -> SI","PREM -> DEF-ENTRAP")
-colnames(pls.smart)<-c("Original Sample (O)","Sample Mean (M)","2.5%","97.5%")
+rownames(smart.pls18)<-c("Moderating Effect 1 -> si_","deftrap -> si_","mmtsm -> si_","prem -> deftrap")
+colnames(smart.pls18)<-c("Original Sample (O)","Sample Mean (M)","2.5%","97.5%")
 ```
 
 
