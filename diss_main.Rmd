@@ -4486,11 +4486,6 @@ SI_model_test1 <- '
 fit_test1 <- sem(SI_model_test1, data=results_test_com1, ordered=T)
 summary_test <- summary(fit_test1, fit.measures=TRUE, standardized = TRUE)
 fitMeasures(fit_test1, fit.measures = "all")
-
-    ## running NULL model, baseline model RMSEA
-nullRMSEA(fit_test1, scaled = FALSE, silent = FALSE)
-
-    ## modification indices
 modificationindices(fit_test1, minimum.value = 20)
 
 # # Matrix math
@@ -4526,12 +4521,18 @@ SI_test_new<- '
                  # structural model - regressions
                    si ~ prem + deftrap + mmtsm + deftrap*mmtsm '
 
-fit_testM4 <- sem(SI_test_new, data=results_tr_com1, ordered=T)
+fit_testM4 <- sem(SI_test_new, data=results_test_com1, ordered=T)
 summary_test4 <- summary(fit_testM4, fit.measures=TRUE, standardized = TRUE, rsquare=T)
 fitMeasures(fit_testM4, fit.measures = "all")
 parameterestimates(fit_testM4, boot.ci.type = "bca.simple", standardized = TRUE) 
 
 modificationindices(fit_testM4, minimum.value = 20)
+
+# xlsx output
+results_test_com2 <- as.data.frame(results_test_com1)
+save(results_test_com2, file = "results_test_com2.RData")
+load("results_test_com2.RData")
+write_xlsx(results_test_com2, path = "results_test_com2.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 # Running the test dataframe for 18 and 19 year olds
