@@ -2203,10 +2203,10 @@ traindf.v20$anx_score <- as.numeric(traindf.v20$anx_score)
 traindf.v20 <- traindf.v20 %>%
   filter(!is.na(anx_score)) %>% # filters out all NAs
   mutate(anx_type = case_when(anx_score > 14 ~ 4,
-                              anx_score < 5 ~ 1,                       # anx none
-                              anx_score < 10 ~ 2,                      # anx mild
-                              anx_score < 15 ~ 3))                    # anx severe
-traindf.v20$anx_score <- as.numeric(traindf.v20$anx_score)
+                              anx_score < 5 ~ 1,      # abing for no/minimal anxiety
+                              anx_score < 10 ~ 2,     # bin for mild anxiety
+                              anx_score < 15 ~ 3))    # bin for severe anxiety
+traindf.v20$anx_score <- as.numeric(traindf.v20$anx_score)   # check output, skew
 jarque.bera.test(traindf.v20$anx_score)
 
 table(traindf.v20$anx_type, useNA = "always") # check output
@@ -2215,14 +2215,10 @@ table(traindf.v20$anx_type, useNA = "always") # check output
 ## Academic impact
 ```{r train aca_impa}
 traindf.v20 <- traindf.v20 %>%
-  filter(!is.na(aca_impa)) %>%
-  mutate(aca_impa = case_when(aca_impa == 1 ~ 1,
-                              aca_impa == 2 ~ 2,
-                              aca_impa == 3 ~ 3,
-                              aca_impa == 4 ~ 4)) 
+  filter(!is.na(aca_impa)) # filter for NAs
 traindf.v20$aca_impa <- as.numeric(traindf.v20$aca_impa)
 
-table(traindf.v20$aca_impa, useNA = "always")
+table(traindf.v20$aca_impa, useNA = "always") # check output, skew
 jarque.bera.test(traindf.v20$aca_impa)
 ```
 
@@ -2235,7 +2231,6 @@ traindf.v20 = subset(traindf.v20, select= -c(failed)) # clean up var
 ```
 
 ## Ashamed
-n= 8916 ** too small
 ```{r train men_ill_ash}
 table(traindf.v20$men_ill_ash)
 
@@ -2243,7 +2238,7 @@ table(traindf.v20$men_ill_ash)
 traindf.v20 = subset(traindf.v20, select= -c(men_ill_ash)) # clean up var
 ```
 
-
+## Defeat analysis
 ```{r train defeat analyses}
 traindf.v21 <- traindf.v20
 ```
@@ -2332,7 +2327,6 @@ model.def  %>%
 
 
 # THREATS TO SELF-MODERATION
-Candidate variables: persist, anx_score, dep_secret, aaq_yn, achieve4
 
 
 ```{r train TSM frame}
@@ -2342,16 +2336,8 @@ traindf.v22 <- traindf.v20
 ## Depression secret
 ```{r train dep_secret}
 ## Secretive MH
-traindf.v22 <- traindf.v22 %>%
-  mutate(dep_secret = case_when(dep_secret == 1 ~ 1,
-                                dep_secret == 2 ~ 2,
-                                dep_secret == 3 ~ 3,
-                                dep_secret == 4 ~ 4,
-                                dep_secret == 5 ~ 5,
-                                dep_secret == 6 ~ 6))
-  # filter(!is.na(dep_secret))
 traindf.v22$dep_secret <- as.numeric(traindf.v22$dep_secret)
-table(traindf.v22$dep_secret, useNA = "always")  # not sure what to do about this one.... NA = 7000+
+table(traindf.v22$dep_secret, useNA = "always")  # check output, too many NAs
 ```
 
 ## AAQ total
@@ -2361,7 +2347,7 @@ traindf.v22 <- traindf.v22 %>%
   mutate(aaq_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
            as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7))
 
-table(traindf.v22$aaq_tot)
+table(traindf.v22$aaq_tot) # check output
 
 #  for loop for predictive cutoff point needed
  rs_df <- data.frame("cutoff" = c(), "rs" = c())
@@ -2381,28 +2367,29 @@ table(traindf.v22$aaq_tot)
    mutate(aaq_dum = ifelse(aaq_tot > rs_df_arranged[1,1], 1, 0)) %>%
    mutate(aaq_dum = case_when(aaq_dum == 1 ~ 1,
                               aaq_dum == 0 ~ 0)) %>%
-   filter(!is.na(aaq_dum))
-traindf.v22$aaq_dum <- as.logical(traindf.v22$aaq_dum)
+   filter(!is.na(aaq_dum))   # filter for NAs
+traindf.v22$aaq_dum <- as.logical(traindf.v22$aaq_dum)  # change to boolean
 
-table(traindf.v22$aaq_dum, useNA = "always")
+table(traindf.v22$aaq_dum, useNA = "always")  # check output, NAs
 ```
 
 ## Persist
 ```{r train persist}
 traindf.v22 <- traindf.v22 %>%
+# review levels
   mutate(persist = case_when(persist == 1 ~ 1,   # confident
                              persist == 2 ~ 2, 
                              persist == 3 ~ 3, 
                              persist == 4 ~ 4, 
                              persist == 5 ~ 5, 
-                             persist == 6 ~ 6))  # not
-traindf.v22$persist <- as.numeric(traindf.v22$persist)
+                             persist == 6 ~ 6))  # not confident
+traindf.v22$persist <- as.numeric(traindf.v22$persist) 
 
-table(traindf.v22$persist, useNA = "always") # check output
+table(traindf.v22$persist, useNA = "always") # check output, skew
 jarque.bera.test(traindf.v22$persist)
 ```
 
-
+## TSM analyses
 ```{r train TSM var analyses}
 traindf.v23 <- traindf.v22
 ```
@@ -2483,15 +2470,18 @@ fviz_cos2(tsm_pca, choice = "var", axes = 1,
 
 ## CLM TSM
 ```{r train CLM TSM}
+# prepare dataframe for regression
 clm_tsm <- traindf.v23 %>% select(si_type, persist, aaq_dum)
 clm_tsm <- na.omit(clm_tsm)
 
+# run regression
 clm_tsm <- clm(si_type ~ persist + aaq_dum, data = clm_tsm) 
 
+# output
 summary(clm_tsm)
 coef(clm_tsm)
 
-ci_tsm <- confint(clm_tsm)
+ci_tsm <- confint(clm_tsm)  # get confidence intervals
 ci_tsm
 
 model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
@@ -2505,7 +2495,6 @@ model.tsm  %>%
 
 
 # ENTRAPMENT
-Candidate variables: dep_impa, gad7_impa, perneed_cur
 
 
 ```{r train entrap frame}
@@ -2515,43 +2504,30 @@ traindf.v24 <- traindf.v22
 ## Depression impact
 ```{r train dep_impa}
 traindf.v24 <- traindf.v24 %>%
-  mutate(dep_impa = case_when(dep_impa == 1 ~ 1,
-                              dep_impa == 2 ~ 2,
-                              dep_impa == 3 ~ 3,
-                              dep_impa == 4 ~ 4)) %>%
-  filter(!is.na(dep_impa))
+  filter(!is.na(dep_impa))  # filters out NAs
 traindf.v24$dep_impa <- as.numeric(traindf.v24$dep_impa)
 
-table(traindf.v24$dep_impa, useNA = "always")
+table(traindf.v24$dep_impa, useNA = "always")  # check output, NAs, skew
 jarque.bera.test(traindf.v24$dep_impa)
 ```
 
 ## Anxiety impact
 ```{r train gad7_impa}
-traindf.v24 <- traindf.v24 %>%
-  mutate(gad7_impa = case_when(gad7_impa == 1 ~ 1,
-                               gad7_impa == 2 ~ 2,
-                               gad7_impa == 3 ~ 3,
-                               gad7_impa == 4 ~ 4)) %>%
-  filter(!is.na(gad7_impa))
 traindf.v24$gad7_impa <- as.numeric(traindf.v24$gad7_impa)
-
-table(traindf.v24$gad7_impa, useNA = "always")
-jarque.bera.test(traindf.v24$gad7_impa)
+table(traindf.v24$gad7_impa, useNA = "always") # check output, skew, NAs
 ```
 
 ```{r perneed}
-table(traindf.v24$percneed, useNA = "always")
 traindf.v24 <- traindf.v24 %>%
-  mutate(percneed = case_when(percneed == 1 ~ 6,
+  mutate(percneed = case_when(percneed == 1 ~ 6,  # reverse coding
                              percneed == 2 ~ 5,
                              percneed == 3 ~ 4,
                              percneed == 4 ~ 3,
                              percneed == 5 ~ 2,
                              percneed == 6 ~ 1)) %>%
-  filter(!is.na(percneed))
+  filter(!is.na(percneed))  # filters for NAs
 
-table(traindf.v24$percneed, useNA = "always")
+table(traindf.v24$percneed, useNA = "always") # check output, NAs
 ```
 
 ## Current needs
@@ -2655,8 +2631,6 @@ model.entrap  %>%
 
 
 # MOTIVATIONAL MODERATORS
-Candidate variables: flourish, belong2, belong8, belong9, achieve1, achieve14, 
-achieve18, stig_pcv_2, stig_pcv_3, friend_devel, inf, brs_tot
 
 
 ```{r train MM frame}
@@ -2666,13 +2640,7 @@ traindf.v26 <- traindf.v24
 ## Belonging
 ```{r train belong}
 traindf.v26 <- traindf.v26 %>%
-  mutate(belong1 = case_when(belong1 == 1 ~ 1,
-                             belong1 == 2 ~ 2,
-                             belong1 == 3 ~ 3,
-                             belong1 == 4 ~ 4,
-                             belong1 == 5 ~ 5,
-                             belong1 == 6 ~ 6)) %>%
-  filter(!is.na(belong1))
+  filter(!is.na(belong1))  # filters out NAs
 table(traindf.v26$belong1, useNA = "always")
 
 traindf.v26$belong1 <- as.numeric(traindf.v26$belong1)
@@ -2687,13 +2655,13 @@ table(traindf.v26$belong9)  # not as good of a proxy
 ## Overall school satisfaction
 ```{r train satisfied_overall}
 traindf.v26 <- traindf.v26 %>%
-  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,  # reverse coding
                                        satisfied_overall == 2 ~ 5,
                                        satisfied_overall == 3 ~ 4,
                                        satisfied_overall == 4 ~ 3,
                                        satisfied_overall == 5 ~ 2,
                                        satisfied_overall == 6 ~ 1)) %>% 
-  filter(!is.na(satisfied_overall))
+  filter(!is.na(satisfied_overall))  # filters out NAs
 traindf.v26$satisfied_overall <- as.numeric(traindf.v26$satisfied_overall)
 
 table(traindf.v26$satisfied_overall, useNA = "always")
@@ -2743,22 +2711,21 @@ traindf.v26$inf_7[is.na(traindf.v26$inf_7)] <- 0
 
 # change inf_ var to numeric
 traindf.v26 <- traindf.v26 %>% 
-  # merge all var into inf_type
+  # create dichotomous variable for support
   mutate(inf = case_when(inf_8 == 1 ~ 0, # no informal support
-                         inf_1 == 1 ~ 1,
+                         inf_1 == 1 ~ 1, # support
                          inf_2 == 1 ~ 1,
                          inf_3 == 1 ~ 1,
                          inf_4 == 1 ~ 1,
                          inf_5 == 1 ~ 1,
                          inf_6 == 1 ~ 1,
                          inf_7 == 1 ~ 1)) %>%
-  filter(!is.na(inf))
+  filter(!is.na(inf))  # filtters out all NAs
 traindf.v26$inf <- as.logical(traindf.v26$inf)
-table(traindf.v26$inf, useNA ="always")
-jarque.bera.test(traindf.v26$inf)
 
-# clean up vars
-#traindf.v26 = subset(traindf.v26, select= -c(inf_1:inf_help))
+table(traindf.v26$inf, useNA ="always") # check output, skew
+jarque.bera.test(traindf.v26$inf)
+traindf.v26 = subset(traindf.v26, select= -c(inf_1:inf_help))  # clean up vars
 ```
 
 ## BRS
@@ -2795,7 +2762,6 @@ table(traindf.v26$brs_dum, useNA = "always")
 ```
 
 ## Distress & social support
-Group talk var into subcategories of (1) none,  (2) formal, (3) informal, or (4) combo of support
 ```{r train talk}
 traindf.v26$talk1_1[is.na(traindf.v26$talk1_1)] <- 1
 traindf.v26$talk1_2[is.na(traindf.v26$talk1_2)] <- 1
@@ -2806,12 +2772,11 @@ traindf.v26$talk1_6[is.na(traindf.v26$talk1_6)] <- 1
 traindf.v26$talk1_7[is.na(traindf.v26$talk1_7)] <- 1
 traindf.v26$talk1_8[is.na(traindf.v26$talk1_8)] <- 1
 
-# change talk_ var to numeric
 traindf.v26 <- traindf.v26 %>% 
-  # aggregate all talk vars under 3 'talk' categories -- none, informal help, formal help, formal+informal help
+  # create dictomous variable for no talking or talking to support systems
   mutate(talk = case_when((talk1_9 == 1 | talk1no == 1) ~ 1,                                    # no support
                           (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1) ~ 0,      # informal support
-                          (talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) ~ 0))     # formal and informal support,
+                          (talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) ~ 0))     # formal and informal
 traindf.v26$talk <- as.logical(traindf.v26$talk)
 
 table(traindf.v26$talk, useNA = "always") # check output
@@ -2849,7 +2814,7 @@ table(traindf.v26$stig_pcv3)  # Most people think less of a person who has recei
 table(traindf.v26$stig_per2)  # I feel that receiving MH tx is a sign of personal failure.
 table(traindf.v26$stig_per3)  # I would think less of a person who has received MH tx.
 
-# combine scales
+# combine sstigma questions into one binary variable
 traindf.v26 <- traindf.v26 %>%
   mutate(mh_stigma = case_when(stig_pcv2 == 1 ~ 1,
                                stig_pcv3 == 1 ~ 1,
@@ -2859,10 +2824,10 @@ traindf.v26 <- traindf.v26 %>%
                                stig_pcv3 == 0 ~ 0,
                                stig_per2 == 0 ~ 0,
                                stig_per3 == 0 ~ 0)) %>%
-  filter(!is.na(mh_stigma))
+  filter(!is.na(mh_stigma))  # filters out NAs
 traindf.v26$mh_stigma <- as.logical(traindf.v26$mh_stigma)
 
-table(traindf.v26$mh_stigma, useNA = "always")
+table(traindf.v26$mh_stigma, useNA = "always") # check out, NAs
 ```
 
 ## Motivational moderator analyses
@@ -2933,16 +2898,16 @@ fviz_cos2(mm_pca, choice = "var", axes = 1,
 
 ### CLM Motivational moderators regression
 ```{r train CLM mm}
+# prepare data for regression
 clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1, talk, satisfied_overall, mh_stigma)
 clm_mm <- na.omit(clm_mm)
 
 # run MM regression
 clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + talk + satisfied_overall + mh_stigma, data = clm_mm)
-
 summary(clm_mm)
-coef_mm <- coef(summary(clm_mm))
+coef_mm <- coef(summary(clm_mm))  # retireve coefficients
 
-ci_mm <- confint(clm_mm)
+ci_mm <- confint(clm_mm)  # retrieve confidence intervals
 ci_mm
 
 model.mm <- tidy(clm_mm)  # Convert model to dataframe for easy manipulation
@@ -2965,7 +2930,7 @@ traindf.v28 <- traindf.v26
 # school structural analysis
 var_names <- c(
   # diathesis
-  "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count", "medther",
+  "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "no_medther",
   # environment
   "religios", "school2_type", "activ_no", "residenc", "discrim", "international",
   # life events
@@ -3052,14 +3017,12 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 
 ## Select all vars for SEM
 ```{r train_df_sem2}
-view(traindf.v28)
-
 # Prep SEM data vars
 traindf_sem <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count, medther,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count, no_medther,
   # environment
   religios, school2_type, activ_no, residenc, discrim, international,
   # life events
@@ -3093,7 +3056,7 @@ results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count", "medther",
+    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count", "no_medther",
     # environment
     "religios", "school2_type", "activ_no", "international", "residenc", "discrim",
     # life events
@@ -3180,7 +3143,7 @@ traindf_sem1 <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, medther,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, no_medther,
   # environment
   religios, school2_type, activ_no, international, discrim, residenc,
   # life events
@@ -3228,7 +3191,7 @@ SI_model_tr1 <- '
                   si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem =~  sib_freq + sexual_2 + sexual_3 + gender_tgd + discrim +
-                           ed_any + dx_mh + activ_no + ins_no + medther + residenc_2 +
+                           ed_any + dx_mh + activ_no + ins_no + no_medther + residenc_2 +
                            residenc_3 + residenc_4 +  gpa_sr + binge + psyhx + fincur + 
                            drugs_yn + assault + drug_mar
                           
@@ -3278,7 +3241,7 @@ SI_model_trM <- '
                 
                   si =~    si_type_3 + si_type_2 + si_type_4
     
-                  prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + medther +
+                  prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + no_medther +
                            ed_any + dx_mh + religios + international +  activ_no + ins_no + 
                            gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
                           
@@ -3303,8 +3266,6 @@ fit_trainM <- sem(SI_model_trM, data=results_tr_com1, ordered=T)
 summary_train <- summary(fit_trainM, fit.measures=TRUE, standardized = TRUE, rsquare=T)
 fitMeasures(fit_trainM, fit.measures = "all")
 
-semPaths(fit_trainM)
-
 # Matrix math
 # lavaan_cov <- cov(results_tr_com1)
 # lavaan_det <- det(lavaan_cov)
@@ -3327,7 +3288,7 @@ SI_model_trM2 <- '
                   si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + assault +
-                           ed_any + dx_mh + psyhx + fincur + drugs_yn + medther
+                           ed_any + dx_mh + psyhx + fincur + drugs_yn + no_medther
                           
                   def =~ deprawsc + aca_impa + anx_score
                               
@@ -3352,63 +3313,17 @@ parameterestimates(fit_trainM2, boot.ci.type = "bca.simple", standardized = TRUE
 ```
 
 ```{r new_model_base}
-## Dummy col SEM w/ continuous
-
-SI_model_new<- '
-                # measurement model
-                    si =~ si_type_3 + si_type_2 + si_type_4
-                    prem <~  medther + dx_mh + sib_freq + sexual_2 + sexual_3 + gender_tgd +
-                             psyhx + fincur + drugs_yn + assault
-                    deftrap =~ dep_type + percneed + anx_type
-                    mmtsm =~ aaq_dum + flourish_dum + persist + inf
-                    deftrap_c =~ deftrap - mean(deftrap)
-                    prem_c =~ prem - mean(prem) 
-                    
-               # a path
-                    prem_c ~ 1 + a1 * deftrap_c
-                    prem_c ~ a2 * mmtsm
-                    
-               # b paths
-                    si ~ b1 * prem_c
-
-               # c prime path 
-                    si ~ 1 + cp * deftrap_c
-
-               # index of moderated mediation and conditional indirect effects
-                    b1a3 := b1 * a3
-                    normss := a1 + a3 * -0.5
-                    fitss := a1 + a3 * 0.5
-                    norm := a1 * b1 + b1a3 * -0.5
-                    fit := a1 * b1 + b1a3 * 0.5" '
-
-fit_trainM3 <- sem(SI_model_new, data=results_tr_com1, ordered=T)
-summary_train3 <- summary(fit_trainM3, fit.measures=T, standardized = T, rsquare=T)
-fitMeasures(fit_trainM3, fit.measures = "all")
-parameterestimates(fit_trainM3, boot.ci.type = "bca.simple", standardized = T) 
-
-modificationindices(fit_trainM3, minimum.value = 20)
-
-semPaths(fit_trainM3)
-fit.totaleffect=lm(si~deftrap, results_tr_com1)
-
-```
-
-
-
-```{r new_model_base}
 SI_model_new<- '
                 # measurement model
                     si =~      si_type_3 + si_type_2 + si_type_4
     
                     prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
-                               ed_any + dx_mh + medther +
-                               gpa_sr + binge + psyhx + fincur + drugs_yn + assault
+                               ed_any + dx_mh + no_medther + gpa_sr + binge + psyhx + 
+                               fincur + drugs_yn + assault
                           
                     deftrap =~ dep_type + aca_impa + anx_type + dep_impa + gad7_impa
                               
                     mmtsm =~   aaq_dum + persist + flourish_dum + inf + belong1 + satisfied_overall + mh_stigma '
-
-# results <- gemm(results_tr_com1[results_tr_com1], xvar = "prem", mvar = c("deftrap"), mymod = "mmtsm", yvar = "si", estMethod = "bootstrap")
 
 fit_trainM3 <- sem(SI_model_new, data=results_tr_com1, ordered=T)
 summary_train3 <- summary(fit_trainM3, fit.measures=TRUE, standardized = TRUE, rsquare=T)
@@ -3421,21 +3336,13 @@ modificationindices(fit_trainM3, minimum.value = 20)
 
 ```{r pls_new_model_base}
 # Pull file
-# data.pls <- read_excel("~/Desktop/results_pls_tr.xlsx",
-#                        range=cell_cols(1:27), col_types = "numeric")
-# save("data.pls", file="~/Desktop/data.pls.RData")
+data.pls <- read_excel("~/Desktop/results_tr_com1.xlsx",
+                       range=cell_cols(1:27), col_types = "numeric")
+save("data.pls", file="~/Desktop/data.pls.RData")
 load("~/Desktop/data.pls.RData")
 
 data.pls <- as.data.frame(data.pls)
 data.pls <- na.omit(data.pls)
-
-result <- gemm(dat = data.pls,
-               xvar = "prem",
-               mvars = "deftrap",
-               yvar = "si",
-               mymod = "mmtsm" ,
-               cmvars = c("age"),
-nboot = 500)
 
 # INNER MODEL
 # rows of path matrix
@@ -3536,10 +3443,8 @@ TESTING DATA
 ## Eating disorder, any type
 ```{r test ed_any}
 testdf.v10 <- testdf.v10 %>%
-  filter(!is.na(ed_any)) %>%
-  mutate(ed_any = case_when(ed_any == 1 ~ 1,
-                            ed_any == 0 ~ 0))
-testdf.v10$ed_any <- as.logical(testdf.v10$ed_any)
+  filter(!is.na(ed_any))  # filters out NAs
+testdf.v10$ed_any <- as.logical(testdf.v10$ed_any)  # change class to boolean
 
 table(testdf.v10$ed_any, useNA = "always")
 jarque.bera.test(testdf.v10$ed_any)
