@@ -4441,8 +4441,7 @@ testdf_sem1 <- testdf_sem1 %>%
 testdf_sem1 <- na.omit(testdf_sem1)
 head(testdf_sem1)   # check output
 
-
-# # xlsx output
+# xlsx output
 testdf_sem_out <- as.data.frame(testdf_sem)
 save(testdf_sem_out , file = "testdf_nondummy.RData")
 load("testdf_nondummy.RData")
@@ -4510,7 +4509,7 @@ modificationindices(fit_test1, minimum.value = 20)
 # write_clip(lav_resids$cov.z)
 ```
 
-
+# new model introduction -- test data
 ```{r SI_test_new}
 SI_test_new<- '
                 # measurement model
@@ -4534,8 +4533,6 @@ parameterestimates(fit_testM4, boot.ci.type = "bca.simple", standardized = TRUE)
 
 modificationindices(fit_testM4, minimum.value = 20)
 ```
-
-
 
 # Running the test dataframe for 18 and 19 year olds
 ```{r sub 18-19_frame}
@@ -4584,6 +4581,11 @@ fitMeasures(fit_test2_un, fit.measures = "all")
 parameterestimates(fit_test2_un, boot.ci.type = "bca.simple", standardized = TRUE) 
 
 modificationindices(fit_test2_un, minimum.value = 20)
+
+test18_sem2 <- as.data.frame(test18_sem)
+save(test18_sem2 , file = "test18_sem2.RData")
+load("test18_sem2.RData")
+write_xlsx(traindf_sem_out, path = "test18_sem2.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -4632,9 +4634,15 @@ parameterestimates(fit_test2_upp, boot.ci.type = "bca.simple", standardized = TR
 
 modificationindices(fit_test2_upp, minimum.value = 20)
 
+
+test20_sem2 <- as.data.frame(test20_sem)
+save(test20_sem2 , file = "test20_sem2.RData")
+load("test18_sem2.RData")
+write_xlsx(test20_sem2, path = "test20_sem2.xls", col_names = TRUE, format_headers = TRUE)
+
 ```
 
-
+# SMART PLS OUTPUT
 ```{r}
 # Pull file
 pls.smart<-matrix(c(
