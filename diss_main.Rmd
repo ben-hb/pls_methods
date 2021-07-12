@@ -4742,7 +4742,7 @@ test18_sem <- test18.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, medther,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther,
   # environment
   religios, activ_no, 
   # life events
@@ -4803,7 +4803,7 @@ test20_sem <- test20.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, medther,
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther,
   # environment
   religios, activ_no,
   # life events
