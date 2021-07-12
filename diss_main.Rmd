@@ -4710,9 +4710,9 @@ SI_model_new2 <- '
                     si =~      si_type_3 + si_type_2 + si_type_4
     
                     prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
-                               dx_mh + meds_ther + psyhx + drugs_yn + assault
+                               dx_mh + meds_ther + psyhx + assault
                           
-                    deftrap =~ dep_type + anx_type + dep_impa
+                    deftrap =~ dep_type + anx_type + dep_impa + aca_impa
                               
                     mmtsm =~   aaq_dum + flourish_dum + inf
 
@@ -4724,6 +4724,12 @@ summary_test4 <- summary(fit_testM4, fit.measures=TRUE, standardized = TRUE, rsq
 fitMeasures(fit_testM4, fit.measures = "all")
 parameterestimates(fit_testM4, boot.ci.type = "bca.simple", standardized = TRUE) 
 modificationindices(fit_testM4, minimum.value = 20)
+
+# save output for offline SMART PLS
+results_test_com <- as.data.frame(results_test)
+save(results_test_com, file = "results_test_com.RData")
+load("results_test_com.RData")
+write_xlsx(results_test_com, path = "results_test_com.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 # Running the test dataframe for 18 and 19 year olds
@@ -4759,6 +4765,27 @@ test18_sem <- test18_sem %>%
 results_18_com <- dummy_cols(test18_sem, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
+SI_model_18 <- '
+                # measurement model
+                    si =~      si_type_3 + si_type_2 + si_type_4
+    
+                    prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
+                               dx_mh + meds_ther + psyhx + assault
+                          
+                    deftrap =~ dep_type + anx_type + dep_impa + aca_impa
+                              
+                    mmtsm =~   aaq_dum + flourish_dum + inf
+
+                 # structural model - regressions
+                   si ~ prem + deftrap + mmtsm + deftrap*mmtsm '
+
+fit_test18 <- sem(SI_model_18, data=results_test , ordered=T)
+summary_test18 <- summary(fit_test18, fit.measures=TRUE, standardized = TRUE, rsquare=T)
+fitMeasures(fit_test18, fit.measures = "all")
+parameterestimates(fit_test18, boot.ci.type = "bca.simple", standardized = TRUE) 
+modificationindices(fit_test18, minimum.value = 20)
+
+# save output for offline SMART PLS
 results_18_com <- as.data.frame(results_18_com)
 save(results_18_com, file = "results_18_com.RData")
 load("results_18_com.RData")
@@ -4798,6 +4825,28 @@ test20_sem <- na.omit(test20_sem)
 results_20_com <- dummy_cols(test20_sem, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
+
+SI_model_20 <- '
+                # measurement model
+                    si =~      si_type_3 + si_type_2 + si_type_4
+    
+                    prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
+                               dx_mh + meds_ther + psyhx + assault
+                          
+                    deftrap =~ dep_type + anx_type + dep_impa + aca_impa
+                              
+                    mmtsm =~   aaq_dum + flourish_dum + inf
+
+                 # structural model - regressions
+                   si ~ prem + deftrap + mmtsm + deftrap*mmtsm '
+
+fit_test20 <- sem(SI_model_20, data=results_test , ordered=T)
+summary_test20 <- summary(fit_test20, fit.measures=TRUE, standardized = TRUE, rsquare=T)
+fitMeasures(fit_test20, fit.measures = "all")
+parameterestimates(fit_test20, boot.ci.type = "bca.simple", standardized = TRUE) 
+modificationindices(fit_test20, minimum.value = 20)
+
+# Save offline for SMART PLS
 results_20_com <- as.data.frame(results_20_com)
 save(results_20_com , file = "results_20_com.RData")
 load("results_20_com.RData")
@@ -4806,10 +4855,13 @@ write_xlsx(results_20_com, path = "results_20_com.xls", col_names = TRUE, format
 
 # SMART PLS OUTPUT
 ```{r}
-# Pull file
+# training data
 
 
-# 18
+# testing data
+
+
+# 18-19 year olds
 smart.pls18<-matrix(c(
 0.10676412749451619, 0.12108264502149285, 0.07531025680293642, 0.17217659197447677, 
 0.24998163183041647, 0.24205234302277726, 0.1793750365895833, 0.29953228359405426, 
@@ -4818,6 +4870,8 @@ smart.pls18<-matrix(c(
 ), byrow=TRUE, nrow=4, ncol=4)
 rownames(smart.pls18)<-c("Moderating Effect 1 -> si_","deftrap -> si_","mmtsm -> si_","prem -> deftrap")
 colnames(smart.pls18)<-c("Original Sample (O)","Sample Mean (M)","2.5%","97.5%")
+
+# 20-25 year old
 ```
 
 
