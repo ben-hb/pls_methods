@@ -582,7 +582,6 @@ scatter.smooth(data.v5$bmi)
 ```
 
 ## Chronic conditions
-n = 622, pos  ** too small to include
 ```{r Chronic conditions}
 table(data.v5$dx_chronic_1)
 table(data.v5$dx_chronic_2)
@@ -595,7 +594,7 @@ table(data.v5$dx_chronic_8)
 table(data.v5$dx_chronic_9)
 table(data.v5$dx_chronic_11)
 table(data.v5$dx_chronic_12)
-table(data.v5$dx_chronic_13)
+table(data.v5$dx_chronic_13)   # n overall for all chronic = 622, pos  ** too small to include
 
 data.v5 = subset(data.v5, select= -c(dx_chronic_1:dx_chronic_13)) # drop chronic as possibly flawed variable and low sample
 ```
@@ -965,13 +964,9 @@ traindf.v10 = subset(traindf.v10, select= -c(alc_tx)) # clean up vars/columns
 ## Eating disorder, any type
 ```{r train ed_any}
 traindf.v10 <- traindf.v10 %>%
-  filter(!is.na(ed_any)) %>%   # filter out all NAs for complete data
-  mutate(ed_any = case_when(ed_any == 1 ~ 1,
-                            ed_any == 0 ~ 0))
-traindf.v10$ed_any <- as.logical(traindf.v10$ed_any)   # create boolean var
+  filter(!is.na(ed_any))  # filter out all NAs for complete data
 
 table(traindf.v10$ed_any, useNA = "always") # check output, confirms no NAs
-jarque.bera.test(traindf.v10$ed_any) 
 ```
 
 ## WCS
@@ -1197,6 +1192,7 @@ table(traindf.v11$meds_mood)
 table(traindf.v11$meds_sle)
 table(traindf.v11$meds_oth)
 table(traindf.v11$meds_none)
+table(traindf.v11$meds_any)
 ```
 
 ## Psychopharm medication class count
@@ -1240,9 +1236,16 @@ traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/col
 ```{r}
 # create new var for medication and/or therapy utilization
 traindf.v11 <- traindf.v11 %>%
-  filter(!is.na(medther))
+  mutate(meds_ther = case_when(meds_any == 1 ~ 1,
+                              ther_cur == 1 ~ 1,
+                              ther_cur1 == 1 ~ 1,
+                              ther_ever == 3 ~ 1,
+                              ther_ever == 4 ~ 1,
+                              meds_any == 0 ~ 0)) %>%
+  filter(!is.na(meds_ther))
+traindf.v11$meds_ther <- as.logical(traindf.v11$meds_ther)
 
-table(traindf.v11$medther, useNA = "always")
+table(traindf.v11$meds_ther, useNA = "always")
 ```
 
 
@@ -1257,7 +1260,7 @@ traindf.v12 <- traindf.v11 # create new dataframe for summary stats. Will jump t
 # Define diathesis vars for correlation matrix
 traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, ed_scoff, body_sr,
                                 dx_mh, meds_count, ed_any, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood,
-                                meds_sle, meds_oth, medther)
+                                meds_sle, meds_oth, meds_ther)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_dia, sig=0.6){
@@ -1285,7 +1288,7 @@ corr_simple()
 # create dummy columns for EFA analysis
 pca_dia <- data.matrix(traindf_dia)
 results_dia <- dummy_cols(pca_dia, select_columns = c("age", "sexual", "gender_tgd", "finpast", 
-                                                       "sib_freq", "race", "dx_mh", "ed_any", "medther"), 
+                                                       "sib_freq", "race", "dx_mh", "ed_any", "meds_ther"), 
                           remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # factoextra -- https://rpkgs.traindfnovia.com/factoextra/
@@ -1317,7 +1320,7 @@ fviz_cos2(dia_pca, choice = "var", axes = 1,
 ```{r train clm_dia}
 # setting up dataframe for regression analysis
 clm_dia <- traindf.v12 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race,
-                                  ed_any, dx_mh, medther)
+                                  ed_any, dx_mh, meds_ther)
 clm_dia <- na.omit(clm_dia)
 dia_mod <- as.data.frame(clm_dia)
 
@@ -1375,7 +1378,8 @@ traindf.v13 <- traindf.v13 %>%
                               religios == 2 ~ 4,
                               religios == 3 ~ 3,
                               religios == 4 ~ 2,
-                              religios == 5 ~ 1))   # not at all religious
+                              religios == 5 ~ 1)) %>%  # not at all religious
+  filter(!is.na(religios))
 traindf.v13$religios <- as.numeric(traindf.v13$religios)
 
 table(traindf.v13$religios, useNA = "always")       # Check output
@@ -1604,7 +1608,7 @@ traindf.v15 <- traindf.v14  # new dataframe for analysis
 ```{r train env correlation}
 # Define environment vars for correlation matrix
 traindf_env <- traindf.v15 %>% select(discrim, religios, residenc, activ_no, divers, 
-                                school2_type, military, international)
+                                      school2_type, military, international)
 
  # Convert traindf to numeric in order to run correlations
 traindf_env <- traindf_env %>% mutate_if(is.character, as.factor)
@@ -1631,7 +1635,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 traindf_env <- NA_preproc(traindf_env)
 traindf_env <- as.matrix(traindf_env)
 results_env <- dummy_cols(traindf_env, select_columns = c("religios", "residenc", "activ_no",
-                                                         "school2_type", "military", "international"),
+                                                         "school2_type", "international"),
                           remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
@@ -1664,12 +1668,11 @@ fviz_cos2(env_pca, choice = "var", axes = 1,
 ### CLM environmental regression
 ```{r train CLM environment}
 # preparing dataframe for regression
-clm_env <- traindf.v15 %>% select(si_type, religios, residenc, activ_no, school2_type, 
-                                  international, discrim, international)
+clm_env <- traindf.v15 %>% select(si_type, religios, residenc, activ_no, school2_type, international)
 clm_env <- NA_preproc(clm_env) %>% as.data.frame()
 
 # run ordinal regression
-clm_env2 <- clm(si_type ~ religios + residenc + activ_no + school2_type + discrim + international, 
+clm_env2 <- clm(si_type ~ religios + residenc + activ_no + school2_type + international, 
                 data = clm_env)
 
 summary(clm_env2)
@@ -1766,13 +1769,13 @@ jarque.bera.test(traindf.v16$drug_mar)
 ## Current financial stressors
 ```{r train fincur}
 traindf.v16 <- traindf.v16 %>%
-  filter(!is.na(fincur)) %>%  # filters for NAs
   # make dichotomous
   mutate(fincur = case_when(fincur == 3 ~ 0,  # sometimes
                             fincur == 4 ~ 0,  # rarely or never
                             fincur == 5 ~ 0,
                             fincur == 1 ~ 1,  # always or often stressful
-                            fincur == 2 ~ 1))
+                            fincur == 2 ~ 1)) %>%
+  filter(!is.na(fincur))   # filters for NAs
 traindf.v16$fincur <- as.logical(traindf.v16$fincur)
 
 table(traindf.v16$fincur, useNA = "always")  # check output, skew
@@ -1799,8 +1802,8 @@ traindf.v17 <- traindf.v16 %>%
                                 abuse_recent == 3 ~ 1,
                                 abuse_recent == 4 ~ 0,
                                 abuse_recent == 5 ~ 0,
-                                abuse_life == 0 ~ 0,
-                                is.na(abuse_life) ~ 0))
+                                abuse_life == 0 ~ 0)) %>%
+  filter(!is.na(abuse_life))
 table(traindf.v17$abuse_year)   # check output
 
 # restructure sexual assault var
@@ -1989,7 +1992,7 @@ model.le  %>%
 ```{r train results_prem}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                       medther, religios, activ_no, school2_type, fincur, ins_no, residenc,
+                                       meds_ther, religios, activ_no, school2_type, fincur, ins_no, residenc,
                                        gpa_sr, assault, drugs_yn, drug_mar, psyhx)
 
 # Corr_simple function
@@ -2023,7 +2026,7 @@ coef(clm_prem)
 ```{r train prem_pca}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                       medther, religios, activ_no, school2_type, ins_no, residenc,
+                                       meds_ther, religios, activ_no, school2_type, ins_no, residenc,
                                        gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur)
 traindf_prem <- na.omit(traindf_prem)
 
@@ -2035,7 +2038,7 @@ traindf_prem <- traindf_prem %>%
 traindf_prem   # check output
 
 results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq",
-                                                            "race", "ed_any", "dx_mh", "medther", "religios",
+                                                            "race", "ed_any", "dx_mh", "meds_ther", "religios",
                                                             "activ_no", "school2_type", "ins_no", "residenc",
                                                             "gpa_sr", "assault", "drugs_yn","drug_mar", 
                                                             "psyhx", "fincur"),
@@ -2316,11 +2319,11 @@ table(traindf.v22$aaq_tot) # check output
 
 # deem 'rs_df_arranged[1,1]' as SI cutoff
  traindf.v22 <- traindf.v22 %>%
-   mutate(aaq_dum = ifelse(aaq_tot > rs_df_arranged[1,1], 1, 0)) %>%
-   mutate(aaq_dum = case_when(aaq_dum == 1 ~ 1,
-                              aaq_dum == 0 ~ 0)) %>%
+   mutate(aaq_dum = case_when(aaq_tot > 40 ~ 4,
+                              aaq_tot > 30 ~ 3,
+                              aaq_tot > 20 ~ 2,
+                              aaq_tot < 21 ~ 1)) %>%
    filter(!is.na(aaq_dum))   # filter for NAs
-traindf.v22$aaq_dum <- as.logical(traindf.v22$aaq_dum)  # change to boolean
 
 table(traindf.v22$aaq_dum, useNA = "always")  # check output, NAs
 ```
@@ -2874,11 +2877,11 @@ traindf.v28 <- traindf.v26
 # school structural analysis
 var_names <- c(
   # diathesis
-  "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "medther",
+  "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_ther",
   # environment
-  "religios", "activ_no", "discrim", "international",
+  "religios", "activ_no", "international",
   # life events
-  "ins_no", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault",
+  "ins_no", "gpa_sr", "psyhx", "fincur", "drugs_yn", "assault",
   # defeat
   "aca_impa", "dep_type", "anx_type",
   # threats to self-moderation
@@ -3252,130 +3255,6 @@ fitMeasures(fit_trainM2, fit.measures = "all")
 parameterestimates(fit_trainM2, boot.ci.type = "bca.simple", standardized = TRUE) 
 ```
 
-```{r new_model_base}
-SI_model_new<- '
-                # measurement model
-                    si =~      si_type_3 + si_type_2 + si_type_4
-    
-                    prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
-                               ed_any + dx_mh + medther + gpa_sr + psyhx + 
-                               drugs_yn + assault
-                          
-                    deftrap =~ dep_type + anx_type + dep_impa
-                              
-                    mmtsm =~   aaq_dum + flourish_dum + inf
-
-                 # structural model - regressions
-                   si ~ prem + deftrap + mmtsm + deftrap*mmtsm    '
-
-fit_trainM3 <- sem(SI_model_new, data=results_tr_com1, ordered=T)
-summary_train3 <- summary(fit_trainM3, fit.measures=TRUE, standardized = TRUE, rsquare=T)
-fitMeasures(fit_trainM3, fit.measures = "all")
-parameterestimates(fit_trainM3, boot.ci.type = "bca.simple", standardized = TRUE) 
-
-modificationindices(fit_trainM3, minimum.value = 20)
-```
-
-
-```{r pls_new_model_base}
-# Pull file
-data.pls <- read_excel("~/Desktop/results_tr_com1.xlsx",
-                       range=cell_cols(1:27), col_types = "numeric")
-save("data.pls", file="~/Desktop/data.pls.RData")
-load("~/Desktop/data.pls.RData")
-
-data.pls <- as.data.frame(data.pls)
-data.pls <- na.omit(data.pls)
-
-# INNER MODEL
-# rows of path matrix
-prem =     c(0, 1, 0, 0)
-deftrap =  c(0, 0, 1, 0)
-mmtsm =    c(0, 0, 0, 1)
-si =       c(0, 0, 0, 0)
-
-# matrix (by row binding)
-imv_path = rbind (prem, deftrap, mmtsm, si)
-imv_path = t(imv_path)
-
-# plot the inner matrix
-innerplot(imv_path, box.size = 0.1)
-
-# outer model
-imv_blocks = list(4:16, 17:21, 22:27, 1:3)
-
-# modes
-imv_modes = c("B", "A", "A", "A")
-
-#scales
-imv_scales = list(
-            # premotivation
-                  c("ord","ord","ord",
-                  "num", "num", "num", "num", "ord", 
-                  "num", "num", "num", "num", "ord"), 
-            # deftrap      
-                  c("ord", "ord", "ord", "ord", "num"),
-            # mmtsm    
-                  c("ord", "ord", "num", "ord", "ord","ord"),
-            # si     
-                  c("ord","ord","ord")
-                  )
-  
-# apply plspm
-imv_pls1 = plspm(data.pls, imv_path, imv_blocks, modes = imv_modes, scaling = imv_scales)
-
-# print diss_pls1
-imv_pls1
-
-
-## Partial Least Squares Path Modeling (PLS-PM)
-## ---------------------------------------------
-##    NAME                   DESCRIPTION
-## 1  $outer_model           outer model
-## 2  $inner_model           inner model
-## 3  $path_coefs            path coefficients matrix
-## 4  $scores                latent variable scores 
-## 5  $crossloadings         cross-loadings
-## 6  $inner_summary         summary inner model
-## 7  $effects               total effects
-## 8  $unidim                uni-dimensionality
-## 9  $gof                   goodness-of-fit
-## 10 $boot                  bootstrap results
-## 11 $data                  data matrix
-## ---------------------------------------------
-
-# check unidimensionality
-imv_pls1$unidim
-
-# check coefs
-imv_pls1$path_coefs
-imv_pls1$inner_model
-
-# plotting the loadings
-plot(imv_pls1, what = "loadings")
-
-# check outer model
-imv_pls1$outer_model
-
-# summarized results
-summary(imv_pls1)
-plot(imv_pls1)
-plot(imv_pls1, what = "loadings", arr.width = 0.1)
-head(imv_pls1$scores, n = 5)
-tail(imv_pls1$scores, n = 5)
-imv_pls1$outer_model     #outer model
-imv_pls1$inner_model     #inner model
-imv_pls1$path_coefs      #path coefficients matrix
-imv_pls1$scores          #latent variable scores
-imv_pls1$crossloadings   #cross-loadings
-imv_pls1$inner_summary   #summary inner model
-imv_pls1$effects         #total effects
-imv_pls1$unidim          #uni-dimensionality
-imv_pls1$gof             #goodness-of-fit
-imv_pls1$boot            #bootstrap results
-imv_pls1$data            #data matrix
-
-```
 
 
 TESTING DATA
