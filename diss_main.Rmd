@@ -1418,6 +1418,8 @@ table(traindf.v14$military, useNA = "always")
 traindf.v14 <- traindf.v14 %>%
   filter(!is.na(international))
 
+traindf.v14$international <- as.logical(traindf.v14$international)
+
 table(traindf.v14$international, useNA = "always")
 ```
 
@@ -2228,7 +2230,7 @@ traindf_def <- traindf_def %>%
   data.matrix()
 traindf_def   # check output
 
-results_def <- dummy_cols(traindf_def, select_columns = c("aca_impa", "depr_type", "anx_type"),
+results_def <- dummy_cols(traindf_def, select_columns = c("aca_impa", "dep_type", "anx_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
@@ -2324,6 +2326,7 @@ table(traindf.v22$aaq_tot) # check output
                               aaq_tot > 20 ~ 2,
                               aaq_tot < 21 ~ 1)) %>%
    filter(!is.na(aaq_dum))   # filter for NAs
+traindf.v22$aaq_dum <- as.numeric(traindf.v22$aaq_dum)
 
 table(traindf.v22$aaq_dum, useNA = "always")  # check output, NAs
 ```
@@ -2851,7 +2854,9 @@ clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1, satisfied_
 clm_mm <- na.omit(clm_mm)
 
 # run MM regression
-clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + satisfied_overall + mh_stigma, data = clm_mm)
+clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + satisfied_overall + mh_stigma, 
+              data = clm_mm)
+
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))  # retireve coefficients
 
@@ -3532,68 +3537,6 @@ table(testdf.v11$meds_ther, useNA = "always")
 ## DIATHESIS ANALYSES
 ```{r test diathesis analyses}
 testdf.v12 <- testdf.v11 # create new dataframe for summary stats. Will jump to v13 for environmental
-```
-
-### Diathesis correlation matrix
-```{r test diathesis correlation}
-
-# Define diathesis vars for correlation matrix
-testdf_dia <- testdf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, ed_scoff, body_sr,
-                                dx_mh, meds_count, ed_any, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood,
-                                meds_sle, meds_oth, meds_ther)
-
-# Corr_simple function
-corr_simple <- function(testdf=testdf_dia, sig=0.6){
-  # convert testdf to numeric in order to run correlations 
-  testdf_dia <- testdf_dia %>% mutate_if(is.character, as.factor)
-  testdf_dia <-  testdf_dia %>% mutate_if(is.factor, as.numeric)
-  # run a correlation and drop the insignificant ones
-  corr <- cor(testdf_dia, use = "pairwise.complete.obs")                               
-  corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-  corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-  corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
-  corr <- na.omit(corr)                                   # remove the NA values from above 
-  corr <- corr[order(-abs(corr$Freq)),]                   # inspect correlations above 0.60
-  print(corr)
-  
-  #turn corr back into matrix in order to plot with corrplot
-  mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-}
-corr_simple()
-```
-
-### EFA diathesis
-```{r test PCA diathesis}
-# create dummy columns for EFA analysis
-pca_dia <- data.matrix(testdf_dia)
-results_dia <- dummy_cols(pca_dia, select_columns = c("age", "sexual", "gender_tgd", "finpast", 
-                                                       "sib_freq", "race", "dx_mh", "ed_any", "meds_ther"), 
-                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-# factoextra -- https://rpkgs.testdfnovia.com/factoextra/
-dia_pca <- PCA(results_dia, graph=FALSE)  # apply PCA
-eigval_dia <- get_eigenvalue(dia_pca)
-eigval_dia
-
-fviz_screeplot(dia_pca, addlabels = TRUE, ylim = c(0, 50))
-
-fviz_pca_var(dia_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_famd_var(dia_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_cos2(dia_pca, choice = "var", axes = 1, 
-          fill = "steelblue", color = "steelblue",
-          sort.val = c("desc", "asc", "none"),
-          top = 40,
-          xtickslab.rt = 45,
-          ggtheme = theme_minimal())
 ```
 
 ### CLM diathesis regression
