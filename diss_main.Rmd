@@ -631,7 +631,6 @@ jarque.bera.test(data.v6$race)
 ```
 
 ### Race write-in reconcilation
-Reconciles all 'other' answers vi race_other_text
 ```{r race reconciliation}
   #decline to answer
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]merica")] <- 9
@@ -1610,7 +1609,7 @@ traindf.v15 <- traindf.v14  # new dataframe for analysis
 ```{r train env correlation}
 # Define environment vars for correlation matrix
 traindf_env <- traindf.v15 %>% select(discrim, religios, residenc, activ_no, divers, 
-                                      school2_type, military, international)
+                                      school2_type, international)
 
  # Convert traindf to numeric in order to run correlations
 traindf_env <- traindf_env %>% mutate_if(is.character, as.factor)
@@ -1670,11 +1669,11 @@ fviz_cos2(env_pca, choice = "var", axes = 1,
 ### CLM environmental regression
 ```{r train CLM environment}
 # preparing dataframe for regression
-clm_env <- traindf.v15 %>% select(si_type, religios, residenc, activ_no, school2_type, international)
+clm_env <- traindf.v15 %>% select(si_type, religios, residenc, activ_no, school2_type)
 clm_env <- NA_preproc(clm_env) %>% as.data.frame()
 
 # run ordinal regression
-clm_env2 <- clm(si_type ~ religios + residenc + activ_no + school2_type + international, 
+clm_env2 <- clm(si_type ~ religios + residenc + activ_no + school2_type, 
                 data = clm_env)
 
 summary(clm_env2)
@@ -3237,7 +3236,7 @@ SI_model_trM2 <- '
                   si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + assault +
-                           ed_any + dx_mh + psyhx + drugs_yn + medther
+                           ed_any + dx_mh + psyhx + drugs_yn + meds_ther
                           
                   def =~ dep_type + aca_impa + anx_type
                               
@@ -3592,7 +3591,7 @@ table(testdf.v13$religios, useNA = "always")       # Check output
 ## Residence type
 ```{r test residenc}
 # re-organize living situation into on-campus, off-campus, and at home
-testdf.v13 <- testdf.v13 %>%
+testdf.v14 <- testdf.v13 %>%
   mutate(residenc = case_when(residenc == 1 ~ 1,  # on-campus
                               residenc == 2 ~ 1,
                               residenc == 3 ~ 2,  # coop
@@ -3602,15 +3601,7 @@ testdf.v13 <- testdf.v13 %>%
                               residenc == 7 ~ 3)) %>%
   filter(!is.na(residenc))
 
-table(testdf.v13$residenc, useNA = "always")  # check output
-```
-
-## International student
-```{r test international}
-testdf.v14 <- testdf.v14 %>%
-  filter(!is.na(international))
-
-table(testdf.v14$international, useNA = "always")
+table(testdf.v14$residenc, useNA = "always")  # check output
 ```
 
 ## Activity Involvement
@@ -3790,75 +3781,14 @@ table(testdf.v14$school2_type, useNA = "always") # check output
 testdf.v15 <- testdf.v14  # new dataframe for analysis
 ```
 
-### Environmental correlation
-```{r test env correlation}
-# Define environment vars for correlation matrix
-testdf_env <- testdf.v15 %>% select(discrim, religios, residenc, activ_no, divers, 
-                                      school2_type, military, international)
-
- # Convert testdf to numeric in order to run correlations
-testdf_env <- testdf_env %>% mutate_if(is.character, as.factor)
-testdf_env <-  testdf_env %>% mutate_if(is.factor, as.numeric)
-testdf_env <-  testdf_env %>% mutate_if(is.logical, as.numeric)
-
-# run a correlation and drop the insignificant ones
-corr <- cor(testdf_env, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
-corr <- na.omit(corr)                                   #remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)), ]                   #sort by highest correlation
-print(corr)
-  
-# turn corr back into matrix in order to plot with corrplot
-mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-```
-
-##EFA Environment
-```{r test EFA Environment}
-# PCA map with eigenvalues
-testdf_env <- NA_preproc(testdf_env)
-testdf_env <- as.matrix(testdf_env)
-results_env <- dummy_cols(testdf_env, select_columns = c("religios", "residenc", "activ_no",
-                                                         "school2_type", "international"),
-                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
-names(env_pca)
-summary(env_pca)
-
-eigval_env <- get_eigenvalue(env_pca)
-eigval_env
-
-# Visualization
-fviz_screeplot(env_pca, addlabels = TRUE, ylim = c(0, 50))
-fviz_pca_var(env_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_famd_var(env_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_cos2(env_pca, choice = "var", axes = 1,
-          fill = "steelblue", color = "steelblue",
-          sort.val = c("desc", "asc", "none"),
-          top = 40,
-          xtickslab.rt = 45,
-          ggtheme = theme_minimal())
-```
-
 ### CLM environmental regression
 ```{r test CLM environment}
 # preparing dataframe for regression
-clm_env <- testdf.v15 %>% select(si_type, religios, residenc, activ_no, school2_type, international)
+clm_env <- testdf.v15 %>% select(si_type, religios, residenc, activ_no, school2_type)
 clm_env <- NA_preproc(clm_env) %>% as.data.frame()
 
 # run ordinal regression
-clm_env2 <- clm(si_type ~ religios + residenc + activ_no + school2_type + international, 
+clm_env2 <- clm(si_type ~ religios + residenc + activ_no + school2_type, 
                 data = clm_env)
 
 summary(clm_env2)
@@ -4010,7 +3940,7 @@ testdf.v17 = subset(testdf.v17, select= -c(abuse_life, abuse_recent)) # clean up
 ## Recent Psychiatric Hospitalization, last 12 months
 ```{r test psyhx}
 # Create variable for any psychiatric hospitalization in the last 12 months
-testdf.v18 <- testdf.v18 %>% 
+testdf.v18 <- testdf.v17 %>% 
   mutate(psyhx = case_when((prov_pes == 1 | prov_inp == 1 | prov_par == 1) ~ 1, # inpatient, IOPs, etc.
                            (prov_pes == 0 & prov_inp == 0 & prov_par == 0) ~ 0, # no crises intervened on
                            ther_ever == 0 ~ 0)) %>%
@@ -4047,99 +3977,6 @@ jarque.bera.test(testdf.v18$gpa_sr)
  
 ```{r test LE testdf analysis}
 testdf.v19 <- testdf.v18
-```
- 
-## LE correlation
-```{r test LE correlation}
-# Define life event var candidates for correlation matrix
-testdf_le <- testdf.v19 %>% select(ins_no, gpa_sr, fincur, binge,
-                                     assault, drugs_yn, drug_mar, psyhx)
-
-# convert testdf to numeric in order to run correlations
-testdf_le <- testdf_le %>% mutate_if(is.character, as.factor)
-testdf_le <-  testdf_le %>% mutate_if(is.factor, as.numeric)
-
-# run a correlation and drop the insignificant ones
-corr <- cor(testdf_le, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop dups and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
-corr <- na.omit(corr)                                   #remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
-print(corr)
-  
-#turn corr back into matrix in order to plot with corrplot
-mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-```
-
-## EFA LE
-```{r test le_pca}
-testdf_le <- testdf.v19 %>% select(ins_no, gpa_sr, fincur, assault,
-                                     binge, drugs_yn, drug_mar, psyhx)
-testdf_le <- na.omit(testdf_le)
-
-# create corr matrix, with dummy vars
-testdf_le <- testdf_le %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
-  data.matrix()
-testdf_le   # check output
-
-results_le <- dummy_cols(testdf_le, select_columns = c("ins_no", "gpa_sr", "fincur",
-                                                        "binge", "drugs_yn", "drug_mar", 
-                                                        "assault", "psyhx"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
-le_pca$eig   # output matrix with eigenvalues
-
-eigval_le <- get_eigenvalue(le_pca)
-eigval_le
-
-# visualization for PCA, FAMD
-fviz_screeplot(le_pca, addlabels = TRUE, ylim = c(0, 50))
-fviz_pca_var(le_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_famd_var(le_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_cos2(le_pca, choice = "var", axes = 1,
-          fill = "steelblue", color = "steelblue",
-          sort.val = c("desc", "asc", "none"),
-          top = 40,
-          xtickslab.rt = 45,
-          ggtheme = theme_minimal())
-```
-
-## CLM Life event regression
-```{r test clm_LE}
-# prepare dataframe for regression
-clm_le <- testdf.v19 %>% select(si_type, ins_no, gpa_sr, assault, binge, drugs_yn, 
-                                 drug_mar, psyhx, fincur)
-clm_le <- na.omit(clm_le)
-
-# run regression
-clm_le <- clm(si_type ~ ins_no + gpa_sr + assault + binge + drugs_yn + drug_mar + 
-                psyhx + fincur,
-              data = clm_le)
-summary(clm_le)
-coef(clm_le)
-
-ci_le <- confint(clm_le)
-ci_le
-
-model.le <- tidy(clm_le)  # Convert model to dataframe for easy manipulation
-model.le
-model.le  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_le)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 # Full Premotivational Analysis
@@ -4335,66 +4172,6 @@ jarque.bera.test(testdf.v20$aca_impa)
 testdf.v21 <- testdf.v20
 ```
 
-## Defeat correlation
-```{r test defeat cor}
-# Define defeat variable candidates for correlation matrix
-testdf_def <- testdf.v21 %>% select(aca_impa, anx_type, dep_type)
-
- # convert testdf to numeric in order to run correlations
-testdf_def <- testdf_def %>% mutate_if(is.character, as.factor)
-testdf_def <-  testdf_def %>% mutate_if(is.factor, as.numeric)
-
-# run a correlation and drop the insignificant ones
-corr <- cor(testdf_def, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr, diag=TRUE)] <- NA        # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                # drop perfect correlations
-corr <- as.data.frame(as.table(corr))         # turn into a 3-column table
-corr <- na.omit(corr)                         # remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
-print(corr)
-```
-
-## EFA defeat
-```{r test EFA_def}
-testdf_def <- testdf.v21 %>% select(aca_impa, dep_type, anx_type)
-testdf_def <- na.omit(testdf_def)
-
-# create corr matrix, with dummy vars 
-testdf_def <- testdf_def %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
-  data.matrix()
-testdf_def   # check output
-
-results_def <- dummy_cols(testdf_def, select_columns = c("aca_impa", "depr_type", "anx_type"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
-def_pca$eig   # output matrix with eigenvalues
-
-eigval_def <- get_eigenvalue(def_pca)
-eigval_def
-
-# visualization for PCA, FAMD
-fviz_screeplot(def_pca, addlabels = TRUE, ylim = c(0, 50))
-fviz_pca_var(def_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_famd_var(def_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_cos2(def_pca, choice = "var", axes = 1, 
-          fill = "steelblue", color = "steelblue",
-          sort.val = c("desc", "asc", "none"),
-          top = 40,
-          xtickslab.rt = 45,
-          ggtheme = theme_minimal())
-```
-
 ## CLM defeat
 ```{r test CLM defeat}
 # prepare regression analysis
@@ -4480,80 +4257,6 @@ jarque.bera.test(testdf.v22$persist)
 testdf.v23 <- testdf.v22
 ```
 
-## Threats to self-moderation correlation
-```{r test tsm correlation}
-# Define TSM variable candidates for correlation matrix
-testdf_tsm <- testdf.v23 %>% select(persist, aaq_dum)
-
-# convert data to numeric in order to run correlations 
-testdf_tsm <- testdf_tsm %>% mutate_if(is.character, as.factor)
-testdf_tsm <-  testdf_tsm %>% mutate_if(is.factor, as.numeric)
-
-# run a correlation and drop the insignificant ones
-corr <- cor(testdf_tsm, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
-corr <- na.omit(corr)                                   #remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
-print(corr)
-  
-# Re-run corr with non-overlapping vars
-testdf_tsm <- testdf.v23 %>% select(persist, aaq_dum)
-
-# convert data to numeric in order to run correlations 
-testdf_tsm <- testdf_tsm %>% mutate_if(is.character, as.factor)
-testdf_tsm <-  testdf_tsm %>% mutate_if(is.factor, as.numeric)
-
-# run a correlation and drop the insignificant ones
-corr <- cor(testdf_tsm, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
-corr <- na.omit(corr)                                   #remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
-print(corr)
-```
-
-## EFA TSM
-```{r test EFA TSM}
-testdf_tsm <- testdf.v23 %>% select(persist, aaq_dum)
-testdf_tsm <- na.omit(testdf_tsm)
-
-# create corr matrix, with dummy vars 
-testdf_tsm <- testdf_tsm %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
-  data.matrix()
-testdf_tsm   # check output
-
-results_tsm <- dummy_cols(testdf_tsm, select_columns = c("persist", "aaq_dum"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
-eigval_tsm <- get_eigenvalue(tsm_pca)
-eigval_tsm
-
-# Visualization of PCA, FAMD
-fviz_screeplot(tsm_pca, addlabels = TRUE, ylim = c(0, 50))
-fviz_pca_var(tsm_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_famd_var(tsm_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_cos2(tsm_pca, choice = "var", axes = 1,
-          fill = "steelblue", color = "steelblue",
-          sort.val = c("desc", "asc", "none"),
-          top = 40,
-          xtickslab.rt = 45,
-          ggtheme = theme_minimal())
-```
-
 ## CLM TSM
 ```{r test CLM TSM}
 # prepare dataframe for regression
@@ -4620,63 +4323,6 @@ table(testdf.v24$percneed_cur, useNA = "always")
 ## ENTRAPMENT ANALYSES
 ```{r test entrapment analyses}
 testdf.v25 <- testdf.v24
-```
-
-### Entrapment correlation
-```{r test entrapment corr}
-# Define entrapment variable candidates for correlation matrix
-testdf_entrap <- testdf.v25 %>% select(dep_impa, gad7_impa, percneed)
-
- # convert data to numeric in order to run correlations
-testdf_entrap <- testdf_entrap %>% mutate_if(is.character, as.factor)
-testdf_entrap <-  testdf_entrap %>% mutate_if(is.factor, as.numeric)
-
-# run a correlation and drop the insignificant ones
-corr <- cor(testdf_entrap, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
-corr <- na.omit(corr)                                   #remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
-print(corr)
-```
-
-### EFA Entrapment
-```{r test CFA entrap}
-testdf_entrap <- testdf.v25 %>% select(dep_impa, gad7_impa, percneed)
-testdf_entrap <- na.omit(testdf_entrap)
-
-# create corr matrix, with dummy vars 
-results_entrap <- testdf_entrap %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  mutate_if(is.character, as.factor) %>% 
-  data.matrix()
-results_entrap   # check output
-
-entrap_pca <- PCA(results_entrap, graph=FALSE)  # apply PCA
-entrap_pca$eig   # output matrix with eigenvalues
-
-eigval_entrap <- get_eigenvalue(entrap_pca)
-eigval_entrap
-
-# Visualization of PCA, FAMD
-fviz_screeplot(entrap_pca, addlabels = TRUE, ylim = c(0, 50))
-fviz_pca_var(entrap_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_famd_var(entrap_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_cos2(entrap_pca, choice = "var", axes = 1, 
-          fill = "steelblue", color = "steelblue",
-          sort.val = c("desc", "asc", "none"),
-          top = 40,
-          xtickslab.rt = 45,
-          ggtheme = theme_minimal())
 ```
 
 ###  CLM Entrapment regression
@@ -4875,67 +4521,6 @@ table(testdf.v26$mh_stigma, useNA = "always") # check out, NAs
 testdf.v27 <- testdf.v26
 ```
 
-### Motivational Moderator correlation
-```{r test MM_corr}
-# Define MM variable candidates for correlation matrix
-testdf_mm <- testdf.v27 %>% select(inf, flourish_dum, belong1, mh_stigma, satisfied_overall)
-
- # convert testdf to numeric in order to run correlations
-testdf_mm <- testdf_mm %>% mutate_if(is.character, as.factor)
-testdf_mm <-  testdf_mm %>% mutate_if(is.factor, as.numeric)
-
-# run a correlation and drop the insignificant ones
-corr <- cor(testdf_mm, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
-corr <- na.omit(corr)                                   # remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
-print(corr)
-
-mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-
-```
-
-### EFA MM
-```{r test EFA MM}
-testdf_mm <- testdf.v27 %>% select(inf, flourish_dum, belong1, mh_stigma, satisfied_overall)
-testdf_mm <- na.omit(testdf_mm)
-
-# create corr matrix, with dummy vars 
-testdf_mm <- testdf_mm %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
-  data.matrix()
-testdf_mm   # check output
-results_mm <- dummy_cols(testdf_mm, select_columns = c("flourish_dum", "belong1", "inf", 
-                                                        "mh_stigma", "satisfied_overall"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
-eigval_mm <- get_eigenvalue(mm_pca)
-eigval_mm
-
-# Visualization of PCA, FAMD
-fviz_screeplot(mm_pca, addlabels = TRUE, ylim = c(0, 50))
-fviz_pca_var(mm_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_famd_var(mm_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_cos2(mm_pca, choice = "var", axes = 1, 
-          fill = "steelblue", color = "steelblue",
-          sort.val = c("desc", "asc", "none"),
-          top = 40,
-          xtickslab.rt = 45,
-          ggtheme = theme_minimal())
-```
-
 ### CLM Motivational moderators regression
 ```{r test CLM mm}
 # prepare data for regression
@@ -4977,7 +4562,7 @@ nrow(traindf.v28)
 ## Select all vars for SEM
 ```{r test_df_sem2}
 # Prep SEM data vars
-testdf_sem <- testdf.v28 %>% select(
+testdf_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
@@ -5011,7 +4596,7 @@ write_xlsx(testdf_sem_out, path = "testdf_nondummy.xls", col_names = TRUE, forma
 
 ## Create dummy vars
 ```{r test dummy_vars}
-results_tr_sem1 <- dummy_cols(testdf_sem, select_columns = c(
+results_test_sem1 <- dummy_cols(testdf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
@@ -5030,14 +4615,14 @@ results_tr_sem1 <- dummy_cols(testdf_sem, select_columns = c(
     "inf", "flourish_dum","satisfied_overall"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
-results_tr_sem1 <- na.omit(results_tr_sem1)
-results_tr_df1 <- as.data.frame(results_tr_sem1)
-head(results_tr_df1)
+results_test_sem1 <- na.omit(results_test_sem1)
+results_test_df1 <- as.data.frame(results_test_sem1)
+head(results_test_df1)
 
 #save full var set for SEM
-save(results_tr_df1, file = "testdf_sem1.RData")
+save(results_test_df1, file = "testdf_sem1.RData")
 load("testdf_sem1.RData")
-write_xlsx(results_tr_df1, path = "testdf_sem1.xls", col_names = TRUE, format_headers = TRUE)
+write_xlsx(results_test_df1, path = "testdf_sem1.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -5062,13 +4647,13 @@ ggplot(data, aes(sample = value)) +
   facet_wrap(~name)
 
 # testing data
-var_desc <- describe(testdf_sem)
-view(var_desc)
+var_desc_test <- describe(testdf_sem)
+view(var_desc_test)
 
 # xlsx output
-save(var_desc, file = "var_desc.RData")
-load("var_desc.RData")
-write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = TRUE)
+save(var_desc_test, file = "var_desc_test.RData")
+load("var_desc_test.RData")
+write_xlsx(var_desc_test, path = "var_desc_test.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Model w/ levels correlations
@@ -5091,75 +4676,41 @@ mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")
 corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 
-# SEM model with partial cont and dummy
-```{r si_model_test1}
-## Dummy col SEM w/ continuous
-results_test_com1 <- dummy_cols(testdf_sem1, select_columns = c("si_type", "sexual"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-# xlsx output
-results_test_com2 <- as.data.frame(results_test_com1)
-save(results_test_com2, file = "results_test_com2.RData")
-load("results_test_com2.RData")
-write_xlsx(results_test_com2, path = "results_test_com2.xls", col_names = TRUE, format_headers = TRUE)
-
-# view(results_tr_com1)
-
-SI_model_test1 <- '
-                # measurement model
-                
-                  si =~    si_type_3 + si_type_2 + si_type_4
-    
-                  prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + assault +
-                           ed_any + dx_mh + medther + psyhx + fincur + drugs_yn 
-                          
-                   def =~ dep_type + aca_impa + anx_type
-                              
-                   tsm =~ aaq_dum + persist
-
-                   entrap =~ dep_impa
-
-                   mm =~ flourish_dum + inf 
-
-                # structural model - regressions
-                   si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
-
-                # residual covars
-                  dx_mh ~~ ed_any
-                  assault ~~ dx_mh
-                  dep_type	~~	dep_impa    '
-
-
-fit_test1 <- sem(SI_model_test1, data=results_test_com1, ordered=T)
-summary_test <- summary(fit_test1, fit.measures=TRUE, standardized = TRUE)
-fitMeasures(fit_test1, fit.measures = "all")
-modificationindices(fit_test1, minimum.value = 20)
-
-# # Matrix math
-# lavaan_cov <- cov(results_tr_com1)
-# lavaan_det <- det(lavaan_cov)
-# lavaan_eig <- eigen(lavaan_cov)
-# eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
-# eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
-# 
-# linear_combos <- caret::findLinearCombos(results_test_com1)
-# 
-# # Residual Covariance Analysis
-# lav_resids <- fit_test1 %>% 
-#   lavResiduals()
-# write_clip(lav_resids$cov)
-# write_clip(lav_resids$cov.z)
-```
-
 # new model introduction -- test data
 ```{r SI_test_new}
+# Prep SEM data vars
+test_sem <- testdf.v26 %>% select(
+  # outcome var
+  si_type,
+  # diathesis
+  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther,
+  # environment
+  religios, activ_no,
+  # life events
+  ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault,
+  # defeat
+  aca_impa, anx_type, dep_type,
+  # threats to self-moderation
+  persist, aaq_dum,
+  # entrapment
+  dep_impa, 
+  # motivational moderators
+  inf, flourish_dum, satisfied_overall)
+
+# create sem matrix 
+test_sem <- test_sem %>% data.matrix()
+test_sem <- na.omit(test_sem)
+
+## Dummy col SEM w/ continuous
+results_test <- dummy_cols(test_sem, select_columns = c("si_type", "sexual"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+
 SI_model_new2 <- '
                 # measurement model
                     si =~      si_type_3 + si_type_2 + si_type_4
     
                     prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
-                               ed_any + dx_mh + medther + gpa_sr + psyhx + 
-                               drugs_yn + assault
+                               dx_mh + meds_ther + psyhx + drugs_yn + assault
                           
                     deftrap =~ dep_type + anx_type + dep_impa
                               
@@ -5168,7 +4719,7 @@ SI_model_new2 <- '
                  # structural model - regressions
                    si ~ prem + deftrap + mmtsm + deftrap*mmtsm '
 
-fit_testM4 <- sem(SI_model_new2, data=results_test_com1, ordered=T)
+fit_testM4 <- sem(SI_model_new2, data=results_test , ordered=T)
 summary_test4 <- summary(fit_testM4, fit.measures=TRUE, standardized = TRUE, rsquare=T)
 fitMeasures(fit_testM4, fit.measures = "all")
 parameterestimates(fit_testM4, boot.ci.type = "bca.simple", standardized = TRUE) 
@@ -5212,20 +4763,6 @@ results_18_com <- as.data.frame(results_18_com)
 save(results_18_com, file = "results_18_com.RData")
 load("results_18_com.RData")
 write_xlsx(results_18_com, path = "results_18_com.xls", col_names = TRUE, format_headers = TRUE)
-
-# Under model
-fit_testUn <- sem(SI_model_new2, data=results_18_com, ordered=T)
-summary_testUn <- summary(fit_testUn, fit.measures=TRUE, standardized = TRUE)
-fitMeasures(fit_testUn, fit.measures = "all")
-
-
-# test new model
-fit_test2_un <- sem(SI_model_new2, data=results_18_com, ordered=T)
-summary_test2_un <- summary(fit_test2_un, fit.measures=TRUE, standardized = TRUE, rsquare=T)
-fitMeasures(fit_test2_un, fit.measures = "all")
-parameterestimates(fit_test2_un, boot.ci.type = "bca.simple", standardized = TRUE) 
-
-modificationindices(fit_test2_un, minimum.value = 20)
 ```
 
 
@@ -5265,18 +4802,6 @@ results_20_com <- as.data.frame(results_20_com)
 save(results_20_com , file = "results_20_com.RData")
 load("results_20_com.RData")
 write_xlsx(results_20_com, path = "results_20_com.xls", col_names = TRUE, format_headers = TRUE)
-
-#Upper model
-fit_testUp <- sem(SI_model_new2, data=results_20_com, ordered=T)
-summary_testUp <- summary(fit_testUp, fit.measures=TRUE, standardized = TRUE)
-fitMeasures(fit_testUp, fit.measures = "all")
-
-# test new model
-fit_test2_upp <- sem(SI_model_new2, data=results_20_com, ordered=T)
-summary_test2_upp <- summary(fit_test2_upp, fit.measures=TRUE, standardized = TRUE, rsquare=T)
-fitMeasures(fit_test2_upp, fit.measures = "all")
-parameterestimates(fit_test2_upp, boot.ci.type = "bca.simple", standardized = TRUE) 
-modificationindices(fit_test2_upp, minimum.value = 20)
 ```
 
 # SMART PLS OUTPUT
