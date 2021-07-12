@@ -1243,9 +1243,8 @@ traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/col
 # create new var for medication and/or therapy utilization
 traindf.v11 <- traindf.v11 %>%
   filter(!is.na(medther))
-traindf.v11$medther <- as.logical(traindf.v11$medther)  # boolean var
 
-table(traindf.v11$medther, useNA = "always")  # check output
+table(traindf.v11$medther, useNA = "always")
 ```
 
 
@@ -1285,23 +1284,8 @@ corr_simple()
 
 ### EFA diathesis
 ```{r train PCA diathesis}
-# ID columns to utilized in PCA
-pca_dia <- traindf.v11 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race,
-                                dx_mh, ed_any, medther)
-pca_dia <- na.omit(pca_dia)    # filters NAs out
-view(pca_dia)
-
-# create corr matrix, with dummy vars
-pca_dia <- pca_dia %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  mutate(
-    age = as.numeric(age)
-  ) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
-  data.matrix()
-pca_dia   # check output
-
 # create dummy columns for EFA analysis
+pca_dia <- data.matrix(traindf_dia)
 results_dia <- dummy_cols(pca_dia, select_columns = c("age", "sexual", "gender_tgd", "finpast", 
                                                        "sib_freq", "race", "dx_mh", "ed_any", "medther"), 
                           remove_first_dummy = TRUE, remove_selected_columns = TRUE)
@@ -1388,11 +1372,12 @@ table(traindf.v13$discrim, useNA = "always") # check output (lots of NAs)
 ```{r train religios}
 # Label levels of religious importance
 traindf.v13 <- traindf.v13 %>%
-  mutate(religios = case_when(religios == 1 ~ 5,   # flip coding
+  # flip coding
+  mutate(religios = case_when(religios == 1 ~ 5,   # fhighly religious
                               religios == 2 ~ 4,
                               religios == 3 ~ 3,
                               religios == 4 ~ 2,
-                              religios == 5 ~ 1))
+                              religios == 5 ~ 1))   # not at all religious
 traindf.v13$religios <- as.numeric(traindf.v13$religios)
 
 table(traindf.v13$religios, useNA = "always")       # Check output
@@ -1440,7 +1425,7 @@ table(traindf.v14$fam_support_aca, useNA = "always")  # check output (excessive 
 
 ## Activity Involvement
 ```{r train activities}
-# set all NAs in actvities equal to 0
+# set all NAs in activities equal to 0
 traindf.v14$activ_ac[is.na(traindf.v14$activ_ac)] <- 1
 traindf.v14$activ_athc[is.na(traindf.v14$activ_athc)] <- 1
 traindf.v14$activ_athv[is.na(traindf.v14$activ_athv)] <- 1
@@ -1642,19 +1627,9 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ##EFA Environment
 ```{r train EFA Environment}
-# bring in environmental variables for analysis
-traindf_env <- traindf.v15 %>% select(religios, residenc, activ_no, school2_type, 
-                                      military, international)
-traindf_env <- NA_preproc(traindf_env)
-
-# create corr matrix, with dummy vars
-traindf_env <- traindf_env %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
-  data.matrix()
-traindf_env   # check output
-
 # PCA map with eigenvalues
+traindf_env <- NA_preproc(traindf_env)
+traindf_env <- as.matrix(traindf_env)
 results_env <- dummy_cols(traindf_env, select_columns = c("religios", "residenc", "activ_no",
                                                          "school2_type", "military", "international"),
                           remove_first_dummy = TRUE, remove_selected_columns = TRUE)
@@ -1690,13 +1665,11 @@ fviz_cos2(env_pca, choice = "var", axes = 1,
 ```{r train CLM environment}
 # preparing dataframe for regression
 clm_env <- traindf.v15 %>% select(si_type, religios, residenc, activ_no, school2_type, 
-                                  international, discrim, military)
-clm_env <- NA_preproc(clm_env) %>% 
-  as.data.frame()
+                                  international, discrim)
+clm_env <- NA_preproc(clm_env) %>% as.data.frame()
 
 # run ordinal regression
-clm_env2 <- clm(si_type ~ religios + residenc + activ_no + school2_type + international +
-                        discrim,
+clm_env2 <- clm(si_type ~ religios + residenc + activ_no + school2_type + discrim,
                 data = clm_env)
 
 summary(clm_env2)
@@ -1749,12 +1722,12 @@ traindf.v16$drug_other[is.na(traindf.v16$drug_other)] <- 0
 
 # visualize current output before transformation
 table(traindf.v16$drug_coc)
-table(traindf.v16$drug_her)  # too small
-table(traindf.v16$drug_met)  # too small
+table(traindf.v16$drug_her)     # too small
+table(traindf.v16$drug_met)     # too small
 table(traindf.v16$drug_stim)
-table(traindf.v16$drug_ect)  # too small
-table(traindf.v16$drug_opi)   # too small
-table(traindf.v16$drug_other)  # too vague, small
+table(traindf.v16$drug_ect)     # too small
+table(traindf.v16$drug_opi)     # too small
+table(traindf.v16$drug_other)   # too vague, small
 
 # Sample is too small to analyze individual drugs, except for marijuana. Transform to illicit drug y/n
 traindf.v16 <- traindf.v16 %>%
@@ -1791,6 +1764,7 @@ jarque.bera.test(traindf.v16$drug_mar)
 ```{r train fincur}
 traindf.v16 <- traindf.v16 %>%
   filter(!is.na(fincur)) %>%  # filters for NAs
+  # make dichotomous
   mutate(fincur = case_when(fincur == 3 ~ 0,  # sometimes
                             fincur == 4 ~ 0,  # rarely or never
                             fincur == 5 ~ 0,
@@ -1986,13 +1960,11 @@ fviz_cos2(le_pca, choice = "var", axes = 1,
 ## CLM Life event regression
 ```{r train clm_LE}
 # prepare dataframe for regression
-clm_le <- traindf.v19 %>% select(si_type, ins_no, gpa_sr, fincur, 
-                                 assault, binge, drugs_yn, drug_mar, psyhx)
+clm_le <- traindf.v19 %>% select(si_type, ins_no, gpa_sr, assault, binge, drugs_yn, drug_mar, psyhx)
 clm_le <- na.omit(clm_le)
 
 # run regression
-clm_le <- clm(si_type ~ ins_no + gpa_sr + fincur + assault + binge + 
-                drugs_yn + drug_mar + psyhx,
+clm_le <- clm(si_type ~ ins_no + gpa_sr + assault + binge + drugs_yn + drug_mar + psyhx,
               data = clm_le)
 summary(clm_le)
 coef(clm_le)
@@ -2013,7 +1985,7 @@ model.le  %>%
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
                                        medther, religios, activ_no, school2_type, ins_no, residenc,
-                                       gpa_sr, fincur, assault, drugs_yn, drug_mar, psyhx, international)
+                                       gpa_sr, assault, drugs_yn, drug_mar, psyhx)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_prem, sig=0.6){
@@ -2047,7 +2019,7 @@ coef(clm_prem)
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
                                        medther, religios, activ_no, school2_type, ins_no, residenc,
-                                       gpa_sr, fincur, assault, drugs_yn, drug_mar, psyhx, international)
+                                       gpa_sr, assault, drugs_yn, drug_mar, psyhx)
 traindf_prem <- na.omit(traindf_prem)
 
 # create corr matrix, with dummy vars
@@ -2060,8 +2032,7 @@ traindf_prem   # check output
 results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq",
                                                             "race", "ed_any", "dx_mh", "medther", "religios",
                                                             "activ_no", "school2_type", "ins_no", "residenc",
-                                                            "gpa_sr", "fincur", "assault", "drugs_yn",
-                                                            "drug_mar", "psyhx", "international"),
+                                                            "gpa_sr", "assault", "drugs_yn","drug_mar", "psyhx"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 prem_pca <- PCA(results_prem, graph=FALSE)  # apply PCA
@@ -2093,19 +2064,19 @@ fviz_cos2(prem_pca, choice = "var", axes = 1,
 ## CLM Premotivation regression
 ```{r train clm_prem}
 clm_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                 meds_count, religios, activ_no, school2_type, ins_no, residenc, medther,
-                                 gpa_sr, fincur, assault, drugs_yn, drug_mar, psyhx, international)
+                                 religios, activ_no, school2_type, ins_no, residenc, medther,
+                                 gpa_sr, assault, drugs_yn, drug_mar, psyhx)
 clm_prem <- na.omit(clm_prem)
 
 # run regression
-clm_prem <- clm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + meds_count +
-                religios + activ_no + school2_type + ins_no + residenc + gpa_sr + fincur + assault +
-                drugs_yn + drug_mar + psyhx + international + medther,
+clm_prem <- clm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh +
+                religios + activ_no + school2_type + ins_no + residenc + gpa_sr + assault +
+                drugs_yn + drug_mar + psyhx + medther,
               data = clm_prem)
 summary(clm_prem)
-coef(clm_prem)
+coef(clm_prem)   # retrieve coefficients
 
-ci_prem <- confint(clm_prem)
+ci_prem <- confint(clm_prem)  # retrieve confidence intervals
 ci_prem
 
 model.prem <- tidy(clm_prem)  # Convert model to dataframe for easy manipulation
@@ -2179,6 +2150,7 @@ traindf.v20 <- traindf.v20 %>%
                               anx_score < 10 ~ 2,     # bin for mild anxiety
                               anx_score < 15 ~ 3))  %>%  # bin for severe anxiety
   filter(!is.na(anx_type))   # filters out all NAs
+
 traindf.v20$anx_type <- as.numeric(traindf.v20$anx_type)   # check output, skew
 jarque.bera.test(traindf.v20$anx_type)
 
@@ -2506,13 +2478,6 @@ table(traindf.v24$percneed, useNA = "always") # check output, NAs
 
 ## Current needs
 ```{r train percneed_cur}
-traindf.v24 <- traindf.v24 %>%
-  mutate(percneed_cur = case_when(percneed_cur == 1 ~ 1,
-                                 percneed_cur == 2 ~ 2,
-                                 percneed_cur == 3 ~ 3,
-                                 percneed_cur == 4 ~ 4,
-                                 percneed_cur == 5 ~ 5,
-                                 percneed_cur == 6 ~ 6))
 traindf.v24$percneed_cur <- as.numeric(traindf.v24$percneed_cur)
 table(traindf.v24$percneed_cur, useNA = "always")
 ```
@@ -2812,7 +2777,7 @@ traindf.v27 <- traindf.v26
 ### Motivational Moderator correlation
 ```{r train MM_corr}
 # Define MM variable candidates for correlation matrix
-traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, talk, mh_stigma, satisfied_overall)
+traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, mh_stigma, satisfied_overall)
 
  # convert traindf to numeric in order to run correlations
 traindf_mm <- traindf_mm %>% mutate_if(is.character, as.factor)
@@ -2834,7 +2799,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ### EFA MM
 ```{r train EFA MM}
-traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, talk, mh_stigma, satisfied_overall)
+traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, mh_stigma, satisfied_overall)
 traindf_mm <- na.omit(traindf_mm)
 
 # create corr matrix, with dummy vars 
@@ -2843,7 +2808,7 @@ traindf_mm <- traindf_mm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 traindf_mm   # check output
-results_mm <- dummy_cols(traindf_mm, select_columns = c("flourish_dum", "belong1", "inf", "talk", 
+results_mm <- dummy_cols(traindf_mm, select_columns = c("flourish_dum", "belong1", "inf", 
                                                         "mh_stigma", "satisfied_overall"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
@@ -2873,11 +2838,11 @@ fviz_cos2(mm_pca, choice = "var", axes = 1,
 ### CLM Motivational moderators regression
 ```{r train CLM mm}
 # prepare data for regression
-clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1, talk, satisfied_overall, mh_stigma)
+clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1, satisfied_overall, mh_stigma)
 clm_mm <- na.omit(clm_mm)
 
 # run MM regression
-clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + talk + satisfied_overall + mh_stigma, data = clm_mm)
+clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + satisfied_overall + mh_stigma, data = clm_mm)
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))  # retireve coefficients
 
@@ -2905,7 +2870,7 @@ var_names <- c(
   # diathesis
   "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "medther",
   # environment
-  "religios", "school2_type", "activ_no", "residenc", "discrim", "international",
+  "religios", "school2_type", "activ_no", "residenc", "discrim",
   # life events
   "ins_no", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
   # defeat
@@ -2915,7 +2880,7 @@ var_names <- c(
   # entrapment
   "dep_impa", "gad7_impa", "percneed",
   # motivational moderators
-  "inf", "flourish_dum", "belong1", "talk", "satisfied_overall", "mh_stigma")  
+  "inf", "flourish_dum", "belong1", "satisfied_overall", "mh_stigma")  
 var_names <- sort(var_names)
 
 # build table for absolute missingness based on school2
@@ -2997,17 +2962,17 @@ traindf_sem <- traindf.v28 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_count, medther,
   # environment
-  religios, school2_type, activ_no, residenc, discrim, international,
+  religios, school2_type, activ_no, residenc, discrim,
   # life events
   ins_no, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
   # defeat
-  aca_impa, deprawsc, anx_score, anx_type, dep_type,
+  aca_impa, anx_type, dep_type,
   # threats to self-moderation
   persist, aaq_dum,
   # entrapment
   dep_impa, gad7_impa, percneed,
   # motivational moderators
-  inf, flourish_dum, belong1, satisfied_overall, talk, mh_stigma) 
+  inf, flourish_dum, belong1, satisfied_overall, mh_stigma)
 
 # create sem matrix 
 traindf_sem <- traindf_sem %>% 
@@ -3031,17 +2996,17 @@ results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # diathesis
     "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count", "medther",
     # environment
-    "religios", "school2_type", "activ_no", "international", "residenc", "discrim",
+    "religios", "school2_type", "activ_no", "residenc", "discrim",
     # life events
     "ins_no", "gpa_sr", "binge", "psyhx", "fincur", "drugs_yn", "assault", "drug_mar",
     # defeat
-    "aca_impa", "deprawsc", "anx_score", "anx_type", "dep_type",
+    "aca_impa", "anx_type", "dep_type",
     # threats to self-moderation
     "persist", "aaq_dum",
     # entrapment
     "dep_impa", "gad7_impa", "percneed",
     # motivational moderators
-    "inf", "flourish_dum", "belong1", "satisfied_overall", "mh_stigma", "talk"), 
+    "inf", "flourish_dum", "belong1", "satisfied_overall", "mh_stigma"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 results_tr_sem1 <- na.omit(results_tr_sem1)
@@ -3118,17 +3083,17 @@ traindf_sem1 <- traindf.v28 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, medther,
   # environment
-  religios, school2_type, activ_no, international, discrim, residenc,
+  religios, school2_type, activ_no, residenc,
   # life events
-  ins_no, gpa_sr, binge, psyhx, fincur, drugs_yn, assault, drug_mar,
+  ins_no, gpa_sr, binge, psyhx, drugs_yn, assault, drug_mar,
   # defeat
-  aca_impa, anx_score, deprawsc, dep_type, anx_type,
+  aca_impa, dep_type, anx_type,
   # threats to self-moderation
   persist, aaq_dum,
   # entrapment
-  dep_impa, gad7_impa, percneed,
+  dep_impa, percneed,
   # motivational moderators
-  inf, flourish_dum, belong1, flourish, satisfied_overall, mh_stigma, talk, brs_tot, brs_dum)  #mh_stigma, 
+  inf, flourish_dum, belong1, satisfied_overall, mh_stigma, brs_dum)  #mh_stigma, 
 
 # create sem matrix 
 traindf_sem1 <- traindf_sem1 %>% 
@@ -3163,16 +3128,16 @@ SI_model_tr1 <- '
                 
                   si =~    si_type_3 + si_type_2 + si_type_4
     
-                  prem =~  sib_freq + sexual_2 + sexual_3 + gender_tgd + discrim +
+                  prem =~  sib_freq + sexual_2 + sexual_3 + gender_tgd +
                            ed_any + dx_mh + activ_no + ins_no + medther + residenc_2 +
-                           residenc_3 + residenc_4 +  gpa_sr + binge + psyhx + fincur + 
+                           residenc_3 + residenc_4 +gpa_sr + binge + psyhx +
                            drugs_yn + assault + drug_mar
                           
-                  def =~ deprawsc + aca_impa + anx_score
+                  def =~ dep_type + aca_impa + anx_type
                               
                   tsm =~ aaq_dum + persist
 
-                  entrap =~ dep_impa + gad7_impa + percneed
+                  entrap =~ dep_impa + percneed
 
                   mm =~ flourish_dum + inf + belong1 + satisfied_overall + mh_stigma
 
@@ -3215,14 +3180,14 @@ SI_model_trM <- '
                   si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + medther +
-                           ed_any + dx_mh + religios + international +activ_no + ins_no + 
-                           gpa_sr + binge + psyhx + fincur + drugs_yn + assault + drug_mar
+                           ed_any + dx_mh + religios  +activ_no + ins_no + 
+                           gpa_sr + binge + psyhx + drugs_yn + assault + drug_mar
                           
                    def =~ dep_type + aca_impa + anx_type
                               
                    tsm =~ aaq_dum + persist
 
-                   entrap =~ dep_impa + gad7_impa + percneed
+                   entrap =~ dep_impa + percneed
 
                    mm =~ flourish_dum + inf + belong1 + satisfied_overall + mh_stigma
 
@@ -3261,13 +3226,13 @@ SI_model_trM2 <- '
                   si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + assault +
-                           ed_any + dx_mh + psyhx + fincur + drugs_yn + medther
+                           ed_any + dx_mh + psyhx + drugs_yn + medther
                           
-                  def =~ deprawsc + aca_impa + anx_score
+                  def =~ dep_type + aca_impa + anx_type
                               
                   tsm =~ aaq_dum + persist
 
-                  entrap =~ dep_impa + gad7_impa + percneed
+                  entrap =~ dep_impa + percneed
 
                    mm =~ flourish_dum + inf + belong1 + satisfied_overall
 
@@ -3292,7 +3257,7 @@ SI_model_new<- '
     
                     prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
                                ed_any + dx_mh + medther + gpa_sr + binge + psyhx + 
-                               fincur + drugs_yn + assault
+                               drugs_yn + assault
                           
                     deftrap =~ dep_type + aca_impa + anx_type + dep_impa
                               
