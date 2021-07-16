@@ -66,6 +66,7 @@ library(stargazer)
 library(stats)
 library(stringr)
 library(sure)
+library(tableone)
 library(tidyverse)
 library(tseries)
 library(validate)
@@ -3247,8 +3248,15 @@ parameterestimates(fit_trainM2, boot.ci.type = "bca.simple", standardized = TRUE
 # DEMOGRAPHIC STATS
 
 
-```{r}
+```{r demo_stats}
+#Create a variable list which we want in Table 1
+listVars <- c("Age", "Gender", "Cholesterol", "SystolicBP", "BMI", "Smoking", 
+"Education")
+#Define categorical variables
+catVars <- c("gender","Smoking","Education")
 
+table1 <- CreateTableOne(vars = listVar, data = dt, factorVars = catVar)
+table1
 ```
 
     

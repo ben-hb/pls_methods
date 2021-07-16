@@ -4727,59 +4727,49 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 # new model introduction -- test data
 ```{r SI_test_new}
 # Prep SEM data vars
-test18_sem <- testdf.v26 %>% select(
+test_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther,
-  # environment
-  religios, activ_no,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no,
   # life events
-  ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault,
+  ins_no, gpa_sr, psyhx, drugs_yn, assault,
   # defeat
-  aca_impa, anx_type, dep_type,
-  # threats to self-moderation
-  persist, aaq_dum,
-  # entrapment
-  dep_impa, 
-  # motivational moderators
-  inf, flourish_dum, satisfied_overall)
+  aca_impa, dep_type, anx_type, dep_impa, percneed,
+  # MM+ TSM
+  inf, flourish_dum, satisfied_overall, persist, aaq_dum) 
 
 # create sem matrix 
-test18_sem <- test_sem %>% data.matrix()
-test18_sem <- na.omit(test18_sem)
-
+test_sem <- data.matrix(test_sem)
+  
 ## Dummy col SEM w/ continuous
-results_test <- dummy_cols(test_sem, select_columns = c("si_type", "sexual"),
+results_test_com <- dummy_cols(test_sem, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-SI_model_new2 <- '
+#view(results_tr_com1)
+SI_model_test <- '
                 # measurement model
-                    si =~      si_type_3 + si_type_2 + si_type_4
+                    si =~      si_type_4 + si_type_3 + si_type_2
     
-                    prem =~    sib_freq + sexual_2 + sexual_3 +
-                               dx_mh + meds_ther + psyhx + assault
+                    prem =~    meds_ther + dx_mh + sib_freq + sexual_2 + sexual_3 + ed_any 
+                    
+                    le =~      psyhx + assault + drugs_yn + ins_no
                           
-                    deftrap =~ dep_type + anx_type + dep_impa + aca_impa
+                    deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
                               
-                    mmtsm =~   aaq_dum + flourish_dum + inf
+                    mmtsm =~   aaq_dum + flourish_dum + inf + persist + satisfied_overall
                     
                 # structural model
-                    si ~ deftrap
-                    deftrap ~ prem
-                    '
+                    si ~ deftrap + mmtsm + mmtsm*deftrap
+                    le ~ prem
+                    deftrap ~ le
+                    deftrap ~ prem    '
 
-fit_testM4 <- sem(SI_model_new2, data=results_test , ordered=T)
-summary_test4 <- summary(fit_testM4, fit.measures=TRUE, standardized = TRUE, rsquare=T)
-fitMeasures(fit_testM4, fit.measures = "all")
-parameterestimates(fit_testM4, boot.ci.type = "bca.simple", standardized = TRUE) 
-modificationindices(fit_testM4, minimum.value = 20)
-
-# save output for offline SMART PLS
-results_test_com <- as.data.frame(results_test)
-save(results_test_com, file = "results_test_com.RData")
-load("results_test_com.RData")
-write_xlsx(results_test_com, path = "results_test_com.xls", col_names = TRUE, format_headers = TRUE)
+fit_test <- sem(SI_model_test, data=results_test_com, ordered=T)
+summary_test <- summary(fit_test, fit.measures=TRUE, standardized = TRUE, rsquare=T)
+fitMeasures(fit_test, fit.measures = "all")
+parameterestimates(fit_test, boot.ci.type = "bca.simple", standardized = TRUE) 
+modificationindices(fit_test, minimum.value = 20)
+semPaths(fit_test, layout = "tree2")
 ```
 
 # Running the test dataframe for 18 and 19 year olds
