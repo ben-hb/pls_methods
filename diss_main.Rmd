@@ -4727,7 +4727,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 # new model introduction -- test data
 ```{r SI_test_new}
 # Prep SEM data vars
-test_sem <- testdf.v26 %>% select(
+test18_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
@@ -4746,8 +4746,8 @@ test_sem <- testdf.v26 %>% select(
   inf, flourish_dum, satisfied_overall)
 
 # create sem matrix 
-test_sem <- test_sem %>% data.matrix()
-test_sem <- na.omit(test_sem)
+test18_sem <- test_sem %>% data.matrix()
+test18_sem <- na.omit(test18_sem)
 
 ## Dummy col SEM w/ continuous
 results_test <- dummy_cols(test_sem, select_columns = c("si_type", "sexual"),
@@ -4799,15 +4799,12 @@ test18_sem <- test18.v26 %>% select(
   aca_impa, dep_type, anx_type, dep_impa, percneed,
   # MM+ TSM
   inf, flourish_dum, satisfied_overall, persist, aaq_dum) 
-
-# create sem matrix 
-traindf_sem1 <- data.matrix(traindf_sem1)
   
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual"),
+results_test_com18 <- dummy_cols(test18_sem, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 #view(results_tr_com1)
-SI_model_amended <- '
+SI_model_1819 <- '
                 # measurement model
                     si =~      si_type_4 + si_type_3 + si_type_2
     
@@ -4824,11 +4821,11 @@ SI_model_amended <- '
                     deftrap ~ prem + le'
 
 
-fit_train_a <- sem(SI_model_amended, data=results_tr_com1 , ordered=T)
-summary_train_a <- summary(fit_train_a, fit.measures=TRUE, standardized = TRUE, rsquare=T)
-fitMeasures(fit_train_a, fit.measures = "all")
-parameterestimates(fit_train_a, boot.ci.type = "bca.simple", standardized = TRUE) 
-modificationindices(fit_train_a, minimum.value = 20)
+fit_test_18 <- sem(SI_model_1819, data=results_test_com18, ordered=T)
+summary_test_18 <- summary(fit_test_18, fit.measures=TRUE, standardized = TRUE, rsquare=T)
+fitMeasures(fit_test_18, fit.measures = "all")
+parameterestimates(fit_test_18, boot.ci.type = "bca.simple", standardized = TRUE) 
+modificationindices(fit_test_18, minimum.value = 20)
 
 semPaths(fit_train_a, layout = "tree")
 
@@ -4862,7 +4859,7 @@ test20_sem <- test20.v26 %>% select(
 test20_sem <- data.matrix(test20_sem)
   
 ## Dummy col SEM w/ continuous
-results_test_com <- dummy_cols(test20_sem, select_columns = c("si_type", "sexual"),
+results_test_com20 <- dummy_cols(test20_sem, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 #view(results_tr_com1)
 SI_model_20 <- '
@@ -4881,24 +4878,24 @@ SI_model_20 <- '
                     si ~ deftrap + mmtsm + mmtsm*deftrap
                     deftrap ~ prem + le'
 
-fit_test_20 <- sem(SI_model_20, data=results_test_com, ordered=T)
+fit_test_20 <- sem(SI_model_20, data=results_test_com20, ordered=T)
 summary_test_20 <- summary(fit_test_20, fit.measures=TRUE, standardized = TRUE, rsquare=T)
 fitMeasures(fit_test_20, fit.measures = "all")
 parameterestimates(fit_test_20, boot.ci.type = "bca.simple", standardized = TRUE) 
 modificationindices(fit_test_20, minimum.value = 20)
 
-semPaths(fit_test_a, layout = "tree")
+semPaths(fit_test_20, layout = "tree")
 
 # xlsx output
-save(test20_sem_test, file = "test20_sem_test.RData")
-load("test20_sem_test.RData")
-write_xlsx(test20_sem_test, path = "test20_sem_test.xls", col_names = TRUE, format_headers = TRUE)
-
-# Save offline for SMART PLS
-results_20_com <- as.data.frame(results_20_com)
-save(results_20_com , file = "results_20_com.RData")
-load("results_20_com.RData")
-write_xlsx(results_20_com, path = "results_20_com.xls", col_names = TRUE, format_headers = TRUE)
+# save(test20_sem_test, file = "test20_sem_test.RData")
+# load("test20_sem_test.RData")
+# write_xlsx(test20_sem_test, path = "test20_sem_test.xls", col_names = TRUE, format_headers = TRUE)
+# 
+# # Save offline for SMART PLS
+# results_20_com <- as.data.frame(results_20_com)
+# save(results_20_com , file = "results_20_com.RData")
+# load("results_20_com.RData")
+# write_xlsx(results_20_com, path = "results_20_com.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
