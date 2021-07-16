@@ -4792,57 +4792,45 @@ test18_sem <- test18.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther,
-  # environment
-  religios, activ_no, 
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no,
   # life events
-  ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault,
+  ins_no, gpa_sr, psyhx, drugs_yn, assault,
   # defeat
-  aca_impa, anx_type, dep_type,
-  # threats to self-moderation
-  persist, aaq_dum,
-  # entrapment
-  dep_impa, 
-  # motivational moderators
-  inf, flourish_dum, satisfied_overall)
+  aca_impa, dep_type, anx_type, dep_impa, percneed,
+  # MM+ TSM
+  inf, flourish_dum, satisfied_overall, persist, aaq_dum) 
 
 # create sem matrix 
-test18_sem <- test18_sem %>% 
-  # mutate_if(is.numeric, as.factor) %>% 
-  data.matrix()
-
-# testing data
-test18_sem_test <- describe(test18_sem)
-view(test18_sem_test)
-
-# xlsx output
-save(test18_sem_test, file = "test18_sem_test.RData")
-load("test18_sem_test.RData")
-write_xlsx(test18_sem_test, path = "test18_sem_test.xls", col_names = TRUE, format_headers = TRUE)
-
+traindf_sem1 <- data.matrix(traindf_sem1)
+  
 ## Dummy col SEM w/ continuous
-results_18_com <- dummy_cols(test18_sem, select_columns = c("si_type", "sexual"),
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-SI_model_18 <- '
+#view(results_tr_com1)
+SI_model_amended <- '
                 # measurement model
-                    si =~      si_type_3 + si_type_2 + si_type_4
+                    si =~      si_type_4 + si_type_3 + si_type_2
     
-                    prem =~    sib_freq + sexual_2 + sexual_3 +
-                               dx_mh + meds_ther + psyhx + assault
+                    prem =~    meds_ther + dx_mh + sib_freq + sexual_2 + sexual_3 + ed_any 
+                    
+                    le =~      psyhx + assault + drugs_yn + ins_no
                           
-                    deftrap =~ dep_type + anx_type + dep_impa + aca_impa
+                    deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
                               
-                    mmtsm =~   aaq_dum + flourish_dum + inf
+                    mmtsm =~   aaq_dum + flourish_dum + inf + persist + satisfied_overall
+                    
+                # structural model
+                    si ~ deftrap + mmtsm + mmtsm*deftrap
+                    deftrap ~ prem + le'
 
-                 # structural model - regressions
-                   si ~ prem + deftrap + mmtsm + deftrap*mmtsm '
 
-fit_test18 <- sem(SI_model_18, data=results_test , ordered=T)
-summary_test18 <- summary(fit_test18, fit.measures=TRUE, standardized = TRUE, rsquare=T)
-fitMeasures(fit_test18, fit.measures = "all")
-parameterestimates(fit_test18, boot.ci.type = "bca.simple", standardized = TRUE) 
-modificationindices(fit_test18, minimum.value = 20)
+fit_train_a <- sem(SI_model_amended, data=results_tr_com1 , ordered=T)
+summary_train_a <- summary(fit_train_a, fit.measures=TRUE, standardized = TRUE, rsquare=T)
+fitMeasures(fit_train_a, fit.measures = "all")
+parameterestimates(fit_train_a, boot.ci.type = "bca.simple", standardized = TRUE) 
+modificationindices(fit_train_a, minimum.value = 20)
+
+semPaths(fit_train_a, layout = "tree")
 
 # save output for offline SMART PLS
 results_18_com <- as.data.frame(results_18_com)
@@ -4862,62 +4850,49 @@ test20_sem <- test20.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther,
-  # environment
-  religios, activ_no,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no,
   # life events
-  ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault,
+  ins_no, gpa_sr, psyhx, drugs_yn, assault,
   # defeat
-  aca_impa, anx_type, dep_type,
-  # threats to self-moderation
-  persist, aaq_dum,
-  # entrapment
-  dep_impa, 
-  # motivational moderators
-  inf, flourish_dum, satisfied_overall)
+  aca_impa, dep_type, anx_type, dep_impa, percneed,
+  # MM+ TSM
+  inf, flourish_dum, satisfied_overall, persist, aaq_dum) 
 
 # create sem matrix 
-test20_sem <- test20_sem %>% data.matrix()
-test20_sem <- na.omit(test20_sem)
+test20_sem <- data.matrix(test20_sem)
+  
+## Dummy col SEM w/ continuous
+results_test_com <- dummy_cols(test20_sem, select_columns = c("si_type", "sexual"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+#view(results_tr_com1)
+SI_model_20 <- '
+                # measurement model
+                    si =~      si_type_4 + si_type_3 + si_type_2
+    
+                    prem =~    meds_ther + dx_mh + sib_freq + sexual_2 + sexual_3 + ed_any 
+                    
+                    le =~      psyhx + assault + drugs_yn + ins_no
+                          
+                    deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
+                              
+                    mmtsm =~   aaq_dum + flourish_dum + inf + persist + satisfied_overall
+                    
+                # structural model
+                    si ~ deftrap + mmtsm + mmtsm*deftrap
+                    deftrap ~ prem + le'
 
-# testing data
-test20_sem_test <- describe(test20_sem)
-view(test20_sem_test)
+fit_test_20 <- sem(SI_model_20, data=results_test_com, ordered=T)
+summary_test_20 <- summary(fit_test_20, fit.measures=TRUE, standardized = TRUE, rsquare=T)
+fitMeasures(fit_test_20, fit.measures = "all")
+parameterestimates(fit_test_20, boot.ci.type = "bca.simple", standardized = TRUE) 
+modificationindices(fit_test_20, minimum.value = 20)
+
+semPaths(fit_test_a, layout = "tree")
 
 # xlsx output
 save(test20_sem_test, file = "test20_sem_test.RData")
 load("test20_sem_test.RData")
 write_xlsx(test20_sem_test, path = "test20_sem_test.xls", col_names = TRUE, format_headers = TRUE)
-
-
-## Dummy col SEM w/ continuous
-results_20_com <- dummy_cols(test20_sem, select_columns = c("si_type", "sexual"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-
-SI_model_20 <- '
-                # measurement model
-                    si =~      si_type_3 + si_type_2 + si_type_4
-    
-                    prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
-                               dx_mh + meds_ther + psyhx + assault
-                          
-                    deftrap =~ dep_type + anx_type + dep_impa + aca_impa
-                              
-                    mmtsm =~   aaq_dum + flourish_dum + inf
-
-                 # structural model - regression
-                   si ~ prem + deftrap + mmtsm + deftrap*mmtsm '
-
-fit_test20 <- sem(SI_model_20, data=results_test , ordered=T)
-summary_test20 <- summary(fit_test20, fit.measures=TRUE, standardized = TRUE, rsquare=T)
-fitMeasures(fit_test20, fit.measures = "all")
-parameterestimates(fit_test20, boot.ci.type = "bca.simple", standardized = TRUE) 
-modificationindices(fit_test20, minimum.value = 20)
-
-semPaths(fit_test20, layout = "circle2")
-
-
 
 # Save offline for SMART PLS
 results_20_com <- as.data.frame(results_20_com)
