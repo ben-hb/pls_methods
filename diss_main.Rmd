@@ -26,7 +26,6 @@ library(fastDummies)
 library(graphics)
 library(gvlma)
 library(haven)
-library(h2o)
 library(Hmisc)
 library(knitr)
 library(janitor)
@@ -2973,9 +2972,9 @@ traindf_sem <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther,
   # environment
-  religios, activ_no, residenc,
+  religios, activ_no,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault,
   # defeat
@@ -3007,7 +3006,7 @@ results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count", "meds_ther",
+    "age", "sexual", "sib_freq", "ed_any", "dx_mh", "meds_ther",
     # environment
     "religios", "activ_no",
     # life events
@@ -3163,20 +3162,20 @@ fitMeasures(fit_train1, fit.measures = "all")
     ## modification indices
 modificationindices(fit_train1, minimum.value = 20)
 
-# # Matrix math
-lavaan_cov <- cov(results_tr_com1)
-lavaan_det <- det(lavaan_cov)
-lavaan_eig <- eigen(lavaan_cov)
-eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
-eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
-
-linear_combos <- caret::findLinearCombos(results_tr_com1)
-
-# Residual Covariance Analysis
-lav_resids <- fit_train1 %>%
-  lavResiduals()
-write_clip(lav_resids$cov)
-write_clip(lav_resids$cov.z)
+# # # Matrix math
+# lavaan_cov <- cov(results_tr_com1)
+# lavaan_det <- det(lavaan_cov)
+# lavaan_eig <- eigen(lavaan_cov)
+# eig_var_prop <- round(lavaan_eig$values / sum(lavaan_eig$values), 3)
+# eig_var_cum_prop <- round(cumsum(lavaan_eig$values) / sum(lavaan_eig$values), 3)
+# 
+# linear_combos <- caret::findLinearCombos(results_tr_com1)
+# 
+# # Residual Covariance Analysis
+# lav_resids <- fit_train1 %>%
+#   lavResiduals()
+# write_clip(lav_resids$cov)
+# write_clip(lav_resids$cov.z)
 ```
 
 # SEM model -- mod indices
@@ -3257,6 +3256,54 @@ fit_trainM2 <- sem(SI_model_trM2, data=results_tr_com1, ordered=T)
 summary_train3 <- summary(fit_trainM2, fit.measures=TRUE, standardized = TRUE, rsquare=T)
 fitMeasures(fit_trainM2, fit.measures = "all")
 parameterestimates(fit_trainM2, boot.ci.type = "bca.simple", standardized = TRUE) 
+```
+
+```{r amended}
+
+# Prep SEM data vars
+traindf_sem1 <- traindf.v28 %>% select(
+  # outcome var
+  si_type,
+  # diathesis
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no,
+  # life events
+  ins_no, gpa_sr, psyhx, drugs_yn, assault,
+  # defeat
+  aca_impa, dep_type, anx_type, dep_impa, percneed,
+  # MM+ TSM
+  inf, flourish_dum, satisfied_overall, persist, aaq_dum) 
+
+# create sem matrix 
+traindf_sem1 <- data.matrix(traindf_sem1)
+  
+## Dummy col SEM w/ continuous
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual"),
+                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+#view(results_tr_com1)
+SI_model_amended <- '
+                # measurement model
+                    si =~      si_type_4 + si_type_3 + si_type_2
+    
+                    prem =~    meds_ther + dx_mh + sib_freq + sexual_2 + sexual_3 + ed_any 
+                    
+                    le =~      psyhx + assault + drugs_yn + ins_no
+                          
+                    deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
+                              
+                    mmtsm =~   aaq_dum + flourish_dum + inf + persist + satisfied_overall
+                    
+                # structural model
+                    si ~ deftrap + mmtsm + mmtsm*deftrap
+                    deftrap ~ prem + le'
+
+
+fit_train_a <- sem(SI_model_amended, data=results_tr_com1 , ordered=T)
+summary_train_a <- summary(fit_train_a, fit.measures=TRUE, standardized = TRUE, rsquare=T)
+fitMeasures(fit_train_a, fit.measures = "all")
+parameterestimates(fit_train_a, boot.ci.type = "bca.simple", standardized = TRUE) 
+modificationindices(fit_train_a, minimum.value = 20)
+
+semPaths(fit_train_a, layout = "tree")
 ```
 
 
@@ -4567,9 +4614,9 @@ testdf_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther,
   # environment
-  religios, activ_no, residenc,
+  religios, activ_no,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault,
   # defeat
@@ -4601,7 +4648,7 @@ results_test_sem1 <- dummy_cols(testdf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_count", "meds_ther",
+    "age", "sexual", "sib_freq", "ed_any", "dx_mh", "meds_count", "meds_ther",
     # environment
     "religios", "activ_no",
     # life events
@@ -4684,7 +4731,7 @@ test_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther,
   # environment
   religios, activ_no,
   # life events
@@ -4710,15 +4757,17 @@ SI_model_new2 <- '
                 # measurement model
                     si =~      si_type_3 + si_type_2 + si_type_4
     
-                    prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
+                    prem =~    sib_freq + sexual_2 + sexual_3 +
                                dx_mh + meds_ther + psyhx + assault
                           
                     deftrap =~ dep_type + anx_type + dep_impa + aca_impa
                               
                     mmtsm =~   aaq_dum + flourish_dum + inf
-
-                 # structural model - regressions
-                   si ~ prem + deftrap + mmtsm + deftrap*mmtsm '
+                    
+                # structural model
+                    si ~ deftrap
+                    deftrap ~ prem
+                    '
 
 fit_testM4 <- sem(SI_model_new2, data=results_test , ordered=T)
 summary_test4 <- summary(fit_testM4, fit.measures=TRUE, standardized = TRUE, rsquare=T)
@@ -4743,7 +4792,7 @@ test18_sem <- test18.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther,
   # environment
   religios, activ_no, 
   # life events
@@ -4762,6 +4811,15 @@ test18_sem <- test18_sem %>%
   # mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
 
+# testing data
+test18_sem_test <- describe(test18_sem)
+view(test18_sem_test)
+
+# xlsx output
+save(test18_sem_test, file = "test18_sem_test.RData")
+load("test18_sem_test.RData")
+write_xlsx(test18_sem_test, path = "test18_sem_test.xls", col_names = TRUE, format_headers = TRUE)
+
 ## Dummy col SEM w/ continuous
 results_18_com <- dummy_cols(test18_sem, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
@@ -4770,7 +4828,7 @@ SI_model_18 <- '
                 # measurement model
                     si =~      si_type_3 + si_type_2 + si_type_4
     
-                    prem =~    sib_freq + sexual_2 + sexual_3 + gender_tgd +
+                    prem =~    sib_freq + sexual_2 + sexual_3 +
                                dx_mh + meds_ther + psyhx + assault
                           
                     deftrap =~ dep_type + anx_type + dep_impa + aca_impa
@@ -4821,6 +4879,16 @@ test20_sem <- test20.v26 %>% select(
 # create sem matrix 
 test20_sem <- test20_sem %>% data.matrix()
 test20_sem <- na.omit(test20_sem)
+
+# testing data
+test20_sem_test <- describe(test20_sem)
+view(test20_sem_test)
+
+# xlsx output
+save(test20_sem_test, file = "test20_sem_test.RData")
+load("test20_sem_test.RData")
+write_xlsx(test20_sem_test, path = "test20_sem_test.xls", col_names = TRUE, format_headers = TRUE)
+
 
 ## Dummy col SEM w/ continuous
 results_20_com <- dummy_cols(test20_sem, select_columns = c("si_type", "sexual"),
