@@ -35,6 +35,7 @@ library(leaps)
 library(magrittr)
 library(MBESS)
 library(mediation)
+library(medmod)
 library(missMDA)
 library(multilevel) 
 library(MVN)
@@ -292,7 +293,12 @@ hist(data.v2$age)
 
 table(data.v2$age, useNA = "always")
 jarque.bera.test(data.v2$age)
-table(data.v2$undercls)
+
+data.v2B <- dummy_cols(data.v2, select_columns = c("age"), 
+                         remove_first_dummy = TRUE, remove_selected_columns = FALSE)
+
+view (data.v2B)
+clm(si_type~age_18 + age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25, data = data.v2B)
 ```
 
 ## Gender identity
@@ -3052,6 +3058,14 @@ ggplot(data, aes(sample = value)) +
   geom_qq() +
   facet_wrap(~name)
 
+# demographics
+table(traindf.v28$age)
+table(traindf.v28$si_type)
+table(traindf.v28$gender_tgd)
+table(traindf.v28$sexual)
+table(traindf.v28$race)
+table(traindf.v28$dx_mh)
+
 # training data
 var_desc <- describe(traindf_sem)
 view(var_desc)
@@ -3258,8 +3272,8 @@ fitMeasures(fit_trainM2, fit.measures = "all")
 parameterestimates(fit_trainM2, boot.ci.type = "bca.simple", standardized = TRUE) 
 ```
 
+## Amended model
 ```{r amended}
-
 # Prep SEM data vars
 traindf_sem1 <- traindf.v28 %>% select(
   # outcome var
@@ -3279,9 +3293,10 @@ traindf_sem1 <- data.matrix(traindf_sem1)
 ## Dummy col SEM w/ continuous
 results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-#view(results_tr_com1)
+
+# Baseline model for amended model
 SI_model_amended <- '
-                # measurement model
+              # measurement model
                     si =~      si_type_4 + si_type_3 + si_type_2
     
                     prem =~    meds_ther + dx_mh + sib_freq + sexual_2 + sexual_3 + ed_any 
@@ -3294,16 +3309,58 @@ SI_model_amended <- '
                     
                 # structural model
                     si ~ deftrap + mmtsm + mmtsm*deftrap
-                    deftrap ~ prem + le'
-
+                    deftrap ~ prem + le  '
 
 fit_train_a <- sem(SI_model_amended, data=results_tr_com1 , ordered=T)
 summary_train_a <- summary(fit_train_a, fit.measures=TRUE, standardized = TRUE, rsquare=T)
 fitMeasures(fit_train_a, fit.measures = "all")
 parameterestimates(fit_train_a, boot.ci.type = "bca.simple", standardized = TRUE) 
 modificationindices(fit_train_a, minimum.value = 20)
+```
 
-semPaths(fit_train_a, layout = "tree")
+
+```{r amended}
+
+SI_model_amended2 <- '
+
+                # measurement model
+                    si =~      si_type_4 + si_type_3 + si_type_2
+                    prem =~    meds_ther + dx_mh + sib_freq +  sexual_3 
+                    le =~      psyhx + assault + drugs_yn
+                    deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
+                    mmtsm =~   aaq_dum + flourish_dum + persist 
+                    
+                # mediation
+                   set.seed(1000)
+                    prem <- rnorm(10)
+                    le <- 0.5*prem + rnorm(10)
+                    deftrap <- 0.7*le + rnorm(10)
+                    dat <- data.frame(prem, le, deftrap, estMethod = "standard", bootstrap =
+                          1000, test = TRUE, ci = T, ciWidth = 95, pm = FALSE, paths = T, 
+                          label = FALSE, estPlot = FALSE)
+                    le_med <- med(dat, dep = "deftrap", pred = "prem", med = "le")
+
+                # moderation
+                    deftrap <- rnorm(10)
+                    mmtsm <- rnorm(10)
+                    deftrap_mmtsm <- deftrap*mmtsm
+                    si<- 0.7*deftrap + 0.1*mmtsm + 4.2*deftrap_mmtsm + rnorm(10)
+                    dat2 <- data.frame(deftrap, mmtsm, si)
+                    mmtsm_mod <- mod(dat2, dep = "si", pred = "deftrap", mod = "mmtsm")
+                    
+                # structural model
+                    deftrap ~ prem + prem_med
+                    si ~ deftrap + mmtsm_mod
+'
+# inf, sexual_2, satisfied_overall
+
+fit_train_a2 <- sem(SI_model_amended2, data=results_tr_com1, ordered=T)
+summary_train_a2 <- summary(fit_train_a2, fit.measures=TRUE, standardized = TRUE, rsquare=T)
+fitMeasures(fit_train_a2, fit.measures = "all")
+parameterestimates(fit_train_a2, boot.ci.type = "bca.simple", standardized = TRUE) 
+modificationindices(fit_train_a2, minimum.value = 20)
+
+semPaths(fit_train_a2, layout = "tree")
 ```
 
 
@@ -4694,6 +4751,14 @@ ggplot(data, aes(sample = value)) +
   geom_qq() +
   facet_wrap(~name)
 
+# demographics
+table(testdf.v26$age)
+table(testdf.v26$si_type)
+table(testdf.v26$gender_tgd)
+table(testdf.v26$sexual)
+table(testdf.v26$race)
+table(testdf.v26$dx_mh)
+
 # testing data
 var_desc_test <- describe(testdf_sem)
 view(var_desc_test)
@@ -4750,19 +4815,17 @@ SI_model_test <- '
                 # measurement model
                     si =~      si_type_4 + si_type_3 + si_type_2
     
-                    prem =~    meds_ther + dx_mh + sib_freq + sexual_2 + sexual_3 + ed_any 
+                    prem =~    meds_ther + dx_mh + sib_freq +  sexual_3 
                     
-                    le =~      psyhx + assault + drugs_yn + ins_no
+                    le =~      psyhx + assault + drugs_yn
                           
                     deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
                               
-                    mmtsm =~   aaq_dum + flourish_dum + inf + persist + satisfied_overall
+                    mmtsm =~   aaq_dum + flourish_dum + persist 
                     
                 # structural model
                     si ~ deftrap + mmtsm + mmtsm*deftrap
-                    le ~ prem
-                    deftrap ~ le
-                    deftrap ~ prem    '
+                    deftrap ~ prem + le   '
 
 fit_test <- sem(SI_model_test, data=results_test_com, ordered=T)
 summary_test <- summary(fit_test, fit.measures=TRUE, standardized = TRUE, rsquare=T)
@@ -4770,12 +4833,21 @@ fitMeasures(fit_test, fit.measures = "all")
 parameterestimates(fit_test, boot.ci.type = "bca.simple", standardized = TRUE) 
 modificationindices(fit_test, minimum.value = 20)
 semPaths(fit_test, layout = "tree2")
+
+# anova(fit_train_a, fit_test) 
 ```
 
 # Running the test dataframe for 18 and 19 year olds
 ```{r sub 18-19_frame}
 test18.v26 <- testdf.v26 %>%
   filter(age == 18 | age == 19)
+
+table(test18.v26$age)
+table(test18.v26$si_type)
+table(test18.v26$gender_tgd)
+table(test18.v26$sexual)
+table(test18.v26$race)
+table(test18.v26$dx_mh)
 
 # Prep SEM data vars
 test18_sem <- test18.v26 %>% select(
@@ -4798,13 +4870,13 @@ SI_model_1819 <- '
                 # measurement model
                     si =~      si_type_4 + si_type_3 + si_type_2
     
-                    prem =~    meds_ther + dx_mh + sib_freq + sexual_2 + sexual_3 + ed_any 
+                    prem =~    meds_ther + dx_mh + sib_freq + sexual_3 
                     
-                    le =~      psyhx + assault + drugs_yn + ins_no
+                    le =~      psyhx + assault + drugs_yn
                           
                     deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
                               
-                    mmtsm =~   aaq_dum + flourish_dum + inf + persist + satisfied_overall
+                    mmtsm =~   aaq_dum + flourish_dum + persist 
                     
                 # structural model
                     si ~ deftrap + mmtsm + mmtsm*deftrap
@@ -4832,6 +4904,13 @@ write_xlsx(results_18_com, path = "results_18_com.xls", col_names = TRUE, format
 test20.v26 <- testdf.v26 %>%
   filter(age == 20 | age == 21 | age == 22 | age == 23 | age == 24 | age == 25)
 
+table(test20.v26$age)
+table(test20.v26$si_type)
+table(test20.v26$gender_tgd)
+table(test20.v26$sexual)
+table(test20.v26$race)
+table(test20.v26$dx_mh)
+
 # Prep SEM data vars
 test20_sem <- test20.v26 %>% select(
   # outcome var
@@ -4856,13 +4935,13 @@ SI_model_20 <- '
                 # measurement model
                     si =~      si_type_4 + si_type_3 + si_type_2
     
-                    prem =~    meds_ther + dx_mh + sib_freq + sexual_2 + sexual_3 + ed_any 
+                    prem =~    meds_ther + dx_mh + sib_freq + sexual_3 
                     
-                    le =~      psyhx + assault + drugs_yn + ins_no
+                    le =~      psyhx + assault + drugs_yn
                           
                     deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
                               
-                    mmtsm =~   aaq_dum + flourish_dum + inf + persist + satisfied_overall
+                    mmtsm =~   aaq_dum + flourish_dum + persist 
                     
                 # structural model
                     si ~ deftrap + mmtsm + mmtsm*deftrap
@@ -4876,6 +4955,10 @@ modificationindices(fit_test_20, minimum.value = 20)
 
 semPaths(fit_test_20, layout = "tree")
 
+semPaths(fit_test_20, layout = "tree", edge.label.cex = 1, fade = FALSE)
+
+
+anova(fit_test_20, fit_test_18) 
 # xlsx output
 # save(test20_sem_test, file = "test20_sem_test.RData")
 # load("test20_sem_test.RData")
@@ -4887,96 +4970,6 @@ semPaths(fit_test_20, layout = "tree")
 # load("results_20_com.RData")
 # write_xlsx(results_20_com, path = "results_20_com.xls", col_names = TRUE, format_headers = TRUE)
 ```
-
-
-```{r PLS-PM}
-# Pull file
-data.pls <- read_excel("~/Desktop/results_tr_com1.xlsx",
-    range=cell_cols(1:27), col_types = "numeric")
-save("data.pls", file="~/Desktop/data.pls.RData")
-load("~/Desktop/data.pls.RData")
-data.pls <as.data.frame(data.pls)
-data.pls <na.omit(data.pls)
-
-# INNER MODEL
-# rows of path matrix
-prem =     c(0, 1, 0, 0)
-deftrap =  c(0, 0, 1, 0)
-mmtsm =    c(0, 0, 0, 1)
-si =       c(0, 0, 0, 0)
-# matrix (by row binding)
-imv_path = rbind (prem, deftrap, mmtsm, si)
-imv_path = t(imv_path)
-# plot the inner matrix
-innerplot(imv_path, box.size = 0.1)
-# outer model
-imv_blocks = list(4:16, 17:21, 22:27, 1:3)
-# modes
-imv_modes = c("B", "A", "A", "A")
-#scales
-imv_scales = list(
-    # premotivation
-        c("ord","ord","ord",
-        "num", "num", "num", "num", "ord", 
-        "num", "num", "num", "num", "ord"), 
-    # deftrap      
-        c("ord", "ord", "ord", "ord", "num"),
-    # mmtsm    
-        c("ord", "ord", "num", "ord", "ord","ord"),
-    # si     
-        c("ord","ord","ord")
-        )
-# apply plspm
-imv_pls1 = plspm(data.pls, imv_path, imv_blocks, modes = imv_modes, scaling = imv_scales)
-# print diss_pls1
-imv_pls1
-
-## Partial Least Squares Path Modeling (PLS-PM)
-## ---------------------------------------------
-##    NAME                   DESCRIPTION
-## 1  $outer_model           outer model
-## 2  $inner_model           inner model
-## 3  $path_coefs            path coefficients matrix
-## 4  $scores                latent variable scores 
-## 5  $crossloadings         cross-loadings
-## 6  $inner_summary         summary inner model
-## 7  $effects               total effects
-## 8  $unidim                uni-dimensionality
-## 9  $gof                   goodness-of-fit
-## 10 $boot                  bootstrap results
-## 11 $data                  data matrix
-## ---------------------------------------------
-# check unidimensionality
-imv_pls1$unidim
-# check coefs
-imv_pls1$path_coefs
-imv_pls1$inner_model
-# plotting the loadings
-plot(imv_pls1, what = "loadings")
-# check outer model
-imv_pls1$outer_model
-# summarized results
-summary(imv_pls1)
-plot(imv_pls1)
-plot(imv_pls1, what = "loadings", arr.width = 0.1)
-head(imv_pls1$scores, n = 5)
-tail(imv_pls1$scores, n = 5)
-imv_pls1$outer_model     #outer model
-imv_pls1$inner_model     #inner model
-imv_pls1$path_coefs      #path coefficients matrix
-imv_pls1$scores          #latent variable scores
-imv_pls1$crossloadings   #cross-loadings
-imv_pls1$inner_summary   #summary inner model
-imv_pls1$effects         #total effects
-imv_pls1$unidim          #uni-dimensionality
-imv_pls1$gof             #goodness-of-fit
-imv_pls1$boot            #bootstrap results
-imv_pls1$data            #data matrix
-
-```
-
-
-
 
 
 ```{r END}
