@@ -16,6 +16,7 @@ library(caret)
 library(caTools)
 library(clipr)
 library(corrplot)
+library(dgof)
 library(effectsize)
 library(emmeans)
 library(emulator)
@@ -293,12 +294,6 @@ hist(data.v2$age)
 
 table(data.v2$age, useNA = "always")
 jarque.bera.test(data.v2$age)
-
-data.v2B <- dummy_cols(data.v2, select_columns = c("age"), 
-                         remove_first_dummy = TRUE, remove_selected_columns = FALSE)
-
-view (data.v2B)
-clm(si_type~age_18 + age_19 + age_20 + age_21 + age_22 + age_23 + age_24 + age_25, data = data.v2B)
 ```
 
 ## Gender identity
@@ -1419,12 +1414,7 @@ table(traindf.v14$military, useNA = "always")
 
 ## International student
 ```{r train international}
-traindf.v14 <- traindf.v14 %>%
-  filter(!is.na(international))
-
-traindf.v14$international <- as.logical(traindf.v14$international)
-
-table(traindf.v14$international, useNA = "always")
+table(traindf.v14$international)
 ```
 
 ## Family support
@@ -2888,7 +2878,7 @@ var_names <- c(
   # diathesis
   "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_ther",
   # environment
-  "religios", "activ_no", "international",
+  "religios", "activ_no",
   # life events
   "ins_no", "gpa_sr", "psyhx", "fincur", "drugs_yn", "assault",
   # defeat
@@ -4662,8 +4652,6 @@ nrow(traindf.v28)
 # TEST DATA PREP
 
 
-
-
 ## Select all vars for SEM
 ```{r test_df_sem2}
 # Prep SEM data vars
@@ -4970,6 +4958,26 @@ anova(fit_test_20, fit_test_18)
 # load("results_20_com.RData")
 # write_xlsx(results_20_com, path = "results_20_com.xls", col_names = TRUE, format_headers = TRUE)
 ```
+
+## Kolmogorov-Smirnov Tests between samples
+```{r ks_tests}
+# training v. testing
+ks.test(testdf.v26$age, traindf.v28$age)
+ks.test(testdf.v26$si_type, traindf.v28$si_type)
+ks.test(testdf.v26$gender_tgd, traindf.v28$gender_tgd)
+ks.test(testdf.v26$sexual, traindf.v28$sexual)
+ks.test(testdf.v26$race, traindf.v28$race)
+ks.test(testdf.v26$dx_mh, traindf.v28$dx_mh)
+
+# 18-19 v. 20-25
+ks.test(test20.v26$age, test18.v26$age)
+ks.test(test20.v26$si_type, test18.v26$si_type)
+ks.test(test20.v26$gender_tgd, test18.v26$gender_tgd)
+ks.test(test20.v26$sexual, test18.v26$sexual)
+ks.test(test20.v26$race, test18.v26$race)
+ks.test(test20.v26$dx_mh, test18.v26$dx_mh)
+```
+
 
 
 ```{r END}
