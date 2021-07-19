@@ -3310,7 +3310,8 @@ modificationindices(fit_train_a, minimum.value = 20)
 
 
 ```{r amended}
-
+set.seed(1000)
+                    
 SI_model_amended2 <- '
 
                 # measurement model
@@ -3320,36 +3321,22 @@ SI_model_amended2 <- '
                     deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
                     mmtsm =~   aaq_dum + flourish_dum + persist 
                     
-                # mediation
-                   set.seed(1000)
-                    prem <- rnorm(10)
-                    le <- 0.5*prem + rnorm(10)
-                    deftrap <- 0.7*le + rnorm(10)
-                    dat <- data.frame(prem, le, deftrap, estMethod = "standard", bootstrap =
-                          1000, test = TRUE, ci = T, ciWidth = 95, pm = FALSE, paths = T, 
-                          label = FALSE, estPlot = FALSE)
-                    le_med <- med(dat, dep = "deftrap", pred = "prem", med = "le")
-
-                # moderation
-                    deftrap <- rnorm(10)
-                    mmtsm <- rnorm(10)
-                    deftrap_mmtsm <- deftrap*mmtsm
-                    si<- 0.7*deftrap + 0.1*mmtsm + 4.2*deftrap_mmtsm + rnorm(10)
-                    dat2 <- data.frame(deftrap, mmtsm, si)
-                    mmtsm_mod <- mod(dat2, dep = "si", pred = "deftrap", mod = "mmtsm")
-                    
-                # structural model
-                    deftrap ~ prem + prem_med
-                    si ~ deftrap + mmtsm_mod
+               ## regressions
+                    le ~ a*prem
+                    deftrap ~ b*le + c*prem
+                    indirect := a*b
+                    total := c + a*b
+               # structural model
+                    si ~ deftrap + mmtsm + mmtsm_mod
 '
+                    
 # inf, sexual_2, satisfied_overall
 
 fit_train_a2 <- sem(SI_model_amended2, data=results_tr_com1, ordered=T)
-summary_train_a2 <- summary(fit_train_a2, fit.measures=TRUE, standardized = TRUE, rsquare=T)
+summary_train_a2 <- summary(fit_train_a2, fit.measures=T, standardized = T, rsquare=T)
 fitMeasures(fit_train_a2, fit.measures = "all")
-parameterestimates(fit_train_a2, boot.ci.type = "bca.simple", standardized = TRUE) 
+parameterestimates(fit_train_a2, boot.ci.type = "bca.simple", standardized = T) 
 modificationindices(fit_train_a2, minimum.value = 20)
-
 semPaths(fit_train_a2, layout = "tree")
 ```
 
@@ -4940,11 +4927,13 @@ summary_test_20 <- summary(fit_test_20, fit.measures=TRUE, standardized = TRUE, 
 fitMeasures(fit_test_20, fit.measures = "all")
 parameterestimates(fit_test_20, boot.ci.type = "bca.simple", standardized = TRUE) 
 modificationindices(fit_test_20, minimum.value = 20)
-
-semPaths(fit_test_20, layout = "tree")
-
 semPaths(fit_test_20, layout = "tree", edge.label.cex = 1, fade = FALSE)
 
+
+nrow(testdf.v26) # 5700
+nrow(traindf.v28) # 5638
+nrow(test20.v26) # 3862
+nrow(test18.v26) # 1838
 
 anova(fit_test_20, fit_test_18) 
 # xlsx output
@@ -4959,24 +4948,45 @@ anova(fit_test_20, fit_test_18)
 # write_xlsx(results_20_com, path = "results_20_com.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
-## Kolmogorov-Smirnov Tests between samples
+## Wilcox test
 ```{r ks_tests}
+testdf.v26B <- testdf.v26
+traindf.v28B <- traindf.v28
+test20.v26B <- test20.v26
+test18.v26B <- test18.v26
+
+testdf.v26B$dx_mh <- as.numeric(testdf.v26B$dx_mh)
+traindf.v28B$dx_mh <- as.numeric(traindf.v28B$dx_mh)
+test20.v26B$dx_mh <- as.numeric(test20.v26B$dx_mh)
+test18.v26B$dx_mh <- as.numeric(test18.v26B$dx_mh)
+
+testdf.v26B$si_type <- as.numeric(testdf.v26B$si_type)
+traindf.v28B$si_type <- as.numeric(traindf.v28B$si_type)
+test20.v26B$si_type <- as.numeric(test20.v26B$si_type)
+test18.v26B$si_type <- as.numeric(test18.v26B$si_type)
+
+testdf.v26B$gender_tgd <- as.numeric(testdf.v26B$gender_tgd)
+traindf.v28B$gender_tgd <- as.numeric(traindf.v28B$gender_tgd)
+test20.v26B$gender_tgd <- as.numeric(test20.v26B$gender_tgd)
+test18.v26B$gender_tgd <- as.numeric(test18.v26B$gender_tgd)
+
+
 # training v. testing
-ks.test(testdf.v26$age, traindf.v28$age)
-ks.test(testdf.v26$si_type, traindf.v28$si_type)
-ks.test(testdf.v26$gender_tgd, traindf.v28$gender_tgd)
-ks.test(testdf.v26$sexual, traindf.v28$sexual)
-ks.test(testdf.v26$race, traindf.v28$race)
-ks.test(testdf.v26$dx_mh, traindf.v28$dx_mh)
+wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 15938984, p-value = 0.4527
+wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 15882104, p-value = 0.08518
+wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 16002839, p-value = 0.23
+wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 15992592, p-value = 0.5647
+wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 16081642, p-value = 0.9284
+wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 16022528, p-value = 0.7558
 
 # 18-19 v. 20-25
-ks.test(test20.v26$age, test18.v26$age)
-ks.test(test20.v26$si_type, test18.v26$si_type)
-ks.test(test20.v26$gender_tgd, test18.v26$gender_tgd)
-ks.test(test20.v26$sexual, test18.v26$sexual)
-ks.test(test20.v26$race, test18.v26$race)
-ks.test(test20.v26$dx_mh, test18.v26$dx_mh)
-```
+wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # W = 7098356, p-value < 2.2e-16
+wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 3475826, p-value = 0.0384
+wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 3530267, p-value = 0.2836
+wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") # W = 3371776, p-value = 4.786e-05
+wilcox.test(test20.v26B$race, test18.v26B$race, alternative = "two.sided") # W = 3590905, p-value = 0.399
+wilcox.test(test20.v26B$dx_mh, test18.v26B$dx_mh, alternative = "two.sided") # W = 3686756, p-value = 0.005003
+``` 
 
 
 
