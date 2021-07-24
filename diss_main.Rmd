@@ -1996,7 +1996,7 @@ model.le  %>%
 # Full Premotivational Analysis
 ```{r train results_prem}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
+traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, binge,
                                        meds_ther, religios, activ_no, school2_type, fincur, ins_no, residenc,
                                        gpa_sr, assault, drugs_yn, drug_mar, psyhx, satisfied_overall)
 
@@ -2030,7 +2030,7 @@ coef(clm_prem)
 ## EFA PREMOTIVATION
 ```{r train prem_pca}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
+traindf_prem <- traindf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, binge,
                                        meds_ther, religios, activ_no, school2_type, ins_no, residenc,
                                        gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur, satisfied_overall)
 traindf_prem <- na.omit(traindf_prem)
@@ -2043,7 +2043,7 @@ traindf_prem <- traindf_prem %>%
 traindf_prem   # check output
 
 results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq",
-                                                            "race", "ed_any", "dx_mh", "meds_ther",
+                                                            "race", "ed_any", "dx_mh", "meds_ther", "binge",
                                                             "religios", "satisfied_overall",
                                                             "activ_no", "school2_type", "ins_no", "residenc",
                                                             "gpa_sr", "assault", "drugs_yn","drug_mar", 
@@ -2094,12 +2094,12 @@ coef(clm_prem)   # retrieve coefficients
 ci_prem <- confint(clm_prem)  # retrieve confidence intervals
 ci_prem
 
-model.prem <- tidy(clm_prem)  # Convert model to dataframe for easy manipulation
+model.prem <- tidy(clm_prem)  # Convert model to dataframe
 model.prem
 model.prem  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
+   mutate(or = exp(estimate),               # Odds ratio/gradient
           var.diag = diag(vcov(clm_prem)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+          or.se = sqrt(or^2 * var.diag))    # Odds-ratio adjusted
 ```
 
 
@@ -3126,33 +3126,33 @@ save(results_tr_com1, file = "results_tr_com1.RData")
 load("results_tr_com1.RData")
 write_xlsx(results_tr_com1, path = "results_tr_com1.xlsx", col_names = TRUE, format_headers = TRUE)
 
-
-SI_model_tr1 <- '
-                # measurement model
-                
-                  si =~    si_type_3 + si_type_2
-    
-                  prem =~  sib_freq + sexual + gender_tgd +
-                           ed_any + dx_mh + activ_no + ins_no + meds_ther + gpa_sr + 
-                           psyhx + drugs_yn + assault + satisfied_overall
-                          
-                  def =~ deprawsc + aca_impa + anx_score
-                              
-                  tsm =~ aaq_tot + persist
-
-                  entrap =~ dep_impa + percneed
-
-                  mm =~ flourish + inf 
-
-                # structural model - regressions
-                   si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm     '
-
-fit_train1 <- sem(SI_model_tr1, data=results_tr_com1, ordered=T)
-summary_train <- summary(fit_train1, fit.measures=TRUE, standardized = TRUE)
-fitMeasures(fit_train1, fit.measures = "all")
-
-    ## modification indices
-modificationindices(fit_train1, minimum.value = 20)
+# 
+# SI_model_tr1 <- '
+#                 # measurement model
+#                 
+#                   si =~    si_type_3 + si_type_2
+#     
+#                   prem =~  sib_freq + sexual + gender_tgd +
+#                            ed_any + dx_mh + activ_no + ins_no + meds_ther + gpa_sr + 
+#                            psyhx + drugs_yn + assault + satisfied_overall
+#                           
+#                   def =~ deprawsc + aca_impa + anx_score
+#                               
+#                   tsm =~ aaq_tot + persist
+# 
+#                   entrap =~ dep_impa + percneed
+# 
+#                   mm =~ flourish + inf 
+# 
+#                 # structural model - regressions
+#                    si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm     '
+# 
+# fit_train1 <- sem(SI_model_tr1, data=results_tr_com1, ordered=T)
+# summary_train <- summary(fit_train1, fit.measures=TRUE, standardized = TRUE)
+# fitMeasures(fit_train1, fit.measures = "all")
+# 
+#     ## modification indices
+# modificationindices(fit_train1, minimum.value = 20)
 
 # # # Matrix math
 # lavaan_cov <- cov(results_tr_com1)
@@ -3180,19 +3180,19 @@ results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type"),
 SI_model_trM <- '
                 # measurement model
                 
-                  si =~    si_type_3 + si_type_2 + si_type_4
+                  si =~    si_type_3 + si_type_2
     
                   prem  =~ sib_freq + sexual + gender_tgd + meds_ther +
                            ed_any + dx_mh + activ_no + ins_no + 
                            gpa_sr + psyhx + drugs_yn + assault + satisfied_overall
                           
-                   def =~ dep_type + aca_impa + anx_type
+                   def =~ deprawsc + aca_impa + anx_score
                               
-                   tsm =~ aaq_dum + persist
+                   tsm =~ aaq_tot + persist
 
-                   entrap =~ dep_impa + percneed
+                   entrap =~ deprawsc + percneed
 
-                   mm =~ flourish_dum + inf 
+                   mm =~ flourish + inf 
 
                 # structural model - regressions
                    si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
@@ -3567,38 +3567,6 @@ table(testdf.v11$meds_ther, useNA = "always")
 ```
 
 
-## DIATHESIS ANALYSES
-```{r test diathesis analyses}
-testdf.v12 <- testdf.v11 # create new dataframe for summary stats. Will jump to v13 for environmental
-```
-
-### CLM diathesis regression
-```{r test clm_dia}
-# setting up dataframe for regression analysis
-clm_dia <- testdf.v12 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race,
-                                  ed_any, dx_mh, meds_ther)
-clm_dia <- na.omit(clm_dia)
-dia_mod <- as.data.frame(clm_dia)
-
-# regression call
-dia_mod <- clm(si_type ~ ., data = dia_mod)
-
-# check output
-summary(dia_mod)
-coef(dia_mod)
-
-ci_dia <- confint(dia_mod)  # find find confidence intervals
-ci_dia
-
-model.dia <- tidy(dia_mod)  # Convert model to dataframe for easy manipulation
-model.dia
-model.dia  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(dia_mod)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
-```
-
-
 # ENVIRONMENT VARIABLES
 
 
@@ -3827,37 +3795,6 @@ jarque.bera.test(testdf.v14$satisfied_overall)
 ```
 
 
-## ENVIRONMENT ANALYSES
-```{r test env analysis}
-testdf.v15 <- testdf.v14  # new dataframe for analysis
-```
-
-### CLM environmental regression
-```{r test CLM environment}
-# preparing dataframe for regression
-clm_env <- testdf.v15 %>% select(si_type, religios, residenc, activ_no, 
-                                 satisfied_overall, school2_type)
-clm_env <- NA_preproc(clm_env) %>% as.data.frame()
-
-# run ordinal regression
-clm_env2 <- clm(si_type ~ religios + residenc + activ_no + satisfied_overall + school2_type, 
-                data = clm_env)
-
-summary(clm_env2)
-coef(clm_env2)
-
-ci_env2 <- confint(clm_env2)
-ci_env2
-
-model.dia <- tidy(clm_env2)  # Convert model to dataframe
-model.dia
-model.dia  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_env2)),  # Coefficient variances
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
-```
-
-
 # LIFE EVENTS
 
 
@@ -4026,120 +3963,6 @@ testdf.v18$gpa_sr <- as.numeric(testdf.v18$gpa_sr) # change to numeric scale
 table(testdf.v18$gpa_sr, useNA = "always")  # check output, skew
 jarque.bera.test(testdf.v18$gpa_sr)
 ```
- 
-```{r test LE testdf analysis}
-testdf.v19 <- testdf.v18
-```
-
-# Full Premotivational Analysis
-```{r test results_prem}
-# Define diathesis vars for correlation matrix
-testdf_prem <- testdf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, 
-                                     dx_mh, meds_ther, religios, activ_no, school2_type, satisfied_overall,
-                                     fincur, ins_no, residenc, gpa_sr, assault, drugs_yn, 
-                                     drug_mar, psyhx)
-
-# Corr_simple function
-corr_simple <- function(testdf=testdf_prem, sig=0.6){
-  # convert testdf to numeric in order to run correlations 
-  testdf_prem <- testdf_prem %>% mutate_if(is.character, as.factor)
-  testdf_prem <-  testdf_prem %>% mutate_if(is.factor, as.numeric)
-  # run a correlation and drop the insignificant ones
-  corr <- cor(testdf_prem, use = "pairwise.complete.obs")                               
-  corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-  corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-  corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
-  corr <- na.omit(corr)                                   # remove the NA values from above 
-  corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
-  print(corr)
-  
-  #turn corr back into matrix in order to plot with corrplot
-  mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-}
-corr_simple()
-
-# run regression
-clm_prem <- clm(si_type ~ .,
-              data = testdf_prem)
-summary(clm_prem)
-coef(clm_prem)
-```
-
-## EFA PREMOTIVATION
-```{r test prem_pca}
-# Define diathesis vars for correlation matrix
-testdf_prem <- testdf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                       meds_ther, religios, activ_no, school2_type, ins_no, residenc,
-                                       gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur, satisfied_overall)
-testdf_prem <- na.omit(testdf_prem)
-
-# create corr matrix, with dummy vars
-testdf_prem <- testdf_prem %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
-  data.matrix()
-testdf_prem   # check output
-
-results_prem <- dummy_cols(testdf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq",
-                                                            "race", "ed_any", "dx_mh", "meds_ther",
-                                                           "religios", "satisfied_overall",
-                                                            "activ_no", "school2_type", "ins_no", "residenc",
-                                                            "gpa_sr", "assault", "drugs_yn","drug_mar", 
-                                                            "psyhx", "fincur"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-prem_pca <- PCA(results_prem, graph=FALSE)  # apply PCA
-prem_pca$eig   # output matrix with eigenvalues
-
-eigval_prem <- get_eigenvalue(prem_pca)
-eigval_prem
-
-# visualization for PCA, FAMD
-fviz_screeplot(prem_pca, addlabels = TRUE, ylim = c(0, 50))
-fviz_pca_var(prem_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_famd_var(prem_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_cos2(prem_pca, choice = "var", axes = 1,
-          fill = "steelblue", color = "steelblue",
-          sort.val = c("desc", "asc", "none"),
-          top = 40,
-          xtickslab.rt = 45,
-          ggtheme = theme_minimal())
-```
-
-## CLM Premotivation regression
-```{r test clm_prem}
-clm_prem <- testdf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh,
-                                 religios, activ_no, school2_type, ins_no, residenc, meds_ther,
-                                 gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur)
-clm_prem <- na.omit(clm_prem)
-
-# run regression
-clm_prem <- clm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh +
-                religios + activ_no + school2_type + ins_no + residenc + gpa_sr + assault +
-                drugs_yn + drug_mar + psyhx + meds_ther + fincur,
-              data = clm_prem)
-summary(clm_prem)
-coef(clm_prem)   # retrieve coefficients
-
-ci_prem <- confint(clm_prem)  # retrieve confidence intervals
-ci_prem
-
-model.prem <- tidy(clm_prem)  # Convert model to dataframe for easy manipulation
-model.prem
-model.prem  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_prem)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
-```
 
 
 # DEFEAT
@@ -4221,34 +4044,6 @@ table(testdf.v20$aca_impa, useNA = "always") # check output, skew
 jarque.bera.test(testdf.v20$aca_impa)
 ```
 
-## Defeat analysis
-```{r test defeat analyses}
-testdf.v21 <- testdf.v20
-```
-
-## CLM defeat
-```{r test CLM defeat}
-# prepare regression analysis
-results2_def <- testdf.v21 %>% select(si_type, aca_impa, deprawsc, anx_score)
-clm_def <- na.omit(results2_def)
-
-# run defeat regression
-clm_def <- clm(si_type ~ aca_impa + deprawsc + anx_score, data = clm_def)
-
-summary(clm_def)
-coef(clm_def)   # retrieve coefficients
-
-ci_def <- confint(clm_def) # retrieve confidence intervals
-ci_def
-
-model.def <- tidy(clm_def)  # Convert model to dataframe for easy manipulation
-model.def
-model.def  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(clm_def)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
-```
-
 
 # THREATS TO SELF-MODERATION
 
@@ -4306,36 +4101,6 @@ table(testdf.v22$persist, useNA = "always") # check output, skew
 jarque.bera.test(testdf.v22$persist)
 ```
 
-## TSM analyses
-```{r test TSM var analyses}
-testdf.v23 <- testdf.v22
-```
-
-## CLM TSM
-```{r test CLM TSM}
-# prepare dataframe for regression
-clm_tsm <- testdf.v23 %>% select(si_type, persist, aaq_tot)
-clm_tsm <- na.omit(clm_tsm)
-
-# run regression
-clm_tsm <- clm(si_type ~ persist + aaq_tot, data = clm_tsm) 
-
-# output
-summary(clm_tsm)
-coef(clm_tsm)
-
-ci_tsm <- confint(clm_tsm)  # get confidence intervals
-ci_tsm
-
-model.tsm <- tidy(clm_tsm)  # Convert model to dataframe for easy manipulation
-model.tsm
-
-model.tsm  %>%
-    mutate(or = exp(estimate),  # Odds ratio/gradient
-           var.diag = diag(vcov(clm_tsm)),  # Variance of each coefficient
-           or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
-```
-
 
 # ENTRAPMENT
 
@@ -4372,34 +4137,6 @@ table(testdf.v24$percneed, useNA = "always") # check output, NAs
 ```{r test percneed_cur}
 testdf.v24$percneed_cur <- as.numeric(testdf.v24$percneed_cur)
 table(testdf.v24$percneed_cur, useNA = "always")
-```
-
-## ENTRAPMENT ANALYSES
-```{r test entrapment analyses}
-testdf.v25 <- testdf.v24
-```
-
-###  CLM Entrapment regression
-```{r test clm_entrap}
-clm_entrap <- testdf.v25 %>% select(si_type, dep_impa, gad7_impa, percneed)
-clm_entrap <- na.omit(clm_entrap)
-
-# run entrapment regression
-clm_entrap <- clm(si_type ~ dep_impa + gad7_impa + percneed, data = clm_entrap)
-
-summary(clm_entrap)
-coef(clm_entrap)
-
-ci_entrap <- confint(clm_entrap)
-ci_entrap
-
-model.entrap <- tidy(clm_entrap)  # Convert model to dataframe for easy manipulation
-model.entrap
-
-model.entrap  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-         var.diag = diag(vcov(clm_entrap)),  # Variance of each coefficient
-         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 
@@ -4554,33 +4291,7 @@ testdf.v26$mh_stigma <- as.logical(testdf.v26$mh_stigma)
 table(testdf.v26$mh_stigma, useNA = "always") # check out, NAs
 ```
 
-## Motivational moderator analyses
-```{r test MM var analyses}
-testdf.v27 <- testdf.v26
-```
 
-### CLM Motivational moderators regression
-```{r test CLM mm}
-# prepare data for regression
-clm_mm <- testdf.v27 %>% select(si_type, inf, flourish, belong1, mh_stigma)
-clm_mm <- na.omit(clm_mm)
-
-# run MM regression
-clm_mm <- clm(si_type ~ inf + flourish + belong1 + mh_stigma, data = clm_mm)
-summary(clm_mm)
-coef_mm <- coef(summary(clm_mm))  # retireve coefficients
-
-ci_mm <- confint(clm_mm)  # retrieve confidence intervals
-ci_mm
-
-model.mm <- tidy(clm_mm)  # Convert model to dataframe for easy manipulation
-model.mm
-
-model.mm  %>%
-  mutate(or = exp(estimate),  # Odds ratio/gradient
-        var.diag = diag(vcov(clm_mm)),  # Variance of each coefficient
-        or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
-```
 
 # Count final sample n
 ```{r count}
@@ -4698,26 +4409,6 @@ load("var_desc_test.RData")
 write_xlsx(var_desc_test, path = "var_desc_test.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
-## Model w/ levels correlations
-```{r test model_lev_corr}
-results_corr <- NA_preproc(testdf_sem)
-sig <- 0.4
-
-# run a correlation and drop the insignificant ones 
-corr <- cor(results_corr, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
-corr <- na.omit(corr)                                   # remove the NA values from above  
-corr <- subset(corr, abs(Freq) > sig)                   # select significant values  
-corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
-print(corr)
-  
-#turn corr back into matrix in order to plot with corrplot
-mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-```
-
 # new model introduction -- test data
 ```{r SI_test_new}
 # Prep SEM data vars
@@ -4737,39 +4428,8 @@ test_sem <- testdf.v26 %>% select(
 test_sem <- data.matrix(test_sem)
   
 ## Dummy col SEM w/ continuous
-results_test_com <- dummy_cols(test_sem, select_columns = c("si_type", "sexual"),
+results_test_com <- dummy_cols(test_sem, select_columns = c("si_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-#view(results_tr_com1)
-SI_model_test <- '
-                # measurement model
-                    si =~      si_type_4 + si_type_3 + si_type_2
-    
-                    prem =~    meds_ther + dx_mh + sib_freq + sexual_3 + satisfied_overall
-                    
-                    le =~      psyhx + assault + drugs_yn
-                          
-                    deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
-                              
-                    mmtsm =~   aaq_dum + flourish_dum + persist 
-                    
-                # structural model
-                    si ~ deftrap + mmtsm + mmtsm*deftrap
-                    deftrap ~ prem + le   '
-
-fit_test <- sem(SI_model_test, data=results_test_com, ordered=T)
-summary_test <- summary(fit_test, fit.measures=TRUE, standardized = TRUE, rsquare=T)
-fitMeasures(fit_test, fit.measures = "all")
-parameterestimates(fit_test, boot.ci.type = "bca.simple", standardized = TRUE) 
-modificationindices(fit_test, minimum.value = 20)
-semPaths(fit_test, layout = "tree2")
-
-# anova(fit_train_a, fit_test) 
-
-# save output for offline SMART PLS
-results_test_com <- as.data.frame(results_test_com)
-save(results_test_com, file = "results_test_com.RData")
-load("results_test_com.RData")
-write_xlsx(results_test_com, path = "results_test_com.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 # Running the test dataframe for 18 and 19 year olds
@@ -4800,31 +4460,6 @@ test18_sem <- test18.v26 %>% select(
 ## Dummy col SEM w/ continuous
 results_test_com18 <- dummy_cols(test18_sem, select_columns = c("si_type", "sexual"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-#view(results_tr_com1)
-SI_model_1819 <- '
-                # measurement model
-                    si =~      si_type_4 + si_type_3 + si_type_2
-    
-                    prem =~    meds_ther + dx_mh + sib_freq + sexual_3 + satisfied_overall
-                    
-                    le =~      psyhx + assault + drugs_yn
-                          
-                    deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
-                              
-                    mmtsm =~   aaq_dum + flourish_dum + persist 
-                    
-                # structural model
-                    si ~ deftrap + mmtsm + mmtsm*deftrap
-                    deftrap ~ prem + le'
-
-
-fit_test_18 <- sem(SI_model_1819, data=results_test_com18, ordered=T)
-summary_test_18 <- summary(fit_test_18, fit.measures=TRUE, standardized = TRUE, rsquare=T)
-fitMeasures(fit_test_18, fit.measures = "all")
-parameterestimates(fit_test_18, boot.ci.type = "bca.simple", standardized = TRUE) 
-modificationindices(fit_test_18, minimum.value = 20)
-
-semPaths(fit_train_a, layout = "tree")
 
 # save output for offline SMART PLS
 results_test_com18 <- as.data.frame(results_test_com18)
@@ -4851,7 +4486,7 @@ test20_sem <- test20.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall,
   # life events
   ins_no, gpa_sr, psyhx, drugs_yn, assault,
   # defeat
@@ -4863,43 +4498,13 @@ test20_sem <- test20.v26 %>% select(
 test20_sem <- data.matrix(test20_sem)
   
 ## Dummy col SEM w/ continuous
-results_test_com20 <- dummy_cols(test20_sem, select_columns = c("si_type", "sexual"),
+results_test_com20 <- dummy_cols(test20_sem, select_columns = c("si_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-#view(results_tr_com1)
-SI_model_20 <- '
-                # measurement model
-                    si =~      si_type_4 + si_type_3 + si_type_2
-    
-                    prem =~    meds_ther + dx_mh + sib_freq + sexual_3 
-                    
-                    le =~      psyhx + assault + drugs_yn
-                          
-                    deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
-                              
-                    mmtsm =~   aaq_dum + flourish_dum + persist 
-                    
-                # structural model
-                    si ~ deftrap + mmtsm + mmtsm*deftrap
-                    deftrap ~ prem + le'
-
-fit_test_20 <- sem(SI_model_20, data=results_test_com20, ordered=T)
-summary_test_20 <- summary(fit_test_20, fit.measures=TRUE, standardized = TRUE, rsquare=T)
-fitMeasures(fit_test_20, fit.measures = "all")
-parameterestimates(fit_test_20, boot.ci.type = "bca.simple", standardized = TRUE) 
-modificationindices(fit_test_20, minimum.value = 20)
-semPaths(fit_test_20, layout = "tree", edge.label.cex = 1, fade = FALSE)
-
 
 nrow(testdf.v26) # 5700
 nrow(traindf.v28) # 5638
 nrow(test20.v26) # 3862
 nrow(test18.v26) # 1838
-
-anova(fit_test_20, fit_test_18) 
-# xlsx output
-# save(test20_sem_test, file = "test20_sem_test.RData")
-# load("test20_sem_test.RData")
-# write_xlsx(test20_sem_test, path = "test20_sem_test.xls", col_names = TRUE, format_headers = TRUE)
 
 # Save offline for SMART PLS
 results_test_com20 <- as.data.frame(results_test_com20)
