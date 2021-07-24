@@ -2772,7 +2772,7 @@ traindf.v27 <- traindf.v26
 ### Motivational Moderator correlation
 ```{r train MM_corr}
 # Define MM variable candidates for correlation matrix
-traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, mh_stigma)
+traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, mh_stigma, brs_tot)
 
  # convert traindf to numeric in order to run correlations
 traindf_mm <- traindf_mm %>% mutate_if(is.character, as.factor)
@@ -3130,19 +3130,19 @@ write_xlsx(results_tr_com1, path = "results_tr_com1.xlsx", col_names = TRUE, for
 SI_model_tr1 <- '
                 # measurement model
                 
-                  si =~    si_type_3 + si_type_2 + si_type_4
+                  si =~    si_type_3 + si_type_2
     
-                  prem =~  sib_freq + sexual_2 + sexual_3 + gender_tgd +
+                  prem =~  sib_freq + sexual + gender_tgd +
                            ed_any + dx_mh + activ_no + ins_no + meds_ther + gpa_sr + 
                            psyhx + drugs_yn + assault + satisfied_overall
                           
-                  def =~ dep_type + aca_impa + anx_type
+                  def =~ deprawsc + aca_impa + anx_score
                               
-                  tsm =~ aaq_dum + persist
+                  tsm =~ aaq_tot + persist
 
                   entrap =~ dep_impa + percneed
 
-                  mm =~ flourish_dum + inf 
+                  mm =~ flourish + inf 
 
                 # structural model - regressions
                    si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm     '
