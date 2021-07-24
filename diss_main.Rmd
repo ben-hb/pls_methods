@@ -262,8 +262,7 @@ Creates indicator variable 'si_type' using the subtypes of suicidal ideation usi
 data.v2 <- data.v1 %>%
 
 # create si_type var
-  mutate(si_type = case_when((sui_idea == 1 & suic_plan == 1 & suic_att == 1) ~ 4, # suicide attempt
-                           (sui_idea == 1 & suic_plan == 1) ~ 3,                   # active SI
+  mutate(si_type = case_when((sui_idea == 1 & suic_plan == 1) ~ 3,                   # active SI
                            (sui_idea == 1) ~ 2,                                    # passive SI
                            sui_idea == 0 ~ 1)) %>%                                 # no SI reported
   filter(!is.na(si_type))   # filter for SI variable -- then rowwise deletion
@@ -415,16 +414,14 @@ jarque.bera.test(data.v3$gender_tgd)
 data.v4 <- data.v3 %>%
   # aggregates all 'sexual' answers into one var
   mutate(
-    sexual = case_when(sexual_queer == 1 ~ 5,        # queer
-                       sexual_bi == 1 ~ 4,           # bisexual
-                       sexual_l == 1 ~ 2,            # lesbian 
-                       sexual_g == 1 ~ 3,            # gay
-                       sexual_quest == 1 ~ 6,        # questioning
-                       sexual_h == 1 ~ 1,            # heterosexual
-                       sexual_other == 1 ~ 7,        # other
-                       FALSE ~ 8,                    # non-answers
-                       FALSE ~ 9,                    # creating 'pansexual' var
-                       FALSE ~ 10))                  # creating 'asexual/demi' var
+    sexual = case_when(sexual_queer == 1 ~ 1,        # queer
+                       sexual_bi == 1 ~ 1,           # bisexual
+                       sexual_l == 1 ~ 1,            # lesbian 
+                       sexual_g == 1 ~ 1,            # gay
+                       sexual_quest == 1 ~ 1,        # questioning
+                       sexual_h == 1 ~ 0,            # heterosexual
+                       sexual_other == 1 ~ 1)        # other
+) 
 
 table(data.v4$sexual) # tabulate and check outputs
 ```
@@ -433,7 +430,7 @@ table(data.v4$sexual) # tabulate and check outputs
 ```{r sexual_text}
 # identifying non-answers
   ## jokesters
-data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]elicopter")] <- 8
+data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]elicopter")] <- NA
 data.v4$sexual[data.v4$sexual_text %in% c("Yes", "i identify as a lamp", "I only like baseballs", "helisexual", "Autosexual",
                                           "now", "Miguel Garcia", "toasteroven", "must have gills", "Potsexual", "Bobcats",
                                           "Tailpipes turn me on", "Tyrannosaurus rex", "Traps are not gay", "Toaster sexual",
@@ -442,20 +439,20 @@ data.v4$sexual[data.v4$sexual_text %in% c("Yes", "i identify as a lamp", "I only
                                           "Attracted to other self-identifying flying spaghetti monsters",  
                                           "Demiqueer quasiflux asexual foxkin", "I sleep around. Also into bestiality",  
                                           "Sexually attracted to kitchen appliances", "Elitistual. I'm into elitists",
-                                          "sexually attracted to fictional characters and men twice my age")] <- 8
+                                          "sexually attracted to fictional characters and men twice my age")] <- NA
   ## declined to answer
-  data.v4$sexual[str_detect(data.v4$sexual_text, "identi[t|f]y")] <- 8
-  data.v4$sexual[str_detect(data.v4$sexual_text, "label")] <- 8
-  data.v4$sexual[str_detect(data.v4$sexual_text, "matter")]  <- 8
-  data.v4$sexual[str_detect(data.v4$sexual_text, "[W|w]hatever")]  <- 8
-  data.v4$sexual[str_detect(data.v4$sexual_text, "box myself")]  <- 8
-  data.v4$sexual[str_detect(data.v4$sexual_text, "[D|d]ecline")] <- 8
-  data.v4$sexual[str_detect(data.v4$sexual_text, "[N|n]ormal")]  <- 8
-  data.v4$sexual[str_detect(data.v4$sexual_text, "[D|d]isclose")]  <- 8
-  data.v4$sexual[str_detect(data.v4$sexual_text, "[N|n]one")]  <- 8
-  data.v4$sexual[str_detect(data.v4$sexual_text, "[U|u]nknown")]  <- 8
-  data.v4$sexual[str_detect(data.v4$sexual_text, "[N|n]/[A|a]")]  <- 8
-  data.v4$sexual[str_detect(data.v4$sexual_text, "[I|i] like")]  <- 8
+  data.v4$sexual[str_detect(data.v4$sexual_text, "identi[t|f]y")] <- NA
+  data.v4$sexual[str_detect(data.v4$sexual_text, "label")] <- NA
+  data.v4$sexual[str_detect(data.v4$sexual_text, "matter")]  <- NA
+  data.v4$sexual[str_detect(data.v4$sexual_text, "[W|w]hatever")]  <- NA
+  data.v4$sexual[str_detect(data.v4$sexual_text, "box myself")]  <- NA
+  data.v4$sexual[str_detect(data.v4$sexual_text, "[D|d]ecline")] <- NA
+  data.v4$sexual[str_detect(data.v4$sexual_text, "[N|n]ormal")]  <- NA
+  data.v4$sexual[str_detect(data.v4$sexual_text, "[D|d]isclose")]  <- NA
+  data.v4$sexual[str_detect(data.v4$sexual_text, "[N|n]one")]  <- NA
+  data.v4$sexual[str_detect(data.v4$sexual_text, "[U|u]nknown")]  <- NA
+  data.v4$sexual[str_detect(data.v4$sexual_text, "[N|n]/[A|a]")]  <- NA
+  data.v4$sexual[str_detect(data.v4$sexual_text, "[I|i] like")]  <- NA
   data.v4$sexual[data.v4$sexual_text %in% c("dating a trans male", "Attracted to personalities, not genders", "non",
                                             "irrelevant", "i like people", "Fuck sexuality", "personality based", 
                                             "Don't think about it too much", "Anyone that I like", "leave me alone",
@@ -483,74 +480,74 @@ data.v4$sexual[data.v4$sexual_text %in% c("Yes", "i identify as a lamp", "I only
                                             "Prefer not to answer", "just sexual (need no prefix!)", "It's complicated", 
                                             "Sexuality shouldn't matter", 
                                             "I'm just me and I love who I love. I don't like these labels.",
-                                            "I'm not a fucking part of lgbtqrstuxyz bullshit association")]  <- 8
+                                            "I'm not a fucking part of lgbtqrstuxyz bullshit association")]  <- NA
   
     # identifying queer  individuals:
-data.v4$sexual[str_detect(data.v4$sexual_text, "[Q|q]ueer")] <- 5
-data.v4$sexual[str_detect(data.v4$sexual_text, "[F|f]luid")] <- 5
-data.v4$sexual[str_detect(data.v4$sexual_text, "[O|o]pen")] <- 5
+data.v4$sexual[str_detect(data.v4$sexual_text, "[Q|q]ueer")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[F|f]luid")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[O|o]pen")] <- 1
 data.v4$sexual[data.v4$sexual_text %in% c("potentially interested", "somewhere between", "homoflexible", "heteroflexible",
                                           "fluid", "Only other trans people", "non-binary", "so I guess I could check queer",
                                           "Androsexual", "Not straight", "Polysexual", "Joto", "Non-binary", "nonbinary",
-                                          "Attracted to masculinity and androgony", "Androsexual")] <- 5
+                                          "Attracted to masculinity and androgony", "Androsexual")] <- 1
 
   # identifying questioning
-data.v4$sexual[str_detect(data.v4$sexual_text, "[Q|q]uestion")] <- 6
-data.v4$sexual[str_detect(data.v4$sexual_text, "[P|p]robably")] <- 6
+data.v4$sexual[str_detect(data.v4$sexual_text, "[Q|q]uestion")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[P|p]robably")] <- 1
 data.v4$sexual[data.v4$sexual_text %in% c("possibly", "curious", "Unknown", "potentially interested", "don't know", "Unknown", 
                                           "don't know", "not sure", "still figuring it out", "idk", "Idk",  "don't know", 
                                           "I have a girlfriend but i am not attracted to any other females. I am attracted to males", 
                                           "Sometimes gender doesn't matter and I don't have time to learn about these things life gets too busy",
-                                          "Not sure. Working on it.")] <- 6
+                                          "Not sure. Working on it.")] <- 1
 
   # identifying  pansexual write-ins
-data.v4$sexual[str_detect(data.v4$sexual_text, "[P|p]an")] <- 9
-data.v4$sexual[str_detect(data.v4$sexual_text, "[S|s]apiosexual")] <- 9
-data.v4$sexual[str_detect(data.v4$sexual_text, "[S|s]apiosexual")] <- 9
+data.v4$sexual[str_detect(data.v4$sexual_text, "[P|p]an")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[S|s]apiosexual")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[S|s]apiosexual")] <- 1
 data.v4$sexual[data.v4$sexual_text %in% c("all", "Polyamorous Pansexual", "Pan Sexual", "Pan-sexual", 
-                                          "any but ive only had relationships with men")] <- 9
+                                          "any but ive only had relationships with men")] <- 1
 
   # identifying asexual / demisexual write-ins:  
-data.v4$sexual[str_detect(data.v4$sexual_text, "[G|g]r[a|e]y")] <- 10
-data.v4$sexual[str_detect(data.v4$sexual_text, "[N|n]onsexual")] <-10
-data.v4$sexual[str_detect(data.v4$sexual_text, "[C|c]elibate")] <- 10
-data.v4$sexual[str_detect(data.v4$sexual_text, "[D|d]emi")] <- 10
-data.v4$sexual[str_detect(data.v4$sexual_text, "[A|a]sex")] <- 10
-data.v4$sexual[str_detect(data.v4$sexual_text, "[C|c]elibate")] <- 10
-data.v4$sexual[str_detect(data.v4$sexual_text, "[A|a]ce")] <- 10
+data.v4$sexual[str_detect(data.v4$sexual_text, "[G|g]r[a|e]y")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[N|n]onsexual")] <-1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[C|c]elibate")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[D|d]emi")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[A|a]sex")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[C|c]elibate")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[A|a]ce")] <- 1
 data.v4$sexual[data.v4$sexual_text %in% c("Mostly asexual", "Most likely asexual", "Masexual", "Tridium Vykon Jace 8000", 
                                           "Demi-romantic", "asexual lesbian", "Ase", "Bi-demisexual", "A sexual",
                                           "Hetroromantic Asexual", "Demiqueer quasiflux asexual foxkin", "DemiAsexual",
                                           "a-sexual", "no sexual attraction", "a sexual", "Homoromantic Demisexual",
                                           "Gay-ish, I am Demi-sexual which means I don't pay attention to sex/gender", 
                                           "experience no sexual attraction but do experience a small amount of romantic attraction", 
-                                          "lithromantic", "Pan-Quoiromantic Asexual", "demiromantic asexual")] <- 10
+                                          "lithromantic", "Pan-Quoiromantic Asexual", "demiromantic asexual")] <- 1
 
   # identifying heterosexual individuals
-data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]etero")] <- 1
-data.v4$sexual[str_detect(data.v4$sexual_text, "[S|s]traight")] <- 1
-data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]etrosex")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]etero")] <- 0
+data.v4$sexual[str_detect(data.v4$sexual_text, "[S|s]traight")] <- 0
+data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]etrosex")] <- 0
 data.v4$sexual[data.v4$sexual_text %in% c("Kinsey scale 1", "I would put myself as a 1-1.5 on the kinsey scale", "Staight", 
                                           "Stragiht", "strait", "Str8!!!!", "Changing from gay to heterosexual",
                                           "Gynophilic", "Into females", "I fuck bitches.", "1 on the Kinsey Scale",
-                                          "Gynophilic", "gynosexual", "Changing from gay to heterosexual", "100% Hetro")] <- 1
+                                          "Gynophilic", "gynosexual", "Changing from gay to heterosexual", "100% Hetro")] <- 0
 
   # identified as gay or lesbian
-data.v4$sexual[str_detect(data.v4$sexual_text, "[G|g]ay")] <- 3
-data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]omoflexible")] <- 3
-data.v4$sexual[data.v4$sexual_text %in% c("Mostly gay", "soooooo gay", "Romantically straight and sexually gay")] <- 3
-data.v4$sexual[str_detect(data.v4$sexual_text, "[L|l]esbian")] <- 2
-data.v4$sexual[str_detect(data.v4$sexual_text, "[D|d]yke")] <- 2
+data.v4$sexual[str_detect(data.v4$sexual_text, "[G|g]ay")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[H|h]omoflexible")] <- 1
+data.v4$sexual[data.v4$sexual_text %in% c("Mostly gay", "soooooo gay", "Romantically straight and sexually gay")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[L|l]esbian")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[D|d]yke")] <- 1
 
   # identifying bisexual individuals
-data.v4$sexual[str_detect(data.v4$sexual_text, "[B|b]isex")] <- 4
-data.v4$sexual[str_detect(data.v4$sexual_text, "[B|b]icurious")] <- 4
+data.v4$sexual[str_detect(data.v4$sexual_text, "[B|b]isex")] <- 1
+data.v4$sexual[str_detect(data.v4$sexual_text, "[B|b]icurious")] <- 1
 data.v4$sexual[data.v4$sexual_text %in% c("I'm straight but I like girls too sexually, not emotionally.", "Half bisexual", 
                                           "straight but DTF sexy females", "bicurious but i like girls more", 
                                           "hetero with occasional bi tendencies", "gay leaning bi", "Bi-curious", 
                                           "Herero-romantic bisexual", "Bi with a stronger attraction to same sex",
                                           "I'm like halfway to bisexual. Never had a crush on another girl but I'm still interested. Idk.",
-                                          "No boundaries in place - though probably bisexual")] <- 4
+                                          "No boundaries in place - though probably bisexual")] <- 1
 
 table(data.v4$sexual)   # tabulate and check outputs
 ```
@@ -559,16 +556,9 @@ table(data.v4$sexual)   # tabulate and check outputs
 sexual identity: (1) heterosexual; (2) lesbian/gay/bisexual; (3) queer/pan/asex/other, and (4) non-answers
 ```{r sexual regroup}
 data.v5 <- data.v4 %>%
-    filter(!is.na(sexual)) %>% 
   # aggregates all 'sexual' answers into one var
-  mutate(sexual = case_when((sexual == 9 | sexual == 10 | sexual == 5 | sexual == 6 | sexual == 4) ~ 3,   # queer, nonbinary
-                             sexual == 6 ~ 3,  # queer/quest
-                             sexual == 2 ~ 2,  # lesbian, gay
-                             sexual == 3 ~ 2,  # bisexual
-                             sexual == 1 ~ 1,  # heterosexual
-                             sexual == 6 ~ 4)) %>%
+  mutate(sexual = ifelse(sexual == 1, 1, 0)) %>%
   filter(!is.na(sexual))
-data.v4$sexual <- as.factor(data.v4$sexual) # convert into factors
 
 table(data.v5$sexual, useNA = "always") # tabulate and check outputs
 jarque.bera.test(data.v5$sexual)
@@ -596,7 +586,7 @@ table(data.v5$dx_chronic_11)
 table(data.v5$dx_chronic_12)
 table(data.v5$dx_chronic_13)   # n overall for all chronic = 622, pos  ** too small to include
 
-data.v5 = subset(data.v5, select= -c(dx_chronic_1:dx_chronic_13)) # drop chronic as possibly flawed variable and low sample
+# data.v5 = subset(data.v5, select= -c(dx_chronic_1:dx_chronic_13)) # drop chronic as possibly flawed variable and low sample
 ```
 
 ## Subjective weight and body image
@@ -833,10 +823,10 @@ data.v7 <- data.v6 %>%
   mutate(sib_freq = case_when(sib_none == 1 ~ 0,    # frequency binned to yearly, monthly, weekly
                               sib_freq == 1 ~ 1,
                               sib_freq == 2 ~ 1,
-                              sib_freq == 3 ~ 1,
-                              sib_freq == 4 ~ 2,
-                              sib_freq == 5 ~ 2,
-                              sib_freq == 6 ~ 2)) %>%
+                              sib_freq == 3 ~ 2,
+                              sib_freq == 4 ~ 3,
+                              sib_freq == 5 ~ 3,
+                              sib_freq == 6 ~ 3)) %>%
   filter(!is.na(sib_freq))  # filter for NAs
 data.v7$sib_freq <- as.numeric(data.v7$sib_freq)  # move frequency to numeric class
 
@@ -1259,7 +1249,7 @@ traindf.v12 <- traindf.v11 # create new dataframe for summary stats. Will jump t
 # Define diathesis vars for correlation matrix
 traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, ed_scoff, body_sr,
                                 dx_mh, meds_count, ed_any, meds_sti, meds_dep, meds_psy, meds_anx, meds_mood,
-                                meds_sle, meds_oth, meds_ther)
+                                meds_sle, meds_oth, meds_ther, meds_count)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_dia, sig=0.6){
@@ -1285,6 +1275,9 @@ corr_simple()
 ### EFA diathesis
 ```{r train PCA diathesis}
 # create dummy columns for EFA analysis
+traindf_dia <- traindf.v12 %>% select(age, sexual, gender_tgd, finpast, sib_freq, race, ed_scoff, body_sr,
+                                dx_mh, meds_count, ed_any, meds_ther)
+
 pca_dia <- data.matrix(traindf_dia)
 results_dia <- dummy_cols(pca_dia, select_columns = c("age", "sexual", "gender_tgd", "finpast", 
                                                        "sib_freq", "race", "dx_mh", "ed_any", "meds_ther"), 
@@ -1384,6 +1377,21 @@ traindf.v13$religios <- as.numeric(traindf.v13$religios)
 table(traindf.v13$religios, useNA = "always")       # Check output
 ```
 
+## Overall school satisfaction
+```{r train satisfied_overall}
+traindf.v13 <- traindf.v13 %>%
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,  # reverse coding
+                                       satisfied_overall == 2 ~ 5,
+                                       satisfied_overall == 3 ~ 4,
+                                       satisfied_overall == 4 ~ 3,
+                                       satisfied_overall == 5 ~ 2,
+                                       satisfied_overall == 6 ~ 1)) %>% 
+  filter(!is.na(satisfied_overall))  # filters out NAs
+traindf.v13$satisfied_overall <- as.numeric(traindf.v13$satisfied_overall)
+
+table(traindf.v13$satisfied_overall, useNA = "always")
+jarque.bera.test(traindf.v13$satisfied_overall)
+```
 ## Residence type
 ```{r train residenc}
 # re-organize living situation into on-campus, off-campus, and at home
@@ -1604,7 +1612,7 @@ traindf.v15 <- traindf.v14  # new dataframe for analysis
 ```{r train env correlation}
 # Define environment vars for correlation matrix
 traindf_env <- traindf.v15 %>% select(discrim, religios, residenc, activ_no, divers, 
-                                      school2_type, international)
+                                      school2_type, international, satisfied_overall)
 
  # Convert traindf to numeric in order to run correlations
 traindf_env <- traindf_env %>% mutate_if(is.character, as.factor)
@@ -1631,7 +1639,8 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 traindf_env <- NA_preproc(traindf_env)
 traindf_env <- as.matrix(traindf_env)
 results_env <- dummy_cols(traindf_env, select_columns = c("religios", "residenc", "activ_no",
-                                                         "school2_type", "international"),
+                                                         "school2_type", "international",
+                                                         "satisfied_overall"),
                           remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 env_pca <- PCA(results_env, graph=FALSE)  # apply PCA
@@ -1664,11 +1673,11 @@ fviz_cos2(env_pca, choice = "var", axes = 1,
 ### CLM environmental regression
 ```{r train CLM environment}
 # preparing dataframe for regression
-clm_env <- traindf.v15 %>% select(si_type, religios, residenc, activ_no, school2_type)
+clm_env <- traindf.v15 %>% select(si_type, religios, residenc, activ_no, school2_type, satisfied_overall)
 clm_env <- NA_preproc(clm_env) %>% as.data.frame()
 
 # run ordinal regression
-clm_env2 <- clm(si_type ~ religios + residenc + activ_no + school2_type, 
+clm_env2 <- clm(si_type ~ religios + residenc + activ_no + school2_type + satisfied_overall, 
                 data = clm_env)
 
 summary(clm_env2)
@@ -1989,7 +1998,7 @@ model.le  %>%
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
                                        meds_ther, religios, activ_no, school2_type, fincur, ins_no, residenc,
-                                       gpa_sr, assault, drugs_yn, drug_mar, psyhx)
+                                       gpa_sr, assault, drugs_yn, drug_mar, psyhx, satisfied_overall)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_prem, sig=0.6){
@@ -2023,7 +2032,7 @@ coef(clm_prem)
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
                                        meds_ther, religios, activ_no, school2_type, ins_no, residenc,
-                                       gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur)
+                                       gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur, satisfied_overall)
 traindf_prem <- na.omit(traindf_prem)
 
 # create corr matrix, with dummy vars
@@ -2034,7 +2043,8 @@ traindf_prem <- traindf_prem %>%
 traindf_prem   # check output
 
 results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq",
-                                                            "race", "ed_any", "dx_mh", "meds_ther", "religios",
+                                                            "race", "ed_any", "dx_mh", "meds_ther",
+                                                            "religios", "satisfied_overall",
                                                             "activ_no", "school2_type", "ins_no", "residenc",
                                                             "gpa_sr", "assault", "drugs_yn","drug_mar", 
                                                             "psyhx", "fincur"),
@@ -2070,13 +2080,13 @@ fviz_cos2(prem_pca, choice = "var", axes = 1,
 ```{r train clm_prem}
 clm_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
                                  religios, activ_no, school2_type, ins_no, residenc, meds_ther,
-                                 gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur)
+                                 gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur, satisfied_overall)
 clm_prem <- na.omit(clm_prem)
 
 # run regression
 clm_prem <- clm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh +
                 religios + activ_no + school2_type + ins_no + residenc + gpa_sr + assault +
-                drugs_yn + drug_mar + psyhx + meds_ther + fincur,
+                drugs_yn + drug_mar + psyhx + meds_ther + fincur + satisfied_overall,
               data = clm_prem)
 summary(clm_prem)
 coef(clm_prem)   # retrieve coefficients
@@ -2180,13 +2190,6 @@ table(traindf.v20$failed)
 traindf.v20 = subset(traindf.v20, select= -c(failed)) # clean up var
 ```
 
-## Ashamed
-```{r train men_ill_ash}
-table(traindf.v20$men_ill_ash)
-
-# sample too small in the elective, remove
-traindf.v20 = subset(traindf.v20, select= -c(men_ill_ash)) # clean up var
-```
 
 ## Defeat analysis
 ```{r train defeat analyses}
@@ -2196,7 +2199,7 @@ traindf.v21 <- traindf.v20
 ## Defeat correlation
 ```{r train defeat cor}
 # Define defeat variable candidates for correlation matrix
-traindf_def <- traindf.v21 %>% select(aca_impa, anx_type, dep_type)
+traindf_def <- traindf.v21 %>% select(aca_impa, anx_score, deprawsc)
 
  # convert traindf to numeric in order to run correlations
 traindf_def <- traindf_def %>% mutate_if(is.character, as.factor)
@@ -2214,7 +2217,7 @@ print(corr)
 
 ## EFA defeat
 ```{r train EFA_def}
-traindf_def <- traindf.v21 %>% select(aca_impa, dep_type, anx_type)
+traindf_def <- traindf.v21 %>% select(aca_impa, deprawsc, anx_score)
 traindf_def <- na.omit(traindf_def)
 
 # create corr matrix, with dummy vars 
@@ -2224,7 +2227,7 @@ traindf_def <- traindf_def %>%
   data.matrix()
 traindf_def   # check output
 
-results_def <- dummy_cols(traindf_def, select_columns = c("aca_impa", "dep_type", "anx_type"),
+results_def <- dummy_cols(traindf_def, select_columns = c("aca_impa", "deprawsc", "anx_score"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
@@ -2256,11 +2259,11 @@ fviz_cos2(def_pca, choice = "var", axes = 1,
 ## CLM defeat
 ```{r train CLM defeat}
 # prepare regression analysis
-results2_def <- traindf.v21 %>% select(si_type, aca_impa, dep_type, anx_type)
+results2_def <- traindf.v21 %>% select(si_type, aca_impa, deprawsc, anx_score)
 clm_def <- na.omit(results2_def)
 
 # run defeat regression
-clm_def <- clm(si_type ~ aca_impa + dep_type + anx_type, data = clm_def)
+clm_def <- clm(si_type ~ aca_impa + deprawsc + anx_score, data = clm_def)
 
 summary(clm_def)
 coef(clm_def)   # retrieve coefficients
@@ -2329,12 +2332,13 @@ table(traindf.v22$aaq_dum, useNA = "always")  # check output, NAs
 ```{r train persist}
 traindf.v22 <- traindf.v22 %>%
 # review levels
-  mutate(persist = case_when(persist == 1 ~ 1,   # confident
+  mutate(persist = case_when(persist == 1 ~ 1,         # confident
                              persist == 2 ~ 2, 
                              persist == 3 ~ 3, 
                              persist == 4 ~ 4, 
                              persist == 5 ~ 5, 
-                             persist == 6 ~ 6))  # not confident
+                             persist == 6 ~ 6)) %>%    # not confident
+  filter(!is.na(persist))     
 traindf.v22$persist <- as.numeric(traindf.v22$persist) 
 
 table(traindf.v22$persist, useNA = "always") # check output, skew
@@ -2349,7 +2353,7 @@ traindf.v23 <- traindf.v22
 ## Threats to self-moderation correlation
 ```{r train tsm correlation}
 # Define TSM variable candidates for correlation matrix
-traindf_tsm <- traindf.v23 %>% select(persist, aaq_dum)
+traindf_tsm <- traindf.v23 %>% select(persist, aaq_tot)
 
 # convert data to numeric in order to run correlations 
 traindf_tsm <- traindf_tsm %>% mutate_if(is.character, as.factor)
@@ -2383,7 +2387,7 @@ print(corr)
 
 ## EFA TSM
 ```{r train EFA TSM}
-traindf_tsm <- traindf.v23 %>% select(persist, aaq_dum)
+traindf_tsm <- traindf.v23 %>% select(persist, aaq_tot)
 traindf_tsm <- na.omit(traindf_tsm)
 
 # create corr matrix, with dummy vars 
@@ -2393,7 +2397,7 @@ traindf_tsm <- traindf_tsm %>%
   data.matrix()
 traindf_tsm   # check output
 
-results_tsm <- dummy_cols(traindf_tsm, select_columns = c("persist", "aaq_dum"),
+results_tsm <- dummy_cols(traindf_tsm, select_columns = c("persist", "aaq_tot"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 tsm_pca <- PCA(results_tsm, graph=FALSE)  # apply PCA
@@ -2423,11 +2427,11 @@ fviz_cos2(tsm_pca, choice = "var", axes = 1,
 ## CLM TSM
 ```{r train CLM TSM}
 # prepare dataframe for regression
-clm_tsm <- traindf.v23 %>% select(si_type, persist, aaq_dum)
+clm_tsm <- traindf.v23 %>% select(si_type, persist, aaq_tot)
 clm_tsm <- na.omit(clm_tsm)
 
 # run regression
-clm_tsm <- clm(si_type ~ persist + aaq_dum, data = clm_tsm) 
+clm_tsm <- clm(si_type ~ persist + aaq_tot, data = clm_tsm) 
 
 # output
 summary(clm_tsm)
@@ -2471,12 +2475,13 @@ table(traindf.v24$gad7_impa, useNA = "always") # check output, skew, NAs
 
 ```{r perneed}
 traindf.v24 <- traindf.v24 %>%
-  mutate(percneed = case_when(percneed == 1 ~ 6,  # reverse coding
+  # reverse coding
+  mutate(percneed = case_when(percneed == 1 ~ 6,  # strongly agrees that needs help
                              percneed == 2 ~ 5,
                              percneed == 3 ~ 4,
                              percneed == 4 ~ 3,
                              percneed == 5 ~ 2,
-                             percneed == 6 ~ 1)) %>%
+                             percneed == 6 ~ 1)) %>%  # strongly disagree that needs help
   filter(!is.na(percneed))  # filters for NAs
 
 table(traindf.v24$percneed, useNA = "always") # check output, NAs
@@ -2595,22 +2600,6 @@ jarque.bera.test(traindf.v26$belong1)
 table(traindf.v26$belong2)  # elective question, but common
 table(traindf.v26$belong8)  # nested x 2
 table(traindf.v26$belong9)  # not as good of a proxy
-```
-
-## Overall school satisfaction
-```{r train satisfied_overall}
-traindf.v26 <- traindf.v26 %>%
-  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,  # reverse coding
-                                       satisfied_overall == 2 ~ 5,
-                                       satisfied_overall == 3 ~ 4,
-                                       satisfied_overall == 4 ~ 3,
-                                       satisfied_overall == 5 ~ 2,
-                                       satisfied_overall == 6 ~ 1)) %>% 
-  filter(!is.na(satisfied_overall))  # filters out NAs
-traindf.v26$satisfied_overall <- as.numeric(traindf.v26$satisfied_overall)
-
-table(traindf.v26$satisfied_overall, useNA = "always")
-jarque.bera.test(traindf.v26$satisfied_overall)
 ```
 
 ## Flourishing Scale
@@ -2783,7 +2772,7 @@ traindf.v27 <- traindf.v26
 ### Motivational Moderator correlation
 ```{r train MM_corr}
 # Define MM variable candidates for correlation matrix
-traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, mh_stigma, satisfied_overall)
+traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, mh_stigma)
 
  # convert traindf to numeric in order to run correlations
 traindf_mm <- traindf_mm %>% mutate_if(is.character, as.factor)
@@ -2805,7 +2794,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ### EFA MM
 ```{r train EFA MM}
-traindf_mm <- traindf.v27 %>% select(inf, flourish_dum, belong1, mh_stigma, satisfied_overall)
+traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, mh_stigma)
 traindf_mm <- na.omit(traindf_mm)
 
 # create corr matrix, with dummy vars 
@@ -2814,8 +2803,8 @@ traindf_mm <- traindf_mm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 traindf_mm   # check output
-results_mm <- dummy_cols(traindf_mm, select_columns = c("flourish_dum", "belong1", "inf", 
-                                                        "mh_stigma", "satisfied_overall"),
+results_mm <- dummy_cols(traindf_mm, select_columns = c("flourish", "belong1", "inf", 
+                                                        "mh_stigma"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 eigval_mm <- get_eigenvalue(mm_pca)
@@ -2844,12 +2833,11 @@ fviz_cos2(mm_pca, choice = "var", axes = 1,
 ### CLM Motivational moderators regression
 ```{r train CLM mm}
 # prepare data for regression
-clm_mm <- traindf.v27 %>% select(si_type, inf, flourish_dum, belong1, satisfied_overall, mh_stigma)
+clm_mm <- traindf.v27 %>% select(si_type, inf, flourish, belong1, mh_stigma)
 clm_mm <- na.omit(clm_mm)
 
 # run MM regression
-clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + satisfied_overall + mh_stigma, 
-              data = clm_mm)
+clm_mm <- clm(si_type ~ inf + flourish + belong1 + mh_stigma, data = clm_mm)
 
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))  # retireve coefficients
@@ -2878,17 +2866,17 @@ var_names <- c(
   # diathesis
   "age", "sexual", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_ther",
   # environment
-  "religios", "activ_no",
+  "religios", "activ_no", "satisfied_overall",
   # life events
   "ins_no", "gpa_sr", "psyhx", "fincur", "drugs_yn", "assault",
   # defeat
   "aca_impa", "dep_type", "anx_type",
   # threats to self-moderation
-  "persist", "aaq_dum",
+  "persist", "aaq_tot",
   # entrapment
   "dep_impa", "percneed",
   # motivational moderators
-  "inf", "flourish_dum", "satisfied_overall")  
+  "inf", "flourish")  
 var_names <- sort(var_names)
 
 # build table for absolute missingness based on school2
@@ -2970,17 +2958,17 @@ traindf_sem <- traindf.v28 %>% select(
   # diathesis
   age, sexual, sib_freq, ed_any, dx_mh, meds_ther,
   # environment
-  religios, activ_no,
+  religios, activ_no, satisfied_overall,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault,
   # defeat
-  aca_impa, anx_type, dep_type,
+  aca_impa, anx_score, deprawsc,
   # threats to self-moderation
-  persist, aaq_dum,
+  persist, aaq_tot,
   # entrapment
   dep_impa, percneed,
   # motivational moderators
-  inf, flourish_dum, satisfied_overall)
+  inf, flourish)
 
 # create sem matrix 
 traindf_sem <- traindf_sem %>% 
@@ -3004,17 +2992,17 @@ results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # diathesis
     "age", "sexual", "sib_freq", "ed_any", "dx_mh", "meds_ther",
     # environment
-    "religios", "activ_no",
+    "religios", "activ_no", "satisfied_overall",
     # life events
     "ins_no", "gpa_sr", "psyhx", "fincur", "drugs_yn", "assault",
     # defeat
-    "aca_impa", "anx_type", "dep_type",
+    "aca_impa", "anx_score", "deprawsc",
     # threats to self-moderation
-    "persist", "aaq_dum",
+    "persist", "aaq_tot",
     # entrapment
     "dep_impa", "percneed",
     # motivational moderators
-    "inf", "flourish_dum","satisfied_overall"), 
+    "inf", "flourish"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 results_tr_sem1 <- na.omit(results_tr_sem1)
@@ -3099,17 +3087,17 @@ traindf_sem1 <- traindf.v28 %>% select(
   # diathesis
   age, sexual, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther,
   # environment
-  religios, activ_no,
+  religios, activ_no, satisfied_overall,
   # life events
   ins_no, gpa_sr, psyhx, drugs_yn, assault,
   # defeat
-  aca_impa, dep_type, anx_type,
+  aca_impa, deprawsc, anx_score,
   # threats to self-moderation
-  persist, aaq_dum,
+  persist, aaq_tot,
   # entrapment
   dep_impa, percneed,
   # motivational moderators
-  inf, flourish_dum, satisfied_overall) 
+  inf, flourish) 
 
 # create sem matrix 
 traindf_sem1 <- traindf_sem1 %>% 
@@ -3130,7 +3118,7 @@ write_xlsx(traindf_sem2, path = "traindf_sem2.xlsx", col_names = TRUE, format_he
 # SEM model with partial cont and dummy
 ```{r si_model_tr1}
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual"),
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # xlsx output
@@ -3146,7 +3134,7 @@ SI_model_tr1 <- '
     
                   prem =~  sib_freq + sexual_2 + sexual_3 + gender_tgd +
                            ed_any + dx_mh + activ_no + ins_no + meds_ther + gpa_sr + 
-                           psyhx + drugs_yn + assault 
+                           psyhx + drugs_yn + assault + satisfied_overall
                           
                   def =~ dep_type + aca_impa + anx_type
                               
@@ -3154,7 +3142,7 @@ SI_model_tr1 <- '
 
                   entrap =~ dep_impa + percneed
 
-                  mm =~ flourish_dum + inf + satisfied_overall
+                  mm =~ flourish_dum + inf 
 
                 # structural model - regressions
                    si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm     '
@@ -3185,7 +3173,7 @@ modificationindices(fit_train1, minimum.value = 20)
 # SEM model -- mod indices
 ```{r si_model_tr2}
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual"),
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 #view(results_tr_com1)
 
@@ -3194,9 +3182,9 @@ SI_model_trM <- '
                 
                   si =~    si_type_3 + si_type_2 + si_type_4
     
-                  prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + meds_ther +
+                  prem  =~ sib_freq + sexual + gender_tgd + meds_ther +
                            ed_any + dx_mh + activ_no + ins_no + 
-                           gpa_sr + psyhx + drugs_yn + assault
+                           gpa_sr + psyhx + drugs_yn + assault + satisfied_overall
                           
                    def =~ dep_type + aca_impa + anx_type
                               
@@ -3204,7 +3192,7 @@ SI_model_trM <- '
 
                    entrap =~ dep_impa + percneed
 
-                   mm =~ flourish_dum + inf + satisfied_overall
+                   mm =~ flourish_dum + inf 
 
                 # structural model - regressions
                    si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
@@ -3239,7 +3227,7 @@ SI_model_trM2 <- '
                   si =~    si_type_3 + si_type_2 + si_type_4
     
                   prem  =~ sib_freq + sexual_2 + sexual_3 + gender_tgd + assault +
-                           ed_any + dx_mh + psyhx + drugs_yn + meds_ther
+                           ed_any + dx_mh + psyhx + drugs_yn + meds_ther + satisfied_overall
                           
                   def =~ dep_type + aca_impa + anx_type
                               
@@ -3247,7 +3235,7 @@ SI_model_trM2 <- '
 
                   entrap =~ dep_impa + percneed
 
-                   mm =~ flourish_dum + inf + satisfied_overall
+                   mm =~ flourish_dum + inf 
 
                 # structural model - regressions
                    si ~ prem + def + tsm + def*tsm + entrap + mm + entrap*mm 
@@ -3269,80 +3257,45 @@ traindf_sem1 <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall,
   # life events
   ins_no, gpa_sr, psyhx, drugs_yn, assault,
   # defeat
-  aca_impa, dep_type, anx_type, dep_impa, percneed,
+  aca_impa, deprawsc, anx_score, dep_impa, percneed,
   # MM+ TSM
-  inf, flourish_dum, satisfied_overall, persist, aaq_dum) 
+  inf, flourish, persist, aaq_tot) 
 
 # create sem matrix 
 traindf_sem1 <- data.matrix(traindf_sem1)
   
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "sexual"),
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
-# Baseline model for amended model
-SI_model_amended <- '
-              # measurement model
-                    si =~      si_type_4 + si_type_3 + si_type_2
-    
-                    prem =~    meds_ther + dx_mh + sib_freq + sexual_2 + sexual_3 + ed_any 
-                    
-                    le =~      psyhx + assault + drugs_yn + ins_no
-                          
-                    deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
-                              
-                    mmtsm =~   aaq_dum + flourish_dum + inf + persist + satisfied_overall
-                    
-                # structural model
-                    si ~ deftrap + mmtsm + mmtsm*deftrap
-                    deftrap ~ prem + le  '
+# xlsx output
+save(results_tr_com1, file = "traindf_pls.RData")
+load("traindf_pls.RData")
+write_xlsx(results_tr_com1, path = "traindf_pls.xlsx", col_names = TRUE, format_headers = TRUE)
 
-fit_train_a <- sem(SI_model_amended, data=results_tr_com1 , ordered=T)
-summary_train_a <- summary(fit_train_a, fit.measures=TRUE, standardized = TRUE, rsquare=T)
-fitMeasures(fit_train_a, fit.measures = "all")
-parameterestimates(fit_train_a, boot.ci.type = "bca.simple", standardized = TRUE) 
-modificationindices(fit_train_a, minimum.value = 20)
-```
-
-
-```{r amended}
-set.seed(1000)
-                    
-SI_model_amended2 <- '
-
-                # measurement model
-                    si =~      si_type_4 + si_type_3 + si_type_2
-                    prem =~    meds_ther + dx_mh + sib_freq +  sexual_3 
-                    le =~      psyhx + assault + drugs_yn
-                    deftrap =~ dep_type + dep_impa + anx_type + aca_impa + percneed
-                    mmtsm =~   aaq_dum + flourish_dum + persist 
-                    
-               ## regressions
-                    le ~ a*prem
-                    deftrap ~ b*le + c*prem
-                    indirect := a*b
-                    total := c + a*b
-               # structural model
-                    si ~ deftrap + mmtsm + mmtsm_mod
-'
-                    
-# inf, sexual_2, satisfied_overall
-
-fit_train_a2 <- sem(SI_model_amended2, data=results_tr_com1, ordered=T)
-summary_train_a2 <- summary(fit_train_a2, fit.measures=T, standardized = T, rsquare=T)
-fitMeasures(fit_train_a2, fit.measures = "all")
-parameterestimates(fit_train_a2, boot.ci.type = "bca.simple", standardized = T) 
-modificationindices(fit_train_a2, minimum.value = 20)
-semPaths(fit_train_a2, layout = "tree")
 ```
 
 
 TESTING DATA
 
+
+# prepare data for future age comparison
+```{r 18-19 v 20-25}
+testdf.v10 <- testdf.v10 %>%
+  mutate(undercls = case_when(age == 18 ~ 1, 
+                              age == 19 ~ 1,
+                              age == 20 ~ 0, 
+                              age == 21 ~ 0, 
+                              age == 22 ~ 0, 
+                              age == 23 ~ 0, 
+                              age == 24 ~ 0, 
+                              age == 25 ~ 0))
+table(testdf.v10$undercls)      
+```
 
 ## Eating disorder, any type
 ```{r test ed_any}
@@ -3857,6 +3810,23 @@ testdf.v14$school2_type <- as.factor(testdf.v14$school2_type)
 table(testdf.v14$school2_type, useNA = "always") # check output
 ```
 
+## Overall school satisfaction
+```{r test satisfied_overall}
+testdf.v14 <- testdf.v14 %>%
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,  # reverse coding
+                                       satisfied_overall == 2 ~ 5,
+                                       satisfied_overall == 3 ~ 4,
+                                       satisfied_overall == 4 ~ 3,
+                                       satisfied_overall == 5 ~ 2,
+                                       satisfied_overall == 6 ~ 1)) %>% 
+  filter(!is.na(satisfied_overall))  # filters out NAs
+testdf.v14$satisfied_overall <- as.numeric(testdf.v14$satisfied_overall)
+
+table(testdf.v14$satisfied_overall, useNA = "always")
+jarque.bera.test(testdf.v14$satisfied_overall)
+```
+
+
 ## ENVIRONMENT ANALYSES
 ```{r test env analysis}
 testdf.v15 <- testdf.v14  # new dataframe for analysis
@@ -3865,11 +3835,12 @@ testdf.v15 <- testdf.v14  # new dataframe for analysis
 ### CLM environmental regression
 ```{r test CLM environment}
 # preparing dataframe for regression
-clm_env <- testdf.v15 %>% select(si_type, religios, residenc, activ_no, school2_type)
+clm_env <- testdf.v15 %>% select(si_type, religios, residenc, activ_no, 
+                                 satisfied_overall, school2_type)
 clm_env <- NA_preproc(clm_env) %>% as.data.frame()
 
 # run ordinal regression
-clm_env2 <- clm(si_type ~ religios + residenc + activ_no + school2_type, 
+clm_env2 <- clm(si_type ~ religios + residenc + activ_no + satisfied_overall + school2_type, 
                 data = clm_env)
 
 summary(clm_env2)
@@ -4064,7 +4035,7 @@ testdf.v19 <- testdf.v18
 ```{r test results_prem}
 # Define diathesis vars for correlation matrix
 testdf_prem <- testdf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, 
-                                     dx_mh, meds_ther, religios, activ_no, school2_type, 
+                                     dx_mh, meds_ther, religios, activ_no, school2_type, satisfied_overall,
                                      fincur, ins_no, residenc, gpa_sr, assault, drugs_yn, 
                                      drug_mar, psyhx)
 
@@ -4100,7 +4071,7 @@ coef(clm_prem)
 # Define diathesis vars for correlation matrix
 testdf_prem <- testdf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
                                        meds_ther, religios, activ_no, school2_type, ins_no, residenc,
-                                       gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur)
+                                       gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur, satisfied_overall)
 testdf_prem <- na.omit(testdf_prem)
 
 # create corr matrix, with dummy vars
@@ -4111,7 +4082,8 @@ testdf_prem <- testdf_prem %>%
 testdf_prem   # check output
 
 results_prem <- dummy_cols(testdf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq",
-                                                            "race", "ed_any", "dx_mh", "meds_ther", "religios",
+                                                            "race", "ed_any", "dx_mh", "meds_ther",
+                                                           "religios", "satisfied_overall",
                                                             "activ_no", "school2_type", "ins_no", "residenc",
                                                             "gpa_sr", "assault", "drugs_yn","drug_mar", 
                                                             "psyhx", "fincur"),
@@ -4145,7 +4117,7 @@ fviz_cos2(prem_pca, choice = "var", axes = 1,
 
 ## CLM Premotivation regression
 ```{r test clm_prem}
-clm_prem <- testdf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
+clm_prem <- testdf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh,
                                  religios, activ_no, school2_type, ins_no, residenc, meds_ther,
                                  gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur)
 clm_prem <- na.omit(clm_prem)
@@ -4257,11 +4229,11 @@ testdf.v21 <- testdf.v20
 ## CLM defeat
 ```{r test CLM defeat}
 # prepare regression analysis
-results2_def <- testdf.v21 %>% select(si_type, aca_impa, dep_type, anx_type)
+results2_def <- testdf.v21 %>% select(si_type, aca_impa, deprawsc, anx_score)
 clm_def <- na.omit(results2_def)
 
 # run defeat regression
-clm_def <- clm(si_type ~ aca_impa + dep_type + anx_type, data = clm_def)
+clm_def <- clm(si_type ~ aca_impa + deprawsc + anx_score, data = clm_def)
 
 summary(clm_def)
 coef(clm_def)   # retrieve coefficients
@@ -4342,11 +4314,11 @@ testdf.v23 <- testdf.v22
 ## CLM TSM
 ```{r test CLM TSM}
 # prepare dataframe for regression
-clm_tsm <- testdf.v23 %>% select(si_type, persist, aaq_dum)
+clm_tsm <- testdf.v23 %>% select(si_type, persist, aaq_tot)
 clm_tsm <- na.omit(clm_tsm)
 
 # run regression
-clm_tsm <- clm(si_type ~ persist + aaq_dum, data = clm_tsm) 
+clm_tsm <- clm(si_type ~ persist + aaq_tot, data = clm_tsm) 
 
 # output
 summary(clm_tsm)
@@ -4451,22 +4423,6 @@ jarque.bera.test(testdf.v26$belong1)
 table(testdf.v26$belong2)  # elective question, but common
 table(testdf.v26$belong8)  # nested x 2
 table(testdf.v26$belong9)  # not as good of a proxy
-```
-
-## Overall school satisfaction
-```{r test satisfied_overall}
-testdf.v26 <- testdf.v26 %>%
-  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,  # reverse coding
-                                       satisfied_overall == 2 ~ 5,
-                                       satisfied_overall == 3 ~ 4,
-                                       satisfied_overall == 4 ~ 3,
-                                       satisfied_overall == 5 ~ 2,
-                                       satisfied_overall == 6 ~ 1)) %>% 
-  filter(!is.na(satisfied_overall))  # filters out NAs
-testdf.v26$satisfied_overall <- as.numeric(testdf.v26$satisfied_overall)
-
-table(testdf.v26$satisfied_overall, useNA = "always")
-jarque.bera.test(testdf.v26$satisfied_overall)
 ```
 
 ## Flourishing Scale
@@ -4606,11 +4562,11 @@ testdf.v27 <- testdf.v26
 ### CLM Motivational moderators regression
 ```{r test CLM mm}
 # prepare data for regression
-clm_mm <- testdf.v27 %>% select(si_type, inf, flourish_dum, belong1, satisfied_overall, mh_stigma)
+clm_mm <- testdf.v27 %>% select(si_type, inf, flourish, belong1, mh_stigma)
 clm_mm <- na.omit(clm_mm)
 
 # run MM regression
-clm_mm <- clm(si_type ~ inf + flourish_dum + belong1 + satisfied_overall + mh_stigma, data = clm_mm)
+clm_mm <- clm(si_type ~ inf + flourish + belong1 + mh_stigma, data = clm_mm)
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))  # retireve coefficients
 
@@ -4626,12 +4582,11 @@ model.mm  %>%
         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
-
-
 # Count final sample n
 ```{r count}
 nrow(testdf.v26)
 nrow(traindf.v28)
+table(testdf.v26$undercls)
 ```
 
 
@@ -4646,9 +4601,9 @@ testdf_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, undercls,
   # environment
-  religios, activ_no,
+  religios, activ_no, satisfied_overall,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault,
   # defeat
@@ -4658,7 +4613,7 @@ testdf_sem <- testdf.v26 %>% select(
   # entrapment
   dep_impa, percneed,
   # motivational moderators
-  inf, flourish_dum, satisfied_overall)
+  inf, flourish_dum)
 
 # create sem matrix 
 testdf_sem <- testdf_sem %>% 
@@ -4680,9 +4635,9 @@ results_test_sem1 <- dummy_cols(testdf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "sib_freq", "ed_any", "dx_mh", "meds_count", "meds_ther",
+    "age", "sexual", "sib_freq", "ed_any", "dx_mh", "meds_count", "meds_ther", "undercls",
     # environment
-    "religios", "activ_no",
+    "religios", "activ_no", "satisfied_overall",
     # life events
     "ins_no", "gpa_sr", "psyhx", "fincur", "drugs_yn", "assault",
     # defeat
@@ -4692,12 +4647,11 @@ results_test_sem1 <- dummy_cols(testdf_sem, select_columns = c(
     # entrapment
     "dep_impa", "percneed",
     # motivational moderators
-    "inf", "flourish_dum","satisfied_overall"), 
+    "inf", "flourish_dum"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 results_test_sem1 <- na.omit(results_test_sem1)
 results_test_df1 <- as.data.frame(results_test_sem1)
-head(results_test_df1)
 
 #save full var set for SEM
 save(results_test_df1, file = "testdf_sem1.RData")
@@ -4770,14 +4724,14 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 test_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
-  # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no,
+  # premotivation
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall, undercls,
   # life events
   ins_no, gpa_sr, psyhx, drugs_yn, assault,
   # defeat
   aca_impa, dep_type, anx_type, dep_impa, percneed,
   # MM+ TSM
-  inf, flourish_dum, satisfied_overall, persist, aaq_dum) 
+  inf, flourish_dum, persist, aaq_dum) 
 
 # create sem matrix 
 test_sem <- data.matrix(test_sem)
@@ -4790,7 +4744,7 @@ SI_model_test <- '
                 # measurement model
                     si =~      si_type_4 + si_type_3 + si_type_2
     
-                    prem =~    meds_ther + dx_mh + sib_freq +  sexual_3 
+                    prem =~    meds_ther + dx_mh + sib_freq + sexual_3 + satisfied_overall
                     
                     le =~      psyhx + assault + drugs_yn
                           
@@ -4810,6 +4764,12 @@ modificationindices(fit_test, minimum.value = 20)
 semPaths(fit_test, layout = "tree2")
 
 # anova(fit_train_a, fit_test) 
+
+# save output for offline SMART PLS
+results_test_com <- as.data.frame(results_test_com)
+save(results_test_com, file = "results_test_com.RData")
+load("results_test_com.RData")
+write_xlsx(results_test_com, path = "results_test_com.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 # Running the test dataframe for 18 and 19 year olds
@@ -4829,13 +4789,13 @@ test18_sem <- test18.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall,
   # life events
   ins_no, gpa_sr, psyhx, drugs_yn, assault,
   # defeat
   aca_impa, dep_type, anx_type, dep_impa, percneed,
   # MM+ TSM
-  inf, flourish_dum, satisfied_overall, persist, aaq_dum) 
+  inf, flourish_dum, persist, aaq_dum) 
   
 ## Dummy col SEM w/ continuous
 results_test_com18 <- dummy_cols(test18_sem, select_columns = c("si_type", "sexual"),
@@ -4845,7 +4805,7 @@ SI_model_1819 <- '
                 # measurement model
                     si =~      si_type_4 + si_type_3 + si_type_2
     
-                    prem =~    meds_ther + dx_mh + sib_freq + sexual_3 
+                    prem =~    meds_ther + dx_mh + sib_freq + sexual_3 + satisfied_overall
                     
                     le =~      psyhx + assault + drugs_yn
                           
@@ -4867,10 +4827,10 @@ modificationindices(fit_test_18, minimum.value = 20)
 semPaths(fit_train_a, layout = "tree")
 
 # save output for offline SMART PLS
-results_18_com <- as.data.frame(results_18_com)
-save(results_18_com, file = "results_18_com.RData")
-load("results_18_com.RData")
-write_xlsx(results_18_com, path = "results_18_com.xls", col_names = TRUE, format_headers = TRUE)
+results_test_com18 <- as.data.frame(results_test_com18)
+save(results_test_com18, file = "results_test_com18.RData")
+load("results_test_com.RData")
+write_xlsx(results_test_com18, path = "results_test_com18.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -4940,12 +4900,12 @@ anova(fit_test_20, fit_test_18)
 # save(test20_sem_test, file = "test20_sem_test.RData")
 # load("test20_sem_test.RData")
 # write_xlsx(test20_sem_test, path = "test20_sem_test.xls", col_names = TRUE, format_headers = TRUE)
-# 
-# # Save offline for SMART PLS
-# results_20_com <- as.data.frame(results_20_com)
-# save(results_20_com , file = "results_20_com.RData")
-# load("results_20_com.RData")
-# write_xlsx(results_20_com, path = "results_20_com.xls", col_names = TRUE, format_headers = TRUE)
+
+# Save offline for SMART PLS
+results_test_com20 <- as.data.frame(results_test_com20)
+save(results_test_com20, file = "results_test_com20.RData")
+load("results_test_com20.RData")
+write_xlsx(results_test_com20, path = "results_test_com20.xls", col_names = TRUE, format_headers = TRUE)
 ```
 
 ## Wilcox test
