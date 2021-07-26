@@ -2772,7 +2772,7 @@ traindf.v27 <- traindf.v26
 ### Motivational Moderator correlation
 ```{r train MM_corr}
 # Define MM variable candidates for correlation matrix
-traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, mh_stigma, brs_tot)
+traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, mh_stigma, talk, brs_tot)
 
  # convert traindf to numeric in order to run correlations
 traindf_mm <- traindf_mm %>% mutate_if(is.character, as.factor)
@@ -2794,7 +2794,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ### EFA MM
 ```{r train EFA MM}
-traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, mh_stigma)
+traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, talk, mh_stigma)
 traindf_mm <- na.omit(traindf_mm)
 
 # create corr matrix, with dummy vars 
@@ -2804,7 +2804,7 @@ traindf_mm <- traindf_mm %>%
   data.matrix()
 traindf_mm   # check output
 results_mm <- dummy_cols(traindf_mm, select_columns = c("flourish", "belong1", "inf", 
-                                                        "mh_stigma"),
+                                                        "mh_stigma", "talk"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
 eigval_mm <- get_eigenvalue(mm_pca)
@@ -2833,11 +2833,11 @@ fviz_cos2(mm_pca, choice = "var", axes = 1,
 ### CLM Motivational moderators regression
 ```{r train CLM mm}
 # prepare data for regression
-clm_mm <- traindf.v27 %>% select(si_type, inf, flourish, belong1, mh_stigma)
+clm_mm <- traindf.v27 %>% select(si_type, inf, flourish, belong1, talk, mh_stigma)
 clm_mm <- na.omit(clm_mm)
 
 # run MM regression
-clm_mm <- clm(si_type ~ inf + flourish + belong1 + mh_stigma, data = clm_mm)
+clm_mm <- clm(si_type ~ inf + flourish + belong1 + mh_stigma + talk, data = clm_mm)
 
 summary(clm_mm)
 coef_mm <- coef(summary(clm_mm))  # retireve coefficients
@@ -2870,13 +2870,13 @@ var_names <- c(
   # life events
   "ins_no", "gpa_sr", "psyhx", "fincur", "drugs_yn", "assault",
   # defeat
-  "aca_impa", "dep_type", "anx_type",
+  "aca_impa", "deprawsc", "anx_score",
   # threats to self-moderation
   "persist", "aaq_tot",
   # entrapment
   "dep_impa", "percneed",
   # motivational moderators
-  "inf", "flourish")  
+  "inf", "flourish", "talk")  
 var_names <- sort(var_names)
 
 # build table for absolute missingness based on school2
@@ -2956,7 +2956,7 @@ traindf_sem <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, gender_tgd,
   # environment
   religios, activ_no, satisfied_overall,
   # life events
@@ -2968,7 +2968,7 @@ traindf_sem <- traindf.v28 %>% select(
   # entrapment
   dep_impa, percneed,
   # motivational moderators
-  inf, flourish)
+  inf, flourish, talk)
 
 # create sem matrix 
 traindf_sem <- traindf_sem %>% 
@@ -2990,7 +2990,7 @@ results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "sib_freq", "ed_any", "dx_mh", "meds_ther",
+    "age", "sexual", "sib_freq", "ed_any", "dx_mh", "meds_ther", "gender_tgd",
     # environment
     "religios", "activ_no", "satisfied_overall",
     # life events
@@ -3002,7 +3002,7 @@ results_tr_sem1 <- dummy_cols(traindf_sem, select_columns = c(
     # entrapment
     "dep_impa", "percneed",
     # motivational moderators
-    "inf", "flourish"), 
+    "inf", "flourish", "talk"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 results_tr_sem1 <- na.omit(results_tr_sem1)
@@ -3097,7 +3097,7 @@ traindf_sem1 <- traindf.v28 %>% select(
   # entrapment
   dep_impa, percneed,
   # motivational moderators
-  inf, flourish) 
+  inf, flourish, talk) 
 
 # create sem matrix 
 traindf_sem1 <- traindf_sem1 %>% 
@@ -3257,13 +3257,13 @@ traindf_sem1 <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall, gender_tgd,
   # life events
   ins_no, gpa_sr, psyhx, drugs_yn, assault,
   # defeat
   aca_impa, deprawsc, anx_score, dep_impa, percneed,
   # MM+ TSM
-  inf, flourish, persist, aaq_tot) 
+  inf, flourish, persist, aaq_tot, talk) 
 
 # create sem matrix 
 traindf_sem1 <- data.matrix(traindf_sem1)
@@ -4312,19 +4312,19 @@ testdf_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, undercls,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, undercls, gender_tgd,
   # environment
   religios, activ_no, satisfied_overall,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault,
   # defeat
-  aca_impa, anx_type, dep_type,
+  aca_impa, anx_score, deprawsc,
   # threats to self-moderation
-  persist, aaq_dum,
+  persist, aaq_tot,
   # entrapment
   dep_impa, percneed,
   # motivational moderators
-  inf, flourish_dum)
+  inf, flourish, talk)
 
 # create sem matrix 
 testdf_sem <- testdf_sem %>% 
@@ -4346,19 +4346,19 @@ results_test_sem1 <- dummy_cols(testdf_sem, select_columns = c(
     # outcome var
     "si_type",
     # diathesis
-    "age", "sexual", "sib_freq", "ed_any", "dx_mh", "meds_count", "meds_ther", "undercls",
+    "age", "sexual", "sib_freq", "ed_any", "dx_mh", "meds_count", "meds_ther", "undercls", "gender_tgd",
     # environment
     "religios", "activ_no", "satisfied_overall",
     # life events
     "ins_no", "gpa_sr", "psyhx", "fincur", "drugs_yn", "assault",
     # defeat
-    "aca_impa", "anx_type", "dep_type",
+    "aca_impa", "anx_score", "deprawsc",
     # threats to self-moderation
-    "persist", "aaq_dum",
+    "persist", "aaq_tot",
     # entrapment
     "dep_impa", "percneed",
     # motivational moderators
-    "inf", "flourish_dum"), 
+    "inf", "flourish", "talk"), 
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 results_test_sem1 <- na.omit(results_test_sem1)
@@ -4416,13 +4416,13 @@ test_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # premotivation
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall, undercls,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall, undercls, gender_tgd,
   # life events
   ins_no, gpa_sr, psyhx, drugs_yn, assault,
   # defeat
-  aca_impa, dep_type, anx_type, dep_impa, percneed,
+  aca_impa, deprawsc, anx_score, dep_impa, percneed,
   # MM+ TSM
-  inf, flourish_dum, persist, aaq_dum) 
+  inf, flourish, persist, aaq_tot, talk) 
 
 # create sem matrix 
 test_sem <- data.matrix(test_sem)
@@ -4449,13 +4449,13 @@ test18_sem <- test18.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall, gender_tgd,
   # life events
   ins_no, gpa_sr, psyhx, drugs_yn, assault,
   # defeat
-  aca_impa, dep_type, anx_type, dep_impa, percneed,
+  aca_impa, deprawsc, anx_score, dep_impa, percneed,
   # MM+ TSM
-  inf, flourish_dum, persist, aaq_dum) 
+  inf, flourish, persist, aaq_tot, talk) 
   
 ## Dummy col SEM w/ continuous
 results_test_com18 <- dummy_cols(test18_sem, select_columns = c("si_type", "sexual"),
@@ -4486,13 +4486,13 @@ test20_sem <- test20.v26 %>% select(
   # outcome var
   si_type,
   # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall,
+  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall, gender_tgd,
   # life events
   ins_no, gpa_sr, psyhx, drugs_yn, assault,
   # defeat
-  aca_impa, dep_type, anx_type, dep_impa, percneed,
+  aca_impa, deprawsc, anx_score, dep_impa, percneed,
   # MM+ TSM
-  inf, flourish_dum, satisfied_overall, persist, aaq_dum) 
+  inf, flourish, satisfied_overall, persist, aaq_tot, talk) 
 
 # create sem matrix 
 test20_sem <- data.matrix(test20_sem)
