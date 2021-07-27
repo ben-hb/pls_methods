@@ -1985,7 +1985,7 @@ clm_le <- traindf.v19 %>% select(si_type, ins_no, gpa_sr, assault, binge, drugs_
 clm_le <- na.omit(clm_le)
 
 # run regression
-clm_le <- clm(si_type ~ ins_no + gpa_sr + assault + binge + drugs_yn + drug_mar + 
+clm_le <- glm(si_type ~ ins_no + gpa_sr + assault + binge + drugs_yn + drug_mar + 
                 psyhx + fincur,
               data = clm_le)
 summary(clm_le)
@@ -2005,8 +2005,8 @@ model.le  %>%
 # Full Premotivational Analysis
 ```{r train results_prem}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, binge,
-                                       meds_ther, religios, activ_no, school2_type, fincur, ins_no, residenc,
+traindf_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh,
+                                       meds_any, ther, religios, school2_type, fincur, ins_no, residenc,
                                        gpa_sr, assault, drugs_yn, drug_mar, psyhx, satisfied_overall)
 
 # Corr_simple function
@@ -2029,18 +2029,13 @@ corr_simple <- function(traindf=traindf_prem, sig=0.6){
 }
 corr_simple()
 
-# run regression
-clm_prem <- clm(si_type ~ .,
-              data = traindf_prem)
-summary(clm_prem)
-coef(clm_prem)
 ```
 
 ## EFA PREMOTIVATION
 ```{r train prem_pca}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, binge,
-                                       meds_ther, religios, activ_no, school2_type, ins_no, residenc,
+traindf_prem <- traindf.v19 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh,
+                                       meds_any, ther, religios, school2_type, ins_no, residenc,
                                        gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur, satisfied_overall)
 traindf_prem <- na.omit(traindf_prem)
 
@@ -2052,9 +2047,9 @@ traindf_prem <- traindf_prem %>%
 traindf_prem   # check output
 
 results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq",
-                                                            "race", "ed_any", "dx_mh", "meds_ther", "binge",
+                                                            "race", "ed_any", "dx_mh", "meds_any", "ther",
                                                             "religios", "satisfied_overall",
-                                                            "activ_no", "school2_type", "ins_no", "residenc",
+                                                            "school2_type", "ins_no", "residenc",
                                                             "gpa_sr", "assault", "drugs_yn","drug_mar", 
                                                             "psyhx", "fincur"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
@@ -2088,14 +2083,14 @@ fviz_cos2(prem_pca, choice = "var", axes = 1,
 ## CLM Premotivation regression
 ```{r train clm_prem}
 clm_prem <- traindf.v19 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, 
-                                 religios, activ_no, school2_type, ins_no, residenc, meds_ther,
+                                 religios, school2_type, ins_no, residenc, meds_any, ther,
                                  gpa_sr, assault, drugs_yn, drug_mar, psyhx, fincur, satisfied_overall)
 clm_prem <- na.omit(clm_prem)
 
 # run regression
-clm_prem <- clm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh +
-                religios + activ_no + school2_type + ins_no + residenc + gpa_sr + assault +
-                drugs_yn + drug_mar + psyhx + meds_ther + fincur + satisfied_overall,
+clm_prem <- glm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh +
+                religios +  school2_type + ins_no + residenc + gpa_sr + assault +
+                drugs_yn + drug_mar + psyhx + meds_any + ther + fincur + satisfied_overall,
               data = clm_prem)
 summary(clm_prem)
 coef(clm_prem)   # retrieve coefficients

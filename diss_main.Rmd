@@ -4537,15 +4537,15 @@ test18.v26B$gender_tgd <- as.numeric(test18.v26B$gender_tgd)
 
 
 # training v. testing
-wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 16058757, p-value = 0.7687
-wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # 16160453, p-value = 0.6381
-wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 16067216, p-value = 0.4399
-wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 15900470, p-value = 0.1108
-wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 15927700, p-value = 0.222
-wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 16044584, p-value = 0.6598
+wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 16048272, p-value = 0.7844
+wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 16147344, p-value = 0.6317
+wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 16055526, p-value = 0.465
+wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 15885808, p-value = 0.1096
+wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 15918586, p-value = 0.2345
+wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 16030720, p-value = 0.6605
 
 # 18-19 v. 20-25
-wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # W = 6892848, p-value < 2.2e-16 ***
+wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # WW = 6892848, p-value < 2.2e-16 ***
 wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 3283183, p-value = 3.898e-06 ***
 wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 3426894, p-value = 0.2636
 wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") #  = 3218064, p-value = 6.588e-08 ***
