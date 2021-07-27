@@ -1528,7 +1528,7 @@ traindf.v15 <- traindf.v14  # new dataframe for analysis
 Premotivational Analysis
 ```{r train results_prem}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v15 %>% select(si_type, race, age, sexual, gender_tgd, sib_freq, ed_any, 
+traindf_prem <- traindf.v15 %>% select(si_type, race, undercls, sexual, gender_tgd, sib_freq, ed_any, 
                                        dx_mh, international, meds_any, ther, religios, school2_type, 
                                        residenc, satisfied_overall)
 
@@ -1557,8 +1557,8 @@ corr_simple()
 ## EFA PREMOTIVATION
 ```{r train prem_pca}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v15 %>% select(age, sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, international,
-                                       meds_any, ther, religios, school2_type, residenc, satisfied_overall)
+traindf_prem <- traindf.v15 %>% select(sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, international,
+                                       meds_any, ther, religios, school2_type, residenc, satisfied_overall, undercls)
 traindf_prem <- na.omit(traindf_prem)
 
 # create corr matrix, with dummy vars
@@ -1568,10 +1568,10 @@ traindf_prem <- traindf_prem %>%
   data.matrix()
 traindf_prem   # check output
 
-results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "sexual", "gender_tgd", "sib_freq",
+results_prem <- dummy_cols(traindf_prem, select_columns = c("sexual", "gender_tgd", "sib_freq",
                                                             "race", "ed_any", "dx_mh", "meds_any", "ther",
                                                             "religios", "satisfied_overall", "international",
-                                                            "school2_type", "residenc"),
+                                                            "school2_type", "residenc", "undercls"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 prem_pca <- PCA(results_prem, graph=FALSE)  # apply PCA
@@ -1602,13 +1602,13 @@ fviz_cos2(prem_pca, choice = "var", axes = 1,
 
 ## CLM Premotivation regression
 ```{r train clm_prem}
-clm_prem <- traindf.v15 %>% select(si_type, age, sexual, gender_tgd, sib_freq, race, ed_any, 
+clm_prem <- traindf.v15 %>% select(si_type, sexual, gender_tgd, sib_freq, race, ed_any, 
                                    dx_mh, international, religios, school2_type, residenc, 
-                                   meds_any, ther, satisfied_overall)
+                                   meds_any, ther, satisfied_overall, undercls)
 clm_prem <- na.omit(clm_prem)
 
 # run regression
-clm_prem <- glm(si_type ~ age + sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + 
+clm_prem <- glm(si_type ~ sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + undercls +
                 religios +  school2_type + international + residenc + meds_any + ther + satisfied_overall,
               data = clm_prem)
 summary(clm_prem)
