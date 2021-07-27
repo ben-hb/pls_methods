@@ -2715,14 +2715,13 @@ traindf_sem1 <- traindf.v28 %>% select(
 traindf_sem1 <- data.matrix(traindf_sem1)
   
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "race"),
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "race", "residenc", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # xlsx output
 save(results_tr_com1, file = "traindf_pls.RData")
 load("traindf_pls.RData")
 write_xlsx(results_tr_com1, path = "traindf_pls.xlsx", col_names = TRUE, format_headers = TRUE)
-
 ```
 
 
@@ -2973,7 +2972,7 @@ table(testdf.v11$ther, useNA = "always")
 ## Religion
 ```{r train religios}
 # Label levels of religious importance
-testdf.v13 <- testdf.v13 %>%
+testdf.v13 <- testdf.v11 %>%
   # flip coding
   mutate(religios = case_when(religios == 1 ~ 5,   # fhighly religious
                               religios == 2 ~ 4,
@@ -3020,7 +3019,7 @@ table(testdf.v13$residenc, useNA = "always")  # check output
 
 ## International student
 ```{r train international}
-testdf.v14 <- testdf.v14 %>%
+testdf.v14 <- testdf.v13 %>%
   mutate(international = case_when(international == 1 ~ 1,
                                    international == 0 ~ 0)) %>%
   filter(!is.na(international))
@@ -3159,7 +3158,7 @@ table(testdf.v14$school2_type, useNA = "always") # check output
 ## Insurance coverage
 ```{r train ins_cover}
 # create one insurance var from related questions in 'ins_' module
-testdf.v16 <- testdf.v16 %>% 
+testdf.v16 <- testdf.v14 %>% 
   mutate(ins_no = case_when((ins_1 == 1 | ins_mh == 4 | 
                                ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
                             (ins_1 == 0 | ins_mh == 1 | 
@@ -3344,9 +3343,9 @@ jarque.bera.test(testdf.v18$gpa_sr)
  
 ## PHQ risk/severity
 ```{r train deprawsc}
-testdf.v20$deprawsc <- as.numeric(testdf.v20$deprawsc)
+testdf.v18$deprawsc <- as.numeric(testdf.v18$deprawsc)
 
-testdf.v20 <- testdf.v20 %>%
+testdf.v20 <- testdf.v18 %>%
   filter(!is.na(deprawsc))  # filters out NAs
 
 table(testdf.v20$deprawsc, useNA ="always")
@@ -3432,7 +3431,7 @@ table(testdf.v20$percneed, useNA = "always") # check output, NAs
 ## AAQ total
 ```{r train aaq_dum}
 # create AAQ_tot variable to sum up imputed AAQ questions
-testdf.v22 <- testdf.v22 %>%
+testdf.v22 <- testdf.v20 %>%
   mutate(aaq_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
            as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7))
 
@@ -3482,7 +3481,7 @@ jarque.bera.test(testdf.v22$persist)
 
 ## Belonging
 ```{r train belong}
-testdf.v26 <- testdf.v26 %>%
+testdf.v26 <- testdf.v22 %>%
   filter(!is.na(belong1))  # filters out NAs
 table(testdf.v26$belong1, useNA = "always")
 
@@ -3631,18 +3630,18 @@ talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
 ## Select all vars for SEM
 ```{r train_df_sem2}
 # Prep SEM data vars
-testdf_sem <- testdf.v28 %>% select(
+testdf_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # premotivation
-  age, sexual, race, sib_freq, ed_any, dx_mh, meds_any, ther, gender_tgd,
-  religios, satisfied_overall, residenc, school2_type,
+  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
+  religios, satisfied_overall, residenc, school2_type, international,
   # life events
-  ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault,
-  # defeat
-  aca_impa, anx_score, deprawsc, dep_impa, percneed,
-  # threats to self-moderation
-  persist, aaq_tot, inf, flourish, talk)
+  ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
+  # defeat-entrapment
+  deprawsc, anx_score, dep_impa, percneed,
+  # threats to internal/external moderation
+  persist, aaq_tot, inf, flourish, talk, belong1)  
 
 # create sem matrix 
 testdf_sem <- testdf_sem %>% 
@@ -3665,28 +3664,13 @@ write_xlsx(testdf_sem_out, path = "testdf_nondummy.xls", col_names = TRUE, forma
 
 ## Descriptive stats
 ```{r train var_sum}
-data <- testdf_sem_out %>% 
-  pivot_longer(cols = everything())
-
-ggplot(data, aes(x = value)) + 
-  geom_density() +
-  facet_wrap(~name)
-
-ggplot(data, aes(x = value)) + 
-  geom_histogram() +
-  facet_wrap(~name)
-
-ggplot(data, aes(sample = value)) + 
-  geom_qq() +
-  facet_wrap(~name)
-
 # demographics
-table(testdf.v28$age)
-table(testdf.v28$si_type)
-table(testdf.v28$gender_tgd)
-table(testdf.v28$sexual)
-table(testdf.v28$race)
-table(testdf.v28$dx_mh)
+table(testdf.v26$age)
+table(testdf.v26$si_type)
+table(testdf.v26$gender_tgd)
+table(testdf.v26$sexual)
+table(testdf.v26$race)
+table(testdf.v26$dx_mh)
 
 # training data
 var_desc <- describe(testdf_sem)
@@ -3705,27 +3689,28 @@ write_xlsx(var_desc, path = "var_desc.xls", col_names = TRUE, format_headers = T
 ## PLS output model
 ```{r amended}
 # Prep SEM data vars
-testdf_sem1 <- testdf.v28 %>% select(
+testdf_sem1 <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # premotivation
-  age, race, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall, gender_tgd,
+  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
+  religios, satisfied_overall, residenc, school2_type, international,
   # life events
-  ins_no, gpa_sr, psyhx, drugs_yn, assault,
+  ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
-  aca_impa, deprawsc, anx_score, dep_impa, percneed,
-  # Moderators
-  inf, flourish, persist, aaq_tot, talk) 
+  deprawsc, anx_score, dep_impa, percneed,
+  # threats to internal/external moderation
+  persist, aaq_tot, inf, flourish, talk, belong1)  
 
 # create sem matrix 
 testdf_sem1 <- data.matrix(testdf_sem1)
   
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(testdf_sem1, select_columns = c("si_type"),
+results_test_com1 <- dummy_cols(testdf_sem1, select_columns = c("si_type", "race", "residenc", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # xlsx output
-save(results_tr_com1, file = "testdf_pls.RData")
+save(results_test_com1, file = "testdf_pls.RData")
 load("testdf_pls.RData")
 write_xlsx(results_tr_com1, path = "testdf_pls.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
@@ -3746,17 +3731,18 @@ table(test18.v26$dx_mh)
 test18_sem <- test18.v26 %>% select(
   # outcome var
   si_type,
-  # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall, gender_tgd,
+  # premotivation
+  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
+  religios, satisfied_overall, residenc, school2_type, international,
   # life events
-  ins_no, gpa_sr, psyhx, drugs_yn, assault,
-  # defeat
-  aca_impa, deprawsc, anx_score, dep_impa, percneed,
-  # MM+ TSM
-  inf, flourish, persist, aaq_tot, talk) 
+  ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
+  # defeat-entrapment
+  deprawsc, anx_score, dep_impa, percneed,
+  # threats to internal/external moderation
+  persist, aaq_tot, inf, flourish, talk, belong1)  
   
 ## Dummy col SEM w/ continuous
-results_test_com18 <- dummy_cols(test18_sem, select_columns = c("si_type", "race"),
+results_test_com18 <- dummy_cols(test18_sem, select_columns = c("si_type", "race", "residenc", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # save output for offline SMART PLS
@@ -3783,20 +3769,21 @@ table(test20.v26$dx_mh)
 test20_sem <- test20.v26 %>% select(
   # outcome var
   si_type,
-  # diathesis
-  age, sexual, sib_freq, ed_any, dx_mh, meds_ther, religios, activ_no, satisfied_overall, gender_tgd,
+  # premotivation
+  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
+  religios, satisfied_overall, residenc, school2_type, international,
   # life events
-  ins_no, gpa_sr, psyhx, drugs_yn, assault,
-  # defeat
-  aca_impa, deprawsc, anx_score, dep_impa, percneed,
-  # MM+ TSM
-  inf, flourish, satisfied_overall, persist, aaq_tot, talk) 
+  ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
+  # defeat-entrapment
+  deprawsc, anx_score, dep_impa, percneed,
+  # threats to internal/external moderation
+  persist, aaq_tot, inf, flourish, talk, belong1)  
 
 # create sem matrix 
 test20_sem <- data.matrix(test20_sem)
   
 ## Dummy col SEM w/ continuous
-results_test_com20 <- dummy_cols(test20_sem, select_columns = c("si_type", "race"),
+results_test_com20 <- dummy_cols(test20_sem, select_columns = c("si_type", "race", "residenc", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 nrow(testdf.v26) # 5700
