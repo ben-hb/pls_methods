@@ -852,7 +852,10 @@ data.v7 = subset(data.v7, select= -c(scoff_1:scoff_5)) # clean up vars/columns
 
 ## Past finances
 ```{r finpast}
-table(data.v7$finpast) # check output
+data.v7 <- data.v7 %>%
+  filter(!is.na(finpast))
+
+table(data.v7$finpast, useNA = "always") # check output
 ```
 
 ## Co-occuring MH diagnoses
@@ -1228,23 +1231,23 @@ table(traindf.v11$meds_count, useNA = "always")  # check output
 traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
 ```
 
-## Therapy
+## Therapy or Meds
 ```{r ther}
 # create new var for medication and/or therapy utilization
 traindf.v11 <- traindf.v11 %>%
-  mutate(ther = case_when(
-                            # meds_any == 1 ~ 1,
+  mutate(meds_ther = case_when(
+                              meds_any == 1 ~ 1,
                               ther_cur == 1 ~ 1,
                               ther_cur1 == 1 ~ 1,
                               ther_ever == 3 ~ 1,
                               ther_ever == 4 ~ 1,
                               ther_cur == 0 ~ 0,
-                              ther_ever == 0 ~ 0)) %>%
-  filter(!is.na(ther))
-                              # meds_any == 0 ~ 0)) %>%
-traindf.v11$ther <- as.logical(traindf.v11$ther)
+                              ther_ever == 0 ~ 0,
+                              meds_any == 0 ~ 0)) %>%
+    filter(!is.na(meds_ther))
+traindf.v11$meds_ther <- as.logical(traindf.v11$meds_ther)
 
-table(traindf.v11$ther, useNA = "always")
+table(traindf.v11$meds_ther, useNA = "always")
 ```
 
 ```{r environment vars}
@@ -1529,7 +1532,7 @@ Premotivational Analysis
 ```{r train results_prem}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v15 %>% select(si_type, race, undercls, sexual, gender_tgd, sib_freq, ed_any, 
-                                       dx_mh, international, meds_any, ther, religios, school2_type, 
+                                       dx_mh, international, meds_ther, religios, school2_type, finpast,
                                        residenc, satisfied_overall)
 
 # Corr_simple function
@@ -1557,8 +1560,8 @@ corr_simple()
 ## EFA PREMOTIVATION
 ```{r train prem_pca}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v15 %>% select(sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, international,
-                                       meds_any, ther, religios, school2_type, residenc, satisfied_overall, undercls)
+traindf_prem <- traindf.v15 %>% select(sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, international, finpast,
+                                       meds_ther, religios, school2_type, residenc, satisfied_overall, undercls)
 traindf_prem <- na.omit(traindf_prem)
 
 # create corr matrix, with dummy vars
@@ -1568,8 +1571,8 @@ traindf_prem <- traindf_prem %>%
   data.matrix()
 traindf_prem   # check output
 
-results_prem <- dummy_cols(traindf_prem, select_columns = c("sexual", "gender_tgd", "sib_freq",
-                                                            "race", "ed_any", "dx_mh", "meds_any", "ther",
+results_prem <- dummy_cols(traindf_prem, select_columns = c("sexual", "gender_tgd", "sib_freq", "finpast",
+                                                            "race", "ed_any", "dx_mh", "meds_ther",
                                                             "religios", "satisfied_overall", "international",
                                                             "school2_type", "residenc", "undercls"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
@@ -1602,14 +1605,14 @@ fviz_cos2(prem_pca, choice = "var", axes = 1,
 
 ## CLM Premotivation regression
 ```{r train clm_prem}
-clm_prem <- traindf.v15 %>% select(si_type, sexual, gender_tgd, sib_freq, race, ed_any, 
+clm_prem <- traindf.v15 %>% select(si_type, sexual, gender_tgd, sib_freq, race, ed_any, finpast,
                                    dx_mh, international, religios, school2_type, residenc, 
-                                   meds_any, ther, satisfied_overall, undercls)
+                                   meds_ther, satisfied_overall, undercls)
 clm_prem <- na.omit(clm_prem)
 
 # run regression
-clm_prem <- glm(si_type ~ sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + undercls +
-                religios +  school2_type + international + residenc + meds_any + ther + satisfied_overall,
+clm_prem <- glm(si_type ~ sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + undercls + finpast +
+                religios +  school2_type + international + residenc + meds_ther + satisfied_overall,
               data = clm_prem)
 summary(clm_prem)
 coef(clm_prem)   # retrieve coefficients
@@ -2522,7 +2525,7 @@ traindf.v28 <- traindf.v26
 # school structural analysis
 var_names <- c(
   # premotivation
-  "age", "sexual", "race", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_any", "ther",
+  "age", "sexual", "race", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_ther", "finpast",
   "religios", "satisfied_overall", "residenc", "school2_type", "international", "undercls",
   # life events
   "ins_no", "gpa_sr", "psyhx", "fincur", "drugs_yn", "assault", "binge", "drug_mar",
@@ -2609,7 +2612,7 @@ traindf_sem <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # premotivation
-  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
+  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther, finpast,
   religios, satisfied_overall, residenc, school2_type, international, undercls,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
@@ -2702,7 +2705,7 @@ traindf_sem1 <- traindf.v28 %>% select(
   # outcome var
   si_type,
   # premotivation
-  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
+  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther, finpast,
   religios, satisfied_overall, residenc, school2_type, international, undercls,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
@@ -2950,23 +2953,22 @@ table(testdf.v11$meds_none)
 table(testdf.v11$meds_any, useNA = "always")
 ```
 
-## Therapy
+## Meds or Therapy
 ```{r ther}
 # create new var for medication and/or therapy utilization
 testdf.v11 <- testdf.v11 %>%
-  mutate(ther = case_when(
-                            # meds_any == 1 ~ 1,
+  mutate(meds_ther = case_when(meds_any == 1 ~ 1,
                               ther_cur == 1 ~ 1,
                               ther_cur1 == 1 ~ 1,
                               ther_ever == 3 ~ 1,
                               ther_ever == 4 ~ 1,
                               ther_cur == 0 ~ 0,
-                              ther_ever == 0 ~ 0)) %>%
-  filter(!is.na(ther))
-                              # meds_any == 0 ~ 0)) %>%
-testdf.v11$ther <- as.logical(testdf.v11$ther)
+                              ther_ever == 0 ~ 0,
+                              meds_any == 0 ~ 0)) %>%
+    filter(!is.na(meds_ther))
+testdf.v11$meds_ther <- as.logical(testdf.v11$meds_ther)
 
-table(testdf.v11$ther, useNA = "always")
+table(testdf.v11$meds_ther, useNA = "always")
 ```
 
 ## Religion
@@ -3634,7 +3636,7 @@ testdf_sem <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # premotivation
-  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
+  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther, finpast,
   religios, satisfied_overall, residenc, school2_type, international, undercls,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
@@ -3693,7 +3695,7 @@ testdf_sem1 <- testdf.v26 %>% select(
   # outcome var
   si_type,
   # premotivation
-  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
+  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther, finpast,
   religios, satisfied_overall, residenc, school2_type, international,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
@@ -3732,7 +3734,7 @@ test18_sem <- test18.v26 %>% select(
   # outcome var
   si_type,
   # premotivation
-  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
+  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther, finpast,
   religios, satisfied_overall, residenc, school2_type, international, undercls,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
@@ -3770,7 +3772,7 @@ test20_sem <- test20.v26 %>% select(
   # outcome var
   si_type,
   # premotivation
-  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
+  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther, finpast,
   religios, satisfied_overall, residenc, school2_type, international, undercls,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
@@ -3827,20 +3829,20 @@ test18.v26B$sexual <- as.numeric(test18.v26B$sexual)
 
 
 # training v. testing
-wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 18919714, p-value = 0.03372
-wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 18414990, p-value = 0.4177
-wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 18438750, p-value = 0.2175
-wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 18258125, p-value = 0.07822
-wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 18642436, p-value = 0.43
-wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 18753395, p-value = 0.1419
+wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 18459578, p-value = 0.8103
+wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 18354510, p-value = 0.2093
+wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 18440319, p-value = 0.2759
+wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 18089541, p-value = 0.003971
+wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 18322271, p-value = 0.2655
+wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 18480308, p-value = 0.8775
 
 # 18-19 v. 20-25
-wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # W = 9100224, p-value < 2.2e-16 ***
-wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 4386130, p-value = 0.0001562 ***
-wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 4515383, p-value = 0.09986
-wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") #  W = 4313015, p-value = 4.981e-06 ***
-wilcox.test(test20.v26B$race, test18.v26B$race, alternative = "two.sided") # W = 4578474, p-value = 0.6357
-wilcox.test(test20.v26B$dx_mh, test18.v26B$dx_mh, alternative = "two.sided") # W = 4579225, p-value = 0.6254
+wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # W = 9258080, p-value < 2.2e-16 ***
+wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 4470268, p-value = 0.0002689 ***
+wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 4596288, p-value = 0.1257
+wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") #  W = 4443808, p-value = 0.0003753 ***
+wilcox.test(test20.v26B$race, test18.v26B$race, alternative = "two.sided") # W = 4773152, p-value = 0.01635
+wilcox.test(test20.v26B$dx_mh, test18.v26B$dx_mh, alternative = "two.sided") # W = 4759928, p-value = 0.02914
 ``` 
 
 
