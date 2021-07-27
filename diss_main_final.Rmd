@@ -3820,22 +3820,27 @@ traindf.v28B$gender_tgd <- as.numeric(traindf.v28B$gender_tgd)
 test20.v26B$gender_tgd <- as.numeric(test20.v26B$gender_tgd)
 test18.v26B$gender_tgd <- as.numeric(test18.v26B$gender_tgd)
 
+testdf.v26B$sexual<- as.numeric(testdf.v26B$sexual)
+traindf.v28B$sexual <- as.numeric(traindf.v28B$sexual)
+test20.v26B$sexual <- as.numeric(test20.v26B$sexual)
+test18.v26B$sexual <- as.numeric(test18.v26B$sexual)
+
 
 # training v. testing
-wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 16048272, p-value = 0.7844
-wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 16147344, p-value = 0.6317
-wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 16055526, p-value = 0.465
-wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 15885808, p-value = 0.1096
-wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 15918586, p-value = 0.2345
-wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 16030720, p-value = 0.6605
+wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 18919714, p-value = 0.03372
+wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 18414990, p-value = 0.4177
+wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 18438750, p-value = 0.2175
+wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 18258125, p-value = 0.07822
+wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 18642436, p-value = 0.43
+wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 18753395, p-value = 0.1419
 
 # 18-19 v. 20-25
-wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # WW = 6892848, p-value < 2.2e-16 ***
-wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 3283183, p-value = 3.898e-06 ***
-wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 3426894, p-value = 0.2636
-wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") #  = 3218064, p-value = 6.588e-08 ***
-wilcox.test(test20.v26B$race, test18.v26B$race, alternative = "two.sided") # W = 3453522, p-value = 0.884
-wilcox.test(test20.v26B$dx_mh, test18.v26B$dx_mh, alternative = "two.sided") # W = 3575832, p-value = 0.006935 ***
+wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # W = 9100224, p-value < 2.2e-16 ***
+wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 4386130, p-value = 0.0001562 ***
+wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 4515383, p-value = 0.09986
+wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") #  W = 4313015, p-value = 4.981e-06 ***
+wilcox.test(test20.v26B$race, test18.v26B$race, alternative = "two.sided") # W = 4578474, p-value = 0.6357
+wilcox.test(test20.v26B$dx_mh, test18.v26B$dx_mh, alternative = "two.sided") # W = 4579225, p-value = 0.6254
 ``` 
 
 
