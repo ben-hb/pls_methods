@@ -267,7 +267,7 @@ data.v2 <- data.v1 %>%
   filter(!is.na(si_type))   # filter for SI variable -- then rowwise deletion
 data.v2$si_type <- as.logical(data.v2$si_type)  
   # tabulate and check output
-table(data.v2$si_type)
+table(data.v2$si_type, useNA = "always")
 ```
 
 
@@ -610,11 +610,11 @@ data.v6 <- data.v5 %>%
 # 'race' subtypes combined into one variable
   mutate(race = case_when(race_bla == 1 ~ 2,
                           race_ame == 1 ~ 5,
-                          race_asi == 1 ~ 1,
+                          race_asi == 1 ~ 4,
                           race_his == 1 ~ 3,
                           race_pac == 1 ~ 5,
                           race_ara == 1 ~ 5,
-                          race_whi == 1 ~ 4,
+                          race_whi == 1 ~ 1,
                           race_oth == 1 ~ 5,
                           FALSE ~ 5))
 table(data.v6$race) # check output
@@ -666,63 +666,63 @@ data.v6$race[data.v6$race_other_text %in% c("Volvo", "Vulcan", "Snowman", "tree"
                                             "Desert Camoflauge",  "Attack helicopter", "Ethnic Kekistani")] <- 5
 
   # white
-data.v6$race[str_detect(data.v6$race_other_text, "[J|j]ew")] <- 4  # if Israeli, could be White, Asian, or ME (e.g. Palestine)
-data.v6$race[str_detect(data.v6$race_other_text, "[A|a]shkenazi")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[C|c]aucasian")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[E|e]uropean")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[G|g]reek")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[I|i]rish")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[I|i]talian")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[A|a]lbania")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]em[e|i]tic")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[R|r]ussian")] <- 4 # could be Asian depending on region
-data.v6$race[str_detect(data.v6$race_other_text, "[R|r]oma")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[T|t]urkish")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]lavic")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[M|m]etis")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[B|b]asque")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]icilian")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[P|p]olish")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]candinavian")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[F|f]innish")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[C|c]eltic")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]cottish")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[C|c]anad")] <- 4
-data.v6$race[str_detect(data.v6$race_other_text, "[M|m]editerranean")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[J|j]ew")] <- 1  # if Israeli, could be White, Asian, or ME (e.g. Palestine)
+data.v6$race[str_detect(data.v6$race_other_text, "[A|a]shkenazi")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[C|c]aucasian")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[E|e]uropean")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[G|g]reek")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[I|i]rish")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[I|i]talian")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[A|a]lbania")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]em[e|i]tic")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[R|r]ussian")] <- 1 # could be Asian depending on region
+data.v6$race[str_detect(data.v6$race_other_text, "[R|r]oma")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[T|t]urkish")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]lavic")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[M|m]etis")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[B|b]asque")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]icilian")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[P|p]olish")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]candinavian")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[F|f]innish")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[C|c]eltic")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]cottish")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[C|c]anad")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[M|m]editerranean")] <- 1
 data.v6$race[data.v6$race_other_text %in% c("please refer to me as Caucasian; it's extremely offensive to refer to every race-- excluding Caucasians-- in their politically correct form",
                                             "Not sure if I'm Hispanic, as I am Portuguese and Spanish (from my mother's side) . I identify as white as I am of European descent.",
                                             "Portugese", "Cape Verdean", "Capeverdean", "Bulgarian-American", "Ginger", 
                                             "Anglo Saxon", "anglo/white", "Balkan for ethnicity", "Ulster-scots", 
                                             "I'm white, but I do have some Native American in me but it's not the dominant visible ethnicity.", 
-                                            "White (Jewish/Jamaican-Chinese/Irish)", "ARMENIAN")] <- 2
+                                            "White (Jewish/Jamaican-Chinese/Irish)", "ARMENIAN")] <- 1
   # Identifies as American Indian or other indigenous descent
 data.v6$race[str_detect(data.v6$race_other_text, "[N|n]ative [A|a]merican")] <- 5
 data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndigenous")] <- 5
 data.v6$race[data.v6$race_other_text %in% c("I look white but im also status native", "Indigenous/Mestizo", 
                                             "american indian that isn'y legally claimed")] <- 5
   # Identifies as Asian
-data.v6$race[str_detect(data.v6$race_other_text, "[A|a]sian")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[C|c]hinese")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[J|j]apanese")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndian")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[B|b]anglades")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[F|f]ilipino")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[G|g]uyanese")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[M|m]ongolia")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[C|c]hina")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]outheast")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]outh [A|a]sian")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[P|p]unjabi")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[S|s]iberia")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndonesia")] <- 1
-data.v6$race[str_detect(data.v6$race_other_text, "[W|w]est [I|i]ndian")] <- 1
+data.v6$race[str_detect(data.v6$race_other_text, "[A|a]sian")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[C|c]hinese")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[J|j]apanese")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndian")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[B|b]anglades")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[F|f]ilipino")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[G|g]uyanese")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[M|m]ongolia")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[C|c]hina")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]outheast")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]outh [A|a]sian")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[P|p]unjabi")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[S|s]iberia")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[I|i]ndonesia")] <- 4
+data.v6$race[str_detect(data.v6$race_other_text, "[W|w]est [I|i]ndian")] <- 4
 data.v6$race[data.v6$race_other_text %in% c("Sri Lankan", "Sri-Lankan", "Malays", "Chinese Ethinicy-Nuosu", "Austronesian",
                                             "third culture kid, born and raised in asia until 18yo", "Central Asian",  
                                             "Indian, UAE native", "Indian/Subcontinental", "Indians arent on the list.....", 
                                             "American Texan of Indian (South asia) Descent", "Okinawan", "Asian/Chinese",
                                             "Japanese American and Native Hawaiian Culture", "Asian. International.", 
                                             "Australian/Indian","Indo-Caribbean",  "Atlantic Islander", 
-                                            "Telugu-speaking Tamil-ethnicity Indian")] <- 1
+                                            "Telugu-speaking Tamil-ethnicity Indian")] <- 4
   # Identifies as Black
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]frican")] <- 2
 data.v6$race[str_detect(data.v6$race_other_text, "[A|a]fro")] <- 2
@@ -2045,12 +2045,12 @@ traindf.v20 <- traindf.v20 %>%
 table(traindf.v20$percneed, useNA = "always") # check output, NAs
 ```
 
-## Defeat analysis
+## Defeat-entrapment analysis
 ```{r train defeat analyses}
 traindf.v21 <- traindf.v20
 ```
 
-### Defeat correlation
+### Defeat-entrapment correlation
 ```{r train defeat cor}
 # Define defeat variable candidates for correlation matrix
 traindf_def <- traindf.v21 %>% select(aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa)
@@ -2069,7 +2069,7 @@ corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
 print(corr)
 ```
 
-### EFA defeat
+### EFA defeat-entrapment
 ```{r train EFA_def}
 traindf_def <- traindf.v21 %>% select(aca_impa, deprawsc, anx_score, percneed, gad7_impa, dep_impa)
 traindf_def <- na.omit(traindf_def)
@@ -2111,7 +2111,7 @@ fviz_cos2(def_pca, choice = "var", axes = 1,
           ggtheme = theme_minimal())
 ```
 
-### CLM defeat
+### GLM defeat-entrapment
 ```{r train CLM defeat}
 # prepare regression analysis
 results2_def <- traindf.v21 %>% select(si_type, aca_impa, deprawsc, anx_score, percneed, gad7_impa, dep_impa)
@@ -2523,7 +2523,7 @@ traindf.v28 <- traindf.v26
 var_names <- c(
   # premotivation
   "age", "sexual", "race", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_any", "ther",
-  "religios", "satisfied_overall", "residenc", "school2_type", "international",
+  "religios", "satisfied_overall", "residenc", "school2_type", "international", "undercls",
   # life events
   "ins_no", "gpa_sr", "psyhx", "fincur", "drugs_yn", "assault", "binge", "drug_mar",
   # defeat-entrapment
@@ -2610,7 +2610,7 @@ traindf_sem <- traindf.v28 %>% select(
   si_type,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
-  religios, satisfied_overall, residenc, school2_type, international,
+  religios, satisfied_overall, residenc, school2_type, international, undercls,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
@@ -2703,7 +2703,7 @@ traindf_sem1 <- traindf.v28 %>% select(
   si_type,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
-  religios, satisfied_overall, residenc, school2_type, international,
+  religios, satisfied_overall, residenc, school2_type, international, undercls,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
@@ -3635,7 +3635,7 @@ testdf_sem <- testdf.v26 %>% select(
   si_type,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
-  religios, satisfied_overall, residenc, school2_type, international,
+  religios, satisfied_overall, residenc, school2_type, international, undercls,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
@@ -3733,7 +3733,7 @@ test18_sem <- test18.v26 %>% select(
   si_type,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
-  religios, satisfied_overall, residenc, school2_type, international,
+  religios, satisfied_overall, residenc, school2_type, international, undercls,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
@@ -3771,7 +3771,7 @@ test20_sem <- test20.v26 %>% select(
   si_type,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, ther,
-  religios, satisfied_overall, residenc, school2_type, international,
+  religios, satisfied_overall, residenc, school2_type, international, undercls,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
