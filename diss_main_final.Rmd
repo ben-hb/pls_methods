@@ -274,6 +274,7 @@ table(data.v2$si_type, useNA = "always")
 
 # PREMOTIVATION VARIABLES
 
+
 ```{r Diathesis frame}
 data.v2 <- data.v2
 ```
@@ -853,6 +854,11 @@ data.v7 = subset(data.v7, select= -c(scoff_1:scoff_5)) # clean up vars/columns
 ## Past finances
 ```{r finpast}
 data.v7 <- data.v7 %>%
+  mutate(finpast = case_when(finpast == 5 ~ 1,
+                             finpast == 4 ~ 2,
+                             finpast == 3 ~ 3,
+                             finpast == 2 ~ 4,
+                             finpast == 1 ~ 5)) %>%
   filter(!is.na(finpast))
 
 table(data.v7$finpast, useNA = "always") # check output
@@ -985,7 +991,7 @@ traindf.v10 = subset(traindf.v10, select= -c(wcs_1_f, wcs_1_m, wcs_1_o,
 ```
 
 ## Medication use
-```{r train meds}
+```{r meds_any}
 # Create stimulant
 traindf.v11 <- traindf.v10 %>%
   mutate(meds_sti = case_when(meds_1 == 1 ~ 1,  # combine stimulant variables
@@ -1129,7 +1135,7 @@ traindf.v11 <- traindf.v11 %>%
                                                     "generic sleep medication: melatonin supplements", 
                                                     "cold medicine to induce sleep")] <- 1
       
-# Create "Other" meds
+# Create "Othermeds
 traindf.v11 <- traindf.v11 %>%
   mutate(meds_oth = case_when(meds_7 == 1 ~ 1,    # combine other meds vars
                               meds_8 == 1 ~ 0,
@@ -1232,7 +1238,7 @@ traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/col
 ```
 
 ## Therapy or Meds
-```{r ther}
+```{r meds_ther}
 # create new var for medication and/or therapy utilization
 traindf.v11 <- traindf.v11 %>%
   mutate(meds_ther = case_when(
@@ -2139,7 +2145,7 @@ model.def  %>%
 ```
 
 
-# THREATS TO INTERNAL & EXTERNAL MODERATION
+# THREATS TO MODERATION
 
 ```{r train TSM frame}
 traindf.v22 <- traindf.v20
@@ -2221,7 +2227,6 @@ table(traindf.v22$belong9)  # not as good of a proxy
 ## Flourishing Scale
 ```{r train flourish}
 traindf.v22$flourish <- as.numeric(traindf.v22$flourish)
-table(traindf.v22$flourish)
 
 #  for loop for predictive cutoff point needed
 rs_df <- data.frame("cutoff" = c(), "rs" = c())
@@ -2515,6 +2520,50 @@ model.mm  %>%
         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
+### ALL  regression
+```{r train CLM mm}
+# prepare data for regression
+clm_all <- traindf.v27 %>% select(
+  # outcome
+  si_type, 
+  # premotivation
+  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther, finpast,
+  religios, satisfied_overall, residenc, school2_type, international, undercls,
+  # life events
+  ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault, binge, drug_mar,
+  # defeat-entrapment
+  deprawsc, anx_score, dep_impa, percneed,
+  # threats to internal/external moderation
+  inf, flourish, belong1, talk, mh_stigma, persist, aaq_tot)
+
+clm_mm <- na.omit(clm_mm)
+
+# run MM regression
+clm_mm <- glm(si_type ~ religios +  satisfied_overall +  residenc +  school2_type +  international +  undercls + 
+  # life events
+  ins_no +  gpa_sr +  psyhx +  fincur +  drugs_yn +  assault +  binge +  drug_mar + 
+  # defeat-entrapment
+  deprawsc +  anx_score +  dep_impa +  percneed + 
+  # threats to internal/external moderation
+  inf +  flourish +  belong1 +  talk +  mh_stigma +  persist +  aaq_tot, 
+              data = clm_all)
+
+summary(clm_mm)
+coef_mm <- coef(summary(clm_mm))  # retrieve coefficients
+
+ci_mm <- confint(clm_mm)  # retrieve confidence intervals
+ci_mm
+
+model.mm <- tidy(clm_mm)  # Convert model to dataframe for easy manipulation
+model.mm
+
+model.mm  %>%
+  mutate(or = exp(estimate),  # Odds ratio/gradient
+        var.diag = diag(vcov(clm_mm)),  # Variance of each coefficient
+        or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
+```
+
+
 
 # MISSINGNESS
 
@@ -2532,7 +2581,8 @@ var_names <- c(
   # defeat-entrapment
   "deprawsc", "anx_score", "dep_impa", "percneed",
   # threats to internal/external moderation
-  "persist", "aaq_tot", "inf", "flourish", "talk", "belong1")  
+  "persist", "aaq_tot", "flourish", "talk")  
+
 var_names <- sort(var_names)
 
 # build table for absolute missingness based on school2
@@ -2619,7 +2669,7 @@ traindf_sem <- traindf.v28 %>% select(
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  persist, aaq_tot, inf, flourish, talk, belong1)  
+  persist, aaq_tot, flourish, talk)  
 
 # create sem matrix 
 traindf_sem <- traindf_sem %>% 
@@ -2712,7 +2762,7 @@ traindf_sem1 <- traindf.v28 %>% select(
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  persist, aaq_tot, inf, flourish, talk, belong1) 
+  persist, aaq_tot, flourish, talk) 
 
 # create sem matrix 
 traindf_sem1 <- data.matrix(traindf_sem1)
@@ -3643,7 +3693,7 @@ testdf_sem <- testdf.v26 %>% select(
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  persist, aaq_tot, inf, flourish, talk, belong1)  
+  persist, aaq_tot, flourish, talk)  
 
 # create sem matrix 
 testdf_sem <- testdf_sem %>% 
@@ -3702,7 +3752,7 @@ testdf_sem1 <- testdf.v26 %>% select(
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  persist, aaq_tot, inf, flourish, talk, belong1)  
+  persist, aaq_tot, flourish, talk)  
 
 # create sem matrix 
 testdf_sem1 <- data.matrix(testdf_sem1)
@@ -3741,7 +3791,7 @@ test18_sem <- test18.v26 %>% select(
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  persist, aaq_tot, inf, flourish, talk, belong1)  
+  persist, aaq_tot, flourish, talk)  
   
 ## Dummy col SEM w/ continuous
 results_test_com18 <- dummy_cols(test18_sem, select_columns = c("si_type", "race", "residenc", "school2_type"),
@@ -3779,7 +3829,7 @@ test20_sem <- test20.v26 %>% select(
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  persist, aaq_tot, inf, flourish, talk, belong1)  
+  persist, aaq_tot, flourish, talk)  
 
 # create sem matrix 
 test20_sem <- data.matrix(test20_sem)
