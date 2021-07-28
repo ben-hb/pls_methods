@@ -1237,25 +1237,6 @@ table(traindf.v11$meds_count, useNA = "always")  # check output
 traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/columns
 ```
 
-## Therapy or Meds
-```{r meds_ther}
-# create new var for medication and/or therapy utilization
-traindf.v11 <- traindf.v11 %>%
-  mutate(meds_ther = case_when(
-                              meds_any == 1 ~ 1,
-                              ther_cur == 1 ~ 1,
-                              ther_cur1 == 1 ~ 1,
-                              ther_ever == 3 ~ 1,
-                              ther_ever == 4 ~ 1,
-                              ther_cur == 0 ~ 0,
-                              ther_ever == 0 ~ 0,
-                              meds_any == 0 ~ 0)) %>%
-    filter(!is.na(meds_ther))
-traindf.v11$meds_ther <- as.logical(traindf.v11$meds_ther)
-
-table(traindf.v11$meds_ther, useNA = "always")
-```
-
 ```{r environment vars}
 traindf.v13 <- traindf.v11
 ```
@@ -1567,7 +1548,7 @@ corr_simple()
 ```{r train prem_pca}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v15 %>% select(sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, international, finpast,
-                                       meds_ther, religios, school2_type, residenc, satisfied_overall, undercls)
+                                       meds_any, religios, school2_type, residenc, satisfied_overall, undercls)
 traindf_prem <- na.omit(traindf_prem)
 
 # create corr matrix, with dummy vars
@@ -1578,7 +1559,7 @@ traindf_prem <- traindf_prem %>%
 traindf_prem   # check output
 
 results_prem <- dummy_cols(traindf_prem, select_columns = c("sexual", "gender_tgd", "sib_freq", "finpast",
-                                                            "race", "ed_any", "dx_mh", "meds_ther",
+                                                            "race", "ed_any", "dx_mh", "meds_any",
                                                             "religios", "satisfied_overall", "international",
                                                             "school2_type", "residenc", "undercls"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
@@ -2429,15 +2410,31 @@ traindf.v26$mh_stigma <- as.logical(traindf.v26$mh_stigma)
 table(traindf.v26$mh_stigma, useNA = "always") # check out, NAs
 ```
 
-## Motivational moderator analyses
+## Therapy
+```{r meds_ther}
+# create new var for medication and/or therapy utilization
+traindf.v26 <- traindf.v26 %>%
+  mutate(ther = case_when(ther_cur == 1 ~ 0,
+                          ther_cur1 == 1 ~ 0,
+                          ther_ever == 3 ~ 0,
+                          ther_ever == 4 ~ 0,
+                              ther_cur == 0 ~ 1,
+                              ther_ever == 0 ~ 1)) %>%
+    filter(!is.na(ther))
+traindf.v26$ther <- as.logical(traindf.v26$ther)
+
+table(traindf.v26$ther, useNA = "always")
+```
+
+## Threats to moderation analyses
 ```{r train MM var analyses}
 traindf.v27 <- traindf.v26
 ```
 
-### Motivational Moderator correlation
-```{r train MM_corr}
+### Threats to moderation correlation
+```{r train MMTSM_corr}
 # Define MM variable candidates for correlation matrix
-traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, mh_stigma, talk, brs_tot, persist, aaq_tot)
+traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, mh_stigma, talk, brs_tot, ther, persist, aaq_tot)
 
  # convert traindf to numeric in order to run correlations
 traindf_mm <- traindf_mm %>% mutate_if(is.character, as.factor)
@@ -2459,7 +2456,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ### EFA MM
 ```{r train EFA MM}
-traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, talk, mh_stigma, persist, aaq_tot)
+traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, talk, mh_stigma, persist, aaq_tot, ther)
 traindf_mm <- na.omit(traindf_mm)
 
 # create corr matrix, with dummy vars 
@@ -2468,7 +2465,7 @@ traindf_mm <- traindf_mm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 traindf_mm   # check output
-results_mm <- dummy_cols(traindf_mm, select_columns = c("flourish", "belong1", "inf", 
+results_mm <- dummy_cols(traindf_mm, select_columns = c("flourish", "belong1", "inf", "ther",
                                                         "mh_stigma", "talk", "persist", "aaq_tot"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
@@ -2498,68 +2495,68 @@ fviz_cos2(mm_pca, choice = "var", axes = 1,
 ### CLM Motivational moderators regression
 ```{r train CLM mm}
 # prepare data for regression
-clm_mm <- traindf.v27 %>% select(si_type, inf, flourish, belong1, talk, mh_stigma, persist, aaq_tot)
-clm_mm <- na.omit(clm_mm)
+glm_mmtsm <- traindf.v27 %>% select(si_type, inf, flourish, belong1, talk, mh_stigma, persist, ther, aaq_tot)
+glm_mmtsm <- na.omit(glm_mmtsm)
 
 # run MM regression
-clm_mm <- glm(si_type ~ inf + flourish + belong1 + mh_stigma + talk + persist + aaq_tot, 
-              data = clm_mm)
+glm_mmtsm <- glm(si_type ~ inf + flourish + belong1 + mh_stigma + talk + persist + aaq_tot + ther, 
+              data = glm_mmtsm)
 
-summary(clm_mm)
-coef_mm <- coef(summary(clm_mm))  # retrieve coefficients
+summary(glm_mmtsm)
+coef_mmtsm <- coef(summary(glm_mmtsm))  # retrieve coefficients
 
-ci_mm <- confint(clm_mm)  # retrieve confidence intervals
-ci_mm
+ci_mmtsm <- confint(glm_mmtsm)  # retrieve confidence intervals
+ci_mmtsm
 
-model.mm <- tidy(clm_mm)  # Convert model to dataframe for easy manipulation
-model.mm
+model.mmtsm <- tidy(glm_mmtsm)  # Convert model to dataframe for easy manipulation
+model.mmtsm
 
-model.mm  %>%
+model.mmtsm  %>%
   mutate(or = exp(estimate),  # Odds ratio/gradient
-        var.diag = diag(vcov(clm_mm)),  # Variance of each coefficient
+        var.diag = diag(vcov(glm_mmtsm)),  # Variance of each coefficient
         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
 ### ALL  regression
 ```{r train CLM mm}
 # prepare data for regression
-clm_all <- traindf.v27 %>% select(
+glm_all <- traindf.v27 %>% select(
   # outcome
   si_type, 
   # premotivation
-  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_ther, finpast,
+  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
   religios, satisfied_overall, residenc, school2_type, international, undercls,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault, binge, drug_mar,
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  inf, flourish, belong1, talk, mh_stigma, persist, aaq_tot)
+  inf, flourish, belong1, talk, mh_stigma, persist, aaq_tot, ther)
 
-clm_mm <- na.omit(clm_mm)
+glm_all <- na.omit(glm_all)
 
 # run MM regression
-clm_mm <- glm(si_type ~ religios +  satisfied_overall +  residenc +  school2_type +  international +  undercls + 
+glm_all <- glm(si_type ~ religios +  satisfied_overall +  residenc +  school2_type +  international +  undercls + 
   # life events
   ins_no +  gpa_sr +  psyhx +  fincur +  drugs_yn +  assault +  binge +  drug_mar + 
   # defeat-entrapment
   deprawsc +  anx_score +  dep_impa +  percneed + 
   # threats to internal/external moderation
-  inf +  flourish +  belong1 +  talk +  mh_stigma +  persist +  aaq_tot, 
-              data = clm_all)
+  inf +  flourish +  belong1 +  talk +  mh_stigma +  persist +  aaq_tot + ther, 
+              data = glm_all)
 
-summary(clm_mm)
-coef_mm <- coef(summary(clm_mm))  # retrieve coefficients
+summary(glm_all)
+coef_mm <- coef(summary(glm_all))  # retrieve coefficients
 
-ci_mm <- confint(clm_mm)  # retrieve confidence intervals
-ci_mm
+ci_all <- confint(glm_all)  # retrieve confidence intervals
+ci_all
 
-model.mm <- tidy(clm_mm)  # Convert model to dataframe for easy manipulation
-model.mm
+model.all <- tidy(glm_all)  # Convert model to dataframe for easy manipulation
+model.all
 
 model.mm  %>%
   mutate(or = exp(estimate),  # Odds ratio/gradient
-        var.diag = diag(vcov(clm_mm)),  # Variance of each coefficient
+        var.diag = diag(vcov(glm_all)),  # Variance of each coefficient
         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
