@@ -2421,12 +2421,12 @@ table(traindf.v26$mh_stigma, useNA = "always") # check out, NAs
 ```{r ther}
 # create new var for medication and/or therapy utilization
 traindf.v26 <- traindf.v26 %>%
-  mutate(ther = case_when(ther_cur == 1 ~ 0,
-                          ther_cur1 == 1 ~ 0,
-                          ther_ever == 3 ~ 0,
-                          ther_ever == 4 ~ 0,
-                              ther_cur == 0 ~ 1,
-                              ther_ever == 0 ~ 1)) %>%
+  mutate(ther = case_when(ther_cur == 1 ~ 1,
+                          ther_cur1 == 1 ~ 1,
+                          ther_ever == 3 ~ 1,
+                          ther_ever == 4 ~ 1,
+                              ther_cur == 0 ~ 0,
+                              ther_ever == 0 ~ 0)) %>%
     filter(!is.na(ther))
 traindf.v26$ther <- as.logical(traindf.v26$ther)
 
@@ -2463,35 +2463,35 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ### PCA MM
 ```{r train PCA MM}
-traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, talk, mh_stigma, persist, aaq_tot, ther)
-traindf_mm <- na.omit(traindf_mm)
+traindf_mmtsm <- traindf.v27 %>% select(inf, flourish, belong1, talk, mh_stigma, persist, aaq_tot, ther)
+traindf_mmtsm <- na.omit(traindf_mmtsm)
 
 # create corr matrix, with dummy vars 
-traindf_mm <- traindf_mm %>% 
+traindf_mmtsm <- traindf_mmtsm %>% 
   mutate_if(is.numeric, as.factor) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
-traindf_mm   # check output
-results_mm <- dummy_cols(traindf_mm, select_columns = c("flourish", "belong1", "inf", "ther",
+traindf_mmtsm   # check output
+results_mmtsm <- dummy_cols(traindf_mmtsm, select_columns = c("flourish", "belong1", "inf", "ther",
                                                         "mh_stigma", "talk", "persist", "aaq_tot"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-mm_pca <- PCA(results_mm, graph=FALSE)  # apply PCA
-eigval_mm <- get_eigenvalue(mm_pca)
-eigval_mm
+mmtsm_pca <- PCA(results_mmtsm, graph=FALSE)  # apply PCA
+eigval_mmtsm <- get_eigenvalue(mmtsm_pca)
+eigval_mmtsm
 
 # Visualization of PCA, FAMD
-fviz_screeplot(mm_pca, addlabels = TRUE, ylim = c(0, 50))
-fviz_pca_var(mm_pca,
+fviz_screeplot(mmtsm_pca, addlabels = TRUE, ylim = c(0, 50))
+fviz_pca_var(mmtsm_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-fviz_famd_var(mm_pca,
+fviz_famd_var(mmtsm_pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE     # Avoid text overlapping
              )
-fviz_cos2(mm_pca, choice = "var", axes = 1, 
+fviz_cos2(mmtsm_pca, choice = "var", axes = 1, 
           fill = "steelblue", color = "steelblue",
           sort.val = c("desc", "asc", "none"),
           top = 40,
@@ -2500,7 +2500,7 @@ fviz_cos2(mm_pca, choice = "var", axes = 1,
 ```
 
 ### CLM Motivational moderators regression
-```{r train CLM mm}
+```{r train CLM mmtsm}
 # prepare data for regression
 glm_mmtsm <- traindf.v27 %>% select(si_type, inf, flourish, belong1, talk, mh_stigma, persist, ther, aaq_tot)
 glm_mmtsm <- na.omit(glm_mmtsm)
@@ -2524,8 +2524,8 @@ model.mmtsm  %>%
         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
-### ALL  regression
-```{r train CLM mm}
+### ALL regression
+```{r train GLM mm}
 # prepare data for regression
 glm_all <- traindf.v27 %>% select(
   # outcome
@@ -2545,7 +2545,7 @@ glm_all <- na.omit(glm_all)
 # run MM regression
 glm_all <- glm(si_type ~ religios + satisfied_overall + residenc + school2_type +international + undercls + 
   # life events
-  ins_no +gpa_sr +psyhx + fincur + drugs_yn + assault +binge + drug_mar + 
+  ins_no +gpa_sr + psyhx + fincur + drugs_yn + assault +binge + drug_mar + 
   # defeat-entrapment
   deprawsc +anx_score + dep_impa + percneed + 
   # threats to internal/external moderation
@@ -2664,7 +2664,7 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 # Prep SEM data vars
 traindf_sem <- traindf.v28 %>% select(
   # outcome var
-  si_type, sui_plan,
+  si_type, si_activ,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
   religios, satisfied_overall, residenc, school2_type, international, undercls,
@@ -2757,7 +2757,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 # Prep SEM data vars
 traindf_sem1 <- traindf.v28 %>% select(
   # outcome var
-  si_type, sui_plan,
+  si_type, si_activ,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
   religios, satisfied_overall, residenc, school2_type, international, undercls,
@@ -3504,12 +3504,12 @@ table(testdf.v22$aaq_dum, useNA = "always")  # check output, NAs
 ```{r ther}
 # create new var for medication and/or therapy utilization
 testdf.v22 <- testdf.v22 %>%
-  mutate(ther = case_when(ther_cur == 1 ~ 0,
-                              ther_cur1 == 1 ~ 0,
-                              ther_ever == 3 ~ 0,
-                              ther_ever == 4 ~ 0,
-                              ther_cur == 0 ~ 1,
-                              ther_ever == 0 ~ 1)) %>%
+  mutate(ther = case_when(ther_cur == 1 ~ 1,
+                              ther_cur1 == 1 ~ 1,
+                              ther_ever == 3 ~ 1,
+                              ther_ever == 4 ~ 1,
+                              ther_cur == 0 ~ 0,
+                              ther_ever == 0 ~ 0)) %>%
     filter(!is.na(ther))
 testdf.v22$ther <- as.logical(testdf.v22$ther)
 
@@ -3686,7 +3686,7 @@ talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
 # Prep SEM data vars
 testdf_sem <- testdf.v26 %>% select(
   # outcome var
-  si_type, sui_plan,
+  si_type, si_activ,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
   religios, satisfied_overall, residenc, school2_type, international, undercls,
@@ -3745,7 +3745,7 @@ write_xlsx(var_desc_test, path = "var_desc_test.xls", col_names = TRUE, format_h
 # Prep SEM data vars
 testdf_sem1 <- testdf.v26 %>% select(
   # outcome var
-  si_type, sui_plan,
+  si_type, si_activ,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
   religios, satisfied_overall, residenc, school2_type, international,
@@ -3784,7 +3784,7 @@ table(test18.v26$dx_mh)
 # Prep SEM data vars
 test18_sem <- test18.v26 %>% select(
   # outcome var
-  si_type, sui_plan,
+  si_type, si_activ,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
   religios, satisfied_overall, residenc, school2_type, international, undercls,
@@ -3822,7 +3822,7 @@ table(test20.v26$dx_mh)
 # Prep SEM data vars
 test20_sem <- test20.v26 %>% select(
   # outcome var
-  si_type, sui_plan, 
+  si_type, si_activ, 
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
   religios, satisfied_overall, residenc, school2_type, international, undercls,
@@ -3881,20 +3881,20 @@ test18.v26B$sexual <- as.numeric(test18.v26B$sexual)
 
 
 # training v. testing
-wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 18459578, p-value = 0.8103
-wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 18354510, p-value = 0.2093
-wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 18440319, p-value = 0.2759
+wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 18250760, p-value = 0.7409
+wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 18433896, p-value = 0.3097
+wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 18231346, p-value = 0.1632
 wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 18089541, p-value = 0.003971
-wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 18322271, p-value = 0.2655
-wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 18480308, p-value = 0.8775
+wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 18042672, p-value = 0.09686
+wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 18575966, p-value = 0.1063
 
 # 18-19 v. 20-25
-wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # W = 9258080, p-value < 2.2e-16 ***
-wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 4470268, p-value = 0.0002689 ***
-wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 4596288, p-value = 0.1257
-wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") #  W = 4443808, p-value = 0.0003753 ***
-wilcox.test(test20.v26B$race, test18.v26B$race, alternative = "two.sided") # W = 4773152, p-value = 0.01635
-wilcox.test(test20.v26B$dx_mh, test18.v26B$dx_mh, alternative = "two.sided") # W = 4759928, p-value = 0.02914
+wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # W = 8970195, p-value < 2.2e-16 ***
+wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 4303474, p-value = 2.444e-05 ***
+wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 4433091, p-value = 0.01156
+wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") # W = 4241008, p-value = 1.849e-06 ***
+wilcox.test(test20.v26B$race, test18.v26B$race, alternative = "two.sided") # W = 4530184, p-value = 0.441
+wilcox.test(test20.v26B$dx_mh, test18.v26B$dx_mh, alternative = "two.sided") # W = 4596954, p-value = 0.05688
 ``` 
 
 
