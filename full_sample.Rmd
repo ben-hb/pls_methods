@@ -2376,7 +2376,7 @@ write_xlsx(var_desc_full, path = "var_desc_full.xls", col_names = TRUE, format_h
 ##  output model
 ```{r amended}
 # Prep SEM data vars
-data_sem1 <- data.v28 %>% select(
+data_sem_all <- data.v28 %>% select(
   # outcome var
   si_type, si_activ,
   # premotivation
@@ -2390,16 +2390,16 @@ data_sem1 <- data.v28 %>% select(
   persist, aaq_tot, flourish, talk, ther) 
 
 # create sem matrix 
-data_sem1 <- data.matrix(data_sem1)
+data_sem_all <- data.matrix(data_sem_all)
   
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(data_sem1, select_columns = c("si_type", "race", "residenc", "school2_type"),
+results_all_com1 <- dummy_cols(data_sem_all, select_columns = c("si_type", "race", "residenc", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # xlsx output
-save(results_tr_com1, file = "data_pls.RData")
-load("data_pls.RData")
-write_xlsx(results_tr_com1, path = "data_pls.xlsx", col_names = TRUE, format_headers = TRUE)
+save(results_all_com1, file = "data_all_pls.RData")
+load("data_all_pls.RData")
+write_xlsx(results_all_com1, path = "data_all_pls.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
 
