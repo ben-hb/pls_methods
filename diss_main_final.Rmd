@@ -1283,22 +1283,6 @@ traindf.v13$religios <- as.numeric(traindf.v13$religios)
 table(traindf.v13$religios, useNA = "always")       # Check output
 ```
 
-## Overall school satisfaction
-```{r train satisfied_overall}
-traindf.v13 <- traindf.v13 %>%
-  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,  # reverse coding
-                                       satisfied_overall == 2 ~ 5,
-                                       satisfied_overall == 3 ~ 4,
-                                       satisfied_overall == 4 ~ 3,
-                                       satisfied_overall == 5 ~ 2,
-                                       satisfied_overall == 6 ~ 1)) %>% 
-  filter(!is.na(satisfied_overall))  # filters out NAs
-traindf.v13$satisfied_overall <- as.numeric(traindf.v13$satisfied_overall)
-
-table(traindf.v13$satisfied_overall, useNA = "always")
-jarque.bera.test(traindf.v13$satisfied_overall)
-```
-
 ## Residence type
 ```{r train residenc}
 # re-organize living situation into on-campus, off-campus, and at home
@@ -1319,6 +1303,22 @@ table(traindf.v13$residenc, useNA = "always")  # check output
 ```{r train env_mh}
 traindf.v13$env_mh <- as.factor(traindf.v13$env_mh)
 table(traindf.v13$env_mh, useNA = "always")  # check output (excessive NAs)
+```
+
+## Insurance coverage
+```{r train ins_cover}
+# create one insurance var from related questions in 'ins_' module
+traindf.v13 <- traindf.v13 %>% 
+  mutate(ins_no = case_when((ins_1 == 1 | ins_mh == 4 | 
+                               ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
+                            (ins_1 == 0 | ins_mh == 1 | 
+                               ins_mh == 2 | ins_ade == 2) ~ 0)) %>% # adequate MH coverage
+  filter(!is.na(ins_no))   
+traindf.v13$ins_no <- as.logical(traindf.v13$ins_no) # switch class to boolean
+table(traindf.v13$ins_no, useNA = "always")   # check output, skew
+jarque.bera.test(traindf.v13$ins_no)
+
+traindf.v13 = subset(traindf.v13, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
 ```
 
 ## Military status
@@ -1527,7 +1527,7 @@ Premotivation correlation
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v15 %>% select(si_type, race, undercls, sexual, gender_tgd, sib_freq, ed_any, 
                                        dx_mh, international, meds_any, religios, school2_type, finpast,
-                                       residenc, satisfied_overall)
+                                       ins_no, residenc)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_prem, sig=0.6){
@@ -1554,8 +1554,9 @@ corr_simple()
 ## PCA PREMOTIVATION
 ```{r train prem_pca}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v15 %>% select(sexual, age, gender_tgd, sib_freq, race, ed_any, dx_mh, international, finpast,
-                                       meds_any, religios, school2_type, residenc, satisfied_overall, undercls)
+traindf_prem <- traindf.v15 %>% select(sexual, age, gender_tgd, sib_freq, race, ed_any, dx_mh, 
+                                       international, finpast, meds_any, religios, school2_type, 
+                                       residenc, undercls, ins_no)
 traindf_prem <- na.omit(traindf_prem)
 
 # create corr matrix, with dummy vars
@@ -1567,7 +1568,7 @@ traindf_prem   # check output
 
 results_prem <- dummy_cols(traindf_prem, select_columns = c("sexual", "age", "gender_tgd", "sib_freq", "finpast",
                                                             "race", "ed_any", "dx_mh", "meds_any",
-                                                            "religios", "satisfied_overall", "international",
+                                                            "religios", "international", "ins_no",
                                                             "school2_type", "residenc", "undercls"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
@@ -1600,13 +1601,13 @@ fviz_cos2(prem_pca, choice = "var", axes = 1,
 ## GLM Premotivation regression
 ```{r train clm_prem}
 glm_prem <- traindf.v15 %>% select(si_type, sexual, gender_tgd, sib_freq, race, ed_any, finpast,
-                                   dx_mh, international, religios, school2_type, residenc, 
-                                   meds_any, satisfied_overall, undercls)
+                                   dx_mh, international, religios, school2_type, residenc, ins_no,
+                                   meds_any, undercls)
 glm_prem <- na.omit(glm_prem)
 
 # run regression
 glm_prem <- glm(si_type ~ sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + undercls + finpast +
-                religios +  school2_type + international + residenc + meds_any + satisfied_overall,
+                religios +  school2_type + international + residenc + meds_any + ins_no,
               data = glm_prem)
 summary(glm_prem)
 coef(glm_prem)   # retrieve coefficients
@@ -1628,22 +1629,6 @@ model.prem  %>%
 
 ```{r train LE frame}
 traindf.v16 <- traindf.v14
-```
-
-## Insurance coverage
-```{r train ins_cover}
-# create one insurance var from related questions in 'ins_' module
-traindf.v16 <- traindf.v16 %>% 
-  mutate(ins_no = case_when((ins_1 == 1 | ins_mh == 4 | 
-                               ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
-                            (ins_1 == 0 | ins_mh == 1 | 
-                               ins_mh == 2 | ins_ade == 2) ~ 0)) %>% # adequate MH coverage
-  filter(!is.na(ins_no))   
-traindf.v16$ins_no <- as.logical(traindf.v16$ins_no) # switch class to boolean
-table(traindf.v16$ins_no, useNA = "always")   # check output, skew
-jarque.bera.test(traindf.v16$ins_no)
-
-traindf.v16 = subset(traindf.v16, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
 ```
 
 ## Illicit drug use
@@ -1833,8 +1818,7 @@ traindf.v19 <- traindf.v18
 ### LE correlation
 ```{r train LE correlation}
 # Define life event var candidates for correlation matrix
-traindf_le <- traindf.v19 %>% select(ins_no, gpa_sr, fincur, binge,
-                                     assault, drugs_yn, drug_mar, psyhx)
+traindf_le <- traindf.v19 %>% select(gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx)
 
 # convert traindf to numeric in order to run correlations
 traindf_le <- traindf_le %>% mutate_if(is.character, as.factor)
@@ -1856,8 +1840,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ### PCA LE
 ```{r train le_pca}
-traindf_le <- traindf.v19 %>% select(ins_no, gpa_sr, fincur, assault,
-                                     binge, drugs_yn, drug_mar, psyhx)
+traindf_le <- traindf.v19 %>% select(gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx)
 traindf_le <- na.omit(traindf_le)
 
 # create corr matrix, with dummy vars
@@ -1867,8 +1850,7 @@ traindf_le <- traindf_le %>%
   data.matrix()
 traindf_le   # check output
 
-results_le <- dummy_cols(traindf_le, select_columns = c("ins_no", "gpa_sr", "fincur",
-                                                        "binge", "drugs_yn", "drug_mar", 
+results_le <- dummy_cols(traindf_le, select_columns = c("gpa_sr", "fincur", "binge", "drugs_yn", "drug_mar", 
                                                         "assault", "psyhx"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
@@ -1901,12 +1883,12 @@ fviz_cos2(le_pca, choice = "var", axes = 1,
 ### GLM Life event regression
 ```{r train glm_LE}
 # prepare dataframe for regression
-glm_le <- traindf.v19 %>% select(si_type, ins_no, gpa_sr, assault, binge, drugs_yn, 
+glm_le <- traindf.v19 %>% select(si_type, gpa_sr, assault, binge, drugs_yn, 
                                  drug_mar, psyhx, fincur)
 glm_le <- na.omit(glm_le)
 
 # run regression
-glm_le <- glm(si_type ~ ins_no + gpa_sr + assault + binge + drugs_yn + drug_mar + 
+glm_le <- glm(si_type ~ gpa_sr + assault + binge + drugs_yn + drug_mar + 
                 psyhx + fincur,
               data = glm_le)
 summary(glm_le)
@@ -2185,6 +2167,22 @@ traindf.v22$aaq_dum <- as.numeric(traindf.v22$aaq_dum)
 table(traindf.v22$aaq_dum, useNA = "always")  # check output, NAs
 ```
 
+## Overall school satisfaction
+```{r train satisfied_overall}
+traindf.v22 <- traindf.v22 %>%
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,  # reverse coding
+                                       satisfied_overall == 2 ~ 5,
+                                       satisfied_overall == 3 ~ 4,
+                                       satisfied_overall == 4 ~ 3,
+                                       satisfied_overall == 5 ~ 2,
+                                       satisfied_overall == 6 ~ 1)) %>% 
+  filter(!is.na(satisfied_overall))  # filters out NAs
+traindf.v22$satisfied_overall <- as.numeric(traindf.v22$satisfied_overall)
+
+table(traindf.v22$satisfied_overall, useNA = "always")
+jarque.bera.test(traindf.v22$satisfied_overall)
+```
+
 ## Persist
 ```{r train persist}
 traindf.v22 <- traindf.v22 %>%
@@ -2446,7 +2444,8 @@ traindf.v27 <- traindf.v26
 ### Threats correlation
 ```{r train MMTSM_corr}
 # Define MM variable candidates for correlation matrix
-traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, mh_stigma, talk, brs_tot, ther, persist, aaq_tot)
+traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, mh_stigma, talk, brs_tot, 
+                                     satisfied_overall, ther, persist, aaq_tot)
 
  # convert traindf to numeric in order to run correlations
 traindf_mm <- traindf_mm %>% mutate_if(is.character, as.factor)
@@ -2468,7 +2467,8 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ### PCA MMTSM
 ```{r train PCA MMTSM}
-traindf_mmtsm <- traindf.v27 %>% select(inf, flourish, belong1, talk, mh_stigma, persist, aaq_tot, ther)
+traindf_mmtsm <- traindf.v27 %>% select(inf, flourish, belong1, talk, mh_stigma, persist, 
+                                        satisfied_overall, aaq_tot, ther)
 traindf_mmtsm <- na.omit(traindf_mmtsm)
 
 # create corr matrix, with dummy vars 
@@ -2478,7 +2478,8 @@ traindf_mmtsm <- traindf_mmtsm %>%
   data.matrix()
 traindf_mmtsm   # check output
 results_mmtsm <- dummy_cols(traindf_mmtsm, select_columns = c("flourish", "belong1", "inf", "ther",
-                                                        "mh_stigma", "talk", "persist", "aaq_tot"),
+                                                        "mh_stigma", "talk", "persist", "aaq_tot",
+                                                        "satisfied_overall"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 mmtsm_pca <- PCA(results_mmtsm, graph=FALSE)  # apply PCA
 eigval_mmtsm <- get_eigenvalue(mmtsm_pca)
@@ -2507,11 +2508,13 @@ fviz_cos2(mmtsm_pca, choice = "var", axes = 1,
 ### GLM Threats regression
 ```{r train GLM mmtsm}
 # prepare data for regression
-glm_mmtsm <- traindf.v27 %>% select(si_type, inf, flourish, belong1, talk, mh_stigma, persist, ther, aaq_tot)
+glm_mmtsm <- traindf.v27 %>% select(si_type, inf, flourish, belong1, talk, mh_stigma, persist, 
+                                    satisfied_overall, ther, aaq_tot)
 glm_mmtsm <- na.omit(glm_mmtsm)
 
 # run MM regression
-glm_mmtsm <- glm(si_type ~ inf + flourish + belong1 + mh_stigma + talk + persist + aaq_tot + ther, 
+glm_mmtsm <- glm(si_type ~ inf + flourish + belong1 + mh_stigma + talk + persist + 
+                   satisfied_overall + aaq_tot + ther, 
               data = glm_mmtsm)
 
 summary(glm_mmtsm)
@@ -2549,13 +2552,7 @@ glm_all <- traindf.v27 %>% select(
 glm_all <- na.omit(glm_all)
 
 # run MM regression
-glm_all <- glm(si_type ~ religios + satisfied_overall + residenc + school2_type + international + undercls + 
-  # life events
-  ins_no + gpa_sr + psyhx + fincur + drugs_yn + assault + binge + drug_mar + 
-  # defeat-entrapment
-  deprawsc + anx_score + dep_impa + percneed + 
-  # threats to internal/external moderation
-  inf + flourish + belong1 + talk + mh_stigma + persist + aaq_tot + ther, 
+glm_all <- glm(si_type ~ ., 
               data = glm_all)
 
 summary(glm_all)
@@ -2673,20 +2670,20 @@ traindf_sem <- traindf.v28 %>% select(
   si_type, si_activ,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
-  religios, satisfied_overall, residenc, school2_type, international, undercls,
+  religios, residenc, school2_type, international, undercls, ins_no, 
   # life events
-  ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
+  gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  persist, aaq_tot, flourish, talk, ther)  
+  persist, aaq_tot, flourish, talk, ther, satisfied_overall)  
 
 # create sem matrix 
 traindf_sem <- traindf_sem %>% 
   # mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
 # traindf_sem <- na.omit(traindf_sem)
-view(traindf_sem)   # check output
+#view(traindf_sem)   # check output
 
 # # xlsx output
 traindf_sem_out <- as.data.frame(traindf_sem)
@@ -2766,19 +2763,19 @@ traindf_sem1 <- traindf.v28 %>% select(
   si_type, si_activ,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
-  religios, satisfied_overall, residenc, school2_type, international, undercls,
+  religios, international, undercls, ins_no,
   # life events
-  ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
+  gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  persist, aaq_tot, flourish, talk, ther) 
+  persist, aaq_tot, flourish, talk, ther, satisfied_overall) 
 
 # create sem matrix 
 traindf_sem1 <- data.matrix(traindf_sem1)
   
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "race", "residenc", "school2_type"),
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "race"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # xlsx output
@@ -2825,12 +2822,6 @@ table(testdf.v10$audit_tot) # check output (too small)
 
 testdf.v10 = subset(testdf.v10, select= -c(audit_1:audit_10, audit_3_m, 
                                              audit_3_f, audit_3_o)) # clean up vars/columns
-```
-
-## ETOH treatment
-```{r test alc_tx}
-table(testdf.v10$alc_tx) # check output (too small)
-testdf.v10 = subset(testdf.v10, select= -c(alc_tx)) # clean up vars/columns
 ```
 
 ## Eating disorder, any type
@@ -3110,19 +3101,6 @@ testdf.v11 = subset(testdf.v11, select= -c(meds_1:meds_7)) # clean up vars/colum
 testdf.v13 <- testdf.v11
 ```
 
-## US resident status
-```{r test resident status}
-# aggregate all residency variables into 1 variable called 'res_status'
-testdf.v13 <- testdf.v13 %>% 
-  mutate(res_status = case_when(citizen == 1 ~ 1,
-                                permanentres == 1 ~ 2, 
-                                visa == 1 ~ 3,
-                                undoc == 1 ~ 4,
-                                otherdoc == 1 ~ 5))
-table(testdf.v13$res_status)  # check output
-# data.v13 = subset(testdf.v12, select= -c(citizen, permanentres, visa, otherdoc, undoc))   # clean up var
-```
-
 ## Discrimination
 ```{r test discrim}
 testdf.v13$discrim<- as.numeric(testdf.v13$discrim)
@@ -3143,22 +3121,6 @@ testdf.v13 <- testdf.v13 %>%
 testdf.v13$religios <- as.numeric(testdf.v13$religios)
 
 table(testdf.v13$religios, useNA = "always")       # Check output
-```
-
-## Overall school satisfaction
-```{r test satisfied_overall}
-testdf.v13 <- testdf.v13 %>%
-  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,  # reverse coding
-                                       satisfied_overall == 2 ~ 5,
-                                       satisfied_overall == 3 ~ 4,
-                                       satisfied_overall == 4 ~ 3,
-                                       satisfied_overall == 5 ~ 2,
-                                       satisfied_overall == 6 ~ 1)) %>% 
-  filter(!is.na(satisfied_overall))  # filters out NAs
-testdf.v13$satisfied_overall <- as.numeric(testdf.v13$satisfied_overall)
-
-table(testdf.v13$satisfied_overall, useNA = "always")
-jarque.bera.test(testdf.v13$satisfied_overall)
 ```
 
 ## Residence type
@@ -3199,6 +3161,22 @@ testdf.v14 <- testdf.v14 %>%
 testdf.v14$international <- as.logical(testdf.v14$international)
 
 table(testdf.v14$international, useNA = "always")
+```
+
+## Insurance coverage
+```{r test ins_cover}
+# create one insurance var from related questions in 'ins_' module
+testdf.v14 <- testdf.v14 %>% 
+  mutate(ins_no = case_when((ins_1 == 1 | ins_mh == 4 | 
+                               ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
+                            (ins_1 == 0 | ins_mh == 1 | 
+                               ins_mh == 2 | ins_ade == 2) ~ 0)) %>% # adequate MH coverage
+  filter(!is.na(ins_no))   
+testdf.v14$ins_no <- as.logical(testdf.v14$ins_no) # switch class to boolean
+table(testdf.v14$ins_no, useNA = "always")   # check output, skew
+jarque.bera.test(testdf.v14$ins_no)
+
+testdf.v14 = subset(testdf.v14, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
 ```
 
 ## Family support
@@ -3379,133 +3357,12 @@ testdf.v14$school2_type <- as.factor(testdf.v14$school2_type)
 table(testdf.v14$school2_type, useNA = "always") # check output
 ```
 
-## PREMOTIVATION ANALYSES
-```{r test env analysis}
-testdf.v15 <- testdf.v14  # new dataframe for analysis
-```
-
-Premotivation correlation
-```{r test results_prem}
-# Define diathesis vars for correlation matrix
-testdf_prem <- testdf.v15 %>% select(si_type, race, undercls, sexual, gender_tgd, sib_freq, ed_any, 
-                                       dx_mh, international, meds_any, religios, school2_type, finpast,
-                                       residenc, satisfied_overall)
-
-# Corr_simple function
-corr_simple <- function(testdf=testdf_prem, sig=0.6){
-  # convert testdf to numeric in order to run correlations 
-  testdf_prem <- testdf_prem %>% mutate_if(is.character, as.factor)
-  testdf_prem <-  testdf_prem %>% mutate_if(is.factor, as.numeric)
-  # run a correlation and drop the insignificant ones
-  corr <- cor(testdf_prem, use = "pairwise.complete.obs")                               
-  corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop duplicates and correlations of 1    
-  corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-  corr <- as.data.frame(as.table(corr))                   # turn into a 3-column table
-  corr <- na.omit(corr)                                   # remove the NA values from above 
-  corr <- corr[order(-abs(corr$Freq)),]                   # sort by highest correlation
-  print(corr)
-  
-  #turn corr back into matrix in order to plot with corrplot
-  mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-}
-corr_simple()
-
-```
-
-## PCA PREMOTIVATION
-```{r test prem_pca}
-# Define diathesis vars for correlation matrix
-testdf_prem <- testdf.v15 %>% select(sexual, gender_tgd, sib_freq, race, ed_any, dx_mh, international, finpast,
-                                       meds_any, religios, school2_type, residenc, satisfied_overall, undercls)
-testdf_prem <- na.omit(testdf_prem)
-
-# create corr matrix, with dummy vars
-testdf_prem <- testdf_prem %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
-  data.matrix()
-testdf_prem   # check output
-
-results_prem <- dummy_cols(testdf_prem, select_columns = c("sexual", "gender_tgd", "sib_freq", "finpast",
-                                                            "race", "ed_any", "dx_mh", "meds_any",
-                                                            "religios", "satisfied_overall", "international",
-                                                            "school2_type", "residenc", "undercls"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-prem_pca <- PCA(results_prem, graph=FALSE)  # apply PCA
-prem_pca$eig   # output matrix with eigenvalues
-
-eigval_prem <- get_eigenvalue(prem_pca)
-eigval_prem
-
-# visualization for PCA, FAMD
-fviz_screeplot(prem_pca, addlabels = TRUE, ylim = c(0, 50))
-fviz_pca_var(prem_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_famd_var(prem_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_cos2(prem_pca, choice = "var", axes = 1,
-          fill = "steelblue", color = "steelblue",
-          sort.val = c("desc", "asc", "none"),
-          top = 40,
-          xtickslab.rt = 45,
-          ggtheme = theme_minimal())
-```
-
-## GLM Premotivation regression
-```{r test clm_prem}
-glm_prem <- testdf.v15 %>% select(si_type, sexual, gender_tgd, sib_freq, race, ed_any, finpast,
-                                   dx_mh, international, religios, school2_type, residenc, 
-                                   meds_any, satisfied_overall, undercls)
-glm_prem <- na.omit(glm_prem)
-
-# run regression
-glm_prem <- glm(si_type ~ sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + undercls + finpast +
-                religios +  school2_type + international + residenc + meds_any + satisfied_overall,
-              data = glm_prem)
-summary(glm_prem)
-coef(glm_prem)   # retrieve coefficients
-
-ci_prem <- confint(glm_prem)  # retrieve confidence intervals
-ci_prem
-
-model.prem <- tidy(glm_prem)  # Convert model to dataframe
-model.prem
-model.prem  %>%
-   mutate(or = exp(estimate),               # Odds ratio/gradient
-          var.diag = diag(vcov(glm_prem)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))    # Odds-ratio adjusted
-```
-
 
 # LIFE EVENTS
 
 
 ```{r test LE frame}
 testdf.v16 <- testdf.v14
-```
-
-## Insurance coverage
-```{r test ins_cover}
-# create one insurance var from related questions in 'ins_' module
-testdf.v16 <- testdf.v16 %>% 
-  mutate(ins_no = case_when((ins_1 == 1 | ins_mh == 4 | 
-                               ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
-                            (ins_1 == 0 | ins_mh == 1 | 
-                               ins_mh == 2 | ins_ade == 2) ~ 0)) %>% # adequate MH coverage
-  filter(!is.na(ins_no))   
-testdf.v16$ins_no <- as.logical(testdf.v16$ins_no) # switch class to boolean
-table(testdf.v16$ins_no, useNA = "always")   # check output, skew
-jarque.bera.test(testdf.v16$ins_no)
-
-testdf.v16 = subset(testdf.v16, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
 ```
 
 ## Illicit drug use
@@ -3575,14 +3432,6 @@ testdf.v16$fincur <- as.logical(testdf.v16$fincur)
 
 table(testdf.v16$fincur, useNA = "always")  # check output, skew
 jarque.bera.test(testdf.v16$fincur)
-```
-
-## ISI scale
-```{r test isi_tot}
-table(testdf.v16$isi_1)
-table(testdf.v16$isi_2)
-testdf.v16 = subset(testdf.v16, select= -c(isi_1, isi_2, isi_3, isi_4, 
-                                             isi_5, isi_6, isi_7)) # clean up var
 ```
 
 ## Abuse or assault, in the last year only
@@ -3686,105 +3535,6 @@ table(testdf.v18$gpa_sr, useNA = "always")  # check output, skew
 jarque.bera.test(testdf.v18$gpa_sr)
 ```
  
- 
-## Life events analyses 
-```{r test LE analysis}
-testdf.v19 <- testdf.v18
-```
- 
-### LE correlation
-```{r test LE correlation}
-# Define life event var candidates for correlation matrix
-testdf_le <- testdf.v19 %>% select(ins_no, gpa_sr, fincur, binge,
-                                     assault, drugs_yn, drug_mar, psyhx)
-
-# convert testdf to numeric in order to run correlations
-testdf_le <- testdf_le %>% mutate_if(is.character, as.factor)
-testdf_le <-  testdf_le %>% mutate_if(is.factor, as.numeric)
-
-# run a correlation and drop the insignificant ones
-corr <- cor(testdf_le, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr,diag=TRUE)] <- NA                   # prepare to drop dups and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                          # drop perfect correlations
-corr <- as.data.frame(as.table(corr))                   #turn into a 3-column table
-corr <- na.omit(corr)                                   #remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]                   #sort by highest correlation
-print(corr)
-  
-#turn corr back into matrix in order to plot with corrplot
-mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-```
-
-### PCA LE
-```{r test le_pca}
-testdf_le <- testdf.v19 %>% select(ins_no, gpa_sr, fincur, assault,
-                                     binge, drugs_yn, drug_mar, psyhx)
-testdf_le <- na.omit(testdf_le)
-
-# create corr matrix, with dummy vars
-testdf_le <- testdf_le %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
-  data.matrix()
-testdf_le   # check output
-
-results_le <- dummy_cols(testdf_le, select_columns = c("ins_no", "gpa_sr", "fincur",
-                                                        "binge", "drugs_yn", "drug_mar", 
-                                                        "assault", "psyhx"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
-le_pca$eig   # output matrix with eigenvalues
-
-eigval_le <- get_eigenvalue(le_pca)
-eigval_le
-
-# visualization for PCA, FAMD
-fviz_screeplot(le_pca, addlabels = TRUE, ylim = c(0, 50))
-fviz_pca_var(le_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_famd_var(le_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_cos2(le_pca, choice = "var", axes = 1,
-          fill = "steelblue", color = "steelblue",
-          sort.val = c("desc", "asc", "none"),
-          top = 40,
-          xtickslab.rt = 45,
-          ggtheme = theme_minimal())
-```
-
-### GLM Life event regression
-```{r test glm_LE}
-# prepare dataframe for regression
-glm_le <- testdf.v19 %>% select(si_type, ins_no, gpa_sr, assault, binge, drugs_yn, 
-                                 drug_mar, psyhx, fincur)
-glm_le <- na.omit(glm_le)
-
-# run regression
-glm_le <- glm(si_type ~ ins_no + gpa_sr + assault + binge + drugs_yn + drug_mar + 
-                psyhx + fincur,
-              data = glm_le)
-summary(glm_le)
-coef(glm_le)
-
-ci_le <- confint(glm_le)
-ci_le
-
-model.le <- tidy(glm_le)  # Convert model to dataframe for easy manipulation
-model.le
-model.le  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(glm_le)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
-```
-
 
 # DEFEAT-ENTRAPMENT
 
@@ -3865,14 +3615,6 @@ table(testdf.v20$aca_impa, useNA = "always") # check output, skew
 jarque.bera.test(testdf.v20$aca_impa)
 ```
 
-## Academic failure
-```{r test failed}
-table(testdf.v20$failed)
-
-# sample too small in the elective, remove
-testdf.v20 = subset(testdf.v20, select= -c(failed)) # clean up var
-```
-
 ## Depression impact
 ```{r test dep_impa}
 testdf.v20 <- testdf.v20 %>%
@@ -3904,98 +3646,9 @@ testdf.v20 <- testdf.v20 %>%
 table(testdf.v20$percneed, useNA = "always") # check output, NAs
 ```
 
-## Defeat-entrapment analysis
-```{r test defeat analyses}
-testdf.v21 <- testdf.v20
-```
 
-### Defeat-entrapment correlation
-```{r test defeat cor}
-# Define defeat variable candidates for correlation matrix
-testdf_def <- testdf.v21 %>% select(aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa)
+# THREATS
 
- # convert testdf to numeric in order to run correlations
-testdf_def <- testdf_def %>% mutate_if(is.character, as.factor)
-testdf_def <-  testdf_def %>% mutate_if(is.factor, as.numeric)
-
-# run a correlation and drop the insignificant ones
-corr <- cor(testdf_def, use = "pairwise.complete.obs")                               
-corr[lower.tri(corr, diag=TRUE)] <- NA        # prepare to drop duplicates and correlations of 1    
-corr[corr %in% c(-1, 1)] <- NA                # drop perfect correlations
-corr <- as.data.frame(as.table(corr))         # turn into a 3-column table
-corr <- na.omit(corr)                         # remove the NA values from above 
-corr <- corr[order(-abs(corr$Freq)),]         # sort by highest correlation
-print(corr)
-```
-
-### EFA defeat-entrapment
-```{r test PCA_def}
-testdf_def <- testdf.v21 %>% select(aca_impa, deprawsc, anx_score, percneed, gad7_impa, dep_impa)
-testdf_def <- na.omit(testdf_def)
-
-# create corr matrix, with dummy vars 
-testdf_def <- testdf_def %>% 
-  mutate_if(is.numeric, as.factor) %>% 
-  dummy_cols(remove_first_dummy = TRUE) %>% 
-  data.matrix()
-testdf_def   # check output
-
-results_def <- dummy_cols(testdf_def, select_columns = c("aca_impa", "deprawsc", "anx_score",
-                                                          "percneed", "gad7_impa", "dep_impa"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
-def_pca$eig   # output matrix with eigenvalues
-
-eigval_def <- get_eigenvalue(def_pca)
-eigval_def
-
-# visualization for PCA, FAMD
-fviz_screeplot(def_pca, addlabels = TRUE, ylim = c(0, 50))
-fviz_pca_var(def_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_famd_var(def_pca,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE     # Avoid text overlapping
-             )
-fviz_cos2(def_pca, choice = "var", axes = 1, 
-          fill = "steelblue", color = "steelblue",
-          sort.val = c("desc", "asc", "none"),
-          top = 40,
-          xtickslab.rt = 45,
-          ggtheme = theme_minimal())
-```
-
-### GLM defeat-entrapment
-```{r test GLM defeat}
-# prepare regression analysis
-results2_def <- testdf.v21 %>% select(si_type, aca_impa, deprawsc, anx_score, percneed, gad7_impa, dep_impa)
-glm_def <- na.omit(results2_def)
-
-# run defeat regression
-glm_def <- glm(si_type ~ aca_impa + deprawsc + anx_score + percneed + gad7_impa + dep_impa, 
-               data = glm_def)
-
-summary(glm_def)
-coef(glm_def)   # retrieve coefficients
-
-ci_def <- confint(glm_def) # retrieve confidence intervals
-ci_def
-
-model.def <- tidy(glm_def)  # Convert model to dataframe for easy manipulation
-model.def
-model.def  %>%
-   mutate(or = exp(estimate),  # Odds ratio/gradient
-          var.diag = diag(vcov(glm_def)),  # Variance of each coefficient
-          or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
-```
-
-
-# THREATS TO MODERATION
 
 ```{r test TSM frame}
 testdf.v22 <- testdf.v20
@@ -4006,6 +3659,22 @@ testdf.v22 <- testdf.v20
 ## Secretive MH
 testdf.v22$dep_secret <- as.numeric(testdf.v22$dep_secret)
 table(testdf.v22$dep_secret, useNA = "always")  # check output, too many NAs
+```
+
+## Overall school satisfaction
+```{r test satisfied_overall}
+testdf.v13 <- testdf.v13 %>%
+  mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,  # reverse coding
+                                       satisfied_overall == 2 ~ 5,
+                                       satisfied_overall == 3 ~ 4,
+                                       satisfied_overall == 4 ~ 3,
+                                       satisfied_overall == 5 ~ 2,
+                                       satisfied_overall == 6 ~ 1)) %>% 
+  filter(!is.na(satisfied_overall))  # filters out NAs
+testdf.v13$satisfied_overall <- as.numeric(testdf.v13$satisfied_overall)
+
+table(testdf.v13$satisfied_overall, useNA = "always")
+jarque.bera.test(testdf.v13$satisfied_overall)
 ```
 
 ## AAQ total
@@ -4308,13 +3977,13 @@ testdf_sem <- testdf.v26 %>% select(
   si_type, si_activ,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
-  religios, satisfied_overall, residenc, school2_type, international, undercls,
+  religios, ins_no, international, undercls,
   # life events
-  ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
+  gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  persist, aaq_tot, flourish, talk, ther)  
+  persist, aaq_tot, flourish, talk, ther, satisfied_overall)  
 
 # create sem matrix 
 testdf_sem <- testdf_sem %>% 
@@ -4367,13 +4036,13 @@ testdf_sem1 <- testdf.v26 %>% select(
   si_type, si_activ,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
-  religios, satisfied_overall, residenc, school2_type, international, undercls,
+  religios, residenc, school2_type, international, undercls, ins_no, 
   # life events
-  ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
+  gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  persist, aaq_tot, flourish, talk, ther)  
+  persist, aaq_tot, flourish, talk, ther, satisfied_overall)  
 
 # create sem matrix 
 testdf_sem1 <- data.matrix(testdf_sem1)
@@ -4407,13 +4076,13 @@ test18_sem <- test18.v26 %>% select(
   si_type, si_activ,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
-  religios, satisfied_overall, residenc, school2_type, international, undercls,
+  religios, residenc, school2_type, international, undercls, ins_no,
   # life events
-  ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
+  gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  persist, aaq_tot, flourish, talk, ther)  
+  persist, aaq_tot, flourish, talk, ther, satisfied_overall)  
   
 ## Dummy col SEM w/ continuous
 results_test_18 <- dummy_cols(test18_sem, select_columns = c("si_type", "race", "residenc", "school2_type"),
@@ -4445,13 +4114,13 @@ test20_sem <- test20.v26 %>% select(
   si_type, si_activ, 
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
-  religios, satisfied_overall, residenc, school2_type, international, undercls,
+  religios,  residenc, school2_type, international, undercls, ins_no,
   # life events
-  ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
+  gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  persist, aaq_tot, flourish, talk, ther)  
+  persist, aaq_tot, flourish, talk, ther, satisfied_overall)  
 
 # create SEM matrix 
 test20_sem <- data.matrix(test20_sem)
@@ -4501,20 +4170,20 @@ test18.v26B$sexual <- as.numeric(test18.v26B$sexual)
 
 
 # training v. testing
-wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 15979286, p-value = 0.593
-wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 16281395, p-value = 0.05201
-wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 16044680, p-value = 0.6258
-wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 16090712, p-value = 0.8825
-wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 16016273, p-value = 0.7108
+wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 15986814, p-value = 0.6003
+wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 16290286, p-value = 0.04873 *
+wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 16052679, p-value = 0.6559
+wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 16095008, p-value = 0.8912
+wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 16022469, p-value = 0.7132
 wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 16332928, p-value = 0.07548
 
 # 18-19 v. 20-25
-wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # W = 6928929, p-value < 2.2e-16 ***
-wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 3306980, p-value = 1.244e-05 ***
-wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 3424143, p-value = 0.02272 *
-wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") # W = 3244443, p-value = 3.035e-07 ***
-wilcox.test(test20.v26B$race, test18.v26B$race, alternative = "two.sided") # W = 3492851, p-value = 0.5591
-wilcox.test(test20.v26B$dx_mh, test18.v26B$dx_mh, alternative = "two.sided") # W = 3523642, p-value = 0.2214
+wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # W = 6938184, p-value < 2.2e-16 ***
+wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 3310351, p-value = 1.096e-05 ***
+wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 3426793, p-value = 0.01721 *
+wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") # W = 3246794, p-value = 2.354e-07 ***
+wilcox.test(test20.v26B$race, test18.v26B$race, alternative = "two.sided") # W = 3498665, p-value = 0.5432
+wilcox.test(test20.v26B$dx_mh, test18.v26B$dx_mh, alternative = "two.sided") # W = 3526078, p-value = 0.2394
 ``` 
 
 
