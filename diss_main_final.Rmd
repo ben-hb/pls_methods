@@ -2532,7 +2532,7 @@ model.mmtsm  %>%
 # prepare data for regression
 glm_all <- traindf.v27 %>% select(
   # outcome
-  si_type, 
+  si_type,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
   religios, residenc, school2_type, international, undercls,
@@ -2661,7 +2661,7 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 # Prep SEM data vars
 traindf_sem <- traindf.v28 %>% select(
   # outcome var
-  si_type,
+  si_type, si_activ,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
   religios, residenc, school2_type, international, undercls, ins_no, 
@@ -3654,7 +3654,7 @@ table(testdf.v22$dep_secret, useNA = "always")  # check output, too many NAs
 
 ## Overall school satisfaction
 ```{r test satisfied_overall}
-testdf.v13 <- testdf.v13 %>%
+testdf.v22 <- testdf.v22 %>%
   mutate(satisfied_overall = case_when(satisfied_overall == 1 ~ 6,  # reverse coding
                                        satisfied_overall == 2 ~ 5,
                                        satisfied_overall == 3 ~ 4,
@@ -3662,10 +3662,10 @@ testdf.v13 <- testdf.v13 %>%
                                        satisfied_overall == 5 ~ 2,
                                        satisfied_overall == 6 ~ 1)) %>% 
   filter(!is.na(satisfied_overall))  # filters out NAs
-testdf.v13$satisfied_overall <- as.numeric(testdf.v13$satisfied_overall)
+testdf.v22$satisfied_overall <- as.numeric(testdf.v22$satisfied_overall)
 
-table(testdf.v13$satisfied_overall, useNA = "always")
-jarque.bera.test(testdf.v13$satisfied_overall)
+table(testdf.v22$satisfied_overall, useNA = "always")
+jarque.bera.test(testdf.v22$satisfied_overall)
 ```
 
 ## AAQ total
