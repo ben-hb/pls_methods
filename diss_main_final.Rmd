@@ -41,9 +41,6 @@ library(missMDA)
 library(multilevel) 
 library(MVN)
 library(mvord)
-library(ordinal)
-library(ordinalgmifs)
-library(ordinalNet)
 library(plspm)
 library(pscl)
 library(psych)
@@ -53,9 +50,6 @@ library(reshape2)
 library(rockchalk)
 library(rosetta)
 library(rstatix)
-library(semEff)
-library(semPlot)
-library(semPLS)
 library(semTools)
 library(stargazer) 
 library(stats)
@@ -2541,13 +2535,13 @@ glm_all <- traindf.v27 %>% select(
   si_type, 
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
-  religios, satisfied_overall, residenc, school2_type, international, undercls,
+  religios, residenc, school2_type, international, undercls,
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault, binge, drug_mar,
   # defeat-entrapment
   deprawsc, anx_score, dep_impa, percneed,
   # threats to internal/external moderation
-  inf, flourish, belong1, talk, mh_stigma, persist, aaq_tot, ther)
+  inf, flourish, belong1, talk, mh_stigma, persist, satisfied_overall, aaq_tot, ther)
 
 glm_all <- na.omit(glm_all)
 
@@ -2582,13 +2576,13 @@ traindf.v28 <- traindf.v26
 var_names <- c(
   # premotivation
   "age", "sexual", "race", "gender_tgd", "sib_freq", "ed_any", "dx_mh", "meds_any", "finpast",
-  "religios", "satisfied_overall", "residenc", "school2_type", "international", "undercls",
+  "religios", "residenc", "school2_type", "international", "undercls",
   # life events
   "ins_no", "gpa_sr", "psyhx", "fincur", "drugs_yn", "assault", "binge", "drug_mar",
   # defeat-entrapment
   "deprawsc", "anx_score", "dep_impa", "percneed",
   # threats to internal/external moderation
-  "persist", "aaq_tot", "flourish", "talk", "ther")  
+  "persist", "aaq_tot", "flourish", "satisfied_overall", "talk", "ther")  
 
 var_names <- sort(var_names)
 
@@ -2667,7 +2661,7 @@ write_xlsx(missing_dfs, path = "missing.xlsx", col_names = TRUE, format_headers 
 # Prep SEM data vars
 traindf_sem <- traindf.v28 %>% select(
   # outcome var
-  si_type, si_activ,
+  si_type,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
   religios, residenc, school2_type, international, undercls, ins_no, 
@@ -2760,7 +2754,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 # Prep SEM data vars
 traindf_sem1 <- traindf.v28 %>% select(
   # outcome var
-  si_type, si_activ,
+  si_type,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
   religios, international, undercls, ins_no,
@@ -2786,15 +2780,12 @@ write_xlsx(results_tr_com1, path = "traindf_pls.xlsx", col_names = TRUE, format_
 
 
 
-
 TESTING DATA
-
-
 
 
 ## AUDIT  
 ** too small for inclusion
-```{r train audit_tot}
+```{r test audit_tot}
 testdf.v10 <- testdf.v10 %>%
   # Combine audit_3_f, audit_3_m, audit_3_o to create 'audit_3'
   mutate(audit_3 = case_when(audit_3_f == 1 ~ 1,
@@ -4048,7 +4039,7 @@ testdf_sem1 <- testdf.v26 %>% select(
 testdf_sem1 <- data.matrix(testdf_sem1)
   
 ## Dummy col SEM w/ continuous
-results_test <- dummy_cols(testdf_sem1, select_columns = c("si_type", "race", "residenc", "school2_type"),
+results_test <- dummy_cols(testdf_sem1, select_columns = c("si_type", "race"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # xlsx output
