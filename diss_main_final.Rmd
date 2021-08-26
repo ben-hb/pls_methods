@@ -1558,7 +1558,7 @@ traindf_prem <- traindf_prem %>%
   mutate_if(is.numeric, as.factor) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
-traindf_prem   # check output
+# traindf_prem   # check output
 
 results_prem <- dummy_cols(traindf_prem, select_columns = c("sexual", "age", "gender_tgd", "sib_freq", "finpast",
                                                             "race", "ed_any", "dx_mh", "meds_any",
@@ -1570,7 +1570,7 @@ prem_pca <- PCA(results_prem, graph=FALSE)  # apply PCA
 prem_pca$eig   # output matrix with eigenvalues
 
 eigval_prem <- get_eigenvalue(prem_pca)
-eigval_prem
+# eigval_prem
 
 # visualization for PCA, FAMD
 fviz_screeplot(prem_pca, addlabels = TRUE, ylim = c(0, 50))
@@ -1842,7 +1842,7 @@ traindf_le <- traindf_le %>%
   mutate_if(is.numeric, as.factor) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
-traindf_le   # check output
+# traindf_le   # check output
 
 results_le <- dummy_cols(traindf_le, select_columns = c("gpa_sr", "fincur", "binge", "drugs_yn", "drug_mar", 
                                                         "assault", "psyhx"),
@@ -2057,7 +2057,7 @@ traindf_def <- traindf_def %>%
   mutate_if(is.numeric, as.factor) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
-traindf_def   # check output
+# traindf_def   # check output
 
 results_def <- dummy_cols(traindf_def, select_columns = c("aca_impa", "deprawsc", "anx_score",
                                                           "percneed", "gad7_impa", "dep_impa"),
@@ -2067,7 +2067,7 @@ def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
 def_pca$eig   # output matrix with eigenvalues
 
 eigval_def <- get_eigenvalue(def_pca)
-eigval_def
+# eigval_def
 
 # visualization for PCA, FAMD
 fviz_screeplot(def_pca, addlabels = TRUE, ylim = c(0, 50))
@@ -2470,14 +2470,14 @@ traindf_mmtsm <- traindf_mmtsm %>%
   mutate_if(is.numeric, as.factor) %>% 
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
-traindf_mmtsm   # check output
+# traindf_mmtsm   # check output
 results_mmtsm <- dummy_cols(traindf_mmtsm, select_columns = c("flourish", "belong1", "inf", "ther",
                                                         "mh_stigma", "talk", "persist", "aaq_tot",
                                                         "satisfied_overall"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 mmtsm_pca <- PCA(results_mmtsm, graph=FALSE)  # apply PCA
 eigval_mmtsm <- get_eigenvalue(mmtsm_pca)
-eigval_mmtsm
+# eigval_mmtsm
 
 # Visualization of PCA, FAMD
 fviz_screeplot(mmtsm_pca, addlabels = TRUE, ylim = c(0, 50))
@@ -2610,7 +2610,7 @@ props <- school2_m[,2:ncol(school2_m)] / school2_m[,1]
 school2 <- data.frame(school2[, 1:2], props)
 
 # view missingness matrix
-view(school2)
+# view(school2)
 
 # save matrix
 write_xlsx(school2, path = "sch2_missing.xlsx", col_names = TRUE, format_headers = TRUE)
@@ -2677,7 +2677,7 @@ traindf_sem <- traindf_sem %>%
   # mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
 # traindf_sem <- na.omit(traindf_sem)
-#view(traindf_sem)   # check output
+# view(traindf_sem)   # check output
 
 # # xlsx output
 traindf_sem_out <- as.data.frame(traindf_sem)
@@ -3981,7 +3981,7 @@ testdf_sem <- testdf_sem %>%
   # mutate_if(is.numeric, as.factor) %>% 
   data.matrix()
 # testdf_sem <- na.omit(testdf_sem)
-view(testdf_sem)   # check output
+# view(testdf_sem)   # check output
 
 # # xlsx output
 testdf_sem_out <- as.data.frame(testdf_sem)
@@ -4161,20 +4161,20 @@ test18.v26B$sexual <- as.numeric(test18.v26B$sexual)
 
 
 # training v. testing
-wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 15986814, p-value = 0.6003
-wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 16290286, p-value = 0.04873 *
-wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 16052679, p-value = 0.6559
-wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 16095008, p-value = 0.8912
-wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 16022469, p-value = 0.7132
-wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 16332928, p-value = 0.07548
+wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 15974521, p-value = 0.5965
+wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 16274859, p-value = 0.05296
+wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 16038848, p-value = 0.6233
+wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 16083640, p-value = 0.891
+wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 16010644, p-value = 0.7108
+wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 16325040, p-value = 0.07795
 
 # 18-19 v. 20-25
-wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # W = 6938184, p-value < 2.2e-16 ***
-wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 3310351, p-value = 1.096e-05 ***
-wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 3426793, p-value = 0.01721 *
-wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") # W = 3246794, p-value = 2.354e-07 ***
-wilcox.test(test20.v26B$race, test18.v26B$race, alternative = "two.sided") # W = 3498665, p-value = 0.5432
-wilcox.test(test20.v26B$dx_mh, test18.v26B$dx_mh, alternative = "two.sided") # W = 3526078, p-value = 0.2394
+wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # W = 6928929, p-value < 2.2e-16 ***
+wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 3306980, p-value = 1.244e-05 ***
+wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 3424143, p-value = 0.02272 *
+wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") # W = 3244443, p-value = 3.035e-07 ***
+wilcox.test(test20.v26B$race, test18.v26B$race, alternative = "two.sided") #  = 3492851, p-value = 0.5591
+wilcox.test(test20.v26B$dx_mh, test18.v26B$dx_mh, alternative = "two.sided") # W = 3523642, p-value = 0.2214
 ``` 
 
 
