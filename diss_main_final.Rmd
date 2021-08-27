@@ -2619,7 +2619,7 @@ write_xlsx(school2, path = "sch2_missing.xlsx", col_names = TRUE, format_headers
 ## Missingness of each var w/in each var
 ```{r train missingness between vars}
 missing_dfs <- list()
-for (k in 1:length(var_names)) {
+for (k in 1:length(var_names)) {}
 
 #create skeleton of missingness matrix
 var <- count(traindf.v28, traindf.v28[var_names[k]])
