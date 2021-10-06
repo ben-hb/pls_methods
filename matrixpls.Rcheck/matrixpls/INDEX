@@ -1,0 +1,42 @@
+GSCA                    Generalized structured component analysis
+                        (GSCA) weights
+ave                     Average Variance Extracted indices for
+                        matrixpls results
+cei                     Composite Equivalence Indices
+convCheck               Convergence checks
+cr                      Composite Reliability indices for matrixpls
+                        results
+effects.matrixpls       Total, Direct, and Indirect Effects for
+                        matrixpls results
+estimator               Parameter estimation of a model matrix
+fitSummary              Summary of model fit of PLS model
+fitted.matrixpls        Model implied covariance matrix based on
+                        matrixpls results
+gof                     Goodness of Fit indices for matrixpls results
+htmt                    Heterotrait-monotrait ratio
+innerEstim              PLS inner estimation
+loadings                Factor loadings matrix from matrixpls results
+matrixpls               Partial Least Squares and other composite
+                        variable models.
+matrixpls-common        Commonly used arguments
+matrixpls-functions     All estimation function types
+matrixpls-package       Matrix-based Partial Least Squares estimation
+matrixpls.crossvalidate
+                        Cross-validation of predictions from matrixpls
+                        results
+matrixpls.plspm         A plspm compatibility wrapper for matrixpls
+matrixpls.sempls        A semPLS compatibility wrapper for matrixpls
+matrixpls.sim           Monte Carlo simulations with matrixpls
+matrixplsboot           Bootstrapping of matrixpls function
+optimCrit               Optimization criteria functions
+outerEstim              PLS outer estimation
+parameterEstim          Parameter estimation of full model
+predict.matrixpls       Predict method for matrixpls results
+q2                      Q2 predictive relevance statistics
+r2                      R2 for matrixpls results
+reliabilityEstim        Reliabilities as products of weights and
+                        loadings
+residuals.matrixpls     Residual diagnostics for matrixpls results
+signChange              Sign change corrections for bootstrap
+weightFun               Indicator weight algoritms
+weightSign              Sign ambiguity corrections
