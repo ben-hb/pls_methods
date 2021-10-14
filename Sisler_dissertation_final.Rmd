@@ -1552,7 +1552,7 @@ glm_prem <- na.omit(glm_prem)
 # run regression
 glm_prem <- glm(si_type ~ sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + undercls +
                   finpast + religios +  school2_type_2 + school2_type_2 + international + residenc_2 + 
-                  residenc_3 + residenc_4 + meds_any + ins_no + satisfied_overall, family = binomial(link = "logit"),
+                  residenc_3 + residenc_4 + meds_any + ins_no + satisfied_overall, family = binomial("logit"),
               data = glm_prem)
 summary(glm_prem)
 coef(glm_prem)   # retrieve coefficients
