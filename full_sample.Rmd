@@ -2381,7 +2381,9 @@ data_sem_all <- data.v28 %>% select(
   si_type, si_activ,
   # premotivation
   age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
-  religios, satisfied_overall, residenc, school2_type, international, undercls,
+  religios, satisfied_overall, residenc, school2_type, international, undercls, dep_none, dep_mild, dep_mod, dep_modsev, dep_sev,
+  anx_mod, anx_sev, anx_any,
+
   # life events
   ins_no, gpa_sr, psyhx, fincur, drugs_yn, drug_mar, assault, binge,
   # defeat-entrapment
@@ -2391,15 +2393,17 @@ data_sem_all <- data.v28 %>% select(
 
 # create sem matrix 
 data_sem_all <- data.matrix(data_sem_all)
+data_sem_all <- as.data.frame(data_sem_all)
+view(data_sem_all)
   
 ## Dummy col SEM w/ continuous
-results_all_com1 <- dummy_cols(data_sem_all, select_columns = c("si_type", "race", "residenc", "school2_type"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+# results_all_com1 <- dummy_cols(data_sem_all, select_columns = c("s),
+#                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # xlsx output
-save(results_all_com1, file = "data_all_pls.RData")
+save(data_sem_all, file = "data_all_pls.RData")
 load("data_all_pls.RData")
-write_xlsx(results_all_com1, path = "data_all_pls.xlsx", col_names = TRUE, format_headers = TRUE)
+write_xlsx(data_sem_all, path = "data_all_pls.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
 

@@ -1552,7 +1552,7 @@ glm_prem <- na.omit(glm_prem)
 # run regression
 glm_prem <- glm(si_type ~ sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + undercls +
                   finpast + religios +  school2_type_2 + school2_type_2 + international + residenc_2 + 
-                  residenc_3 + residenc_4 + meds_any + ins_no + satisfied_overall, family = binomial(link = "logit"),
+                  residenc_3 + residenc_4 + meds_any + ins_no + satisfied_overall, family = binomial("logit"),
               data = glm_prem)
 summary(glm_prem)
 coef(glm_prem)   # retrieve coefficients
@@ -1806,7 +1806,7 @@ glm_le <- na.omit(glm_le)
 
 # run regression
 glm_le <- glm(si_type ~ gpa_sr + assault + binge + drugs_yn + drug_mar + 
-                psyhx + fincur + ther, family = binomial(link = "logit"),
+                psyhx + fincur + ther, family = binomial("logit"),
               data = glm_le)
 summary(glm_le)
 coef(glm_le)
@@ -1969,10 +1969,10 @@ print(corr)
 
 #turn corr back into matrix in order to plot with corrplot
 mtx_corr <- acast(corr, Var1~Var2, value.var="Freq")  
-corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 ```
 
 ### GLM defeat-entrapment
+
 ```{r train GLM defeat}
 # prepare regression analysis
 results2_def <- traindf.v21 %>% select(si_type, aca_impa, deprawsc, anx_score, percneed, gad7_impa, dep_impa)
@@ -2355,7 +2355,7 @@ glm_all <- traindf.v27 %>% select(
 glm_all <- na.omit(glm_all)
 
 # run MM regression
-glm_all <- glm(si_type ~ ., family = binomial(link = "logit"),
+glm_all <- glm(si_type ~ ., family = binomial("logit"),
               data = glm_all)
 
 summary(glm_all)
