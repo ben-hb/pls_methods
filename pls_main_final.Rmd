@@ -1,5 +1,5 @@
 ---
-title: "Sisler Main Analysis"
+title: "Suicidality PLS Analysis"
 output:
   word_document: default
   html_document: default
@@ -72,7 +72,10 @@ library(writexl)
  #save("data.raw", file="~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
  load("~/Desktop/Desktop_Home/UTAH/Stats_I/R_Studio/Dissertation_files/Sisler_dissertation_HMS1819_audit.RData")
  #source("dissertation_fx.R")
-   
+```
+
+
+``` {r data select}
 data.v1 <- data.raw %>%
   mutate(age = as.numeric(age)) %>%
   filter(age < 26 & age >= 18) %>%   # exclusion criteria. Filter out under 18s, and over 26s
@@ -279,6 +282,7 @@ table(data.v2$si_activ, useNA = "always")
 
 ```{r Diathesis frame}
 data.v2 <- data.v2
+
 ```
 
 ## Age
@@ -577,7 +581,6 @@ jarque.bera.test(data.v5$sexual)
 ```{r paid_work}
 table(data.v5$hours_work_paid)
 
-
 ## something is weird here
 data.v5 <- data.v5 %>%
   mutate(
@@ -842,11 +845,11 @@ data.v7 <- data.v6 %>%
                               sib_freq == 1 ~ 0,    # 1-2x/yr
                               sib_freq == 2 ~ 1,    # <1x/mo
                               sib_freq == 3 ~ 1,    # 2-3x/mo
-                              sib_freq == 4 ~ 1,    # 1-2x/wk
-                              sib_freq == 5 ~ 1,    # 3-5x/wk
-                              sib_freq == 6 ~ 1)) %>%  # almost everyday
+                              sib_freq == 4 ~ 2,    # 1-2x/wk
+                              sib_freq == 5 ~ 2,    # 3-5x/wk
+                              sib_freq == 6 ~ 3)) %>%  # almost everyday
   filter(!is.na(sib_freq))  # filter for NAs
-data.v7$sib_freq <- as.logical(data.v7$sib_freq)  # move frequency to numeric class
+#data.v7$sib_freq <- as.logical(data.v7$sib_freq)  # move frequency to numeric class
 
 table(data.v7$sib_freq, useNA = "always")  # use for NA changes
 data.v7 = subset(data.v7, select= -c(sib_none:sib_oth)) # clean up vars/columns
@@ -996,8 +999,6 @@ table(traindf.v10$wcs_3)
 table(traindf.v10$wcs_4)
 table(traindf.v10$wcs_5)
 
-traindf.v10 = subset(traindf.v10, select= -c(wcs_1_f, wcs_1_m, wcs_1_o, 
-                                           wcs_2, wcs_3, wcs_4, wcs_5))
 ```
 
 ## Medication use
@@ -1248,32 +1249,20 @@ traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/col
 ```
 
 ```{r environment vars}
-traindf.v13 <- traindf.v11
+traindf.v12 <- traindf.v11
 ```
 
-## US resident status
-```{r train resident status}
-# aggregate all residency variables into 1 variable called 'res_status'
-traindf.v13 <- traindf.v13 %>% 
-  mutate(res_status = case_when(citizen == 1 ~ 1,
-                                permanentres == 1 ~ 2, 
-                                visa == 1 ~ 3,
-                                undoc == 1 ~ 4,
-                                otherdoc == 1 ~ 5))
-table(traindf.v13$res_status)  # check output
-# data.v13 = subset(traindf.v12, select= -c(citizen, permanentres, visa, otherdoc, undoc))   # clean up var
-```
 
 ## Discrimination
 ```{r train discrim}
-traindf.v13$discrim<- as.numeric(traindf.v13$discrim)
-table(traindf.v13$discrim, useNA = "always") # check output (lots of NAs)
+traindf.v12$discrim<- as.numeric(traindf.v12$discrim)
+table(traindf.v12$discrim, useNA = "always") # check output (lots of NAs)
 ```
 
 ## Religion
 ```{r train religios}
 # Label levels of religious importance
-traindf.v13 <- traindf.v13 %>%
+traindf.v13 <- traindf.v12 %>%
   # flip coding
   mutate(religios = case_when(religios == 1 ~ 5,   # highly religious
                               religios == 2 ~ 4,
@@ -1287,6 +1276,7 @@ table(traindf.v13$religios, useNA = "always")       # Check output
 ```
 
 ## Residence type
+
 ```{r train residenc}
 # re-organize living situation into on-campus, off-campus, and at home
 traindf.v13 <- traindf.v13 %>%
@@ -1312,22 +1302,13 @@ table(traindf.v13$env_mh, useNA = "always")  # check output (excessive NAs)
 ```{r train ins_cover}
 # create one insurance var from related questions in 'ins_' module
 traindf.v13 <- traindf.v13 %>% 
-  mutate(ins_no = case_when((ins_1 == 1 | ins_mh == 4 | 
-                               ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
-                            (ins_1 == 0 | ins_mh == 1 | 
-                               ins_mh == 2 | ins_ade == 2) ~ 0)) %>% # adequate MH coverage
+  mutate(ins_no = case_when((ins_1 == 1 | ins_mh == 4 | ins_mh == 5 | ins_ade == 3) ~ 1,   # inadequate coverage
+                            (ins_1 == 0 | ins_mh == 1 | ins_mh == 2 | ins_ade == 2) ~ 0)) %>% # adequate MH coverage
   filter(!is.na(ins_no))   
 traindf.v13$ins_no <- as.logical(traindf.v13$ins_no) # switch class to boolean
 table(traindf.v13$ins_no, useNA = "always")   # check output, skew
-jarque.bera.test(traindf.v13$ins_no)
 
 traindf.v13 = subset(traindf.v13, select= -c(ins_1, ins_mh, ins_ade, ins_inade)) # clean up var
-```
-
-## Military status
-```{r train military}
-traindf.v14 <- traindf.v13
-table(traindf.v14$military, useNA = "always")
 ```
 
 ## International student
@@ -1522,11 +1503,6 @@ table(traindf.v14$school2_type, useNA = "always") # check output
 
 ## Welcome v. unwelcome
 ```{r test exp_community}
-traindf.v14$exp_community <- as.numeric(traindf.v14$exp_community)
-traindf.v14$exp_leave <- as.numeric(traindf.v14$exp_leave)
-table(traindf.v14$exp_community)
-table(traindf.v14$exp_leave)
-
 traindf.v14 <- traindf.v14 %>%
   mutate(community = case_when(exp_community == 1 ~ 1,
                                exp_community == 2 ~ 1,
@@ -1541,8 +1517,6 @@ traindf.v14 <- traindf.v14 %>%
                             
 traindf.v14$community <- as.numeric(traindf.v14$community)
 table(traindf.v14$community, useNA = "always")  # check output (excessive NAs)
-```
-
 ```
 
 ## Community
@@ -1732,6 +1706,8 @@ traindf.v16$fincur <- as.logical(traindf.v16$fincur)
 
 table(traindf.v16$fincur, useNA = "always")  # check output, skew
 jarque.bera.test(traindf.v16$fincur)
+
+table(traindf.v16$afford_school)
 ```
 
 ## ISI scale
