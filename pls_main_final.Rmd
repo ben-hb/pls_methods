@@ -174,7 +174,7 @@ data.v1 <- data.raw %>%
     talksup1:talksup4, talk2pro:talk2noo,
     #  school climate
     cli_disab:cli_sh_oth_TEXT, excl_env:exp_community, val_faculty:excl_pers_oth, group_TEXT:group_active,
-    friend_re:friend_religid, social_re:social_religid, re_find:time_activ,
+    friend_re:friend_religid, re_find:time_activ,
     #  SAT-related
     sat_hours_1, sat_loc_1, sat_qual_1, sat_priv_1, sat_sched_1, sat_hours_2, sat_loc_2, sat_qual_2, sat_priv_2, sat_sched_2, 
     sat_hours_3, sat_loc_3, sat_qual_3, sat_priv_3, sat_sched_3, sat_hours_4, sat_loc_4, sat_qual_4, sat_priv_4, sat_sched_4, 
@@ -282,7 +282,6 @@ table(data.v2$si_activ, useNA = "always")
 
 ```{r Diathesis frame}
 data.v2 <- data.v2
-
 ```
 
 ## Age
@@ -418,6 +417,9 @@ data.v3 <- data.v3 %>%
 
 table(data.v3$gender_tgd, useNA = "always")   # check output
 jarque.bera.test(data.v3$gender_tgd)
+
+## Interaction effect
+table(data.v3$cli_TQ)
 ```
 
 ## Sexual Identity
@@ -572,9 +574,12 @@ data.v5 <- data.v4 %>%
   filter(!is.na(sexual))
 
 data.v5$sexual <- as.logical(data.v5$sexual)
-  
 table(data.v5$sexual, useNA = "always") # tabulate and check outputs
-jarque.bera.test(data.v5$sexual)
+
+# interaction effect
+table(data.v5$cli_LGB)
+table(data.v5$social_sexid)
+
 ```
 
 ## hours of work/wk
@@ -834,8 +839,108 @@ data.v6$race[data.v6$race_other_text %in% c("Half Middle Eastern half white",
 # tabulate and check outputs
 table(data.v6$race, useNA = "always")
 
-hist(data.v6$race)  # visualizae distribution and skew
-jarque.bera.test(data.v6$race)
+hist(data.v6$race)  # visualize distribution and skew
+
+```
+## Possible interaction effects for race
+``` {r race intrxn}
+# possible interaction effect
+table(data.v6$social_re)
+table(data.v6$cli_nonwhite)
+table(data.v6$clo_black)
+table(data.v6$cli_ainaan)
+table(data.v6$cli_asian)
+table(data.v6$cli_sai)
+table(data.v6$cli_his)
+table(data.v6$cli_mides)
+table(data.v6$cli_pi)
+table(data.v6$cli_white)
+```
+
+## Interaction variables for identity'
+``` {r dei_campus}
+data.v6$hostile_friendly <- as.numeric(data.v6$hostile_friendly)
+data.v6$hostile_friendly <- as.numeric(data.v6$hostile_friendly)
+data.v6$hostile_friendly <- as.numeric(data.v6$hostile_friendly)
+data.v6$hostile_friendly <- as.numeric(data.v6$hostile_friendly)
+data.v6$hostile_friendly <- as.numeric(data.v6$hostile_friendly)
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(hostile_friendly = case_when(hostile_friendly == 1 ~ 5,   # very hostile
+                                      hostile_friendly == 2 ~ 4,
+                                      hostile_friendly == 3 ~ 3,
+                                      hostile_friendly == 4 ~ 2,
+                                      hostile_friendly == 5 ~ 1))  # very friendly
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(uncoop_coop = case_when(uncoop_coop == 1 ~ 5,   # very uncooperative
+                                 uncoop_coop == 2 ~ 4,
+                                 uncoop_coop == 3 ~ 3,
+                                 uncoop_coop == 4 ~ 2,
+                                 uncoop_coop == 5 ~ 1))  # very cooperative
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(notwelc_welc  = case_when(notwelc_welc  == 1 ~ 5,   # not welcome
+                                   notwelc_welc  == 2 ~ 4,
+                                   notwelc_welc  == 3 ~ 3,
+                                   notwelc_welc  == 4 ~ 2,
+                                   notwelc_welc  == 5 ~ 1))  # very welcome
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(disresp_resp  = case_when(disresp_resp  == 1 ~ 5,   # disrespectful
+                                   disresp_resp  == 2 ~ 4,
+                                   disresp_resp  == 3 ~ 3,
+                                   disresp_resp  == 4 ~ 2,
+                                   disresp_resp  == 5 ~ 1))  # very respectful
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(uncomfort_comfort   = case_when(uncomfort_comfort   == 1 ~ 5,   # uncomfortable
+                                         uncomfort_comfort   == 2 ~ 4,
+                                         uncomfort_comfort   == 3 ~ 3,
+                                         uncomfort_comfort   == 4 ~ 2,
+                                         uncomfort_comfort   == 5 ~ 1))  # comfortable
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_women  = case_when(cli_women  == 1 ~ 5,   # welcoming
+                                   cli_women  == 2 ~ 4,
+                                   cli_women  == 3 ~ 3,
+                                   cli_women  == 4 ~ 2,
+                                   cli_women  == 5 ~ 1))  # hostile
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_nonwhite  = case_when(cli_nonwhite  == 1 ~ 5,   # welcoming
+                                   cli_nonwhite  == 2 ~ 4,
+                                   cli_nonwhite  == 3 ~ 3,
+                                   cli_nonwhite  == 4 ~ 2,
+                                   cli_nonwhite  == 5 ~ 1))  # hostile
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_LGB  = case_when(cli_LGB  == 1 ~ 5,   # hostile
+                              cli_LGB  == 2 ~ 4,
+                              cli_LGB  == 3 ~ 3,
+                              cli_LGB  == 4 ~ 2,
+                              cli_LGB  == 5 ~ 1))  # welcoming
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_TQ   = case_when(cli_TQ   == 1 ~ 5,   # hostile
+                              cli_TQ   == 2 ~ 4,
+                              cli_TQ   == 3 ~ 3,
+                              cli_TQ   == 4 ~ 2,
+                              cli_TQ   == 5 ~ 1))  # welcoming
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_immigrant  = case_when(cli_immigrant  == 1 ~ 5,   # hostile
+                              cli_immigrant  == 2 ~ 4,
+                              cli_immigrant  == 3 ~ 3,
+                              cli_immigrant  == 4 ~ 2,
+                              cli_immigrant  == 5 ~ 1))  # welcoming
+
+  
+  filter(!is.na(dei_campus))  # filter for NAs
+#data.v7$sib_freq <- as.logical(data.v7$sib_freq)  # move frequency to numeric class
+
+table(data.v6$sib_freq, useNA = "always")  # use for NA changes
+data.v6 = subset(data.v6, select= -c(sib_none:sib_oth)) # clean up vars/columns
 ```
 
 ## SIBs and frequency
@@ -1273,10 +1378,24 @@ traindf.v13 <- traindf.v12 %>%
 traindf.v13$religios <- as.numeric(traindf.v13$religios)
 
 table(traindf.v13$religios, useNA = "always")       # Check output
+
+# interaction effects of religion
+table(traindf.v13$social_religid)
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_relig  = case_when(cli_relig_nch  == 1 ~ 5,   # hostile
+                              cli_relig_nch  == 2 ~ 4,
+                              cli_relig_nch  == 3 ~ 3,
+                              cli_relig_nch  == 4 ~ 2,
+                              cli_relig_nch  == 5 ~ 1,  # welcoming
+                              cli_relig_ch  == 1 ~ 5,   # hostile
+                              cli_relig_ch  == 2 ~ 4,
+                              cli_relig_ch  == 3 ~ 3,
+                              cli_relig_ch  == 4 ~ 2,
+                              cli_relig_ch  == 5 ~ 1))  # welcoming
+
 ```
 
 ## Residence type
-
 ```{r train residenc}
 # re-organize living situation into on-campus, off-campus, and at home
 traindf.v13 <- traindf.v13 %>%
@@ -1327,6 +1446,8 @@ table(traindf.v14$international, useNA = "always")
 ```{r train fam_support_aca}
 traindf.v14$fam_support_aca <- as.numeric(traindf.v14$fam_support_aca)
 table(traindf.v14$fam_support_aca, useNA = "always")  # check output (excessive NAs)
+
+
 ```
 
 ## Activity Involvement
@@ -1440,6 +1561,76 @@ traindf.v14 <- traindf.v14 %>%
   mutate(var_Xavier = ifelse((school2 == "Xavier"), 1, 0))
 ```
 
+### school culture for mental health
+
+```{r train school2}
+# insert each school as a dichotomous var --- how can we give each school a set MH upstander/bystander score???
+
+traindf.v14 <- traindf.v14 %>%
+  mutate(school_MH_culture = case_when(school2 == "AlbertaCAD" ~ , 1, 0)) %
+  mutate(var_Boston = ifelse((school2 == "Boston"), 1, 0)) %>%
+  mutate(var_CIA = ifelse((school2 == "CIA"), 1, 0)) %>%
+  mutate(var_CalPoly = ifelse((school2 == "CalPoly"), 1, 0)) %>%
+  mutate(var_ColoradoCollege = ifelse((school2 == "ColoradoCollege"), 1, 0)) %>%
+  mutate(var_ColoradoMountain = ifelse((school2 == "ColoradoMountain"), 1, 0)) %>%
+  mutate(var_ColumbusCAD = ifelse((school2 == "ColumbusCAD"), 1, 0)) %>%
+  mutate(var_Delaware = ifelse((school2 == "Delaware"), 1, 0)) %>%
+  mutate(var_DetroitMercy = ifelse((school2 == "DetroitMercy"), 1, 0)) %>%
+  mutate(var_Emerson = ifelse((school2 == "Emerson"), 1, 0)) %>%
+  mutate(var_GeorgeMason = ifelse((school2 == "GeorgeMason"), 1, 0)) %>%
+  mutate(var_GeorgiaTech = ifelse((school2 == "GeorgiaTech"), 1, 0)) %>%
+  mutate(var_Kalamazoo = ifelse((school2 == "Kalamazoo"), 1, 0)) %>%
+  mutate(var_Kansas = ifelse((school2 == "Kansas"), 1, 0)) %>%
+  mutate(var_MDInstituteCollegeArt = ifelse((school2 == "MDInstituteCollegeArt"), 1, 0)) %>%
+  mutate(var_MassArt = ifelse((school2 == "MassArt"), 1, 0)) %>%
+  mutate(var_Merrimack = ifelse((school2 == "Merrimack"), 1, 0)) %>%
+  mutate(var_MichiganState = ifelse((school2 == "MichiganState"), 1, 0)) %>%
+  mutate(var_MinnesotaCAD = ifelse((school2 == "MinnesotaCAD"), 1, 0)) %>%
+  mutate(var_MontclairState = ifelse((school2 == "MontclairState"), 1, 0)) %>%
+  mutate(var_NHInstituteArt = ifelse((school2 == "NHInstituteArt"), 1, 0)) %>%
+  mutate(var_NevadaReno = ifelse((school2 == "NevadaReno"), 1, 0)) %>%
+  mutate(var_OaklandCC = ifelse((school2 == "OaklandCC"), 1, 0)) %>%
+  mutate(var_OklahomaCityCC = ifelse((school2 == "OklahomaCityCC"), 1, 0)) %>%
+  mutate(var_PaloAltoCollege = ifelse((school2 == "PaloAltoCollege"), 1, 0)) %>%
+  mutate(var_PennCollegeTech = ifelse((school2 == "PennCollegeTech"), 1, 0)) %>%
+  mutate(var_Pratt = ifelse((school2 == "RedlandsCC"), 1, 0)) %>%
+  mutate(var_RhodeIsland = ifelse((school2 == "RhodeIsland"), 1, 0)) %>%
+  mutate(var_RedlandsCC = ifelse((school2 == "RedlandsCC"), 1, 0)) %>%
+  mutate(var_Ringling = ifelse((school2 == "Ringling"), 1, 0)) %>%
+  mutate(var_Rollins = ifelse((school2 == "Rollins"), 1, 0)) %>%
+  mutate(var_SAIC = ifelse((school2 == "SAIC"), 1, 0)) %>%
+  mutate(var_Sewanee = ifelse((school2 == "Sewanee"), 1, 0)) %>%
+  mutate(var_Smith = ifelse((school2 == "Smith"), 1, 0)) %>%
+  mutate(var_SouthernNazarene = ifelse((school2 == "SouthernNazarene"), 1, 0)) %>%
+  mutate(var_SouthwesternOklahomaState = ifelse((school2 == "SouthwesternOklahomaState"), 1, 0)) %>%
+  mutate(var_StJohns = ifelse((school2 == "StJohns"), 1, 0)) %>%
+  mutate(var_StMarys = ifelse((school2 == "StMarys"), 1, 0)) %>%
+  mutate(var_StRose = ifelse((school2 == "StRose"), 1, 0)) %>%
+  mutate(var_TrumanState = ifelse((school2 == "TrumanState"), 1, 0)) %>%
+  mutate(var_TuftsHealthSciences = ifelse((school2 == "TuftsHealthSciences"), 1, 0)) %>%
+  mutate(var_TuftsMainCampus = ifelse((school2 == "TuftsMainCampus"), 1, 0)) %>%
+  mutate(var_UChicago = ifelse((school2 == "UChicago"), 1, 0)) %>%
+  mutate(var_UFlorida = ifelse((school2 == "UFlorida"), 1, 0)) %>%
+  mutate(var_UMDearborn = ifelse((school2 == "UMDearborn"), 1, 0)) %>%
+  mutate(var_UMich = ifelse((school2 == "UMich"), 1, 0)) %>%
+  mutate(var_UNCSchoolArt = ifelse((school2 == "UNCSchoolArt"), 1, 0)) %>%
+  mutate(var_UTKnoxville = ifelse((school2 == "UTKnoxville"), 1, 0)) %>%
+  mutate(var_UniversityofSouthernCalifornia = ifelse((school2 == "UniversityofSouthernCalifornia"), 1, 0)) %>%  
+  mutate(var_Utah = ifelse((school2 == "Utah"), 1, 0)) %>%
+  mutate(var_VATech = ifelse((school2 == "VATech"), 1, 0)) %>%
+  mutate(var_VirginiaCommonwealth = ifelse((school2 == "VirginiaCommonwealth"), 1, 0)) %>%
+  mutate(var_WakeForest = ifelse((school2 == "WakeForest"), 1, 0)) %>%
+  mutate(var_Watkins = ifelse((school2 == "Watkins"), 1, 0)) %>%
+  mutate(var_WestVirginia = ifelse((school2 == "WestVirginia"), 1, 0)) %>%
+  mutate(var_WesternCarolina = ifelse((school2 == "WesternCarolina"), 1, 0)) %>%
+  mutate(var_WesternMichigan = ifelse((school2 == "WesternMichigan"), 1, 0)) %>%
+  mutate(var_WesternWA = ifelse((school2 == "WesternWA"), 1, 0)) %>%
+  mutate(var_Xavier = ifelse((school2 == "Xavier"), 1, 0))
+```
+
+
+
+
 ### School type levels
 
 (1) 4-year: var_Boston, var_CalPoly, var_ColoradoCollege, var_ColoradoMountain, var_Delaware, var_DetroitMercy, var_Emerson, var_GeorgeMason, var_GeorgiaTech, var_Kalamazoo, var_Kansas, var_Merrimack, var_MichiganState, var_MontclairState, var_NevadaReno, var_PennCollegeTech, var_RhodeIsland, var_Rollins, var_Sewanee, var_Smith, var_SouthernNazarene, var_SouthwesternOklahomaState, var_StJohns, var_StMarys, var_StRose, var_TrumanState, var_TuftsHealthSciences, var_TuftsMainCampus, var_UChicago, var_UFlorida, var_UMDearborn, var_UMich, var_UTKnoxville,  var_UniversityofSouthernCalifornia, var_Utah, var_VATech, var_VirginiaCommonwealth, var_WakeForest,var_WestVirginia, var_WesternCarolina, var_WesternMichigan, var_WesternWA, var_Xavier
@@ -1501,7 +1692,7 @@ traindf.v14$school2_type <- as.factor(traindf.v14$school2_type)
 table(traindf.v14$school2_type, useNA = "always") # check output
 ```
 
-## Welcome v. unwelcome
+## Welcome v. unwelcome -- where did this variable go????
 ```{r test exp_community}
 traindf.v14 <- traindf.v14 %>%
   mutate(community = case_when(exp_community == 1 ~ 1,
@@ -1519,11 +1710,14 @@ traindf.v14$community <- as.numeric(traindf.v14$community)
 table(traindf.v14$community, useNA = "always")  # check output (excessive NAs)
 ```
 
-## Community
+## Community -- where did this variable go????
 ```{r test exp_community}
 traindf.v14$exp_community <- as.numeric(traindf.v14$exp_community)
 table(traindf.v14$exp_community, useNA = "always")  # check output (excessive NAs)
 ```
+
+
+
 
 ## PREMOTIVATION ANALYSES
 ```{r train env analysis}
@@ -1535,7 +1729,7 @@ Premotivation correlation
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v15 %>% select(si_type, race, undercls, sexual, gender_tgd, sib_freq, ed_any, 
                                        dx_mh, international, meds_any, religios, school2_type, finpast,
-                                       ins_no, residenc)
+                                       ins_no, residenc, hours_work_paid, children_dep)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_prem, sig=0.6){
@@ -1564,7 +1758,7 @@ corr_simple()
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v15 %>% select(sexual, age, gender_tgd, sib_freq, race, ed_any, dx_mh, 
                                        international, finpast, meds_any, religios, school2_type, 
-                                       residenc, undercls, ins_no)
+                                       residenc, undercls, ins_no, hours_work_paid, children_dep)
 traindf_prem <- na.omit(traindf_prem)
 
 # create corr matrix, with dummy vars
@@ -1577,7 +1771,7 @@ traindf_prem <- traindf_prem %>%
 results_prem <- dummy_cols(traindf_prem, select_columns = c("sexual", "age", "gender_tgd", "sib_freq", "finpast",
                                                             "race", "ed_any", "dx_mh", "meds_any",
                                                             "religios", "international", "ins_no",
-                                                            "school2_type", "residenc", "undercls"),
+                                                            "school2_type", "residenc", "undercls", "hours_work_paid", "children_dep"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 prem_pca <- PCA(results_prem, graph=FALSE)  # apply PCA
@@ -1610,12 +1804,12 @@ fviz_cos2(prem_pca, choice = "var", axes = 1,
 ```{r train clm_prem}
 glm_prem <- traindf.v15 %>% select(si_type, sexual, gender_tgd, sib_freq, race, ed_any, finpast,
                                    dx_mh, international, religios, school2_type, residenc, ins_no,
-                                   meds_any, undercls)
+                                   meds_any, undercls, hours_work_paid, children_dep)
 glm_prem <- na.omit(glm_prem)
 
 # run regression
 glm_prem <- glm(si_type ~ sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + undercls + finpast +
-                religios +  school2_type + international + residenc + meds_any + ins_no,
+                religios +  school2_type + international + residenc + meds_any + ins_no + hours_work_paid + children_dep,
               data = glm_prem)
 summary(glm_prem)
 coef(glm_prem)   # retrieve coefficients
@@ -1636,13 +1830,13 @@ model.prem  %>%
 
 
 ```{r train LE frame}
-traindf.v16 <- traindf.v14
+traindf.v16 <- traindf.v14 
 ```
 
 ## Illicit drug use
 Creates illicit drug use var (limitation -- 30 days reflection)
 ```{r train drugs_yn}
-## adjusted for nested question status
+## adjusted for nested question status 
 traindf.v16$drug_coc[is.na(traindf.v16$drug_coc)] <- 0
 traindf.v16$drug_her[is.na(traindf.v16$drug_her)] <- 0
 traindf.v16$drug_met[is.na(traindf.v16$drug_met)] <- 0
@@ -1681,7 +1875,7 @@ jarque.bera.test(traindf.v16$drugs_yn)
 ```{r train drug_mar}
 traindf.v16$drug_mar[is.na(traindf.v16$drug_mar)] <- 0
 table(traindf.v16$drug_mar)  
-
+ 
 traindf.v16 <- traindf.v16 %>%
   mutate(drug_mar = case_when(drug_mar == 1 ~ 1, 
                               drug_mar == 0 ~ 0)) %>%
@@ -1694,7 +1888,7 @@ jarque.bera.test(traindf.v16$drug_mar)
 
 ## Current financial stressors
 ```{r train fincur}
-traindf.v16 <- traindf.v16 %>%
+traindf.v16 <- traindf.v16 %>% 
   # make dichotomous
   mutate(fincur = case_when(fincur == 3 ~ 0,  # sometimes
                             fincur == 4 ~ 0,  # rarely or never
@@ -1705,9 +1899,16 @@ traindf.v16 <- traindf.v16 %>%
 traindf.v16$fincur <- as.logical(traindf.v16$fincur)
 
 table(traindf.v16$fincur, useNA = "always")  # check output, skew
-jarque.bera.test(traindf.v16$fincur)
+```
 
+## Current SES comparison
+```{r train fincur}
 table(traindf.v16$afford_school)
+table(traindf.v16$fin_comp1)
+table(traindf.v16$fin_comp2)
+
+##Interaction effect
+table(traindf.v16$cli_lowses)
 ```
 
 ## ISI scale
@@ -1715,13 +1916,13 @@ table(traindf.v16$afford_school)
 table(traindf.v16$isi_1)
 table(traindf.v16$isi_2)
 traindf.v16 = subset(traindf.v16, select= -c(isi_1, isi_2, isi_3, isi_4, 
-                                             isi_5, isi_6, isi_7)) # clean up var
+                                             isi_5, isi_6, isi_7)) # clean up var 
 ```
 
 ## Abuse or assault, in the last year only
 ```{r train assault}
 table(traindf.v16$abuse_life)
-table(traindf.v16$abuse_recent)
+table(traindf.v16$abuse_recent) 
 
 # create dichotomous variable called 'abuse_year' to reflect abuse that occurred in last 12 months
 traindf.v17 <- traindf.v16 %>%
@@ -1762,7 +1963,7 @@ traindf.v17 = subset(traindf.v17, select= -c(abuse_life, abuse_recent)) # clean 
 # set all binge_fr values equal to 0
 traindf.v17$binge_fr_f[is.na(traindf.v17$binge_fr_f)] <- 0
 traindf.v17$binge_fr_m[is.na(traindf.v17$binge_fr_m)] <- 0
-traindf.v17$binge_fr_o[is.na(traindf.v17$binge_fr_o)] <- 0
+traindf.v17$binge_fr_o[is.na(traindf.v17$binge_fr_o)] <- 0 
 
 # create one binge var
 traindf.v18 <- traindf.v17 %>% 
@@ -1794,12 +1995,12 @@ traindf.v18$psyhx <- as.logical(traindf.v18$psyhx)  # change class to boolean
 table(traindf.v18$psyhx, useNA = "always")   # check output, skew
 jarque.bera.test(traindf.v18$psyhx)
 
-traindf.v18 = subset(traindf.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up var
+traindf.v18 = subset(traindf.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up var 
 ```
 
 ## Current GPA
 ```{r train gpa_sr}
-traindf.v18 <- traindf.v18 %>%
+traindf.v18 <- traindf.v18 %>% 
 # bin grades to As, Bs, Cs, and D+ and below
   mutate(gpa_sr = case_when(gpa_sr == 0 ~ 1,   # A+
                             gpa_sr == 1 ~ 1,   # A
@@ -1823,7 +2024,7 @@ jarque.bera.test(traindf.v18$gpa_sr)
 ## Life events analyses 
 ```{r train LE analysis}
 traindf.v19 <- traindf.v18
-```
+``` 
  
 ### LE correlation
 ```{r train LE correlation}
@@ -1992,8 +2193,58 @@ traindf.v20 <- traindf.v20 %>%
   filter(!is.na(aca_impa)) # filter for NAs
 traindf.v20$aca_impa <- as.numeric(traindf.v20$aca_impa)
 
+traindf.v20 <- traindf.v20 %>%
+  mutate(aca_mh_impa = case_when(aca_anx_1 == 1 ~ 0,
+                               aca_anx_2 == 2 ~ 0,
+                               aca_anx_3 == 3 ~ 0,
+                               aca_anx_4 == 4 ~ 1,
+                               aca_anx_5 == 5 ~ 1,
+                               aca_anx_6 == 6 ~ 1,
+                               aca_dep_1 == 1 ~ 0,
+                               aca_dep_2 == 2 ~ 0,
+                               aca_dep_3 == 3 ~ 0,
+                               aca_dep_4 == 4 ~ 1,
+                               aca_dep_5 == 5 ~ 1,
+                               aca_dep_6 == 6 ~ 1,
+                               aca_eat_1 == 1 ~ 0,
+                               aca_eat_2 == 2 ~ 0,
+                               aca_eat_3 == 3 ~ 0,
+                               aca_eat_4 == 4 ~ 1,
+                               aca_eat_5 == 5 ~ 1,
+                               aca_eat_6 == 6 ~ 1,
+                               aca_add_1 == 1 ~ 0,
+                               aca_add_2 == 2 ~ 0,
+                               aca_add_3 == 3 ~ 0,
+                               aca_add_4 == 4 ~ 1,
+                               aca_add_5 == 5 ~ 1,
+                               aca_add_6 == 6 ~ 1,
+                               aca_substance_1 == 1 ~ 0,
+                               aca_substance_2 == 2 ~ 0,
+                               aca_substance_3 == 3 ~ 0,
+                               aca_substance_4 == 4 ~ 1,
+                               aca_substance_5 == 5 ~ 1,
+                               aca_substance_6 == 6 ~ 1,
+                               aca_phys_health_1 == 1 ~ 0,
+                               aca_phys_health_2 == 2 ~ 0,
+                               aca_phys_health_3 == 3 ~ 0,
+                               aca_phys_health_4 == 4 ~ 1,
+                               aca_phys_health_5 == 5 ~ 1,
+                               aca_phys_health_6 == 6 ~ 1,
+                               aca_phys_assault_1 == 1 ~ 0,
+                               aca_phys_assault_2 == 2 ~ 0,
+                               aca_phys_assault_3 == 3 ~ 0,
+                               aca_phys_assault_4 == 4 ~ 1,
+                               aca_phys_assault_5 == 5 ~ 1,
+                               aca_phys_assault_6 == 6 ~ 1,
+                               aca_sex_assault_1 == 1 ~ 0,
+                               aca_sex_assault_2 == 2 ~ 0,
+                               aca_sex_assault_3 == 3 ~ 0,
+                               aca_sex_assault_4 == 4 ~ 1,
+                               aca_sex_assault_5 == 5 ~ 1,
+                               aca_sex_assault_6 == 6 ~ 1))
+
+table(traindf.v20$aca_mh_impa, useNA = "always")
 table(traindf.v20$aca_impa, useNA = "always") # check output, skew
-jarque.bera.test(traindf.v20$aca_impa)
 ```
 
 ## Academic failure
@@ -2359,6 +2610,19 @@ traindf.v24$brs_dum <- as.logical(traindf.v24$brs_dum)
 rs_df_arranged[1,1]
 table(traindf.v24$brs_tot, useNA = "always")
 table(traindf.v24$brs_dum, useNA = "always")
+```
+
+## Achievement Goal Inventory
+## Distress & social support
+```{r train talk}
+traindf.v24 <- traindf.v24 %>% 
+  # create dictomous variable for no talking or talking to support systems
+  mutate(agl = case_when((talk1_9 == 1 | talk1no == 1) ~ 1,                                    # no support
+                          (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1) ~ 0,      # informal support
+                          (talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) ~ 0))     # formal and informal
+traindf.v25$talk <- as.logical(traindf.v25$talk)
+
+table(traindf.v25$talk, useNA = "always") # check output
 ```
 
 ## Distress & social support
@@ -3626,8 +3890,58 @@ testdf.v20 <- testdf.v20 %>%
   filter(!is.na(aca_impa)) # filter for NAs
 testdf.v20$aca_impa <- as.numeric(testdf.v20$aca_impa)
 
+testdf.v20 <- testdf.v20 %>%
+  mutate(aca_mh_impa = case_when(aca_anx_1 == 1 ~ 0,
+                               aca_anx_2 == 2 ~ 0,
+                               aca_anx_3 == 3 ~ 0,
+                               aca_anx_4 == 4 ~ 1,
+                               aca_anx_5 == 5 ~ 1,
+                               aca_anx_6 == 6 ~ 1,
+                               aca_dep_1 == 1 ~ 0,
+                               aca_dep_2 == 2 ~ 0,
+                               aca_dep_3 == 3 ~ 0,
+                               aca_dep_4 == 4 ~ 1,
+                               aca_dep_5 == 5 ~ 1,
+                               aca_dep_6 == 6 ~ 1,
+                               aca_eat_1 == 1 ~ 0,
+                               aca_eat_2 == 2 ~ 0,
+                               aca_eat_3 == 3 ~ 0,
+                               aca_eat_4 == 4 ~ 1,
+                               aca_eat_5 == 5 ~ 1,
+                               aca_eat_6 == 6 ~ 1,
+                               aca_add_1 == 1 ~ 0,
+                               aca_add_2 == 2 ~ 0,
+                               aca_add_3 == 3 ~ 0,
+                               aca_add_4 == 4 ~ 1,
+                               aca_add_5 == 5 ~ 1,
+                               aca_add_6 == 6 ~ 1,
+                               aca_substance_1 == 1 ~ 0,
+                               aca_substance_2 == 2 ~ 0,
+                               aca_substance_3 == 3 ~ 0,
+                               aca_substance_4 == 4 ~ 1,
+                               aca_substance_5 == 5 ~ 1,
+                               aca_substance_6 == 6 ~ 1,
+                               aca_phys_health_1 == 1 ~ 0,
+                               aca_phys_health_2 == 2 ~ 0,
+                               aca_phys_health_3 == 3 ~ 0,
+                               aca_phys_health_4 == 4 ~ 1,
+                               aca_phys_health_5 == 5 ~ 1,
+                               aca_phys_health_6 == 6 ~ 1,
+                               aca_phys_assault_1 == 1 ~ 0,
+                               aca_phys_assault_2 == 2 ~ 0,
+                               aca_phys_assault_3 == 3 ~ 0,
+                               aca_phys_assault_4 == 4 ~ 1,
+                               aca_phys_assault_5 == 5 ~ 1,
+                               aca_phys_assault_6 == 6 ~ 1,
+                               aca_sex_assault_1 == 1 ~ 0,
+                               aca_sex_assault_2 == 2 ~ 0,
+                               aca_sex_assault_3 == 3 ~ 0,
+                               aca_sex_assault_4 == 4 ~ 1,
+                               aca_sex_assault_5 == 5 ~ 1,
+                               aca_sex_assault_6 == 6 ~ 1))
+
+table(testdf.v20$aca_mh_impa, useNA = "always")
 table(testdf.v20$aca_impa, useNA = "always") # check output, skew
-jarque.bera.test(testdf.v20$aca_impa)
 ```
 
 ## Depression impact
