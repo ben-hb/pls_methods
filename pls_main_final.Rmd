@@ -104,7 +104,7 @@ data.v1 <- data.raw %>%
     ##  type
     assault_sex_stranger:assault_sex_dontknow, abuse_recent_perpet, sa_exp_touch:sa_exp_pen, 
     sa_suc_phyforc_1, sa_att_phyforc, sa_drunk_1, sa_suc_phyforc_2_1:sa_suc_phyforc_2_6, 
-    sa_suc_phyforc_2_6_text, aca_phys_assault_1:aca_phys_assault_7, aca_sex_assault_1:aca_sex_assault_7,
+    sa_suc_phyforc_2_6_text, 
     ##  reporting
     sa_tell_1:sa_tell_12, sa_tell_12_text, sa_nodiscl_1:sa_nodiscl_24, sa_nodiscl_24_text,
     ##  person
@@ -120,7 +120,7 @@ data.v1 <- data.raw %>%
     ##  mood
     dx_dk, dx_dep_1:dx_bip_4, dep_maj, dep_oth, dx_bip_bi1:dx_bip_oth, dep_imp1:dep_imp4,
     ##  anxiety
-    dx_ax_1:dx_ax_7_new, dx_ax_6_text_new, aca_anx_1:aca_add_7, dx_ax_ga:dx_ax_so,
+    dx_ax_1:dx_ax_7_new, dx_ax_6_text_new, dx_ax_ga:dx_ax_so,
     ##  OCD
     dx_ocd_1:dx_ocd_6, dx_ocd_6_text, dx_ocd_o:dx_ocd_oth,
     ##  trauma
@@ -131,12 +131,10 @@ data.v1 <- data.raw %>%
     ##  psychosis
     dx_psy_1:dx_psy_8, dx_psy_7_text, dx_psy_sa:dx_psy_sp,
     ##  substance-related
-    dx_sa_1, dx_sa_2, dx_sa_3, dx_sa_2_text, aca_substance_1:aca_substance_7, sa_drunk_2_1:sa_drunk_2_7, 
+    dx_sa_1, dx_sa_2, dx_sa_3, dx_sa_2_text, sa_drunk_2_1:sa_drunk_2_7, 
     sa_drunk_2_6_text, sa_drunk_3:sa_drunk_6, alc_prob, sub_cig1:sub_cig5, sa_train_use:sa_sch_help,
     ##  personality d/o
     dx_perso_1:dx_perso_12, dx_perso_11_text,
-    ##  chronic conditions
-    aca_phys_health_1:aca_phys_health_7, dx_chronic_11_text,
     ##  SIBs
     sib_fre1:sub_cig,
     #  provider-related questions:  
@@ -202,7 +200,7 @@ data.v1 <- data.raw %>%
     #  misc:  
     bar_hs_1:bar_ns_8_text, smok_freq, sib_other_text, activ_other_text, knowwher_temp, exerc_changed, 
     exerc_changed_how, exerc_changed_how_text, height_ft, height_in, wgt_lbs, prov_A, prov_B, prov_C,  
-    prov_loc, prov_olo, prov_oth, prov_dk, adjust_aca_1, adjust_aca_2, aca_imp1:aca_imp4, s_c_1_1:s_c_5_6, 
+    prov_loc, prov_olo, prov_oth, prov_dk, adjust_aca_1, adjust_aca_2,  s_c_1_1:s_c_5_6, 
     s_n_1_1:s_n_5_6))
 ```
 
@@ -313,19 +311,7 @@ data.v3 <- data.v3 %>%
                                 gender == 1 ~ 0)) %>%
   filter(!is.na(gender))
 data.v3$gender_tgd <- as.logical(data.v3$gender_tgd)
-
 table(data.v3$gender_tgd, useNA = "always")
-jarque.bera.test(data.v3$gender_tgd)
-
-# interaction effect for women
-data.v3 <- data.v3 %>%   # fix directionality
-  mutate(cli_women = case_when(cli_women  == 1 ~ 5,   # welcoming
-                                   cli_women  == 2 ~ 4,
-                                   cli_women  == 3 ~ 3,
-                                   cli_women  == 4 ~ 2,
-                                   cli_women  == 5 ~ 1))  # hostile
-table(data.v3$cli_women)
-
 ```
 
 ### Reconcile 'gender_text' 
@@ -415,9 +401,11 @@ data.v3$gender[data.v3$gender_text %in% c("I am me. A human.", "I'm not yet sure
 
 data.v3 <- data.v3 %>%
   filter(!is.na(gender_tgd))
-
 table(data.v3$gender_tgd, useNA = "always")   # check output
-jarque.bera.test(data.v3$gender_tgd)
+```
+
+### Interaction effects for gender
+``` {r gender_interxn}
 
 ## Interaction effect for transgender
 data.v3 <- data.v3 %>%   # fix directionality
@@ -428,6 +416,14 @@ data.v3 <- data.v3 %>%   # fix directionality
                              cli_TQ  == 5 ~ 1))  # hostile
 table(data.v3$cli_TQ)
 
+# interaction effect for women
+data.v3 <- data.v3 %>%   # fix directionality
+  mutate(cli_women = case_when(cli_women  == 1 ~ 5,   # welcoming
+                                   cli_women  == 2 ~ 4,
+                                   cli_women  == 3 ~ 3,
+                                   cli_women  == 4 ~ 2,
+                                   cli_women  == 5 ~ 1))  # hostile
+table(data.v3$cli_women)
 ```
 
 ## Sexual Identity
@@ -584,6 +580,10 @@ data.v5 <- data.v4 %>%
 data.v5$sexual <- as.logical(data.v5$sexual)
 table(data.v5$sexual, useNA = "always") # tabulate and check outputs
 
+```
+
+### Interaction effects for sexual identity
+``` {r sex_interxn}
 # interaction effect for LCB
 data.v5 <- data.v5 %>%   # fix directionality
   mutate(cli_LGB  = case_when(cli_LGB  == 1 ~ 5,   # welcoming
@@ -593,7 +593,6 @@ data.v5 <- data.v5 %>%   # fix directionality
                              cli_LGB  == 5 ~ 1))  # hostile
 table(data.v5$cli_LGB, useNA = "always")
 table(data.v5$social_sexid)
-
 ```
 
 ## hours of work/wk
@@ -628,13 +627,10 @@ table(data.v5$children_dep)
 data.v5$body_sr <- as.numeric(data.v5$body_sr)
 table(data.v5$body_sr)
 hist(data.v5$body_sr)
-
-# possible interaction with thin_good?
-table(data.v5$thin_good)
 ```
 
 ## interaction effect for subjective weight -- something isnt working here
-``` {r wcs}
+``` {r bodysr_interxn}
 # set all NAs in activities equal to 0
 data.v5$wcs_1_f[is.na(data.v5$wcs_1_f)] <- 0
 data.v5$wcs_1_m[is.na(data.v5$wcs_1_m)] <- 0
@@ -653,6 +649,9 @@ data.v5 <- data.v5 %>%
   mutate(wcs_tot =sum(wcs_1 + wcs_2 + wcs_3 + $wcs_4 + wcs_5))   # not sure what to do with the NAs here
 
 table(data.v5$wsc, useNA = "always")
+
+# possible interaction with thin_good?
+table(data.v5$thin_good)
 
 
 ```
@@ -876,7 +875,7 @@ hist(data.v6$race)  # visualize distribution and skew
 ```
 
 ## Possible interaction effects for race
-``` {r race intrxn}
+``` {r race_intrxn}
 # possible interaction effect
 data.v6 <- data.v6 %>%   # fix directionality
   mutate(cli_nonwhite  = case_when(cli_nonwhite  == 1 ~ 5,   # welcoming
@@ -999,7 +998,7 @@ data.v6 <- data.v6 %>%   # fix directionality
 
 
 # cant get this to work... trying to do a row-wise average school for subjective DEI environment....
-data.v6 <- data.v6 %>%
+data.v6 <- data.v6 %>% rowwise() %>%
   mutate(dei_campus = mean(hostile_friendly, uncoop_coop, notwelc_welc, disresp_resp))
 
 table(data.v6$dei_campus, useNA = "always")  # use for NA changes
@@ -1422,11 +1421,13 @@ traindf.v13 <- traindf.v12 %>%
 traindf.v13$religios <- as.numeric(traindf.v13$religios)
 
 table(traindf.v13$religios, useNA = "always")       # Check output
+```
 
-# interaction effects of religion
+##  Religion interaction
+``` {r religios_interxn}
 table(traindf.v13$social_religid)
-data.v6 <- data.v6 %>%   # fix directionality
-  mutate(cli_relig  = case_when(cli_relig_nch  == 1 ~ 5,   # hostile
+traindf.v13 <- traindf.v13 %>%   # fix directionality
+  mutate(cli_relig = case_when(cli_relig_nch  == 1 ~ 5,   # hostile
                               cli_relig_nch  == 2 ~ 4,
                               cli_relig_nch  == 3 ~ 3,
                               cli_relig_nch  == 4 ~ 2,
@@ -1436,7 +1437,7 @@ data.v6 <- data.v6 %>%   # fix directionality
                               cli_relig_ch  == 3 ~ 3,
                               cli_relig_ch  == 4 ~ 2,
                               cli_relig_ch  == 5 ~ 1))  # welcoming
-
+table(traindf.v13$cli_relig, useNA = "always")
 ```
 
 ## Residence type
@@ -1453,12 +1454,6 @@ traindf.v13 <- traindf.v13 %>%
   filter(!is.na(residenc))
 
 table(traindf.v13$residenc, useNA = "always")  # check output
-```
-
-## MH campus environment
-```{r train env_mh}
-traindf.v13$env_mh <- as.factor(traindf.v13$env_mh)
-table(traindf.v13$env_mh, useNA = "always")  # check output (excessive NAs)
 ```
 
 ## Insurance coverage
@@ -1490,8 +1485,6 @@ table(traindf.v14$international, useNA = "always")
 ```{r train fam_support_aca}
 traindf.v14$fam_support_aca <- as.numeric(traindf.v14$fam_support_aca)
 table(traindf.v14$fam_support_aca, useNA = "always")  # check output (excessive NAs)
-
-
 ```
 
 ## Activity Involvement
@@ -1536,7 +1529,6 @@ traindf.v14 <- traindf.v14 %>%
 traindf.v14$activ_no <- as.logical(traindf.v14$activ_no)
 
 table(traindf.v14$activ_no, useNA = "always")     # tabulate and check output
-jarque.bera.test(traindf.v14$activ_no)
 traindf.v14 = subset(traindf.v14, select= -c(activ_none, activ_ac:activ_other))    # clean up vars
 ```
 
@@ -1612,6 +1604,11 @@ traindf.v14 <- traindf.v14 %>%
 
 ```
 
+## MH campus environment
+```{r train env_mh}
+traindf.v14$env_mh <- as.factor(traindf.v14$env_mh)
+table(traindf.v14$env_mh, useNA = "always")  # check output (excessive NAs)
+```
 
 ### School type levels
 
@@ -1673,33 +1670,6 @@ traindf.v14$school2_type <- as.factor(traindf.v14$school2_type)
 
 table(traindf.v14$school2_type, useNA = "always") # check output
 ```
-
-## Welcome v. unwelcome -- where did this variable go????
-```{r test exp_community}
-traindf.v14 <- traindf.v14 %>%
-  mutate(community = case_when(exp_community == 1 ~ 1,
-                               exp_community == 2 ~ 1,
-                               exp_community == 3 ~ 2,
-                               exp_community == 4 ~ 3,
-                               exp_community == 4 ~ 3,
-                               exp_leave == 1 ~ 3,
-                               exp_leave == 1 ~ 3,
-                               exp_leave == 1 ~ 3,
-                               exp_leave == 1 ~ 1,
-                               exp_leave == 1 ~ 1))
-                            
-traindf.v14$community <- as.numeric(traindf.v14$community)
-table(traindf.v14$community, useNA = "always")  # check output (excessive NAs)
-```
-
-## Community -- where did this variable go????
-```{r test exp_community}
-traindf.v14$exp_community <- as.numeric(traindf.v14$exp_community)
-table(traindf.v14$exp_community, useNA = "always")  # check output (excessive NAs)
-```
-
-
-
 
 ## PREMOTIVATION ANALYSES
 ```{r train env analysis}
@@ -1812,33 +1782,33 @@ model.prem  %>%
 
 
 ```{r train LE frame}
-traindf.v16 <- traindf.v14 
+traindf.v15 <- traindf.v14 
 ```
 
 ## Illicit drug use
 Creates illicit drug use var (limitation -- 30 days reflection)
 ```{r train drugs_yn}
 ## adjusted for nested question status 
-traindf.v16$drug_coc[is.na(traindf.v16$drug_coc)] <- 0
-traindf.v16$drug_her[is.na(traindf.v16$drug_her)] <- 0
-traindf.v16$drug_met[is.na(traindf.v16$drug_met)] <- 0
-traindf.v16$drug_stim[is.na(traindf.v16$drug_stim)] <- 0
-traindf.v16$drug_ect[is.na(traindf.v16$drug_ect)] <- 0
-traindf.v16$drug_opi[is.na(traindf.v16$drug_opi)] <- 0
-traindf.v16$drug_other[is.na(traindf.v16$drug_other)] <- 0
+traindf.v15$drug_coc[is.na(traindf.v15$drug_coc)] <- 0
+traindf.v15$drug_her[is.na(traindf.v15$drug_her)] <- 0
+traindf.v15$drug_met[is.na(traindf.v15$drug_met)] <- 0
+traindf.v15$drug_stim[is.na(traindf.v15$drug_stim)] <- 0
+traindf.v15$drug_ect[is.na(traindf.v15$drug_ect)] <- 0
+traindf.v15$drug_opi[is.na(traindf.v15$drug_opi)] <- 0
+traindf.v15$drug_other[is.na(traindf.v15$drug_other)] <- 0
 
 # visualize current output before transformation
-table(traindf.v16$drug_coc)
-table(traindf.v16$drug_her)     # too small
-table(traindf.v16$drug_met)     # too small
-table(traindf.v16$drug_stim)
-table(traindf.v16$drug_ect)     # too small
-table(traindf.v16$drug_opi)     # too small
-table(traindf.v16$drug_other)   # too vague, small
+table(traindf.v15$drug_coc)
+table(traindf.v15$drug_her)     # too small
+table(traindf.v15$drug_met)     # too small
+table(traindf.v15$drug_stim)
+table(traindf.v15$drug_ect)     # too small
+table(traindf.v15$drug_opi)     # too small
+table(traindf.v15$drug_other)   # too vague, small
 
 # Sample is too small to analyze individual drugs, except for marijuana. 
 # Transform to illicit drug y/n
-traindf.v16 <- traindf.v16 %>%
+traindf.v15 <- traindf.v15 %>%
   mutate(drugs_yn = case_when(drug_coc == 1 ~ 1,
                               drug_her == 1 ~ 1,
                               drug_met == 1 ~ 1,
@@ -1846,31 +1816,29 @@ traindf.v16 <- traindf.v16 %>%
                               drug_ect == 1 ~ 1,
                               drug_opi == 1 ~ 1,
                               drug_other == 1 ~ 1))
-traindf.v16$drugs_yn[is.na(traindf.v16$drugs_yn)] <- 0
-traindf.v16$drugs_yn <- as.logical(traindf.v16$drugs_yn)
+traindf.v15$drugs_yn[is.na(traindf.v15$drugs_yn)] <- 0
+traindf.v15$drugs_yn <- as.logical(traindf.v15$drugs_yn)
 
-table(traindf.v16$drugs_yn, useNA = "always")
-jarque.bera.test(traindf.v16$drugs_yn)
+table(traindf.v15$drugs_yn, useNA = "always")
 ```
 
 ## Marijuana use
 ```{r train drug_mar}
-traindf.v16$drug_mar[is.na(traindf.v16$drug_mar)] <- 0
-table(traindf.v16$drug_mar)  
+traindf.v15$drug_mar[is.na(traindf.v15$drug_mar)] <- 0
+table(traindf.v15$drug_mar)  
  
-traindf.v16 <- traindf.v16 %>%
+traindf.v15 <- traindf.v15 %>%
   mutate(drug_mar = case_when(drug_mar == 1 ~ 1, 
                               drug_mar == 0 ~ 0)) %>%
   filter(!is.na(drug_mar))  # filters out NAs
-traindf.v16$drug_mar <- as.logical(traindf.v16$drug_mar)
+traindf.v15$drug_mar <- as.logical(traindf.v15$drug_mar)
 
-table(traindf.v16$drug_mar, useNA = "always")
-jarque.bera.test(traindf.v16$drug_mar)
+table(traindf.v15$drug_mar, useNA = "always")
 ```
 
 ## Current financial stressors
 ```{r train fincur}
-traindf.v16 <- traindf.v16 %>% 
+traindf.v16 <- traindf.v15 %>% 
   # make dichotomous
   mutate(fincur = case_when(fincur == 3 ~ 0,  # sometimes
                             fincur == 4 ~ 0,  # rarely or never
@@ -1883,22 +1851,35 @@ traindf.v16$fincur <- as.logical(traindf.v16$fincur)
 table(traindf.v16$fincur, useNA = "always")  # check output, skew
 ```
 
-## Current SES comparison
-```{r train fincur}
-table(traindf.v16$afford_school)
+## Current SES comparison interaction effects
+```{r rain fincur_interxn}
 table(traindf.v16$fin_comp1)
 table(traindf.v16$fin_comp2)
-
-##Interaction effect
 table(traindf.v16$cli_lowses)
+table(traindf.v16$afford_school)
 ```
 
 ## ISI scale
 ```{r train isi_tot}
+traindf.v16$isi_1 <- as.numeric(traindf.v16$isi_1)
+traindf.v16$isi_2 <- as.numeric(traindf.v16$isi_2)
+traindf.v16$isi_3 <- as.numeric(traindf.v16$isi_3)
+traindf.v16$isi_4 <- as.numeric(traindf.v16$isi_4)
+traindf.v16$isi_5 <- as.numeric(traindf.v16$isi_5)
+traindf.v16$isi_6 <- as.numeric(traindf.v16$isi_6)
+traindf.v16$isi_7 <- as.numeric(traindf.v16$isi_7)
+
 table(traindf.v16$isi_1)
 table(traindf.v16$isi_2)
-traindf.v16 = subset(traindf.v16, select= -c(isi_1, isi_2, isi_3, isi_4, 
-                                             isi_5, isi_6, isi_7)) # clean up var 
+table(traindf.v16$isi_3)
+table(traindf.v16$isi_4)
+table(traindf.v16$isi_5)
+table(traindf.v16$isi_6)
+table(traindf.v16$isi_7)
+
+traindf.v16$isi_tot <- traindf.v16$isi_1 + traindf.v16$isi_2 + traindf.v16$isi_3 + traindf.v16$isi_4 + traindf.v16$isi_5 + traindf.v16$isi_6 + traindf.v16$isi_7)
+
+table(traindf.v16$isi_tot)
 ```
 
 ## Abuse or assault, in the last year only
@@ -2163,7 +2144,6 @@ traindf.v20 <- traindf.v20 %>%
   filter(!is.na(anx_type))   # filters out all NAs
 
 traindf.v20$anx_type <- as.numeric(traindf.v20$anx_type)   # check output, skew
-jarque.bera.test(traindf.v20$anx_type)
 
 table(traindf.v20$anx_type, useNA = "always") # check output
 table(traindf.v20$anx_score, useNA = "always")
