@@ -172,9 +172,6 @@ data.v1 <- data.raw %>%
     why_tx_1:why_tx_9_text, ther_lifetime, ther_lifetime2, ther_any, talk1_any, talk1_8_text, ther_any2, 
     knowwher1:knowwher6, bar_any:bar_plan, ther_help_me1:ther_help_me4, meds_help_me1:meds_help_me4, 
     talksup1:talksup4, talk2pro:talk2noo,
-    #  school climate
-    cli_disab:cli_sh_oth_TEXT, excl_env:exp_community, val_faculty:excl_pers_oth, group_TEXT:group_active,
-    friend_re:friend_religid, re_find:time_activ,
     #  SAT-related
     sat_hours_1, sat_loc_1, sat_qual_1, sat_priv_1, sat_sched_1, sat_hours_2, sat_loc_2, sat_qual_2, sat_priv_2, sat_sched_2, 
     sat_hours_3, sat_loc_3, sat_qual_3, sat_priv_3, sat_sched_3, sat_hours_4, sat_loc_4, sat_qual_4, sat_priv_4, sat_sched_4, 
@@ -196,12 +193,6 @@ data.v1 <- data.raw %>%
     #  medication details
     meds_reason_1:meds_reason_5, meds_reason_5_text, meds_dis, meds_w_1:meds_w_5, meds_w_3_text, meds_cur_1:meds_cur_9, 
     meds_cur_7_text, meds_time_1:meds_time_7, med_help, meds_helped_me, meds_w_g:meds_di5,
-    #  campus or community
-    heard, camp_supp, outreach_aware, gk_1, gk_2, gkt_any, txfrf, cli_look, cli_resp_fr, timestud_1:timestud_7,
-    cli_resp_cl, cli_free, st_promote, admin_listen, env_body, safe_on_day, safe_on_night, safe_off_day, 
-    safe_off_night, choose_sch, persist_challenge_1:persist_challenge_11, persist_challenge_11_text, highestdeg,
-    highestdeg_text, doubt_school_1, doubt_school_2, prof_support_aca, different_maj, late_assign, sleep_class,
-    aca_support_serv, office_hrs, faculty_out, advisor_interact, gradstud_interact, time_manage, grade_curv,
     #  up/bystanding:
     inter_hy_dr, inter_hy_sa, inter_hy_hl, inter_y_1:inter_y_7, inter_y_6_text, inter_help, inter_n_1:inter_n_7, 
     inter_n_6_text, inter_n_why_1:inter_n_why_9, inter_n_why_9_text, witness_1:witness_7, witness_6_text, 
@@ -325,6 +316,16 @@ data.v3$gender_tgd <- as.logical(data.v3$gender_tgd)
 
 table(data.v3$gender_tgd, useNA = "always")
 jarque.bera.test(data.v3$gender_tgd)
+
+# interaction effect for women
+data.v3 <- data.v3 %>%   # fix directionality
+  mutate(cli_women = case_when(cli_women  == 1 ~ 5,   # welcoming
+                                   cli_women  == 2 ~ 4,
+                                   cli_women  == 3 ~ 3,
+                                   cli_women  == 4 ~ 2,
+                                   cli_women  == 5 ~ 1))  # hostile
+table(data.v3$cli_women)
+
 ```
 
 ### Reconcile 'gender_text' 
@@ -418,8 +419,15 @@ data.v3 <- data.v3 %>%
 table(data.v3$gender_tgd, useNA = "always")   # check output
 jarque.bera.test(data.v3$gender_tgd)
 
-## Interaction effect
+## Interaction effect for transgender
+data.v3 <- data.v3 %>%   # fix directionality
+  mutate(cli_TQ  = case_when(cli_TQ  == 1 ~ 5,   # welcoming
+                             cli_TQ  == 2 ~ 4,
+                             cli_TQ  == 3 ~ 3,
+                             cli_TQ  == 4 ~ 2,
+                             cli_TQ  == 5 ~ 1))  # hostile
 table(data.v3$cli_TQ)
+
 ```
 
 ## Sexual Identity
@@ -576,8 +584,14 @@ data.v5 <- data.v4 %>%
 data.v5$sexual <- as.logical(data.v5$sexual)
 table(data.v5$sexual, useNA = "always") # tabulate and check outputs
 
-# interaction effect
-table(data.v5$cli_LGB)
+# interaction effect for LCB
+data.v5 <- data.v5 %>%   # fix directionality
+  mutate(cli_LGB  = case_when(cli_LGB  == 1 ~ 5,   # welcoming
+                             cli_LGB  == 2 ~ 4,
+                             cli_LGB  == 3 ~ 3,
+                             cli_LGB  == 4 ~ 2,
+                             cli_LGB  == 5 ~ 1))  # hostile
+table(data.v5$cli_LGB, useNA = "always")
 table(data.v5$social_sexid)
 
 ```
@@ -598,8 +612,6 @@ data.v5 <- data.v5 %>%
                                 hours_work_paid < 33 ~ 4,        # 25-32 hrs/wk
                                 hours_work_paid < 41 ~ 5,        # 33-40 hrs/wk
                                 hours_work_paid > 40 ~ 6))        # >40 hrs/wk
-
-
 table(data.v5$hours_work_paid, useNA = "always") # tabulate and check output
 ```
 
@@ -611,18 +623,38 @@ data.v5 <- data.v5 %>%
 table(data.v5$children_dep)
 ```
 
-## BMI
-```{r bmi}
-data.v5$bmi <- as.integer(data.v5$bmi)
-table(data.v5$bmi)
-scatter.smooth(data.v5$bmi)
-```
-
 ## Subjective weight and body image
 ```{r body_sr}
 data.v5$body_sr <- as.numeric(data.v5$body_sr)
 table(data.v5$body_sr)
 hist(data.v5$body_sr)
+
+# possible interaction with thin_good?
+table(data.v5$thin_good)
+```
+
+## interaction effect for subjective weight -- something isnt working here
+``` {r wcs}
+# set all NAs in activities equal to 0
+data.v5$wcs_1_f[is.na(data.v5$wcs_1_f)] <- 0
+data.v5$wcs_1_m[is.na(data.v5$wcs_1_m)] <- 0
+data.v5$wcs_1_m[is.na(data.v5$wcs_1_o)] <- 0
+
+data.v5$wcs_1_f <- as.numeric(data.v5$wcs_1_f)
+data.v5$wcs_1_f <- as.numeric(data.v5$wcs_1_m)
+data.v5$wcs_1_f <- as.numeric(data.v5$wcs_1_o)
+
+## WCS --Combine wcs_1_f, wcs_1_m, wcs_1_o to create 'wcs_1'
+data.v5$wcs_1 = data.v5$wcs_1_f + data.v5$wcs_1_m + data.v5$wcs_1_o
+table(data.v5$wcs_1)
+
+# total WCS score 
+data.v5 <- data.v5 %>%
+  mutate(wcs_tot =sum(wcs_1 + wcs_2 + wcs_3 + $wcs_4 + wcs_5))   # not sure what to do with the NAs here
+
+table(data.v5$wsc, useNA = "always")
+
+
 ```
 
 ## Race
@@ -842,12 +874,76 @@ table(data.v6$race, useNA = "always")
 hist(data.v6$race)  # visualize distribution and skew
 
 ```
+
 ## Possible interaction effects for race
 ``` {r race intrxn}
 # possible interaction effect
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_nonwhite  = case_when(cli_nonwhite  == 1 ~ 5,   # welcoming
+                                   cli_nonwhite  == 2 ~ 4,
+                                   cli_nonwhite  == 3 ~ 3,
+                                   cli_nonwhite  == 4 ~ 2,
+                                   cli_nonwhite  == 5 ~ 1))  # hostile
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_black  = case_when(cli_black  == 1 ~ 5,   # welcoming
+                                   cli_black  == 2 ~ 4,
+                                   cli_black  == 3 ~ 3,
+                                   cli_black  == 4 ~ 2,
+                                   cli_black  == 5 ~ 1))  # hostile
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_ainaan  = case_when(cli_ainaan  == 1 ~ 5,   # welcoming
+                                   cli_ainaan  == 2 ~ 4,
+                                   cli_ainaan  == 3 ~ 3,
+                                   cli_ainaan  == 4 ~ 2,
+                                   cli_ainaan  == 5 ~ 1))  # hostile
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_asian  = case_when(cli_asian  == 1 ~ 5,   # welcoming
+                                   cli_asian  == 2 ~ 4,
+                                   cli_asian  == 3 ~ 3,
+                                   cli_asian  == 4 ~ 2,
+                                   cli_asian  == 5 ~ 1))  # hostile
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_sai  = case_when(cli_sai  == 1 ~ 5,   # welcoming
+                                   cli_sai  == 2 ~ 4,
+                                   cli_sai  == 3 ~ 3,
+                                   cli_sai  == 4 ~ 2,
+                                   cli_sai  == 5 ~ 1))  # hostile
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_his  = case_when(cli_his  == 1 ~ 5,   # welcoming
+                                   cli_his  == 2 ~ 4,
+                                   cli_his  == 3 ~ 3,
+                                   cli_his  == 4 ~ 2,
+                                   cli_his  == 5 ~ 1))  # hostile
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_mides  = case_when(cli_mides  == 1 ~ 5,   # welcoming
+                                   cli_mides  == 2 ~ 4,
+                                   cli_mides  == 3 ~ 3,
+                                   cli_mides  == 4 ~ 2,
+                                   cli_mides  == 5 ~ 1))  # hostile
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_pi  = case_when(cli_pi  == 1 ~ 5,   # welcoming
+                                   cli_pi  == 2 ~ 4,
+                                   cli_pi  == 3 ~ 3,
+                                   cli_pi  == 4 ~ 2,
+                                   cli_pi  == 5 ~ 1))  # hostile
+
+data.v6 <- data.v6 %>%   # fix directionality
+  mutate(cli_white  = case_when(cli_white  == 1 ~ 5,   # welcoming
+                                   cli_white  == 2 ~ 4,
+                                   cli_white  == 3 ~ 3,
+                                   cli_white  == 4 ~ 2,
+                                   cli_white  == 5 ~ 1))  # hostile
+
 table(data.v6$social_re)
 table(data.v6$cli_nonwhite)
-table(data.v6$clo_black)
+table(data.v6$cli_black)
 table(data.v6$cli_ainaan)
 table(data.v6$cli_asian)
 table(data.v6$cli_sai)
@@ -855,15 +951,16 @@ table(data.v6$cli_his)
 table(data.v6$cli_mides)
 table(data.v6$cli_pi)
 table(data.v6$cli_white)
+
 ```
 
 ## Interaction variables for identity'
 ``` {r dei_campus}
 data.v6$hostile_friendly <- as.numeric(data.v6$hostile_friendly)
-data.v6$hostile_friendly <- as.numeric(data.v6$hostile_friendly)
-data.v6$hostile_friendly <- as.numeric(data.v6$hostile_friendly)
-data.v6$hostile_friendly <- as.numeric(data.v6$hostile_friendly)
-data.v6$hostile_friendly <- as.numeric(data.v6$hostile_friendly)
+data.v6$uncoop_coop <- as.numeric(data.v6$uncoop_coop)
+data.v6$notwelc_welc <- as.numeric(data.v6$notwelc_welc)
+data.v6$disresp_resp <- as.numeric(data.v6$disresp_resp)
+data.v6$uncomfort_comfort <- as.numeric(data.v6$uncomfort_comfort)
 
 data.v6 <- data.v6 %>%   # fix directionality
   mutate(hostile_friendly = case_when(hostile_friendly == 1 ~ 5,   # very hostile
@@ -880,67 +977,32 @@ data.v6 <- data.v6 %>%   # fix directionality
                                  uncoop_coop == 5 ~ 1))  # very cooperative
 
 data.v6 <- data.v6 %>%   # fix directionality
-  mutate(notwelc_welc  = case_when(notwelc_welc  == 1 ~ 5,   # not welcome
-                                   notwelc_welc  == 2 ~ 4,
-                                   notwelc_welc  == 3 ~ 3,
-                                   notwelc_welc  == 4 ~ 2,
-                                   notwelc_welc  == 5 ~ 1))  # very welcome
+  mutate(notwelc_welc  = case_when(notwelc_welc == 1 ~ 5,   # not welcome
+                                   notwelc_welc == 2 ~ 4,
+                                   notwelc_welc == 3 ~ 3,
+                                   notwelc_welc == 4 ~ 2,
+                                   notwelc_welc == 5 ~ 1))  # very welcome
 
 data.v6 <- data.v6 %>%   # fix directionality
-  mutate(disresp_resp  = case_when(disresp_resp  == 1 ~ 5,   # disrespectful
-                                   disresp_resp  == 2 ~ 4,
-                                   disresp_resp  == 3 ~ 3,
-                                   disresp_resp  == 4 ~ 2,
-                                   disresp_resp  == 5 ~ 1))  # very respectful
+  mutate(disresp_resp  = case_when(disresp_resp == 1 ~ 5,   # disrespectful
+                                   disresp_resp == 2 ~ 4,
+                                   disresp_resp == 3 ~ 3,
+                                   disresp_resp == 4 ~ 2,
+                                   disresp_resp == 5 ~ 1))  # very respectful
 
 data.v6 <- data.v6 %>%   # fix directionality
-  mutate(uncomfort_comfort   = case_when(uncomfort_comfort   == 1 ~ 5,   # uncomfortable
-                                         uncomfort_comfort   == 2 ~ 4,
-                                         uncomfort_comfort   == 3 ~ 3,
-                                         uncomfort_comfort   == 4 ~ 2,
-                                         uncomfort_comfort   == 5 ~ 1))  # comfortable
+  mutate(uncomfort_comfort   = case_when(uncomfort_comfort == 1 ~ 5,   # uncomfortable
+                                         uncomfort_comfort == 2 ~ 4,
+                                         uncomfort_comfort == 3 ~ 3,
+                                         uncomfort_comfort == 4 ~ 2,
+                                         uncomfort_comfort == 5 ~ 1))  # comfortable
 
-data.v6 <- data.v6 %>%   # fix directionality
-  mutate(cli_women  = case_when(cli_women  == 1 ~ 5,   # welcoming
-                                   cli_women  == 2 ~ 4,
-                                   cli_women  == 3 ~ 3,
-                                   cli_women  == 4 ~ 2,
-                                   cli_women  == 5 ~ 1))  # hostile
 
-data.v6 <- data.v6 %>%   # fix directionality
-  mutate(cli_nonwhite  = case_when(cli_nonwhite  == 1 ~ 5,   # welcoming
-                                   cli_nonwhite  == 2 ~ 4,
-                                   cli_nonwhite  == 3 ~ 3,
-                                   cli_nonwhite  == 4 ~ 2,
-                                   cli_nonwhite  == 5 ~ 1))  # hostile
+# cant get this to work... trying to do a row-wise average school for subjective DEI environment....
+data.v6 <- data.v6 %>%
+  mutate(dei_campus = mean(hostile_friendly, uncoop_coop, notwelc_welc, disresp_resp))
 
-data.v6 <- data.v6 %>%   # fix directionality
-  mutate(cli_LGB  = case_when(cli_LGB  == 1 ~ 5,   # hostile
-                              cli_LGB  == 2 ~ 4,
-                              cli_LGB  == 3 ~ 3,
-                              cli_LGB  == 4 ~ 2,
-                              cli_LGB  == 5 ~ 1))  # welcoming
-
-data.v6 <- data.v6 %>%   # fix directionality
-  mutate(cli_TQ   = case_when(cli_TQ   == 1 ~ 5,   # hostile
-                              cli_TQ   == 2 ~ 4,
-                              cli_TQ   == 3 ~ 3,
-                              cli_TQ   == 4 ~ 2,
-                              cli_TQ   == 5 ~ 1))  # welcoming
-
-data.v6 <- data.v6 %>%   # fix directionality
-  mutate(cli_immigrant  = case_when(cli_immigrant  == 1 ~ 5,   # hostile
-                              cli_immigrant  == 2 ~ 4,
-                              cli_immigrant  == 3 ~ 3,
-                              cli_immigrant  == 4 ~ 2,
-                              cli_immigrant  == 5 ~ 1))  # welcoming
-
-  
-  filter(!is.na(dei_campus))  # filter for NAs
-#data.v7$sib_freq <- as.logical(data.v7$sib_freq)  # move frequency to numeric class
-
-table(data.v6$sib_freq, useNA = "always")  # use for NA changes
-data.v6 = subset(data.v6, select= -c(sib_none:sib_oth)) # clean up vars/columns
+table(data.v6$dei_campus, useNA = "always")  # use for NA changes
 ```
 
 ## SIBs and frequency
@@ -1017,9 +1079,7 @@ data.v9 <- data.v8 %>%   # filters out any respondents who skipped the MH sectio
                            is.na(dx_mh) ~ 0))
 data.v9$dx_mh <- as.logical(data.v9$dx_mh)    # turns dx_mh into boolean
 
-
-table(data.v9$dx_mh, useNA = "always") # Check output, skew
-jarque.bera.test(data.v9$dx_mh)
+table(data.v9$dx_mh, useNA = "always") # Check output, skew=
 ```
 
 
@@ -1088,22 +1148,6 @@ traindf.v10 <- traindf.v10 %>%
   filter(!is.na(ed_any))  # filter out all NAs for complete data
 
 table(traindf.v10$ed_any, useNA = "always") # check output, confirms no NAs
-```
-
-## WCS
-Combine wcs_1_f, wcs_1_m, wcs_1_o to create 'wcs_1'
-** too small
-```{r WCS train data merge}
-# check output (too small)
-table(traindf.v10$wcs_1_f)
-table(traindf.v10$wcs_1_m)
-table(traindf.v10$wcs_1_o)
-
-table(traindf.v10$wcs_2)
-table(traindf.v10$wcs_3)
-table(traindf.v10$wcs_4)
-table(traindf.v10$wcs_5)
-
 ```
 
 ## Medication use
@@ -1561,74 +1605,12 @@ traindf.v14 <- traindf.v14 %>%
   mutate(var_Xavier = ifelse((school2 == "Xavier"), 1, 0))
 ```
 
-### school culture for mental health
+### Suicide culture in school - interaction effect
+```{r train school_sui}
 
-```{r train school2}
-# insert each school as a dichotomous var --- how can we give each school a set MH upstander/bystander score???
+# trying to figure out how to take each school's average score on traindf.v14$inter_hy_sui and assign it to a student.... maybe traindf.v14$witness_4???? traindf.v14$cli_look??
 
-traindf.v14 <- traindf.v14 %>%
-  mutate(school_MH_culture = case_when(school2 == "AlbertaCAD" ~ , 1, 0)) %
-  mutate(var_Boston = ifelse((school2 == "Boston"), 1, 0)) %>%
-  mutate(var_CIA = ifelse((school2 == "CIA"), 1, 0)) %>%
-  mutate(var_CalPoly = ifelse((school2 == "CalPoly"), 1, 0)) %>%
-  mutate(var_ColoradoCollege = ifelse((school2 == "ColoradoCollege"), 1, 0)) %>%
-  mutate(var_ColoradoMountain = ifelse((school2 == "ColoradoMountain"), 1, 0)) %>%
-  mutate(var_ColumbusCAD = ifelse((school2 == "ColumbusCAD"), 1, 0)) %>%
-  mutate(var_Delaware = ifelse((school2 == "Delaware"), 1, 0)) %>%
-  mutate(var_DetroitMercy = ifelse((school2 == "DetroitMercy"), 1, 0)) %>%
-  mutate(var_Emerson = ifelse((school2 == "Emerson"), 1, 0)) %>%
-  mutate(var_GeorgeMason = ifelse((school2 == "GeorgeMason"), 1, 0)) %>%
-  mutate(var_GeorgiaTech = ifelse((school2 == "GeorgiaTech"), 1, 0)) %>%
-  mutate(var_Kalamazoo = ifelse((school2 == "Kalamazoo"), 1, 0)) %>%
-  mutate(var_Kansas = ifelse((school2 == "Kansas"), 1, 0)) %>%
-  mutate(var_MDInstituteCollegeArt = ifelse((school2 == "MDInstituteCollegeArt"), 1, 0)) %>%
-  mutate(var_MassArt = ifelse((school2 == "MassArt"), 1, 0)) %>%
-  mutate(var_Merrimack = ifelse((school2 == "Merrimack"), 1, 0)) %>%
-  mutate(var_MichiganState = ifelse((school2 == "MichiganState"), 1, 0)) %>%
-  mutate(var_MinnesotaCAD = ifelse((school2 == "MinnesotaCAD"), 1, 0)) %>%
-  mutate(var_MontclairState = ifelse((school2 == "MontclairState"), 1, 0)) %>%
-  mutate(var_NHInstituteArt = ifelse((school2 == "NHInstituteArt"), 1, 0)) %>%
-  mutate(var_NevadaReno = ifelse((school2 == "NevadaReno"), 1, 0)) %>%
-  mutate(var_OaklandCC = ifelse((school2 == "OaklandCC"), 1, 0)) %>%
-  mutate(var_OklahomaCityCC = ifelse((school2 == "OklahomaCityCC"), 1, 0)) %>%
-  mutate(var_PaloAltoCollege = ifelse((school2 == "PaloAltoCollege"), 1, 0)) %>%
-  mutate(var_PennCollegeTech = ifelse((school2 == "PennCollegeTech"), 1, 0)) %>%
-  mutate(var_Pratt = ifelse((school2 == "RedlandsCC"), 1, 0)) %>%
-  mutate(var_RhodeIsland = ifelse((school2 == "RhodeIsland"), 1, 0)) %>%
-  mutate(var_RedlandsCC = ifelse((school2 == "RedlandsCC"), 1, 0)) %>%
-  mutate(var_Ringling = ifelse((school2 == "Ringling"), 1, 0)) %>%
-  mutate(var_Rollins = ifelse((school2 == "Rollins"), 1, 0)) %>%
-  mutate(var_SAIC = ifelse((school2 == "SAIC"), 1, 0)) %>%
-  mutate(var_Sewanee = ifelse((school2 == "Sewanee"), 1, 0)) %>%
-  mutate(var_Smith = ifelse((school2 == "Smith"), 1, 0)) %>%
-  mutate(var_SouthernNazarene = ifelse((school2 == "SouthernNazarene"), 1, 0)) %>%
-  mutate(var_SouthwesternOklahomaState = ifelse((school2 == "SouthwesternOklahomaState"), 1, 0)) %>%
-  mutate(var_StJohns = ifelse((school2 == "StJohns"), 1, 0)) %>%
-  mutate(var_StMarys = ifelse((school2 == "StMarys"), 1, 0)) %>%
-  mutate(var_StRose = ifelse((school2 == "StRose"), 1, 0)) %>%
-  mutate(var_TrumanState = ifelse((school2 == "TrumanState"), 1, 0)) %>%
-  mutate(var_TuftsHealthSciences = ifelse((school2 == "TuftsHealthSciences"), 1, 0)) %>%
-  mutate(var_TuftsMainCampus = ifelse((school2 == "TuftsMainCampus"), 1, 0)) %>%
-  mutate(var_UChicago = ifelse((school2 == "UChicago"), 1, 0)) %>%
-  mutate(var_UFlorida = ifelse((school2 == "UFlorida"), 1, 0)) %>%
-  mutate(var_UMDearborn = ifelse((school2 == "UMDearborn"), 1, 0)) %>%
-  mutate(var_UMich = ifelse((school2 == "UMich"), 1, 0)) %>%
-  mutate(var_UNCSchoolArt = ifelse((school2 == "UNCSchoolArt"), 1, 0)) %>%
-  mutate(var_UTKnoxville = ifelse((school2 == "UTKnoxville"), 1, 0)) %>%
-  mutate(var_UniversityofSouthernCalifornia = ifelse((school2 == "UniversityofSouthernCalifornia"), 1, 0)) %>%  
-  mutate(var_Utah = ifelse((school2 == "Utah"), 1, 0)) %>%
-  mutate(var_VATech = ifelse((school2 == "VATech"), 1, 0)) %>%
-  mutate(var_VirginiaCommonwealth = ifelse((school2 == "VirginiaCommonwealth"), 1, 0)) %>%
-  mutate(var_WakeForest = ifelse((school2 == "WakeForest"), 1, 0)) %>%
-  mutate(var_Watkins = ifelse((school2 == "Watkins"), 1, 0)) %>%
-  mutate(var_WestVirginia = ifelse((school2 == "WestVirginia"), 1, 0)) %>%
-  mutate(var_WesternCarolina = ifelse((school2 == "WesternCarolina"), 1, 0)) %>%
-  mutate(var_WesternMichigan = ifelse((school2 == "WesternMichigan"), 1, 0)) %>%
-  mutate(var_WesternWA = ifelse((school2 == "WesternWA"), 1, 0)) %>%
-  mutate(var_Xavier = ifelse((school2 == "Xavier"), 1, 0))
 ```
-
-
 
 
 ### School type levels
@@ -3101,24 +3083,6 @@ testdf.v10 <- testdf.v10 %>%
   filter(!is.na(ed_any))  # filter out all NAs for complete data
 
 table(testdf.v10$ed_any, useNA = "always") # check output, confirms no NAs
-```
-
-## WCS
-Combine wcs_1_f, wcs_1_m, wcs_1_o to create 'wcs_1'
-** too small
-```{r WCS test data merge}
-# check output (too small)
-table(testdf.v10$wcs_1_f)
-table(testdf.v10$wcs_1_m)
-table(testdf.v10$wcs_1_o)
-
-table(testdf.v10$wcs_2)
-table(testdf.v10$wcs_3)
-table(testdf.v10$wcs_4)
-table(testdf.v10$wcs_5)
-
-testdf.v10 = subset(testdf.v10, select= -c(wcs_1_f, wcs_1_m, wcs_1_o, 
-                                           wcs_2, wcs_3, wcs_4, wcs_5))
 ```
 
 ## Medication use
