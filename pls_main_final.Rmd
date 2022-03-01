@@ -629,33 +629,6 @@ table(data.v5$body_sr)
 hist(data.v5$body_sr)
 ```
 
-## interaction effect for subjective weight -- something isnt working here
-``` {r bodysr_interxn}
-# set all NAs in activities equal to 0
-data.v5$wcs_1_f[is.na(data.v5$wcs_1_f)] <- 0
-data.v5$wcs_1_m[is.na(data.v5$wcs_1_m)] <- 0
-data.v5$wcs_1_m[is.na(data.v5$wcs_1_o)] <- 0
-
-data.v5$wcs_1_f <- as.numeric(data.v5$wcs_1_f)
-data.v5$wcs_1_f <- as.numeric(data.v5$wcs_1_m)
-data.v5$wcs_1_f <- as.numeric(data.v5$wcs_1_o)
-
-## WCS --Combine wcs_1_f, wcs_1_m, wcs_1_o to create 'wcs_1'
-data.v5$wcs_1 = data.v5$wcs_1_f + data.v5$wcs_1_m + data.v5$wcs_1_o
-table(data.v5$wcs_1)
-
-# total WCS score 
-data.v5 <- data.v5 %>%
-  mutate(wcs_tot =sum(wcs_1 + wcs_2 + wcs_3 + $wcs_4 + wcs_5))   # not sure what to do with the NAs here
-
-table(data.v5$wsc, useNA = "always")
-
-# possible interaction with thin_good?
-table(data.v5$thin_good)
-
-
-```
-
 ## Race
 ```{r race}  
 table(data.v5$race)
@@ -1425,7 +1398,8 @@ table(traindf.v13$religios, useNA = "always")       # Check output
 
 ##  Religion interaction
 ``` {r religios_interxn}
-table(traindf.v13$social_religid)
+table(traindf.v13$social_religid, useNA = "always")
+
 traindf.v13 <- traindf.v13 %>%   # fix directionality
   mutate(cli_relig = case_when(cli_relig_nch  == 1 ~ 5,   # hostile
                               cli_relig_nch  == 2 ~ 4,
@@ -1471,7 +1445,7 @@ traindf.v13 = subset(traindf.v13, select= -c(ins_1, ins_mh, ins_ade, ins_inade))
 
 ## International student
 ```{r train international}
-traindf.v14 <- traindf.v14 %>%
+traindf.v14 <- traindf.v13 %>%
   mutate(international = case_when(international == 1 ~ 1,
                                    international == 0 ~ 0)) %>%
   filter(!is.na(international))
@@ -1825,8 +1799,7 @@ table(traindf.v15$drugs_yn, useNA = "always")
 ## Marijuana use
 ```{r train drug_mar}
 traindf.v15$drug_mar[is.na(traindf.v15$drug_mar)] <- 0
-table(traindf.v15$drug_mar)  
- 
+
 traindf.v15 <- traindf.v15 %>%
   mutate(drug_mar = case_when(drug_mar == 1 ~ 1, 
                               drug_mar == 0 ~ 0)) %>%
@@ -1854,9 +1827,7 @@ table(traindf.v16$fincur, useNA = "always")  # check output, skew
 ## Current SES comparison interaction effects
 ```{r rain fincur_interxn}
 table(traindf.v16$fin_comp1)
-table(traindf.v16$fin_comp2)
 table(traindf.v16$cli_lowses)
-table(traindf.v16$afford_school)
 ```
 
 ## ISI scale
@@ -1877,7 +1848,7 @@ table(traindf.v16$isi_5)
 table(traindf.v16$isi_6)
 table(traindf.v16$isi_7)
 
-traindf.v16$isi_tot <- traindf.v16$isi_1 + traindf.v16$isi_2 + traindf.v16$isi_3 + traindf.v16$isi_4 + traindf.v16$isi_5 + traindf.v16$isi_6 + traindf.v16$isi_7)
+traindf.v16$isi_tot <- traindf.v16$isi_1 + traindf.v16$isi_2 + traindf.v16$isi_3 + traindf.v16$isi_4 + traindf.v16$isi_5 + traindf.v16$isi_6 + traindf.v16$isi_7
 
 table(traindf.v16$isi_tot)
 ```
@@ -1940,7 +1911,6 @@ traindf.v18 <- traindf.v18 %>%
 traindf.v18$binge <-as.logical(traindf.v18$binge)
 
 table(traindf.v18$binge, useNA = "always") # check output
-jarque.bera.test(traindf.v18$binge)
 
 traindf.v18 = subset(traindf.v18, select= -c(binge_fr_f, binge_fr_m, binge_fr_o)) # clean up var
 ```
@@ -1956,9 +1926,6 @@ traindf.v18 <- traindf.v18 %>%
 traindf.v18$psyhx <- as.logical(traindf.v18$psyhx)  # change class to boolean
 
 table(traindf.v18$psyhx, useNA = "always")   # check output, skew
-jarque.bera.test(traindf.v18$psyhx)
-
-traindf.v18 = subset(traindf.v18, select= -c(prov_pes, prov_inp, prov_par)) # clean up var 
 ```
 
 ## Current GPA
