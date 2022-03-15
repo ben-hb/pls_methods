@@ -637,7 +637,6 @@ data.v5 <- data.v5 %>%
   filter(!is.na(body_sr))
 
 table(data.v5$body_sr, useNA = "always") # tabulate and check output
-hist(data.v5$body_sr)
 ```
 
 ## Race
@@ -2061,7 +2060,7 @@ traindf.v19 <- traindf.v19 %>%
                              deprawsc < 20 ~ 0)) %>%
   mutate(dep_na = case_when(is.na(deprawsc) ~ 1,   #  filter out any NAs
                             !is.na(deprawsc) ~ 0))
-traindf.v20$deprawsc <- as.numeric(traindf.v20$deprawsc)
+traindf.v19$deprawsc <- as.numeric(traindf.v19$deprawsc)
 
 # Check outputs
 table(traindf.v19$dep_none)
@@ -2724,8 +2723,7 @@ glm_all <- traindf.v27 %>% select(
   # life events
   gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx,   # missing isi_tot
   # defeat-entrapment
-  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, 
-  aca_mh_impa, aca_impa,
+  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_impa,
   # threats to internal/external moderation
   persist, belong1, belong2, belong8, flourish, inf, brs_tot, talk, 
   stig_pcv, stig_per, ther, aaq_tot, dep_secret)
@@ -2740,15 +2738,15 @@ glm_all2 <- glm(si_type ~ .,
 summary(glm_all)
 coef_all <- coef(summary(glm_all2))  # retrieve coefficients
 
-ci_all <- confint(glm_all)  # retrieve confidence intervals
+ci_all <- confint(glm_all2)  # retrieve confidence intervals
 ci_all
 
-model.all <- tidy(glm_all)  # Convert model to dataframe for easy manipulation
+model.all <- tidy(glm_all2)  # Convert model to dataframe for easy manipulation
 model.all
 
 model.all  %>%
   mutate(or = exp(estimate),  # Odds ratio/gradient
-        var.diag = diag(vcov(glm_all)),  # Variance of each coefficient
+        var.diag = diag(vcov(glm_all2)),  # Variance of each coefficient
         or.se = sqrt(or^2 * var.diag))  # Odds-ratio adjusted
 ```
 
@@ -2770,8 +2768,7 @@ var_names <- c(
   # life events
   "gpa_sr", "fincur", "binge", "assault", "drugs_yn", "drug_mar", "psyhx",   # missing isi_tot
   # defeat-entrapment
-  "aca_impa", "anx_score", "deprawsc", "percneed", "gad7_impa", "dep_impa", "dep_type", "anx_type", 
-  "aca_mh_impa", "aca_impa",
+  "aca_impa", "anx_score", "deprawsc", "percneed", "gad7_impa", "dep_impa", "dep_type", "anx_type", "aca_impa",
   # threats to internal/external moderation
   "persist", "belong1", "belong2", "belong8", "flourish", "inf", "brs_tot", "talk", 
   "stig_pcv", "stig_per", "ther", "aaq_tot", "dep_secret")
@@ -2846,14 +2843,6 @@ load("missing_dfs.RData")
 ```
 
 
-# TESTING DATA
-
-
-
-
-
-
-
 # DATA PREP
 
 
@@ -2870,8 +2859,7 @@ traindf_sem <- traindf.v28 %>% select(
   # life events
   gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx,   # missing isi_tot
   # defeat-entrapment
-  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, 
-  aca_mh_impa, aca_impa,
+  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_impa,
   # threats to internal/external moderation
   persist, belong1, belong2, belong8, flourish, inf, brs_tot, talk, 
   stig_pcv, stig_per, ther, aaq_tot, dep_secret)  
@@ -2969,8 +2957,7 @@ traindf_sem1 <- traindf.v28 %>% select(
   # life events
   gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx,   # missing isi_tot
   # defeat-entrapment
-  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, 
-  aca_mh_impa, aca_impa,
+  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_impa,
   # threats to internal/external moderation
   persist, belong1, belong2, belong8, flourish, inf, brs_tot, talk, 
   stig_pcv, stig_per, ther, aaq_tot, dep_secret) 
@@ -4755,7 +4742,7 @@ test18_sem <- test18.v26 %>% select(
   stig_pcv, stig_per, ther, aaq_tot, dep_secret)  
   
 ## Dummy col SEM w/ continuous
-results_test_18 <- dummy_cols(test18_sem, select_columns = c("si_type", "race", "residenc", "school2_type"),
+results_test_18 <- dummy_cols(test18_sem, select_columns = c("race", "residenc", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # save output for offline SMART PLS
