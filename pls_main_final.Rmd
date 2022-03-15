@@ -2658,14 +2658,15 @@ glm_all <- traindf.v27 %>% select(
   # outcome
   si_type,
   # premotivation
-  age, sexual, race, gender_tgd, sib_freq, ed_any, dx_mh, meds_any, finpast,
-  religios, residenc, school2_type, international, undercls,
+  age, race, sexual, gender, gender_tgd, sib_freq, school2_type, env_mh,
+  international, ins_no, satisfied_overall, residenc, religios, meds_count, dx_mh, 
+  meds_any, ed_any, finpast, body_sr, days_work_paid, children_dep, discrim,
   # life events
-  ins_no, gpa_sr, psyhx, fincur, drugs_yn, assault, binge, drug_mar,
+  gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx, failed,   # missing isi_tot
   # defeat-entrapment
-  deprawsc, anx_score, dep_impa, percneed,
+  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_mh_impa, aca_impa,
   # threats to internal/external moderation
-  inf, flourish, belong1, talk, mh_stigma, persist, satisfied_overall, aaq_tot, ther)
+  persist, belong1, belong2, belong8, flourish, inf, brs_tot, talk, mh_stigma, ther, aaq_tot, dep_secret)
 
 glm_all <- na.omit(glm_all)
 
