@@ -1084,7 +1084,7 @@ table(traindf.v10$ed_any, useNA = "always") # check output, confirms no NAs
 traindf.v11 <- traindf.v10 %>%
   mutate(meds_sti = case_when(meds_1 == 1 ~ 1,  # combine stimulant variables
                               meds_8 == 1 ~ 0,
-                              meds_1 == 0 ~ 0))
+                              meds_1 == 0 ~ 0)) 
       # Reconcile stimulant write-ins from meds_7_text
       traindf.v11$meds_sti[str_detect(traindf.v11$meds_7_text, "[V|v]yvan[s|c]e")] <- 1
       traindf.v11$meds_sti[str_detect(traindf.v11$meds_7_text, "[T|t]enex")] <- 1
@@ -1328,7 +1328,6 @@ traindf.v11 = subset(traindf.v11, select= -c(meds_1:meds_7)) # clean up vars/col
 ```{r environment vars}
 traindf.v12 <- traindf.v11
 ```
-
 
 ## Discrimination
 ```{r train discrim}
@@ -1630,9 +1629,9 @@ traindf.v15 <- traindf.v14  # new dataframe for analysis
 Premotivation correlation
 ```{r train results_prem}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v15 %>% select(si_type, age, race, sexual, gender, gender_tgd, sib_freq,school2_type, env_mh,
+traindf_prem <- traindf.v15 %>% select(si_type, age, race, sexual, gender, gender_tgd, sib_freq, school2_type, env_mh,
                                        international, ins_no, satisfied_overall, residenc, religios, meds_count, dx_mh, 
-                                       meds_any, ed_any, finpast, ed_scoff, body_sr, days_work_paid, children_dep, discrim)
+                                       meds_any, ed_any, finpast, body_sr, days_work_paid, children_dep, discrim)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_prem, sig=0.6){
@@ -1660,7 +1659,7 @@ corr_simple()
 ```{r train prem_pca}
 # Define diathesis vars for correlation matrix
 traindf_prem <- traindf.v15 %>% select(age, race, sexual, gender, gender_tgd, sib_freq, school2_type, env_mh, international, ins_no, 
-                                       satisfied_overall, residenc, religios, meds_count, dx_mh, meds_any, ed_any, finpast, ed_scoff, 
+                                       satisfied_overall, residenc, religios, meds_count, dx_mh, meds_any, ed_any, finpast, 
                                        body_sr, days_work_paid, children_dep, discrim)
 traindf_prem <- na.omit(traindf_prem)
 
@@ -1671,7 +1670,10 @@ traindf_prem <- traindf_prem %>%
   data.matrix()
 # traindf_prem   # check output
 
-results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "race", "sexual", "gender", "gender_tgd", "sib_freq", "ed_any", "days_work_paid", "children_dep", "body_sr", "dei_campus", "ed_scoff", "audit_tot", "meds_count", "cli_relig", "dx_mh", "international", "meds_any", "religios", "school2_type", "finpast", "ins_no", "residenc", "children_dep", "satisfied_overall"),
+results_prem <- dummy_cols(traindf_prem, select_columns = c("age", "race", "sexual", "gender", "gender_tgd", "sib_freq", "school2_type", 
+                                                            "env_mh", "international", "ins_no", "satisfied_overall", "residenc", "religios", 
+                                                            "meds_count", "dx_mh", "meds_any", "ed_any", "finpast", "body_sr", 
+                                                            "days_work_paid", "children_dep", "discrim"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 prem_pca <- PCA(results_prem, graph=FALSE)  # apply PCA
@@ -1702,14 +1704,15 @@ fviz_cos2(prem_pca, choice = "var", axes = 1,
 
 ## GLM Premotivation regression
 ```{r train clm_prem}
-glm_prem <- traindf.v15 %>% select(si_type, sexual, gender_tgd, sib_freq, race, ed_any, finpast,
-                                   dx_mh, international, religios, school2_type, residenc, ins_no,
-                                   meds_any, undercls, days_work_paid, children_dep, satisfied_overall)
+glm_prem <- traindf.v15 %>% select(si_type, age, race, sexual, gender, gender_tgd, sib_freq, school2_type, env_mh, international, ins_no, 
+                                       satisfied_overall, residenc, religios, meds_count, dx_mh, meds_any, ed_any, finpast, 
+                                       body_sr, days_work_paid, children_dep, discrim)
 glm_prem <- na.omit(glm_prem)
 
 # run regression
-glm_prem <- glm(si_type ~ sexual + gender_tgd + sib_freq + race + ed_any + dx_mh + undercls + finpast + satisfied_overall +
-                religios +  school2_type + international + residenc + meds_any + ins_no + days_work_paid + children_dep,
+glm_prem <- glm(si_type ~ age + race + sexual + gender + gender_tgd + sib_freq + school2_type + env_mh + international + ins_no + 
+                  satisfied_overall + residenc + religios + meds_count + dx_mh + meds_any + ed_any + finpast + body_sr + 
+                  days_work_paid + children_dep + discrim,
               data = glm_prem)
 summary(glm_prem)
 coef(glm_prem)   # retrieve coefficients
