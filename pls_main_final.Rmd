@@ -4724,10 +4724,10 @@ test20_sem <- data.matrix(test20_sem)
 results_test_20 <- dummy_cols(test20_sem, select_columns = c("si_type", "race", "residenc", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
-nrow(testdf.v26) # 5700
-nrow(traindf.v28) # 5638
-nrow(test20.v26) # 3862
-nrow(test18.v26) # 1838
+nrow(testdf.v26) # 4751
+nrow(traindf.v28) # 4746
+nrow(test20.v26) # 3180
+nrow(test18.v26) # 1571
 
 # Save offline for SMART PLS
 results_test_20 <- as.data.frame(results_test_20)
