@@ -408,13 +408,13 @@ table(data.v3$gender_tgd, useNA = "always")   # check output
 ``` {r gender_interxn}
 
 ## Interaction effect for transgender
-data.v3 <- data.v3 %>%   # fix directionality
-  mutate(cli_TQ  = case_when(cli_TQ  == 1 ~ 5,   # welcoming
-                             cli_TQ  == 2 ~ 4,
-                             cli_TQ  == 3 ~ 3,
-                             cli_TQ  == 4 ~ 2,
-                             cli_TQ  == 5 ~ 1))  # hostile
-table(data.v3$cli_TQ, useNA = "always")
+#data.v3 <- data.v3 %>%   # fix directionality
+#  mutate(cli_TQ  = case_when(cli_TQ  == 1 ~ 5,   # welcoming
+#                             cli_TQ  == 2 ~ 4,
+#                             cli_TQ  == 3 ~ 3,
+#                             cli_TQ  == 4 ~ 2,
+#                             cli_TQ  == 5 ~ 1))  # hostile
+#table(data.v3$cli_TQ, useNA = "always")
 table(data.v3$discrim, useNA = "always")
 
 ## interaction effect for women
@@ -919,16 +919,12 @@ data.v6 <- data.v6 %>%   # fix directionality
                                    cli_white  == 4 ~ 2,
                                    cli_white  == 5 ~ 1))  # hostile
 
-table(data.v6$social_re)
-table(data.v6$cli_nonwhite)
-table(data.v6$cli_black)
-table(data.v6$cli_ainaan)
-table(data.v6$cli_asian)
-table(data.v6$cli_sai)
-table(data.v6$cli_his)
-table(data.v6$cli_mides)
-table(data.v6$cli_pi)
-table(data.v6$cli_white)
+table(data.v6$social_re, useNA = "always")
+table(data.v6$cli_nonwhite, useNA = "always")
+table(data.v6$cli_black, useNA = "always")
+table(data.v6$cli_asian, useNA = "always")
+table(data.v6$cli_his, useNA = "always")
+table(data.v6$cli_white, useNA = "always")
 
 ```
 
@@ -1000,14 +996,6 @@ table(data.v7$sib_freq, useNA = "always")  # use for NA changes
 data.v7 = subset(data.v7, select= -c(sib_none:sib_oth)) # clean up vars/columns
 ```
 
-## SCOFF scale
-```{r SCOFF}
-data.v7$ed_scoff <- as.numeric(data.v7$ed_scoff)
-table(data.v7$ed_scoff)  
-hist(data.v7$ed_scoff)
-
-data.v7 = subset(data.v7, select= -c(scoff_1:scoff_5)) # clean up vars/columns  
-```
 
 ## Past finances
 ```{r finpast}
@@ -1080,44 +1068,6 @@ testdf.v10 <- subset(data.v10, split == FALSE)  # test
 dim(data.v10)
 dim(traindf.v10)
 dim(testdf.v10)
-```
-
-## AUDIT  
-** too small for inclusion
-```{r train audit_tot}
-traindf.v10 <- traindf.v10 %>%
-  # Combine audit_3_f, audit_3_m, audit_3_o to create 'audit_3'
-  mutate(audit_3 = case_when(audit_3_f == 1 ~ 1,
-                             audit_3_m == 1 ~ 1,
-                             audit_3_o == 1 ~ 1,
-                             audit_3_f == 0 ~ 0,
-                             audit_3_m == 0 ~ 0,
-                             audit_3_o == 0 ~ 0)) %>%
-  # All outputs needs to be numeric for future addition of AUDIT total
-  mutate(audit_1 = as.numeric(audit_1),
-         audit_2 = as.numeric(audit_2),
-         audit_3 = as.numeric(audit_3),
-         audit_4 = as.numeric(audit_4),
-         audit_5 = as.numeric(audit_5),
-         audit_6 = as.numeric(audit_5),
-         audit_7 = as.numeric(audit_7),
-         audit_8 = as.numeric(audit_8),
-         audit_9 = as.numeric(audit_9),
-         audit_10 = as.numeric(audit_10)) %>%
-  # Find audit_tot -- total AUDIT scores for all participants 
-  mutate(audit_tot = as.numeric(audit_1) + as.numeric(audit_2) + as.numeric(audit_3) + 
-           as.numeric(audit_4) + as.numeric(audit_5) + as.numeric(audit_6) + as.numeric(audit_7) + 
-           as.numeric(audit_8) + as.numeric(audit_9) + as.numeric(audit_10))
-table(traindf.v10$audit_tot) # check output (too small)
-
-traindf.v10 = subset(traindf.v10, select= -c(audit_1:audit_10, audit_3_m, 
-                                             audit_3_f, audit_3_o)) # clean up vars/columns
-```
-
-## ETOH treatment
-```{r train alc_tx}
-table(traindf.v10$alc_tx) # check output (too small)
-traindf.v10 = subset(traindf.v10, select= -c(alc_tx)) # clean up vars/columns
 ```
 
 ## Eating disorder, any type
@@ -1383,6 +1333,10 @@ traindf.v12 <- traindf.v11
 ## Discrimination
 ```{r train discrim}
 traindf.v12$discrim<- as.numeric(traindf.v12$discrim)
+
+traindf.v12 <- traindf.v12 %>%
+  filter(!is.na(discrim))
+
 table(traindf.v12$discrim, useNA = "always") # check output (lots of NAs)
 ```
 
@@ -1449,7 +1403,6 @@ traindf.v13 <- traindf.v13 %>%
 traindf.v13satisfied_overall <- as.numeric(traindf.v13$satisfied_overall)
 
 table(traindf.v13$satisfied_overall, useNA = "always")
-jarque.bera.test(traindf.v13$satisfied_overall)
 ```
 
 ## Insurance coverage
@@ -1601,6 +1554,10 @@ traindf.v14 <- traindf.v14 %>%
 ## MH campus environment
 ```{r train env_mh}
 traindf.v14$env_mh <- as.factor(traindf.v14$env_mh)
+
+traindf.v14 <- traindf.v14 %>%
+    filter(!is.na(env_mh))
+
 table(traindf.v14$env_mh, useNA = "always")  # check output (excessive NAs)
 ```
 
@@ -1673,7 +1630,9 @@ traindf.v15 <- traindf.v14  # new dataframe for analysis
 Premotivation correlation
 ```{r train results_prem}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v15 %>% select(si_type, age, race, undercls, sexual, gender, gender_tgd, sib_freq, ed_any, cli_TQ, cli_women, cli_LGB, social_sexid, days_work_paid, children_dep, body_sr, cli_nonwhite, cli_black, cli_his, cli_asian, dei_campus, ed_scoff, audit_tot, meds_count, cli_relig, dx_mh, international, meds_any, religios, school2_type, finpast, ins_no, residenc, hours_work_paid, children_dep, satisfied_overall)
+traindf_prem <- traindf.v15 %>% select(si_type, age, race, sexual, gender, gender_tgd, sib_freq,school2_type, env_mh,
+                                       international, ins_no, satisfied_overall, residenc, religios, meds_count, dx_mh, 
+                                       meds_any, ed_any, finpast, ed_scoff, body_sr, days_work_paid, children_dep, discrim)
 
 # Corr_simple function
 corr_simple <- function(traindf=traindf_prem, sig=0.6){
@@ -1700,7 +1659,9 @@ corr_simple()
 ## PCA PREMOTIVATION
 ```{r train prem_pca}
 # Define diathesis vars for correlation matrix
-traindf_prem <- traindf.v15 %>% select(age, race, sexual, gender, gender_tgd, sib_freq, ed_any, days_work_paid, children_dep, body_sr, dei_campus, ed_scoff, audit_tot, meds_count, dx_mh, international, meds_any, religios, school2_type, finpast, ins_no, residenc, children_dep, satisfied_overall)
+traindf_prem <- traindf.v15 %>% select(age, race, sexual, gender, gender_tgd, sib_freq, school2_type, env_mh, international, ins_no, 
+                                       satisfied_overall, residenc, religios, meds_count, dx_mh, meds_any, ed_any, finpast, ed_scoff, 
+                                       body_sr, days_work_paid, children_dep, discrim)
 traindf_prem <- na.omit(traindf_prem)
 
 # create corr matrix, with dummy vars
