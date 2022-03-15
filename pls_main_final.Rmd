@@ -2281,20 +2281,20 @@ model.def  %>%
 # THREATS
 
 ```{r train TSM frame}
-traindf.v22 <- traindf.v20
+traindf.v21 <- traindf.v20
 ```
 
 ## Depression secret
 ```{r train dep_secret}
 ## Secretive MH
-traindf.v22$dep_secret <- as.numeric(traindf.v22$dep_secret)
-table(traindf.v22$dep_secret, useNA = "always")  # check output, too many NAs
+traindf.v21$dep_secret <- as.numeric(traindf.v21$dep_secret)
+table(traindf.v21$dep_secret, useNA = "always")  # check output, too many NAs
 ```
 
 ## AAQ total
 ```{r train aaq_dum}
 # create AAQ_tot variable to sum up imputed AAQ questions
-traindf.v22 <- traindf.v22 %>%
+traindf.v22 <- traindf.v21 %>%
   mutate(aaq_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
            as.numeric(AAQ_5) + as.numeric(AAQ_6) + as.numeric(AAQ_7))
 
@@ -2348,13 +2348,14 @@ traindf.v22 <- traindf.v22 %>%
   filter(!is.na(belong1))  # filters out NAs
 table(traindf.v22$belong1, useNA = "always")
 
-traindf.v22$belong1 <- as.numeric(traindf.v22$belong1)
-summary(traindf.v22$belong1)
-jarque.bera.test(traindf.v22$belong1)
+traindf.v22 <- traindf.v22 %>%
+  filter(!is.na(belong2))  # filters out NAs
+table(traindf.v22$belong2, useNA = "always")
 
-table(traindf.v22$belong2)  # elective question, but common
-table(traindf.v22$belong8)  # nested x 2
-table(traindf.v22$belong9)  # not as good of a proxy
+traindf.v22 <- traindf.v22 %>%
+  filter(!is.na(belong8))  # filters out NAs
+table(traindf.v22$belong8, useNA = "always")
+
 ```
 
 ## Flourishing Scale
@@ -2465,46 +2466,12 @@ traindf.v24 = subset(traindf.v24, select= -c(inf_1:inf_help))  # clean up vars
 traindf.v24 <- traindf.v24 %>%
   mutate(brs_tot = as.integer(BRS_1) + as.integer(BRS_2) + as.integer(BRS_3) + as.integer(BRS_4) + as.integer(BRS_5))
 
-table(traindf.v24$brs_tot)
 traindf.v24$brs_tot <- as.numeric(traindf.v24$brs_tot)
 
-#  for loop for predictive cutoff point needed
-rs_df <- data.frame("cutoff" = c(), "rs" = c())
-for (i in 6:24) {
-  brs_bin <- ifelse(traindf.v24$brs_tot >= i, TRUE, FALSE)
-  model = lm(traindf.v24$sui_idea ~ brs_bin)
-  rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
-}
-
-names(rs_df) <- c("cutoff", "rs")
-rs_df_arranged <- rs_df %>% 
-  arrange(desc(rs)) 
-
-# deem 'rs_df_arranged[1,1]' as SI cutoff
 traindf.v24 <- traindf.v24 %>%
-  mutate(brs_dum = ifelse(brs_tot > rs_df_arranged[1,1], 1, 0)) %>%
-  mutate(brs_dum = case_when(brs_dum == 1 ~ 1,
-                             brs_dum == 0 ~ 0))
-traindf.v24$brs_dum <- as.logical(traindf.v24$brs_dum)
+    filter(!is.na(brs_tot))  # filters out all NAs
 
-# output
-rs_df_arranged[1,1]
 table(traindf.v24$brs_tot, useNA = "always")
-table(traindf.v24$brs_dum, useNA = "always")
-```
-
-## Achievement Goal Inventory
-
-## Distress & social support
-```{r train talk}
-traindf.v25 <- traindf.v24 %>% 
-  # create dictomous variable for no talking or talking to support systems
-  mutate(talk = case_when((talk1_9 == 1 | talk1no == 1) ~ 1,                                    # no support
-                          (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1) ~ 0,      # informal support
-                          (talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) ~ 0))     # formal and informal
-traindf.v25$talk <- as.logical(traindf.v25$talk)
-
-table(traindf.v25$talk, useNA = "always") # check output
 ```
 
 ## Distress & social support
@@ -2522,13 +2489,11 @@ traindf.v25 <- traindf.v24 %>%
   # create dictomous variable for no talking or talking to support systems
   mutate(talk = case_when((talk1_9 == 1 | talk1no == 1) ~ 1,                                    # no support
                           (talk1_2 == 1 | talk1_3 == 1 | talk1_4 == 1 | talk1_5 == 1) ~ 0,      # informal support
-                          (talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) ~ 0))     # formal and informal
+                          (talk1_1 == 1 | talk1_6 == 1 | talk1_7 == 1 | talk1_8 == 1) ~ 0)) %>%    # formal and informal
+  filter(!is.na(talk))  # filtters out all NAs
 traindf.v25$talk <- as.logical(traindf.v25$talk)
 
 table(traindf.v25$talk, useNA = "always") # check output
-
-traindf.v25 = subset(traindf.v25, select= -c(talk1_1:talk1_9, talk1sig, talk1fr, 
-talk1rel, talk1no, talk1sup, talk1rm, talk1pro, talk1fam)) # clean up
 ```
 
 ## Perceived MH as failure, stigma
@@ -2600,8 +2565,7 @@ traindf.v27 <- traindf.v26
 ### Threats correlation
 ```{r train MMTSM_corr}
 # Define MM variable candidates for correlation matrix
-traindf_mm <- traindf.v27 %>% select(inf, flourish, belong1, mh_stigma, talk, brs_tot, 
-                                     satisfied_overall, ther, persist, aaq_tot)
+traindf_mm <- traindf.v27 %>% select(persist, belong1, belong2, belong8, flourish, inf, brs_tot, talk, mh_stigma, ther, aaq_tot, dep_secret)
 
  # convert traindf to numeric in order to run correlations
 traindf_mm <- traindf_mm %>% mutate_if(is.character, as.factor)
@@ -2623,8 +2587,8 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ### PCA MMTSM
 ```{r train PCA MMTSM}
-traindf_mmtsm <- traindf.v27 %>% select(inf, flourish, belong1, talk, mh_stigma, persist, 
-                                        satisfied_overall, aaq_tot, ther)
+traindf_mmtsm <- traindf.v27 %>% select(persist, belong1, belong2, belong8, flourish, inf, 
+                                        brs_tot, talk, mh_stigma, ther, aaq_tot, dep_secret)
 traindf_mmtsm <- na.omit(traindf_mmtsm)
 
 # create corr matrix, with dummy vars 
@@ -2633,9 +2597,9 @@ traindf_mmtsm <- traindf_mmtsm %>%
   dummy_cols(remove_first_dummy = TRUE) %>% 
   data.matrix()
 # traindf_mmtsm   # check output
-results_mmtsm <- dummy_cols(traindf_mmtsm, select_columns = c("flourish", "belong1", "inf", "ther",
-                                                        "mh_stigma", "talk", "persist", "aaq_tot",
-                                                        "satisfied_overall"),
+results_mmtsm <- dummy_cols(traindf_mmtsm, select_columns = c("persist", "belong1", "belong2", "belong8", 
+                                                              "flourish", "inf", "brs_tot", "talk", "mh_stigma", 
+                                                              "ther", "aaq_tot", "dep_secret"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 mmtsm_pca <- PCA(results_mmtsm, graph=FALSE)  # apply PCA
 eigval_mmtsm <- get_eigenvalue(mmtsm_pca)
@@ -2664,13 +2628,11 @@ fviz_cos2(mmtsm_pca, choice = "var", axes = 1,
 ### GLM Threats regression
 ```{r train GLM mmtsm}
 # prepare data for regression
-glm_mmtsm <- traindf.v27 %>% select(si_type, inf, flourish, belong1, talk, mh_stigma, persist, 
-                                    satisfied_overall, ther, aaq_tot)
+glm_mmtsm <- traindf.v27 %>% select(si_type, persist, belong1, belong2, belong8, flourish, inf, brs_tot, talk, mh_stigma, ther, aaq_tot, dep_secret)
 glm_mmtsm <- na.omit(glm_mmtsm)
 
 # run MM regression
-glm_mmtsm <- glm(si_type ~ inf + flourish + belong1 + mh_stigma + talk + persist + 
-                   satisfied_overall + aaq_tot + ther, 
+glm_mmtsm <- glm(si_type ~ persist + belong1 + belong2 + belong8 + flourish + inf + brs_tot + talk + mh_stigma + ther + aaq_tot + dep_secret, 
               data = glm_mmtsm)
 
 summary(glm_mmtsm)
