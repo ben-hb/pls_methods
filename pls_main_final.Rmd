@@ -1557,6 +1557,11 @@ traindf.v14 <- traindf.v14 %>%
 traindf.v14$env_mh <- as.factor(traindf.v14$env_mh)
 
 traindf.v14 <- traindf.v14 %>%
+  mutate(env_mh = case_when(env_mh == 5 ~ 1,
+                            env_mh == 4 ~ 2,
+                            env_mh == 3 ~ 3,
+                            env_mh == 2 ~ 4,
+                            env_mh == 1 ~ 5)) %>%
     filter(!is.na(env_mh))
 
 table(traindf.v14$env_mh, useNA = "always")  # check output (excessive NAs)
@@ -2300,6 +2305,12 @@ traindf.v21$dep_secret <- as.numeric(traindf.v21$dep_secret)
 table(traindf.v21$dep_secret, useNA = "always")
 
 traindf.v21 <- traindf.v21 %>%
+      mutate(dep_secret = case_when(dep_secret == 6 ~ 1,
+                            dep_secret == 5 ~ 2,
+                            dep_secret == 4 ~ 3,
+                            dep_secret == 3 ~ 4,
+                            dep_secret == 2 ~ 5,
+                            dep_secret == 1 ~ 6)) %>%
     filter(!is.na(dep_secret))  # filters for NAs
 
 table(traindf.v21$dep_secret, useNA = "always")
@@ -2366,7 +2377,14 @@ traindf.v22 <- traindf.v22 %>%
 table(traindf.v22$belong2, useNA = "always")
 
 traindf.v22 <- traindf.v22 %>%
+  mutate(belong8 = case_when(belong8 == 6 ~ 1,
+                            belong8 == 5 ~ 2,
+                            belong8 == 4 ~ 3,
+                            belong8 == 3 ~ 4,
+                            belong8 == 2 ~ 5,
+                            belong8 == 1 ~ 6)) %>%
   filter(!is.na(belong8))  # filters out NAs
+
 table(traindf.v22$belong8, useNA = "always")
 
 ```
@@ -2474,6 +2492,33 @@ table(traindf.v24$inf, useNA ="always") # check output, skew
 
 ## BRS
 ```{r train BRS_tot}
+traindf.v24 <- traindf.v24 %>%
+    mutate(BRS_1 = case_when(BRS_1 == 5 ~ 1,
+                            BRS_1 == 4 ~ 2,
+                            BRS_1 == 3 ~ 3,
+                            BRS_1 == 2 ~ 4,
+                            BRS_1 == 1 ~ 5)) %>%
+    mutate(BRS_2 = case_when(BRS_2 == 5 ~ 1,
+                            BRS_2 == 4 ~ 2,
+                            BRS_2 == 3 ~ 3,
+                            BRS_2 == 2 ~ 4,
+                            BRS_2 == 1 ~ 5)) %>%
+    mutate(BRS_3 = case_when(BRS_3 == 5 ~ 1,
+                            BRS_3 == 4 ~ 2,
+                            BRS_3 == 3 ~ 3,
+                            BRS_3 == 2 ~ 4,
+                            BRS_3 == 1 ~ 5)) %>%
+    mutate(BRS_4 = case_when(BRS_4 == 5 ~ 1,
+                            BRS_4 == 4 ~ 2,
+                            BRS_4 == 3 ~ 3,
+                            BRS_4 == 2 ~ 4,
+                            BRS_4 == 1 ~ 5)) %>%
+   mutate(BRS_5 = case_when(BRS_5 == 5 ~ 1,
+                            BRS_5 == 4 ~ 2,
+                            BRS_5 == 3 ~ 3,
+                            BRS_5 == 2 ~ 4,
+                            BRS_5 == 1 ~ 5))
+
 traindf.v24 <- traindf.v24 %>%
   mutate(brs_tot = as.integer(BRS_1) + as.integer(BRS_2) + as.integer(BRS_3) + as.integer(BRS_4) + as.integer(BRS_5))
 
@@ -2934,7 +2979,7 @@ traindf_sem1 <- traindf.v28 %>% select(
 traindf_sem1 <- data.matrix(traindf_sem1)
   
 ## Dummy col SEM w/ continuous
-results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("si_type", "race"),
+results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("school2_type", "residenc", "race"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # xlsx output
@@ -3433,6 +3478,11 @@ testdf.v14 <- testdf.v14 %>%
 testdf.v14$env_mh <- as.factor(testdf.v14$env_mh)
 
 testdf.v14 <- testdf.v14 %>%
+  mutate(env_mh = case_when(env_mh == 5 ~ 1,
+                            env_mh == 4 ~ 2,
+                            env_mh == 3 ~ 3,
+                            env_mh == 2 ~ 4,
+                            env_mh == 1 ~ 5)) %>%
     filter(!is.na(env_mh))
 
 table(testdf.v14$env_mh, useNA = "always")  # check output (excessive NAs)
@@ -4073,7 +4123,7 @@ testdf.v21 <- testdf.v20
 ### Defeat-entrapment correlation
 ```{r test defeat cor}
 # Define defeat variable candidates for correlation matrix
-testdf_def <- testdf.v21 %>% select(aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_mh_impa, aca_impa)
+testdf_def <- testdf.v21 %>% select(aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_impa)
 
  # convert testdf to numeric in order to run correlations
 testdf_def <- testdf_def %>% mutate_if(is.character, as.factor)
@@ -4095,8 +4145,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ### PCA defeat-entrapment
 ```{r test PCA_def}
-testdf_def <- testdf.v21 %>% select(aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, 
-                                      aca_mh_impa, aca_impa)
+testdf_def <- testdf.v21 %>% select(aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_impa)
 testdf_def <- na.omit(testdf_def)
 
 # create corr matrix, with dummy vars 
@@ -4107,7 +4156,7 @@ testdf_def <- testdf_def %>%
 # testdf_def   # check output
 
 results_def <- dummy_cols(testdf_def, select_columns = c("aca_impa", "anx_score", "deprawsc", "percneed", "gad7_impa", 
-                                                          "dep_impa", "dep_type", "anx_type", "aca_mh_impa", "aca_impa"),
+                                                          "dep_impa", "dep_type", "anx_type", "aca_impa"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 def_pca <- PCA(results_def, graph=FALSE)  # apply PCA
@@ -4139,11 +4188,11 @@ fviz_cos2(def_pca, choice = "var", axes = 1,
 ### GLM defeat-entrapment
 ```{r test GLM defeat}
 # prepare regression analysis
-results2_def <- testdf.v21 %>% select(si_type, aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_mh_impa, aca_impa)
+results2_def <- testdf.v21 %>% select(si_type, aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_impa)
 glm_def <- na.omit(results2_def)
 
 # run defeat regression
-glm_def <- glm(si_type ~ aca_impa + anx_score + deprawsc + percneed + gad7_impa + dep_impa + dep_type + anx_type + aca_mh_impa + aca_impa, 
+glm_def <- glm(si_type ~ aca_impa + anx_score + deprawsc + percneed + gad7_impa + dep_impa + dep_type + anx_type + aca_impa, 
                data = glm_def)
 
 summary(glm_def)
@@ -4174,6 +4223,12 @@ testdf.v21$dep_secret <- as.numeric(testdf.v21$dep_secret)
 table(testdf.v21$dep_secret, useNA = "always")
 
 testdf.v21 <- testdf.v21 %>%
+    mutate(dep_secret = case_when(dep_secret == 6 ~ 1,
+                            dep_secret == 5 ~ 2,
+                            dep_secret == 4 ~ 3,
+                            dep_secret == 3 ~ 4,
+                            dep_secret == 2 ~ 5,
+                            dep_secret == 1 ~ 6)) %>%
     filter(!is.na(dep_secret))  # filters for NAs
 
 table(testdf.v21$dep_secret, useNA = "always")
@@ -4240,6 +4295,12 @@ testdf.v22 <- testdf.v22 %>%
 table(testdf.v22$belong2, useNA = "always")
 
 testdf.v22 <- testdf.v22 %>%
+    mutate(belong8 = case_when(belong8 == 6 ~ 1,
+                            belong8 == 5 ~ 2,
+                            belong8 == 4 ~ 3,
+                            belong8 == 3 ~ 4,
+                            belong8 == 2 ~ 5,
+                            belong8 == 1 ~ 6)) %>%
   filter(!is.na(belong8))  # filters out NAs
 table(testdf.v22$belong8, useNA = "always")
 
@@ -4348,6 +4409,33 @@ table(testdf.v24$inf, useNA ="always") # check output, skew
 
 ## BRS
 ```{r test BRS_tot}
+testdf.v24 <- testdf.v24 %>%
+    mutate(BRS_1 = case_when(BRS_1 == 5 ~ 1,
+                            BRS_1 == 4 ~ 2,
+                            BRS_1 == 3 ~ 3,
+                            BRS_1 == 2 ~ 4,
+                            BRS_1 == 1 ~ 5)) %>%
+    mutate(BRS_2 = case_when(BRS_2 == 5 ~ 1,
+                            BRS_2 == 4 ~ 2,
+                            BRS_2 == 3 ~ 3,
+                            BRS_2 == 2 ~ 4,
+                            BRS_2 == 1 ~ 5)) %>%
+    mutate(BRS_3 = case_when(BRS_3 == 5 ~ 1,
+                            BRS_3 == 4 ~ 2,
+                            BRS_3 == 3 ~ 3,
+                            BRS_3 == 2 ~ 4,
+                            BRS_3 == 1 ~ 5)) %>%
+    mutate(BRS_4 = case_when(BRS_4 == 5 ~ 1,
+                            BRS_4 == 4 ~ 2,
+                            BRS_4 == 3 ~ 3,
+                            BRS_4 == 2 ~ 4,
+                            BRS_4 == 1 ~ 5)) %>%
+   mutate(BRS_5 = case_when(BRS_5 == 5 ~ 1,
+                            BRS_5 == 4 ~ 2,
+                            BRS_5 == 3 ~ 3,
+                            BRS_5 == 2 ~ 4,
+                            BRS_5 == 1 ~ 5))
+
 testdf.v24 <- testdf.v24 %>%
   mutate(brs_tot = as.integer(BRS_1) + as.integer(BRS_2) + as.integer(BRS_3) + as.integer(BRS_4) + as.integer(BRS_5))
 
@@ -4542,13 +4630,6 @@ model.mmtsm  %>%
 
 
 
-
-
-
-
-
-
-
 # TESTING DATA PREP
 
 
@@ -4565,8 +4646,7 @@ testdf_sem <- testdf.v26 %>% select(
   # life events
   gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx,   # missing isi_tot
   # defeat-entrapment
-  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, 
-  aca_mh_impa, aca_impa,
+  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_impa,
   # threats to internal/external moderation
   persist, belong1, belong2, belong8, flourish, inf, brs_tot, talk, 
   stig_pcv, stig_per, ther, aaq_tot, dep_secret)  
@@ -4627,8 +4707,7 @@ testdf_sem1 <- testdf.v26 %>% select(
   # life events
   gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx,   # missing isi_tot
   # defeat-entrapment
-  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, 
-  aca_mh_impa, aca_impa,
+  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_impa,
   # threats to internal/external moderation
   persist, belong1, belong2, belong8, flourish, inf, brs_tot, talk, 
   stig_pcv, stig_per, ther, aaq_tot, dep_secret)  
@@ -4670,8 +4749,7 @@ test18_sem <- test18.v26 %>% select(
   # life events
   gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx,   # missing isi_tot
   # defeat-entrapment
-  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, 
-  aca_mh_impa, aca_impa,
+  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_impa,
   # threats to internal/external moderation
   persist, belong1, belong2, belong8, flourish, inf, brs_tot, talk, 
   stig_pcv, stig_per, ther, aaq_tot, dep_secret)  
@@ -4711,8 +4789,7 @@ test20_sem <- test20.v26 %>% select(
   # life events
   gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx,   # missing isi_tot
   # defeat-entrapment
-  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, 
-  aca_mh_impa, aca_impa,
+  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_impa,
   # threats to internal/external moderation
   persist, belong1, belong2, belong8, flourish, inf, brs_tot, talk, 
   stig_pcv, stig_per, ther, aaq_tot, dep_secret)  
