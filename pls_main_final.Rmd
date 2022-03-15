@@ -1795,20 +1795,18 @@ traindf.v16 <- traindf.v15 %>%
                             fincur == 5 ~ 0,
                             fincur == 1 ~ 1,  # always or often stressful
                             fincur == 2 ~ 1)) %>%
-  filter(!is.na(fincur))   # filters for NAs
+  filter(!is.na(fincur))                      # filters for NAs
 traindf.v16$fincur <- as.logical(traindf.v16$fincur)
 
 table(traindf.v16$fincur, useNA = "always")  # check output, skew
 ```
 
-## Current SES comparison interaction effects
-```{r rain fincur_interxn}
-table(traindf.v16$fin_comp1)
-table(traindf.v16$cli_lowses)
-```
-
 ## ISI scale
 ```{r train isi_tot}
+
+# something weird is going on here, too.
+
+
 traindf.v16$isi_1 <- as.numeric(traindf.v16$isi_1)
 traindf.v16$isi_2 <- as.numeric(traindf.v16$isi_2)
 traindf.v16$isi_3 <- as.numeric(traindf.v16$isi_3)
@@ -1816,6 +1814,7 @@ traindf.v16$isi_4 <- as.numeric(traindf.v16$isi_4)
 traindf.v16$isi_5 <- as.numeric(traindf.v16$isi_5)
 traindf.v16$isi_6 <- as.numeric(traindf.v16$isi_6)
 traindf.v16$isi_7 <- as.numeric(traindf.v16$isi_7)
+traindf.v16$isi_total <- as.numeric(traindf.v16$isi_total)
 
 table(traindf.v16$isi_1)
 table(traindf.v16$isi_2)
@@ -1828,6 +1827,7 @@ table(traindf.v16$isi_7)
 traindf.v16$isi_tot <- traindf.v16$isi_1 + traindf.v16$isi_2 + traindf.v16$isi_3 + traindf.v16$isi_4 + traindf.v16$isi_5 + traindf.v16$isi_6 + traindf.v16$isi_7
 
 table(traindf.v16$isi_tot, useNA = "always")
+table(traindf.v16$isi_total)
 ```
 
 ## Abuse or assault, in the last year only
@@ -1864,13 +1864,10 @@ traindf.v17$assault <- as.logical(traindf.v17$assault)
 
 # tabulate and check output
 table(traindf.v17$assault, useNA = "always") 
-jarque.bera.test(traindf.v17$assault)
-                                         
-traindf.v17 = subset(traindf.v17, select= -c(abuse_life, abuse_recent)) # clean up var
 ```
 
 ## Binging frequency
-```{r train binge_fr}
+```{r train binge}
 # set all binge_fr values equal to 0
 traindf.v17$binge_fr_f[is.na(traindf.v17$binge_fr_f)] <- 0
 traindf.v17$binge_fr_m[is.na(traindf.v17$binge_fr_m)] <- 0
@@ -1929,7 +1926,7 @@ jarque.bera.test(traindf.v18$gpa_sr)
  
  ## Academic failure
 ```{r train failed}
-table(traindf.v18$failed)
+table(traindf.v18$failed, useNA = "always")
 ```
  
  
@@ -1941,7 +1938,7 @@ traindf.v19 <- traindf.v18
 ### LE correlation
 ```{r train LE correlation}
 # Define life event var candidates for correlation matrix
-traindf_le <- traindf.v19 %>% select(gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx, failed)
+traindf_le <- traindf.v19 %>% select(gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx, failed)   # still missing isi_tot
 
 # convert traindf to numeric in order to run correlations
 traindf_le <- traindf_le %>% mutate_if(is.character, as.factor)
@@ -1963,7 +1960,7 @@ corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
 
 ### PCA LE
 ```{r train le_pca}
-traindf_le <- traindf.v19 %>% select(gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx, cli_lowses, fin_comp1, isi_tot)
+traindf_le <- traindf.v19 %>% select(gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx, failed, discrim)   # missing isi_tot
 traindf_le <- na.omit(traindf_le)
 
 # create corr matrix, with dummy vars
@@ -1973,8 +1970,7 @@ traindf_le <- traindf_le %>%
   data.matrix()
 # traindf_le   # check output
 
-results_le <- dummy_cols(traindf_le, select_columns = c("gpa_sr", "fincur", "binge", "drugs_yn", "drug_mar", 
-                                                        "assault", "psyhx", "cli_lowses", "fin_comp1", "isi_tot"),
+results_le <- dummy_cols(traindf_le, select_columns = c("gpa_sr", "fincur", "binge", "assault", "drugs_yn", "drug_mar", "psyhx", "failed", "discrim"),      # missing isi_tot
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 le_pca <- PCA(results_le, graph=FALSE)  # apply PCA
@@ -2006,11 +2002,11 @@ fviz_cos2(le_pca, choice = "var", axes = 1,
 ### GLM Life event regression
 ```{r train glm_LE}
 # prepare dataframe for regression
-glm_le <- traindf.v19 %>% select(si_type, gpa_sr, fincur, assault, binge, drugs_yn, drug_mar, psyhx, cli_lowses, fin_comp1, isi_tot)
+glm_le <- traindf.v19 %>% select(si_type, gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx, failed, discrim)  # missing isi_tot
 glm_le <- na.omit(glm_le)
 
 # run regression
-glm_le <- glm(si_type ~ gpa_sr + fincur + assault + binge + drugs_yn + drug_mar + psyhx + cli_lowses + fin_comp1 + isi_tot,
+glm_le <- glm(si_type ~ gpa_sr + fincur + binge + assault + drugs_yn + drug_mar + psyhx + failed + discrim,
               data = glm_le)
 summary(glm_le)
 coef(glm_le)
