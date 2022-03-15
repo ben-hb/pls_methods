@@ -630,7 +630,11 @@ table(data.v5$children_dep, useNA = "always") # tabulate and check output
 ## Subjective weight and body image
 ```{r body_sr}
 data.v5$body_sr <- as.numeric(data.v5$body_sr)
-table(data.v5$body_sr)
+
+data.v5 <- data.v5 %>%
+  filter(!is.na(body_sr))
+
+table(data.v5$body_sr, useNA = "always") # tabulate and check output
 hist(data.v5$body_sr)
 ```
 
@@ -646,10 +650,8 @@ data.v6 <- data.v5 %>%
                           race_ara == 1 ~ 5,
                           race_whi == 1 ~ 1,
                           race_oth == 1 ~ 5,
-                          FALSE ~ 5))
-table(data.v6$race) # check output
-data.v6 <- data.v6 %>%  # filter out NAs for complete data
-  filter(!is.na(race))
+                          FALSE ~ 5))  %>%  
+  filter(!is.na(race))    # filter out NAs for complete data
 
 table(data.v6$race, useNA = "always")  # double check NA output
 ```
