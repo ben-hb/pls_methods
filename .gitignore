@@ -3,3 +3,7 @@
 *.DS_Store
 .Rproj.user
 .log
+*.RData
+*.xls
+*.xlsx
+.RData*
