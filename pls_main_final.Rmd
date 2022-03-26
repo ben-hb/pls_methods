@@ -2972,7 +2972,7 @@ results_tr_com1 <- dummy_cols(traindf_sem1, select_columns = c("school2_type", "
 # xlsx output
 save(results_tr_com1, file = "traindf_pls.RData")
 load("traindf_pls.RData")
-write_xlsx(results_tr_com1, path = "traindf_pls.xlsx", col_names = TRUE, format_headers = TRUE)
+write_xlsx(results_tr_com1, path = "traindf_pls_new.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -4703,13 +4703,13 @@ testdf_sem1 <- testdf.v26 %>% select(
 testdf_sem1 <- data.matrix(testdf_sem1)
   
 ## Dummy col SEM w/ continuous
-results_test <- dummy_cols(testdf_sem1, select_columns = c("si_type", "race"),
+results_test <- dummy_cols(testdf_sem1, select_columns = c("si_type", "race", "residenc", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # xlsx output
 save(results_test, file = "testdf_pls.RData")
 load("testdf_pls.RData")
-write_xlsx(results_test, path = "testdf_pls.xlsx", col_names = TRUE, format_headers = TRUE)
+write_xlsx(results_test, path = "testdf_pls_new.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
 # Running the test dataframe for 18 and 19 year olds
