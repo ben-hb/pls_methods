@@ -573,6 +573,13 @@ table(data.v5$sexual, useNA = "always") # tabulate and check outputs
 jarque.bera.test(data.v5$sexual)
 ```
 
+## Child dependent
+```{r children}
+data.v5$child_dependent <- as.integer(data.v5$child_dependent)
+table(data.v5$child_dependent)
+scatter.smooth(data.v5$child_dependent)
+```
+
 ## BMI
 ```{r bmi}
 data.v5$bmi <- as.integer(data.v5$bmi)

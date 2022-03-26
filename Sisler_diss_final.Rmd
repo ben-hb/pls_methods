@@ -4262,6 +4262,9 @@ ks.test(rnorm(test18.v26$age), "pnorm")
 ks.test(rnorm(test20.v26$age), "pnorm")
 
 
+table(test18.v26B$sui_idea)
+
+
 describe(test18.v26$finpast)
 describe(test20.v26$finpast)
 wilcox.test(test18.v26$finpast, test20.v26$finpast)
