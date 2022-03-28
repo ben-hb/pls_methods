@@ -1337,7 +1337,7 @@ traindf.v12$discrim<- as.numeric(traindf.v12$discrim)
 traindf.v12 <- traindf.v12 %>%
   filter(!is.na(discrim))
 
-table(traindf.v12$discrim, useNA = "always") # check output (lots of NAs)
+table(traindf.v12$discrim, useNA = "always") # check output
 ```
 
 ## Religion
@@ -1542,13 +1542,6 @@ traindf.v14 <- traindf.v14 %>%
   mutate(var_WesternMichigan = ifelse((school2 == "WesternMichigan"), 1, 0)) %>%
   mutate(var_WesternWA = ifelse((school2 == "WesternWA"), 1, 0)) %>%
   mutate(var_Xavier = ifelse((school2 == "Xavier"), 1, 0))
-```
-
-### Suicide culture in school - interaction effect
-```{r train school_sui}
-
-# trying to figure out how to take each school's average score on traindf.v14$inter_hy_sui and assign it to a student.... maybe traindf.v14$witness_4???? traindf.v14$cli_look??
-
 ```
 
 ## MH campus environment
@@ -2317,6 +2310,7 @@ table(traindf.v21$dep_secret, useNA = "always")
 
 ## AAQ total
 ```{r train aaq_dum}
+
 # create AAQ_tot variable to sum up imputed AAQ questions
 traindf.v22 <- traindf.v21 %>%
   mutate(aaq_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
@@ -2324,29 +2318,6 @@ traindf.v22 <- traindf.v21 %>%
     filter(!is.na(aaq_tot))  # filters for NAs
 
 table(traindf.v22$aaq_tot, useNA = "always") # check output
-
-#  for loop for predictive cutoff point needed
- rs_df <- data.frame("cutoff" = c(), "rs" = c())
- for (i in 8:48) {
-   aaq_bin <- ifelse(traindf.v22$aaq_tot >= i, TRUE, FALSE)
-   model = lm(traindf.v22$sui_idea ~ aaq_bin)
-   rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
-
- }
- names(rs_df) <- c("cutoff", "rs")
- rs_df_arranged <- rs_df %>%
-   arrange(desc(rs))
- rs_df_arranged[1,1]
-
-# deem 'rs_df_arranged[1,1]' as SI cutoff
- traindf.v22 <- traindf.v22 %>%
-   mutate(aaq_dum = case_when(aaq_tot > 40 ~ 4,
-                              aaq_tot > 30 ~ 3,
-                              aaq_tot > 20 ~ 2,
-                              aaq_tot < 21 ~ 1))
-traindf.v22$aaq_dum <- as.numeric(traindf.v22$aaq_dum)
-
-table(traindf.v22$aaq_dum, useNA = "always")  # check output, NAs
 ```
 
 ## Persist
@@ -2803,43 +2774,6 @@ view(school2)
 
 # save matrix
 #write_xlsx(school2, path = "sch2_missing.xlsx", col_names = TRUE, format_headers = TRUE)
-```
-
-## Missingness of each var w/in each var
-```{r train missingness between vars}
-missing_dfs <- list()
-for (k in 1:length(var_names)) {}
-
-#create skeleton of missingness matrix
-var <- count(traindf.v28, traindf.v28[var_names[k]])
-var_ncol <- ncol(var)
-
-for (j in 1:length(var_names)) {
-  var[, var_ncol + j] <- 999
-}
-# create column headers and vectors for school, total students, then each variable count
-names <- c(paste0(var_names[k], "_values"), "total", var_names)
-names(var) <- names
-
-# input values for each school missingness across all variables
-for (j in 1:(length(var_names))) {
-for (i in 1:nrow(var)) {   # i corresponds to rows, j to columns
-  var[i, 2 + j] <- sum(!is.na(traindf.v28[traindf.v28[[var_names[k]]] == var[[i,1]], var_names[j]]))
-}
-}
-# add percentage in each column
-var_m <- as.matrix(var[-1]) 
-props <- var_m[,2:ncol(var_m)] / var_m[,1]
-var <- data.frame(var[, 1:2], props)
-replace_na("NA")
-missing_dfs[[k]] <- var
-
-
-names(missing_dfs) <- var_names
-
-save(missing_dfs, file = "missing_dfs.RData")
-load("missing_dfs.RData")
-#write_xlsx(missing_dfs, path = "missing_dfs.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
 
 
@@ -3451,13 +3385,6 @@ testdf.v14 <- testdf.v14 %>%
   mutate(var_WesternMichigan = ifelse((school2 == "WesternMichigan"), 1, 0)) %>%
   mutate(var_WesternWA = ifelse((school2 == "WesternWA"), 1, 0)) %>%
   mutate(var_Xavier = ifelse((school2 == "Xavier"), 1, 0))
-```
-
-### Suicide culture in school - interaction effect
-```{r test school_sui}
-
-# trying to figure out how to take each school's average score on testdf.v14$inter_hy_sui and assign it to a student.... maybe testdf.v14$witness_4???? testdf.v14$cli_look??
-
 ```
 
 ## MH campus environment
@@ -4223,6 +4150,7 @@ table(testdf.v21$dep_secret, useNA = "always")
 
 ## AAQ total
 ```{r test aaq_dum}
+
 # create AAQ_tot variable to sum up imputed AAQ questions
 testdf.v22 <- testdf.v21 %>%
   mutate(aaq_tot = as.numeric(AAQ_1) + as.numeric(AAQ_2) + as.numeric(AAQ_3) + as.numeric(AAQ_4) + 
@@ -4230,29 +4158,6 @@ testdf.v22 <- testdf.v21 %>%
     filter(!is.na(aaq_tot))  # filters for NAs
 
 table(testdf.v22$aaq_tot, useNA = "always") # check output
-
-#  for loop for predictive cutoff point needed
- rs_df <- data.frame("cutoff" = c(), "rs" = c())
- for (i in 8:48) {
-   aaq_bin <- ifelse(testdf.v22$aaq_tot >= i, TRUE, FALSE)
-   model = lm(testdf.v22$sui_idea ~ aaq_bin)
-   rs_df <- rbind(rs_df, c(i, summary(model)$r.squared))
-
- }
- names(rs_df) <- c("cutoff", "rs")
- rs_df_arranged <- rs_df %>%
-   arrange(desc(rs))
- rs_df_arranged[1,1]
-
-# deem 'rs_df_arranged[1,1]' as SI cutoff
- testdf.v22 <- testdf.v22 %>%
-   mutate(aaq_dum = case_when(aaq_tot > 40 ~ 4,
-                              aaq_tot > 30 ~ 3,
-                              aaq_tot > 20 ~ 2,
-                              aaq_tot < 21 ~ 1))
-testdf.v22$aaq_dum <- as.numeric(testdf.v22$aaq_dum)
-
-table(testdf.v22$aaq_dum, useNA = "always")  # check output, NAs
 ```
 
 ## Persist
@@ -4703,7 +4608,7 @@ testdf_sem1 <- testdf.v26 %>% select(
 testdf_sem1 <- data.matrix(testdf_sem1)
   
 ## Dummy col SEM w/ continuous
-results_test <- dummy_cols(testdf_sem1, select_columns = c("si_type", "race", "residenc", "school2_type"),
+results_test <- dummy_cols(testdf_sem1, select_columns = c("race", "residenc", "school2_type"),
                          remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
 # xlsx output
@@ -4711,140 +4616,3 @@ save(results_test, file = "testdf_pls.RData")
 load("testdf_pls.RData")
 write_xlsx(results_test, path = "testdf_pls_new.xlsx", col_names = TRUE, format_headers = TRUE)
 ```
-
-# Running the test dataframe for 18 and 19 year olds
-```{r results_test_18}
-test18.v26 <- testdf.v26 %>%
-  filter(age == 18 | age == 19)
-
-nrow(test18.v26)
-table(test18.v26$age)
-table(test18.v26$si_type)
-table(test18.v26$gender_tgd)
-table(test18.v26$sexual)
-table(test18.v26$race)
-table(test18.v26$dx_mh)
-
-# Prep SEM data vars
-test18_sem <- test18.v26 %>% select(
-  # outcome
-  si_type, si_activ,
-  # premotivation
-  age, race, sexual, gender, gender_tgd, sib_freq, school2_type, env_mh, activ_no,
-  international, ins_no, satisfied_overall, residenc, religios, meds_count, dx_mh, 
-  meds_any, ed_any, finpast, body_sr, days_work_paid, children_dep, discrim,
-  # life events
-  gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx,   # missing isi_tot
-  # defeat-entrapment
-  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_impa,
-  # threats to internal/external moderation
-  persist, belong1, belong2, belong8, flourish, inf, brs_tot, talk, 
-  stig_pcv, stig_per, ther, aaq_tot, dep_secret)  
-  
-## Dummy col SEM w/ continuous
-results_test_18 <- dummy_cols(test18_sem, select_columns = c("race", "residenc", "school2_type"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-# save output for offline SMART PLS
-results_test_18 <- as.data.frame(results_test_18)
-save(results_test_18, file = "results_test_18.RData")
-load("results_test_18.RData")
-write_xlsx(results_test_18, path = "results_test_18.xls", col_names = TRUE, format_headers = TRUE)
-```
-
-
-# Running test frame for 20-25 year olds
-```{r results_test_20}
-test20.v26 <- testdf.v26 %>%
-  filter(age == 20 | age == 21 | age == 22 | age == 23 | age == 24 | age == 25)
-
-table(test20.v26$age)
-table(test20.v26$si_type)
-table(test20.v26$gender_tgd)
-table(test20.v26$sexual)
-table(test20.v26$race)
-table(test20.v26$dx_mh)
-
-# Prep SEM data vars
-test20_sem <- test20.v26 %>% select(
-  # outcome
-  si_type, si_activ,
-  # premotivation
-  age, race, sexual, gender, gender_tgd, sib_freq, school2_type, env_mh, activ_no,
-  international, ins_no, satisfied_overall, residenc, religios, meds_count, dx_mh, 
-  meds_any, ed_any, finpast, body_sr, days_work_paid, children_dep, discrim,
-  # life events
-  gpa_sr, fincur, binge, assault, drugs_yn, drug_mar, psyhx,   # missing isi_tot
-  # defeat-entrapment
-  aca_impa, anx_score, deprawsc, percneed, gad7_impa, dep_impa, dep_type, anx_type, aca_impa,
-  # threats to internal/external moderation
-  persist, belong1, belong2, belong8, flourish, inf, brs_tot, talk, 
-  stig_pcv, stig_per, ther, aaq_tot, dep_secret)  
-
-# create SEM matrix 
-test20_sem <- data.matrix(test20_sem)
-  
-## Dummy columns for SEM
-results_test_20 <- dummy_cols(test20_sem, select_columns = c("si_type", "race", "residenc", "school2_type"),
-                         remove_first_dummy = TRUE, remove_selected_columns = TRUE)
-
-nrow(testdf.v26) # 4751
-nrow(traindf.v28) # 4746
-nrow(test20.v26) # 3180
-nrow(test18.v26) # 1571
-
-# Save offline for SMART PLS
-results_test_20 <- as.data.frame(results_test_20)
-save(results_test_20, file = "results_test_20.RData")
-load("results_test_20.RData")
-write_xlsx(results_test_20, path = "results_test_20.xls", col_names = TRUE, format_headers = TRUE)
-```
-
-## Wilcox test
-```{r ks_tests}
-testdf.v26B <- testdf.v26
-traindf.v28B <- traindf.v28
-test20.v26B <- test20.v26
-test18.v26B <- test18.v26
-
-testdf.v26B$dx_mh <- as.numeric(testdf.v26B$dx_mh)
-traindf.v28B$dx_mh <- as.numeric(traindf.v28B$dx_mh)
-test20.v26B$dx_mh <- as.numeric(test20.v26B$dx_mh)
-test18.v26B$dx_mh <- as.numeric(test18.v26B$dx_mh)
-
-testdf.v26B$si_type <- as.numeric(testdf.v26B$si_type)
-traindf.v28B$si_type <- as.numeric(traindf.v28B$si_type)
-test20.v26B$si_type <- as.numeric(test20.v26B$si_type)
-test18.v26B$si_type <- as.numeric(test18.v26B$si_type)
-
-testdf.v26B$gender_tgd <- as.numeric(testdf.v26B$gender_tgd)
-traindf.v28B$gender_tgd <- as.numeric(traindf.v28B$gender_tgd)
-test20.v26B$gender_tgd <- as.numeric(test20.v26B$gender_tgd)
-test18.v26B$gender_tgd <- as.numeric(test18.v26B$gender_tgd)
-
-testdf.v26B$sexual<- as.numeric(testdf.v26B$sexual)
-traindf.v28B$sexual <- as.numeric(traindf.v28B$sexual)
-test20.v26B$sexual <- as.numeric(test20.v26B$sexual)
-test18.v26B$sexual <- as.numeric(test18.v26B$sexual)
-
-
-# training v. testing
-wilcox.test(testdf.v26B$age,traindf.v28B$age, alternative = "two.sided") # W = 15974521, p-value = 0.5965
-wilcox.test(testdf.v26B$si_type,traindf.v28B$si_type, alternative = "two.sided") # W = 16274859, p-value = 0.05296
-wilcox.test(testdf.v26B$gender_tgd,traindf.v28B$gender_tgd, alternative = "two.sided") # W = 16038848, p-value = 0.6233
-wilcox.test(testdf.v26B$sexual, traindf.v28B$sexual, alternative = "two.sided") # W = 16083640, p-value = 0.891
-wilcox.test(testdf.v26B$race, traindf.v28B$race, alternative = "two.sided") # W = 16010644, p-value = 0.7108
-wilcox.test(testdf.v26B$dx_mh, traindf.v28B$dx_mh, alternative = "two.sided") # W = 16325040, p-value = 0.07795
-
-# 18-19 v. 20-25
-wilcox.test(test20.v26B$age, test18.v26B$age, alternative = "two.sided") # W = 6928929, p-value < 2.2e-16 ***
-wilcox.test(test20.v26B$si_type, test18.v26B$si_type, alternative = "two.sided") # W = 3306980, p-value = 1.244e-05 ***
-wilcox.test(test20.v26B$gender_tgd, test18.v26B$gender_tgd, alternative = "two.sided") # W = 3424143, p-value = 0.02272 *
-wilcox.test(test20.v26B$sexual, test18.v26B$sexual, alternative = "two.sided") # W = 3244443, p-value = 3.035e-07 ***
-wilcox.test(test20.v26B$race, test18.v26B$race, alternative = "two.sided") #  = 3492851, p-value = 0.5591
-wilcox.test(test20.v26B$dx_mh, test18.v26B$dx_mh, alternative = "two.sided") # W = 3523642, p-value = 0.2214
-``` 
-
-
-
-```{r END}
