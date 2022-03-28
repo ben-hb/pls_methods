@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>R: Matrix-Based Partial Least Squares Estimation</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body>
+<h1> Matrix-Based Partial Least Squares Estimation
+<img class="toplogo" src="../../../doc/html/Rlogo.svg" alt="[R logo]" />
+</h1>
+<hr/>
+<div style="text-align: center;">
+<a href="../../../doc/html/packages.html"><img class="arrow" src="../../../doc/html/left.jpg" alt="[Up]" /></a>
+<a href="../../../doc/html/index.html"><img class="arrow" src="../../../doc/html/up.jpg" alt="[Top]" /></a>
+</div><h2>Documentation for package &lsquo;matrixpls&rsquo; version 1.0.14</h2>
+
+<ul><li><a href="../DESCRIPTION">DESCRIPTION file</a>.</li>
+<li><a href="../doc/index.html">User guides, package vignettes and other documentation.</a></li>
+<li><a href="../NEWS">Package NEWS</a>.</li>
+</ul>
+
+<h2>Help Pages</h2>
+
+
+<table width="100%">
+<tr><td style="width: 25%;"><a href="matrixpls-package.html">matrixpls-package</a></td>
+<td>Matrix-based Partial Least Squares estimation</td></tr>
+<tr><td style="width: 25%;"><a href="AVE.html">ave</a></td>
+<td>Average Variance Extracted indices for matrixpls results</td></tr>
+<tr><td style="width: 25%;"><a href="cei.html">cei</a></td>
+<td>Composite Equivalence Indices</td></tr>
+<tr><td style="width: 25%;"><a href="convCheck.html">convCheck</a></td>
+<td>Convergence checks</td></tr>
+<tr><td style="width: 25%;"><a href="convCheck.html">convCheck.absolute</a></td>
+<td>Convergence checks</td></tr>
+<tr><td style="width: 25%;"><a href="convCheck.html">convCheck.relative</a></td>
+<td>Convergence checks</td></tr>
+<tr><td style="width: 25%;"><a href="convCheck.html">convCheck.square</a></td>
+<td>Convergence checks</td></tr>
+<tr><td style="width: 25%;"><a href="CR.html">cr</a></td>
+<td>Composite Reliability indices for matrixpls results</td></tr>
+<tr><td style="width: 25%;"><a href="effects.matrixpls.html">effects.matrixpls</a></td>
+<td>Total, Direct, and Indirect Effects for matrixpls results</td></tr>
+<tr><td style="width: 25%;"><a href="estimator.html">estimator</a></td>
+<td>Parameter estimation of a model matrix</td></tr>
+<tr><td style="width: 25%;"><a href="estimator.html">estimator.cfaLoadings</a></td>
+<td>Parameter estimation of a model matrix</td></tr>
+<tr><td style="width: 25%;"><a href="estimator.html">estimator.efaLoadings</a></td>
+<td>Parameter estimation of a model matrix</td></tr>
+<tr><td style="width: 25%;"><a href="estimator.html">estimator.ols</a></td>
+<td>Parameter estimation of a model matrix</td></tr>
+<tr><td style="width: 25%;"><a href="estimator.html">estimator.plscLoadings</a></td>
+<td>Parameter estimation of a model matrix</td></tr>
+<tr><td style="width: 25%;"><a href="estimator.html">estimator.plsreg</a></td>
+<td>Parameter estimation of a model matrix</td></tr>
+<tr><td style="width: 25%;"><a href="estimator.html">estimator.tsls</a></td>
+<td>Parameter estimation of a model matrix</td></tr>
+<tr><td style="width: 25%;"><a href="fitSummary.html">fitSummary</a></td>
+<td>Summary of model fit of PLS model</td></tr>
+<tr><td style="width: 25%;"><a href="fitted.matrixpls.html">fitted.matrixpls</a></td>
+<td>Model implied covariance matrix based on matrixpls results</td></tr>
+<tr><td style="width: 25%;"><a href="GoF.html">gof</a></td>
+<td>Goodness of Fit indices for matrixpls results</td></tr>
+<tr><td style="width: 25%;"><a href="GSCA.html">GSCA</a></td>
+<td>Generalized structured component analysis (GSCA) weights</td></tr>
+<tr><td style="width: 25%;"><a href="HTMT.html">htmt</a></td>
+<td>Heterotrait-monotrait ratio</td></tr>
+<tr><td style="width: 25%;"><a href="innerEstim.html">innerEstim</a></td>
+<td>PLS inner estimation</td></tr>
+<tr><td style="width: 25%;"><a href="innerEstim.html">innerEstim.centroid</a></td>
+<td>PLS inner estimation</td></tr>
+<tr><td style="width: 25%;"><a href="innerEstim.html">innerEstim.factor</a></td>
+<td>PLS inner estimation</td></tr>
+<tr><td style="width: 25%;"><a href="innerEstim.html">innerEstim.gsca</a></td>
+<td>PLS inner estimation</td></tr>
+<tr><td style="width: 25%;"><a href="innerEstim.html">innerEstim.identity</a></td>
+<td>PLS inner estimation</td></tr>
+<tr><td style="width: 25%;"><a href="innerEstim.html">innerEstim.path</a></td>
+<td>PLS inner estimation</td></tr>
+<tr><td style="width: 25%;"><a href="loadings.html">loadings</a></td>
+<td>Factor loadings matrix from matrixpls results</td></tr>
+<tr><td style="width: 25%;"><a href="matrixpls.html">matrixpls</a></td>
+<td>Partial Least Squares and other composite variable models.</td></tr>
+<tr><td style="width: 25%;"><a href="matrixpls-common.html">matrixpls-common</a></td>
+<td>Commonly used arguments</td></tr>
+<tr><td style="width: 25%;"><a href="matrixpls-functions.html">matrixpls-functions</a></td>
+<td>All estimation function types</td></tr>
+<tr><td style="width: 25%;"><a href="matrixplsboot.html">matrixpls.boot</a></td>
+<td>Bootstrapping of matrixpls function</td></tr>
+<tr><td style="width: 25%;"><a href="matrixpls.crossvalidate.html">matrixpls.crossvalidate</a></td>
+<td>Cross-validation of predictions from matrixpls results</td></tr>
+<tr><td style="width: 25%;"><a href="matrixpls.plspm.html">matrixpls.plspm</a></td>
+<td>A plspm compatibility wrapper for matrixpls</td></tr>
+<tr><td style="width: 25%;"><a href="matrixpls.sempls.html">matrixpls.sempls</a></td>
+<td>A semPLS compatibility wrapper for matrixpls</td></tr>
+<tr><td style="width: 25%;"><a href="matrixpls.sim.html">matrixpls.sim</a></td>
+<td>Monte Carlo simulations with matrixpls</td></tr>
+<tr><td style="width: 25%;"><a href="matrixplsboot.html">matrixplsboot</a></td>
+<td>Bootstrapping of matrixpls function</td></tr>
+<tr><td style="width: 25%;"><a href="optimCrit.html">optimCrit</a></td>
+<td>Optimization criteria functions</td></tr>
+<tr><td style="width: 25%;"><a href="optimCrit.html">optimCrit.gsca</a></td>
+<td>Optimization criteria functions</td></tr>
+<tr><td style="width: 25%;"><a href="optimCrit.html">optimCrit.maximizeFullR2</a></td>
+<td>Optimization criteria functions</td></tr>
+<tr><td style="width: 25%;"><a href="optimCrit.html">optimCrit.maximizeIndicatorR2</a></td>
+<td>Optimization criteria functions</td></tr>
+<tr><td style="width: 25%;"><a href="optimCrit.html">optimCrit.maximizeInnerR2</a></td>
+<td>Optimization criteria functions</td></tr>
+<tr><td style="width: 25%;"><a href="outerEstim.html">outerEstim</a></td>
+<td>PLS outer estimation</td></tr>
+<tr><td style="width: 25%;"><a href="outerEstim.html">outerEstim.fixed</a></td>
+<td>PLS outer estimation</td></tr>
+<tr><td style="width: 25%;"><a href="outerEstim.html">outerEstim.gsca</a></td>
+<td>PLS outer estimation</td></tr>
+<tr><td style="width: 25%;"><a href="outerEstim.html">outerEstim.modeA</a></td>
+<td>PLS outer estimation</td></tr>
+<tr><td style="width: 25%;"><a href="outerEstim.html">outerEstim.modeB</a></td>
+<td>PLS outer estimation</td></tr>
+<tr><td style="width: 25%;"><a href="parameterEstim.html">parameterEstim</a></td>
+<td>Parameter estimation of full model</td></tr>
+<tr><td style="width: 25%;"><a href="parameterEstim.html">parameterEstim.separate</a></td>
+<td>Parameter estimation of full model</td></tr>
+<tr><td style="width: 25%;"><a href="predict.matrixpls.html">predict.matrixpls</a></td>
+<td>Predict method for matrixpls results</td></tr>
+<tr><td style="width: 25%;"><a href="q2.html">q2</a></td>
+<td>Q2 predictive relevance statistics</td></tr>
+<tr><td style="width: 25%;"><a href="R2.html">r2</a></td>
+<td>R2 for matrixpls results</td></tr>
+<tr><td style="width: 25%;"><a href="reliabilityEstim.html">reliabilityEstim</a></td>
+<td>Reliabilities as products of weights and loadings</td></tr>
+<tr><td style="width: 25%;"><a href="reliabilityEstim.html">reliabilityEstim.alpha</a></td>
+<td>Reliabilities as products of weights and loadings</td></tr>
+<tr><td style="width: 25%;"><a href="reliabilityEstim.html">reliabilityEstim.weightLoadingProduct</a></td>
+<td>Reliabilities as products of weights and loadings</td></tr>
+<tr><td style="width: 25%;"><a href="residuals.matrixpls.html">residuals.matrixpls</a></td>
+<td>Residual diagnostics for matrixpls results</td></tr>
+<tr><td style="width: 25%;"><a href="signChange.html">signChange</a></td>
+<td>Sign change corrections for bootstrap</td></tr>
+<tr><td style="width: 25%;"><a href="signChange.html">signChange.construct</a></td>
+<td>Sign change corrections for bootstrap</td></tr>
+<tr><td style="width: 25%;"><a href="signChange.html">signChange.individual</a></td>
+<td>Sign change corrections for bootstrap</td></tr>
+<tr><td style="width: 25%;"><a href="matrixplsboot.html">summary.matrixplsboot</a></td>
+<td>Bootstrapping of matrixpls function</td></tr>
+<tr><td style="width: 25%;"><a href="weightFun.html">weightFun</a></td>
+<td>Indicator weight algoritms</td></tr>
+<tr><td style="width: 25%;"><a href="weightFun.html">weightFun.factor</a></td>
+<td>Indicator weight algoritms</td></tr>
+<tr><td style="width: 25%;"><a href="weightFun.html">weightFun.fixed</a></td>
+<td>Indicator weight algoritms</td></tr>
+<tr><td style="width: 25%;"><a href="weightFun.html">weightFun.optim</a></td>
+<td>Indicator weight algoritms</td></tr>
+<tr><td style="width: 25%;"><a href="weightFun.html">weightFun.pls</a></td>
+<td>Indicator weight algoritms</td></tr>
+<tr><td style="width: 25%;"><a href="weightFun.html">weightFun.principal</a></td>
+<td>Indicator weight algoritms</td></tr>
+<tr><td style="width: 25%;"><a href="weightSign.html">weightSign</a></td>
+<td>Sign ambiguity corrections</td></tr>
+<tr><td style="width: 25%;"><a href="weightSign.html">weightSign.dominantIndicator</a></td>
+<td>Sign ambiguity corrections</td></tr>
+<tr><td style="width: 25%;"><a href="weightSign.html">weightSign.Wold1985</a></td>
+<td>Sign ambiguity corrections</td></tr>
+<tr><td style="width: 25%;"><a href="matrixpls-package.html">_PACKAGE</a></td>
+<td>Matrix-based Partial Least Squares estimation</td></tr>
+</table>
+</body></html>
